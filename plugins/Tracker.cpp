@@ -1,0 +1,436 @@
+
+#include "Tracker.h"
+
+#include "ImageProcessingEngine.h"
+#include "Blob.h"
+
+//#include "../dlib/optimization/max_cost_assignment.h"
+//using namespace dlib;
+
+using namespace std;
+using namespace cv;
+
+
+Tracker::~Tracker()
+{
+    CloseOutput();
+}
+
+void Tracker::Reset()
+{
+    SetMaxEntities(entitiesCount);
+//    if (output) OpenOutput();
+}
+
+void Tracker::SetMaxEntities (unsigned int n)
+{
+    entities.clear();
+
+    if (n == 0) n = 1;
+    entitiesCount = n;
+
+    // create a list of entities
+    for (unsigned int i = 0; i < entitiesCount; i++)
+    {
+	entities.push_back(Entity(motionEstimatorLength));
+    }
+}
+
+inline void Tracker::UpdateMotionEstimator (Entity& entity, const Entity& previousEntity)
+{
+    // static image
+//    if (pipeline->parent->staticFrame) return;
+
+    if (previousEntity.assigned)
+    {
+	unsigned int didx = entity.diffIdx;
+	entity.dx[didx] = entity.x - previousEntity.x;
+	entity.dy[didx] = entity.y - previousEntity.y;
+	didx++;
+	if (didx >= motionEstimatorLength) didx = 0;
+	entity.diffIdx = didx;
+    }
+}
+
+void Tracker::Apply()
+{
+    if (pipeline->parent->staticFrame) return;
+
+    if (replay)
+    {
+	Replay();
+    }
+    else
+    {
+	Track();
+    }
+}
+
+void Tracker::Replay()
+{
+    // locate data
+    unsigned int currentFrame = pipeline->parent->capture->frameNumber;
+
+//    cout << "Tracker : current frame=" << currentFrame << " h-start=" << historyStartFrame << " h-size=" << history.size() << endl;
+
+    if (currentFrame >= historyStartFrame)
+    {
+	historyIndex = (currentFrame - historyStartFrame) * entitiesCount;
+
+	if (historyIndex < history.size())
+	{
+	    for (unsigned int e = 0; e < entitiesCount; e++)
+	    {
+		entities[e] = history[historyIndex+e];
+	    }
+	}
+    }
+}
+
+void Tracker::Track()
+{
+    vector<Blob>& blobs = pipeline->parent->blobs;
+
+    // remember previous positions
+    previousEntities = entities;
+    for (unsigned int i = 0; i < entities.size(); i++) entities[i].assigned = false;
+
+    // Estimate motion of entities based on previous observations
+    for (unsigned int e = 0; e < entities.size(); e++)
+    {
+	// if entity is not in visible zone, don't move, just wait for reassignment
+	if (entities[e].zone != ZONE_VISIBLE && !previousEntities[e].assigned) continue;
+
+	// if entity not detected for a long time
+	if (pipeline->parent->capture->frameNumber - entities[e].lastFrameDetected >= motionEstimatorTimeout * pipeline->parent->capture->fps) continue;
+
+	// extrapolate motion of  entities
+	float dx = 0.0, dy = 0.0;
+	for (unsigned int i = 0; i < motionEstimatorLength; i++)
+	{
+	    dx += entities[e].dx[i];
+	    dy += entities[e].dy[i];
+	}
+	dx /= motionEstimatorLength;
+	dy /= motionEstimatorLength;
+
+	entities[e].x += dx;
+	entities[e].y += dy;
+
+	// prevent entity from going outside the picture
+	if (entities[e].x < 0) entities[e].x = 0;
+	else if (entities[e].x >= pipeline->width) entities[e].x = pipeline->width - 1;
+	if (entities[e].y < 0) entities[e].y = 0;
+	else if (entities[e].y >= pipeline->height) entities[e].y = pipeline->height - 1;
+
+	// check if entity is in visible zone
+	unsigned int idx = entities[e].x + entities[e].y * pipeline->width;
+	entities[e].zone = pipeline->zoneMap.data[idx];
+
+	// motion estimator
+	unsigned int didx = entities[e].diffIdx;
+	entities[e].dx[didx] = dx * extrapolationDecay;
+	entities[e].dy[didx] = dy * extrapolationDecay;
+	didx++;
+	if (didx >= motionEstimatorLength) didx = 0;
+	entities[e].diffIdx = didx;
+    }
+
+    // now for blobs/entities assignment, I will compute distances and rank couples to have best correspondances
+    vector<Interdistance> interdistances;
+    for (unsigned int b = 0; b < blobs.size(); b++)
+    {
+	if (blobs[b].available)
+	{
+	    for (unsigned int e = 0; e < entities.size(); e++)
+	    {
+		int distsq;
+
+		int diffX = entities[e].x - blobs[b].x;
+		int diffY = entities[e].y - blobs[b].y;
+		distsq = diffX * diffX + diffY * diffY;
+
+		interdistances.push_back (Interdistance(b, e, distsq));
+	    }
+	}
+    }
+    std::sort(interdistances.begin(), interdistances.end());
+
+    // do the assignment work
+    for (unsigned int d = 0; d < interdistances.size(); d++)
+    {
+	// get an interdistance, if blob and entities are free, establish the correspondance
+	unsigned int b = interdistances[d].blobIdx;
+	unsigned int e = interdistances[d].entityIdx;
+
+	if (entities[e].assigned) continue;
+	if (!blobs[b].available) continue;
+	if (entities[e].toforget) continue;
+
+	// now check if the blob is not too far
+	// this test is not applied on first assignment
+	if (entities[e].lastFrameDetected >= 0)
+	{
+	    float maxMotion = maxMotionPerSecond * (pipeline->parent->capture->frameNumber - entities[e].lastFrameDetected) / pipeline->parent->capture->fps;
+	    if (interdistances[d].distsq > maxMotion * maxMotion) continue;
+	}
+
+	bool createVirtualEntity = false;
+
+	// if the entity is a virtual one, assigned long enough, promote it to a real one
+	if (e >= entitiesCount && (pipeline->parent->capture->frameNumber - entities[e].lastFrameNotDetected) > virtualEntitiesLifetime * pipeline->parent->capture->fps)
+	{
+	    // find the corresponding real entity
+	    entities[e].toforget = true;
+	    int linkedEntity = entities[e].linkedEntity;
+	    entities[linkedEntity] = entities[e];
+
+	    // not assigned, the virtual e will be erased
+	    e = linkedEntity;
+	}
+
+	// if the entity was lost/frozen for a long time, wait before assigning and use a virtual entity instead (long code !!!)
+	else if (!previousEntities[e].assigned)
+	{
+	    if (virtualEntitiesZone && entities[e].zone != ZONE_VISIBLE) createVirtualEntity = true;
+	    else if (interdistances[d].distsq > virtualEntitiesDistsq) createVirtualEntity = true;
+	    else if (pipeline->parent->capture->frameNumber - entities[e].lastFrameDetected > virtualEntitiesDelay * pipeline->parent->capture->fps) createVirtualEntity = true;
+	}
+
+	if (createVirtualEntity && useVirtualEntities)
+	{
+	    entities[e].toforget = true;
+	    entities.push_back(Entity(motionEstimatorLength));
+	    entities.back().linkedEntity = e;
+	    entities.back().lastFrameNotDetected = pipeline->parent->capture->frameNumber - pipeline->parent->capture->timestep * pipeline->parent->capture->fps;
+	    e = entities.size() - 1;
+	}
+
+	// ok all tests passed, make it a detected entity
+	entities[e].x = blobs[b].x;
+	entities[e].y = blobs[b].y;
+	entities[e].assigned = true;
+	entities[e].zone = blobs[b].zone;
+//	    entities[e].zone = ZONE_VISIBLE;
+	blobs[b].available = false;
+	blobs[b].assignment = e;
+	entities[e].lastFrameDetected = pipeline->parent->capture->frameNumber;
+
+	if (e < previousEntities.size())
+	    UpdateMotionEstimator (entities[e], previousEntities[e]);
+    }
+
+    // erase undetected virtual entities
+    for (unsigned int e = entities.size() - 1; e >= entitiesCount; e--)
+    {
+	if (!entities[e].assigned)
+	{
+	    entities[ entities[e].linkedEntity ].toforget = false;
+	    for (unsigned int i = e; i < entities.size() - 1; i++) entities[i] = entities[i+1];
+	    entities.resize(entities.size() - 1);
+	}
+    }
+
+    // and reset counters if not detected
+    for (unsigned int e = 0; e < entities.size(); e++)
+    {
+	if (!entities[e].assigned) entities[e].lastFrameNotDetected = pipeline->parent->capture->frameNumber;
+    }
+
+    // if (textStream.is_open()) outputText (textStream, entities, frameNumber, video->GetFrameTime());
+
+
+    // save to history
+//    cout << "Tracker : " << "saved data from frame " << pipeline->parent->capture->frameNumber << endl;
+    for (unsigned int e = 0; e < entitiesCount; e++)
+    {
+	history.push_back(entities[e]);
+    }
+    historyIndex += entitiesCount;
+}
+
+void Tracker::OutputHud (Mat& hud)
+{
+    char str[8];
+    Point pos;
+
+
+    // draw a trail if history available
+    // first, draw past positions
+    vector<Point> last;
+    
+    for (unsigned int i = 0; i < entitiesCount; i++)
+    {
+	last.push_back(Point(-1,-1));
+    }
+
+    for (unsigned int h = historyIndex - trailLength * entitiesCount; h < historyIndex - entitiesCount; h += entitiesCount)
+    {
+	if (h >= 0 && h < history.size())
+	{
+	    for (unsigned int e = 0, eh = h; e < entitiesCount; e++, eh++)
+	    {
+		pos.x = history[eh].x;
+		pos.y = history[eh].y;
+
+		if (last[e].x >= 0)
+		{
+		    line(hud, pos, last[e], cvScalar(0,255,164,255), 2, CV_AA);
+		}
+		last[e] = pos;
+	    }       	    
+	}
+    }
+
+    // then, try to draw future positions if in replay mode
+    if (replay)
+    {
+	for (unsigned int h = historyIndex; h < historyIndex + trailLength*entitiesCount; h+=entitiesCount)
+	{
+	    if (h >= 0 && h < history.size())
+	    {
+		for (unsigned int e = 0, eh = h; e < entitiesCount; e++, eh++)
+		{
+		    pos.x = history[eh].x;
+		    pos.y = history[eh].y;
+		    
+		    if (last[e].x >= 0)
+		    {
+			line(hud, pos, last[e], cvScalar(255,255,255,255), 2, CV_AA);
+		    }
+		    last[e] = pos;
+		}       	    
+	    }
+	}
+    }
+
+    for (unsigned int e = 0; e < entitiesCount; e++)
+    {
+	sprintf (str, "%d", e);
+	pos.x = entities[e].x;
+	pos.y = entities[e].y;
+	putText(hud, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,0,0,255), 2, CV_AA);
+	putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,255,200,255), 2, CV_AA);
+    }
+}
+
+void Tracker::OutputStep ()
+{
+    if (outputStream.is_open())
+    {
+	for (unsigned int e = 0; e < entities.size(); e++)
+	{
+	    outputStream
+		<< pipeline->parent->capture->time << "\t"
+		<< pipeline->parent->capture->frameNumber << "\t"
+		<< entities[e].lastFrameDetected << "\t"
+		<< entities[e].lastFrameNotDetected << "\t"
+		<< e << "\t"
+		<< entities[e].assigned << "\t"
+		<< entities[e].zone << "\t"
+		<< entities[e].x << "\t"
+		<< entities[e].y
+		<< std::endl;
+	}
+    }
+}
+
+
+void Tracker::OpenOutput()
+{
+    if (outputStream.is_open()) outputStream.close();
+
+    if (!outputFilename.empty())
+    {
+	outputStream.open(outputFilename.c_str(), std::ios::out);
+	if (outputStream.is_open())
+	{
+	    outputStream << "time \t frame \t lastFrameDetected \t lastFrameNotDetected \t entity \t assigned \t zone \t x \t y " << std::endl;
+	}
+    }
+}
+
+void Tracker::CloseOutput()
+{
+    if (outputStream.is_open()) outputStream.close();
+}
+
+void Tracker::LoadXML (FileNode& fn)
+{
+    if (!fn.empty())
+    {
+	active = (int)fn["Active"];
+	output = (int)fn["Output"];
+	outputFilename = (string)fn["OutputFilename"];
+
+	minInterdistance = (float)fn["MinInterDistance"];
+	maxMotionPerSecond = (float)fn["MaxMotionPerSecond"];
+	extrapolationDecay = (float)fn["ExtrapolationDecay"];
+	motionEstimatorLength = (int)fn["ExtrapolationHistorySize"];
+	motionEstimatorTimeout = (float)fn["ExtrapolationTimeout"];
+
+	entitiesCount = (int)fn["EntitiesCount"];
+
+	FileNode fn2 = fn["VirtualEntities"];
+
+	if (!fn2.empty())
+	{
+	    useVirtualEntities = (int)fn2["Active"];
+	    virtualEntitiesDelay = (float)fn2["Delay"];
+	    virtualEntitiesZone = (int)fn2["Zone"];
+	    float v = (float)fn2["Distance"];
+	    virtualEntitiesDistsq = v * v;
+	    virtualEntitiesLifetime = (float)fn2["Lifetime"];
+	}
+   }
+}
+
+void Tracker::SaveXML (FileStorage& fs)
+{
+    fs << "Active" << active;
+    fs << "Output" << output;
+    fs << "OutputFilename" << outputFilename;
+
+    fs << "EntitiesCount" << (int)entitiesCount;
+    fs << "MinInterdistance" << minInterdistance;
+    fs << "MaxMotionPerSecond" << maxMotionPerSecond;
+    fs << "ExtrapolationDecay" << extrapolationDecay;
+    fs << "ExtrapolationHistorySize" << (int)motionEstimatorLength;
+    fs << "ExtrapolationTimeout" << motionEstimatorTimeout;
+
+    // we don't save that if we don't use it...
+    if (useVirtualEntities)
+    {
+	fs << "VirtualEntities" << "{";
+
+	fs << "Active" << 1;
+	fs << "Delay" << virtualEntitiesDelay;
+	fs << "Zone" << virtualEntitiesZone;
+	fs << "Lifetime" << virtualEntitiesLifetime;
+	fs << "Distance" << sqrt(virtualEntitiesDistsq);
+
+	fs << "}";
+    }
+}
+
+void Tracker::SetReplay(bool enable)
+{
+    replay = enable;
+
+    if (!replay) ClearHistory();
+}
+
+void Tracker::ClearHistory()
+{
+//    cout << "===============================================Clearing history=======================================================================" << endl;
+
+    historyStartFrame = pipeline->parent->capture->frameNumber;
+    historyIndex = 0;
+//    cout << "H start = " << historyStartFrame << endl;
+    history.clear();
+}
+
+void Tracker::LoadHistory(string filename)
+{
+    
+}

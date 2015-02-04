@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="useTracker" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/useTracker" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Option parameters="-i ../movie.avi -b ../f_bg.png -m ../mask2.png -p ../params.xml" />
+				<Option projectLinkerOptionsRelation="2" />
+				<Compiler>
+					<Add option="-pg" />
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add option="-pg" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/useTracker" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Option projectLinkerOptionsRelation="2" />
+				<Compiler>
+					<Add option="-march=corei7-avx" />
+					<Add option="-fexpensive-optimizations" />
+					<Add option="-O3" />
+					<Add option="-mfpmath=sse" />
+					<Add option="-pipe" />
+					<Add option="-fforce-addr" />
+					<Add option="-frerun-cse-after-loop" />
+					<Add option="-frerun-loop-opt" />
+					<Add option="-falign-functions=4" />
+					<Add option="-maccumulate-outgoing-args" />
+					<Add option="-ffast-math" />
+					<Add option="-fprefetch-loop-arrays" />
+					<Add option="-pthread" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+			<Target title="DebugVimba">
+				<Option output="bin/Debug/useTracker" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Option parameters="-i ../movie.avi -b ../f_bg.png -m ../mask2.png -p ../params.xml" />
+				<Option projectLinkerOptionsRelation="2" />
+				<Compiler>
+					<Add option="-pg" />
+					<Add option="-g" />
+					<Add option="-I /home/alex/usr/Vimba_1_3/" />
+					<Add option="-DVIMBA=1" />
+				</Compiler>
+				<Linker>
+					<Add option="-pg" />
+					<Add option="-lVimbaCPP" />
+					<Add option="-lVimbaC" />
+					<Add option="-lAVTImageTransform" />
+					<Add option="-Wl,-rpath-link,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/" />
+					<Add option="-Wl,-rpath,/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit/" />
+					<Add option="-Wl,-rpath,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/" />
+					<Add directory="/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit" />
+					<Add directory="/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit" />
+				</Linker>
+			</Target>
+			<Target title="ReleaseVimba">
+				<Option output="bin/Release/useTracker" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Option projectLinkerOptionsRelation="2" />
+				<Compiler>
+					<Add option="-march=corei7-avx" />
+					<Add option="-fexpensive-optimizations" />
+					<Add option="-O3" />
+					<Add option="-I /home/alex/usr/Vimba_1_3/" />
+					<Add option="-mfpmath=sse" />
+					<Add option="-pipe" />
+					<Add option="-fforce-addr" />
+					<Add option="-frerun-cse-after-loop" />
+					<Add option="-frerun-loop-opt" />
+					<Add option="-falign-functions=4" />
+					<Add option="-maccumulate-outgoing-args" />
+					<Add option="-ffast-math" />
+					<Add option="-fprefetch-loop-arrays" />
+					<Add option="-pthread" />
+					<Add option="-DVIMBA=1" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+					<Add option="-lVimbaCPP" />
+					<Add option="-lVimbaC" />
+					<Add option="-lAVTImageTransform" />
+					<Add option="-Wl,-rpath-link,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/" />
+					<Add option="-Wl,-rpath,/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit/" />
+					<Add option="-Wl,-rpath,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/" />
+					<Add directory="/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit" />
+					<Add directory="/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-std=c++11" />
+			<Add option="-Wall" />
+			<Add option="`wx-config --cflags all`" />
+			<Add option="`pkg-config --cflags opencv`" />
+			<Add option="-I ./" />
+			<Add option="-I ./plugins" />
+			<Add option="-I./capture" />
+			<Add option="-I./dialogs" />
+		</Compiler>
+		<Linker>
+			<Add option="`wx-config --libs all --gl-libs` -lGL -lGLU -lglut" />
+			<Add option="-lpthread" />
+			<Add option="`pkg-config --libs opencv`" />
+			<Add option="`pkg-config --libs libavcodec libavfilter libavformat libswscale libavutil`" />
+			<Add option="-ldl" />
+			<Add option="-lva" />
+			<Add option="-lbz2" />
+			<Add option="-lz" />
+			<Add option="-lm" />
+			<Add option="-lpng" />
+			<Add option="-lx264" />
+			<Add option="-lboost_program_options" />
+		</Linker>
+		<Unit filename="App.cpp" />
+		<Unit filename="App.h" />
+		<Unit filename="Background.cpp" />
+		<Unit filename="Background.h" />
+		<Unit filename="Capture.cpp" />
+		<Unit filename="Capture.h" />
+		<Unit filename="ImageProcessingEngine.cpp" />
+		<Unit filename="ImageProcessingEngine.h" />
+		<Unit filename="MainFrame.cpp" />
+		<Unit filename="MainFrame.h" />
+		<Unit filename="Parameters.cpp" />
+		<Unit filename="Parameters.h" />
+		<Unit filename="Pipeline.cpp" />
+		<Unit filename="Pipeline.h" />
+		<Unit filename="PipelinePlugin.h" />
+		<Unit filename="Utils.cpp" />
+		<Unit filename="Utils.h" />
+		<Unit filename="capture/CaptureAVTCamera.cpp" />
+		<Unit filename="capture/CaptureAVTCamera.h" />
+		<Unit filename="capture/CaptureImage.cpp" />
+		<Unit filename="capture/CaptureImage.h" />
+		<Unit filename="capture/CaptureUSBCamera.cpp" />
+		<Unit filename="capture/CaptureUSBCamera.h" />
+		<Unit filename="capture/CaptureVideo.cpp" />
+		<Unit filename="capture/CaptureVideo.h" />
+		<Unit filename="dialogs/DialogColorSegmentation.cpp" />
+		<Unit filename="dialogs/DialogColorSegmentation.h" />
+		<Unit filename="dialogs/DialogDilation.cpp" />
+		<Unit filename="dialogs/DialogDilation.h" />
+		<Unit filename="dialogs/DialogErosion.cpp" />
+		<Unit filename="dialogs/DialogErosion.h" />
+		<Unit filename="dialogs/DialogExtractBlobs.cpp" />
+		<Unit filename="dialogs/DialogExtractBlobs.h" />
+		<Unit filename="dialogs/DialogExtractMotion.cpp" />
+		<Unit filename="dialogs/DialogExtractMotion.h" />
+		<Unit filename="dialogs/DialogMovingAverage.cpp" />
+		<Unit filename="dialogs/DialogMovingAverage.h" />
+		<Unit filename="dialogs/DialogRecordPixels.cpp" />
+		<Unit filename="dialogs/DialogRecordPixels.h" />
+		<Unit filename="dialogs/DialogRecordVideo.cpp" />
+		<Unit filename="dialogs/DialogRecordVideo.h" />
+		<Unit filename="dialogs/DialogSafeErosion.cpp" />
+		<Unit filename="dialogs/DialogSafeErosion.h" />
+		<Unit filename="dialogs/DialogTracker.cpp" />
+		<Unit filename="dialogs/DialogTracker.h" />
+		<Unit filename="plugins/ColorSegmentation.cpp" />
+		<Unit filename="plugins/Dilation.cpp" />
+		<Unit filename="plugins/Erosion.cpp" />
+		<Unit filename="plugins/ExtractBlobs.cpp" />
+		<Unit filename="plugins/ExtractMotion.cpp" />
+		<Unit filename="plugins/ExtractSimpleTags.cpp" />
+		<Unit filename="plugins/FrameDifference.cpp" />
+		<Unit filename="plugins/GetBlobsAngles.cpp" />
+		<Unit filename="plugins/MovingAverage.cpp" />
+		<Unit filename="plugins/RecordPixels.cpp" />
+		<Unit filename="plugins/RecordVideo.cpp" />
+		<Unit filename="plugins/SafeErosion.cpp" />
+		<Unit filename="plugins/Tracker.cpp" />
+		<Unit filename="vimba/ApiController.cpp">
+			<Option target="DebugVimba" />
+			<Option target="ReleaseVimba" />
+		</Unit>
+		<Unit filename="vimba/CameraObserver.cpp">
+			<Option target="DebugVimba" />
+			<Option target="ReleaseVimba" />
+		</Unit>
+		<Unit filename="vimba/FrameObserver.cpp">
+			<Option target="DebugVimba" />
+			<Option target="ReleaseVimba" />
+		</Unit>
+		<Unit filename="wxsmith/DialogColorSegmentation.wxs" />
+		<Unit filename="wxsmith/DialogDilation.wxs" />
+		<Unit filename="wxsmith/DialogErosion.wxs" />
+		<Unit filename="wxsmith/DialogExtractBlobs.wxs" />
+		<Unit filename="wxsmith/DialogExtractMotion.wxs" />
+		<Unit filename="wxsmith/DialogMovingAverage.wxs" />
+		<Unit filename="wxsmith/DialogRecordPixels.wxs" />
+		<Unit filename="wxsmith/DialogRecordVideo.wxs" />
+		<Unit filename="wxsmith/DialogSafeErosion.wxs" />
+		<Unit filename="wxsmith/DialogTracker.wxs" />
+		<Unit filename="wxsmith/Mainframe.wxs" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<lib_finder disable_auto="1" />
+			<wxsmith version="1">
+				<gui name="wxWidgets" src="App.cpp" main="MainFrame" init_handlers="always" language="CPP" />
+				<resources>
+					<wxFrame wxs="wxsmith/Mainframe.wxs" src="MainFrame.cpp" hdr="MainFrame.h" fwddecl="0" i18n="1" name="MainFrame" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogErosion.wxs" src="dialogs/DialogErosion.cpp" hdr="dialogs/DialogErosion.h" fwddecl="0" i18n="1" name="DialogErosion" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogMovingAverage.wxs" src="dialogs/DialogMovingAverage.cpp" hdr="dialogs/DialogMovingAverage.h" fwddecl="0" i18n="1" name="DialogMovingAverage" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogSafeErosion.wxs" src="dialogs/DialogSafeErosion.cpp" hdr="dialogs/DialogSafeErosion.h" fwddecl="0" i18n="1" name="DialogSafeErosion" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogDilation.wxs" src="dialogs/DialogDilation.cpp" hdr="dialogs/DialogDilation.h" fwddecl="0" i18n="1" name="DialogDilation" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogColorSegmentation.wxs" src="dialogs/DialogColorSegmentation.cpp" hdr="dialogs/DialogColorSegmentation.h" fwddecl="0" i18n="1" name="DialogColorSegmentation" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogExtractMotion.wxs" src="dialogs/DialogExtractMotion.cpp" hdr="dialogs/DialogExtractMotion.h" fwddecl="0" i18n="1" name="DialogExtractMotion" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogExtractBlobs.wxs" src="dialogs/DialogExtractBlobs.cpp" hdr="dialogs/DialogExtractBlobs.h" fwddecl="0" i18n="1" name="DialogExtractBlobs" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogTracker.wxs" src="dialogs/DialogTracker.cpp" hdr="dialogs/DialogTracker.h" fwddecl="0" i18n="1" name="DialogTracker" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogRecordPixels.wxs" src="dialogs/DialogRecordPixels.cpp" hdr="dialogs/DialogRecordPixels.h" fwddecl="0" i18n="1" name="DialogRecordPixels" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogRecordVideo.wxs" src="dialogs/DialogRecordVideo.cpp" hdr="dialogs/DialogRecordVideo.h" fwddecl="0" i18n="1" name="DialogRecordVideo" language="CPP" />
+				</resources>
+			</wxsmith>
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
