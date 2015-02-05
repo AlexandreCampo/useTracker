@@ -15,24 +15,18 @@ public:
     cv::FileStorage file;
     cv::FileNode rootNode;
 
-    bool nogui;
+    bool nogui = false;
 
     std::string parametersFilename;
     std::string bgFilename;
     std::string inputVideoFilename;
     std::string zonesFilename;
-    int inputDevice;
+    int usbDevice = -1;
+    int avtDevice = -1;
+    
+    int startTime = -1;
+    int durationTime = -1;
 
-    int startTime;
-    int durationTime;
-
-    // todo move into simple tags
-    bool simpleTag;
-    float simpleTagWidth;
-    float simpleTagHeight;
-    float simpleTagMinBlobSize;
-
-    Parameters ();
     void loadXML (std::string filename);
     void parseCommandLine (int argc, char** argv);
 };

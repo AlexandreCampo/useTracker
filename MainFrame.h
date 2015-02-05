@@ -250,6 +250,8 @@ private:
     void AdjustOrthoAspectRatio(int w, int h);
     void UpdateUI();
 
+    void ResetImageProcessingEngine();
+
 // My members
 
     wxCheckListBox* ListBoxPipeline;

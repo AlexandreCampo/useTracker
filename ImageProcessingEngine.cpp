@@ -148,13 +148,17 @@ void ImageProcessingEngine::LoadXML(FileNode& fn)
     capture = nullptr;
 
     // priority to cmdline params
-if (!parameters.inputVideoFilename.empty())
-{
-capture = new CaptureVideo (parameters.inputVideoFilename);
-    }
-    else if (parameters.inputDevice >= 0)
+    if (!parameters.inputVideoFilename.empty())
     {
-	capture = new CaptureUSBCamera (parameters.inputDevice);
+	capture = new CaptureVideo (parameters.inputVideoFilename);
+    }
+    else if (parameters.usbDevice >= 0)
+    {
+	capture = new CaptureUSBCamera (parameters.usbDevice);
+    }
+    else if (parameters.avtDevice >= 0)
+    {
+	capture = new CaptureAVTCamera (parameters.avtDevice);
     }
 
     // read xml file

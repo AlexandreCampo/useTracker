@@ -12,22 +12,6 @@ namespace po = boost::program_options;
 // yes, this is a global variable...
 Parameters parameters;
 
-Parameters::Parameters ()
-{
-    // default values
-    parametersFilename = string();
-    inputVideoFilename = string();
-    inputDevice = -1;
-    bgFilename = string();
-    zonesFilename = string();
-
-    startTime = -1;
-    durationTime = -1;
-
-    nogui = false;
-}
-
-
 void Parameters::parseCommandLine (int argc, char** argv)
 {
     // Parse command line with lib boost
@@ -37,8 +21,8 @@ void Parameters::parseCommandLine (int argc, char** argv)
 	("nogui,n", "command line only, disable graphical interface")
 	("parameters,p", po::value<string>(), "configuration file with parameters in xml format")
 	("file,f", po::value<string>(), "use specified video file")
-	("device,d", po::value<int>(), "use specified USB camera device")
-	("avt,a", "use first AVT camera")
+	("usb,u", po::value<int>(), "use specified USB camera device")
+	("avt,a", po::value<int>(), "use specified AVT camera device")
 	("mask,m", po::value<string>(), "mask image for zones of interest filename")
 	("start,s", po::value<float>(), "start time of tracking")
 	("length,l", po::value<float>(), "length (duration) of tracking")
@@ -85,10 +69,16 @@ void Parameters::parseCommandLine (int argc, char** argv)
 	nogui = true;
     }
 
-    if (vm.count("device"))
+    if (vm.count("usb"))
     {
-	inputDevice = vm["device"].as<int>();
-	std::cout << "Using USB camera, device=" << inputDevice << " as data source" << std::endl;
+	usbDevice = vm["usb"].as<int>();
+	std::cout << "Using USB camera, device=" << usbDevice << " as data source" << std::endl;
+    }
+
+    if (vm.count("avt"))
+    {
+	avtDevice = vm["avt"].as<int>();
+	std::cout << "Using AVT camera, device=" << avtDevice << " as data source" << std::endl;
     }
 
     if (vm.count("file"))

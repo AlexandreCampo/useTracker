@@ -51,7 +51,7 @@ bool CaptureAVTCamera::Open (int device)
 	}
 	else
 	{
-	    err = cameras[0]->GetID(cameraID);
+	    err = cameras[device]->GetID(cameraID);
 	}
     }
     if (err == VmbErrorSuccess)

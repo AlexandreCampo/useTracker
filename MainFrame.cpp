@@ -458,11 +458,8 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_ALPHA | GLUT_DEPTH);
 
-//    ipEngine = new ImageProcessingEngine ();
-
     ipEngine.LoadXML (parameters.rootNode);
-    ipEngine.Reset(parameters);
-    UpdateUI();
+    ResetImageProcessingEngine();
 
     emptyFrame.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC3);
     hud.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
@@ -470,19 +467,6 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
 
     ipEngine.hud = hud;
     ipEngine.takeSnapshot = true;
-
-    // load plugins from XML
-    FileNode fn = parameters.rootNode["Pipeline"];
-    if (!fn.empty())
-    {
-	FileNodeIterator it = fn.begin(), it_end = fn.end();
-        for (; it != it_end; ++it)
-	{
-	    FileNode fn = *((*it).begin()); // ugly hack to go around duplicate key bug
-    	    string txt = CamelCaseToText(fn.name());
-    	    AddPipelinePlugin (txt, fn);
-	}
-    }
 
     // start at 1x speed
     playTimestep = (int)(1000.0 / ipEngine.capture->fps);
@@ -1545,33 +1529,8 @@ void MainFrame::OnMenuLoadSettingsSelected(wxCommandEvent& event)
 	ipEngine.capture->Stop();
 	play = false;
 
-//	parameters.loadXML (path.ToStdString());
-
 	ipEngine.LoadXML (parameters.rootNode);
-	ipEngine.Reset(parameters);
-	UpdateUI();
-
-	// clean UI pipeline
-	for (unsigned int i = 0; i < pipelineDialogs.size(); i++)
-	{
-	    delete pipelineDialogs[i];
-	}
-	pipelineDialogs.clear();
-	ListBoxPipeline->Clear();
-	ListBoxPipeline->Refresh();
-
-	// load XML params
-	FileNode fn = parameters.rootNode["Pipeline"];
-	if (!fn.empty())
-	{
-	    FileNodeIterator it = fn.begin(), it_end = fn.end();
-	    for (; it != it_end; ++it)
-	    {
-		FileNode fn = *((*it).begin()); // ugly hack to go around duplicate key bug
-		string txt = CamelCaseToText(fn.name());
-		AddPipelinePlugin (txt, fn);
-	    }
-	}
+	ResetImageProcessingEngine();
     }
 }
 
@@ -1585,6 +1544,10 @@ void MainFrame::OnMenuOpenAVTCamSelected(wxCommandEvent& event)
     videoSlider->SetValue(0);
     ipEngine.capture->Stop();
     play = false;
+
+    delete ipEngine.capture;
+    ipEngine.capture = new CaptureAVTCamera(0);
+    ResetImageProcessingEngine();
 }
 
 void MainFrame::OnMenuOpenUSBCamSelected(wxCommandEvent& event)
@@ -1599,31 +1562,8 @@ void MainFrame::OnMenuOpenUSBCamSelected(wxCommandEvent& event)
     // create new capture
     delete ipEngine.capture;
     ipEngine.capture = new CaptureUSBCamera(1);
-    ipEngine.Reset(parameters);
 
-    UpdateUI();
-    
-    // clean UI pipeline
-    for (unsigned int i = 0; i < pipelineDialogs.size(); i++)
-    {
-	delete pipelineDialogs[i];
-    }
-    pipelineDialogs.clear();
-    ListBoxPipeline->Clear();
-    ListBoxPipeline->Refresh();
-
-    // reset and reload plugins
-    FileNode fn = parameters.rootNode["Pipeline"];
-    if (!fn.empty())
-    {
-	FileNodeIterator it = fn.begin(), it_end = fn.end();
-        for (; it != it_end; ++it)
-	{
-	    FileNode fn = *((*it).begin()); // ugly hack to go around duplicate key bug
-    	    string txt = CamelCaseToText(fn.name());
-    	    AddPipelinePlugin (txt, fn);
-	}
-    }
+    ResetImageProcessingEngine();
 }
 
 void MainFrame::OnMenuOpenImageSelected(wxCommandEvent& event)
@@ -1638,31 +1578,8 @@ void MainFrame::OnMenuOpenImageSelected(wxCommandEvent& event)
     // create new capture
     delete ipEngine.capture;
     ipEngine.capture = new CaptureImage("test.png");
-    ipEngine.Reset(parameters);
 
-    UpdateUI();
-    
-    // clean UI pipeline
-    for (unsigned int i = 0; i < pipelineDialogs.size(); i++)
-    {
-	delete pipelineDialogs[i];
-    }
-    pipelineDialogs.clear();
-    ListBoxPipeline->Clear();
-    ListBoxPipeline->Refresh();
-
-    // reset and reload plugins
-    FileNode fn = parameters.rootNode["Pipeline"];
-    if (!fn.empty())
-    {
-	FileNodeIterator it = fn.begin(), it_end = fn.end();
-        for (; it != it_end; ++it)
-	{
-	    FileNode fn = *((*it).begin()); // ugly hack to go around duplicate key bug
-    	    string txt = CamelCaseToText(fn.name());
-    	    AddPipelinePlugin (txt, fn);
-	}
-    }
+    ResetImageProcessingEngine();
 }
 
 void MainFrame::OnMenuOpenVideoFileSelected(wxCommandEvent& event)
@@ -1677,31 +1594,8 @@ void MainFrame::OnMenuOpenVideoFileSelected(wxCommandEvent& event)
     // create new capture
     delete ipEngine.capture;
     ipEngine.capture = new CaptureVideo("video.mp4");
-    ipEngine.Reset(parameters);
 
-    UpdateUI();
-    
-    // clean UI pipeline
-    for (unsigned int i = 0; i < pipelineDialogs.size(); i++)
-    {
-	delete pipelineDialogs[i];
-    }
-    pipelineDialogs.clear();
-    ListBoxPipeline->Clear();
-    ListBoxPipeline->Refresh();
-
-    // reset and reload plugins
-    FileNode fn = parameters.rootNode["Pipeline"];
-    if (!fn.empty())
-    {
-	FileNodeIterator it = fn.begin(), it_end = fn.end();
-        for (; it != it_end; ++it)
-	{
-	    FileNode fn = *((*it).begin()); // ugly hack to go around duplicate key bug
-    	    string txt = CamelCaseToText(fn.name());
-    	    AddPipelinePlugin (txt, fn);
-	}
-    }
+    ResetImageProcessingEngine();
 }
 
 void MainFrame::OnGLCanvas1LeftDown(wxMouseEvent& event)
@@ -1992,4 +1886,32 @@ void MainFrame::UpdateUI ()
 	FilePickerCtrlZones->SetPath(parameters.zonesFilename);
     else
 	FilePickerCtrlZones->SetPath(ipEngine.zonesFilename);
+}
+
+void MainFrame::ResetImageProcessingEngine()
+{
+    ipEngine.Reset(parameters);
+    UpdateUI();
+    
+    // clean UI pipeline
+    for (unsigned int i = 0; i < pipelineDialogs.size(); i++)
+    {
+	delete pipelineDialogs[i];
+    }
+    pipelineDialogs.clear();
+    ListBoxPipeline->Clear();
+    ListBoxPipeline->Refresh();
+
+    // reset and reload plugins
+    FileNode fn = parameters.rootNode["Pipeline"];
+    if (!fn.empty())
+    {
+	FileNodeIterator it = fn.begin(), it_end = fn.end();
+        for (; it != it_end; ++it)
+	{
+	    FileNode fn = *((*it).begin()); // ugly hack to go around duplicate key bug
+    	    string txt = CamelCaseToText(fn.name());
+    	    AddPipelinePlugin (txt, fn);
+	}
+    }
 }
