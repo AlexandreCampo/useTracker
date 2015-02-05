@@ -5,6 +5,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <unistd.h>
 
 using namespace std;
 using namespace cv;
@@ -41,12 +42,21 @@ bool CaptureUSBCamera::Open (int device)
 	return false;
     }
 
-    // Get the properties from the camera
+    // Get the properties from the camera (can't get fps from opencv...)
+    source.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
+    source.set(CV_CAP_PROP_FRAME_HEIGHT, 1080);
+
+    usleep (500000);
+
+    double t1 = GetTime ();
+    for (int i = 0; i < 20; i++)
+	source >> frame;
+    double t2 = GetTime ();
+    fps = 20.0 / (t2 - t1);
+
     width = source.get(CV_CAP_PROP_FRAME_WIDTH);
     height = source.get(CV_CAP_PROP_FRAME_HEIGHT);
-    fps = source.get(CV_CAP_PROP_FPS);
-
-    cout << "detected w/h/fps " << width << " " << height << " " << fps << std::endl;
+    cout << "set to w/h/fps " << width << " " << height << " " << fps << std::endl;
 
     time = GetTime();
 

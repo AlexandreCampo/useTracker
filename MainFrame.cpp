@@ -1549,7 +1549,7 @@ void MainFrame::OnMenuLoadSettingsSelected(wxCommandEvent& event)
 
 	ipEngine.LoadXML (parameters.rootNode);
 	ipEngine.Reset(parameters);
-    UpdateUI();
+	UpdateUI();
 
 	// clean UI pipeline
 	for (unsigned int i = 0; i < pipelineDialogs.size(); i++)
@@ -1597,7 +1597,20 @@ void MainFrame::OnMenuOpenUSBCamSelected(wxCommandEvent& event)
     play = false;
 
     // create new capture
+    delete ipEngine.capture;
     ipEngine.capture = new CaptureUSBCamera(1);
+    ipEngine.Reset(parameters);
+
+    UpdateUI();
+    
+    // clean UI pipeline
+    for (unsigned int i = 0; i < pipelineDialogs.size(); i++)
+    {
+	delete pipelineDialogs[i];
+    }
+    pipelineDialogs.clear();
+    ListBoxPipeline->Clear();
+    ListBoxPipeline->Refresh();
 
     // reset and reload plugins
     FileNode fn = parameters.rootNode["Pipeline"];
@@ -1611,7 +1624,6 @@ void MainFrame::OnMenuOpenUSBCamSelected(wxCommandEvent& event)
     	    AddPipelinePlugin (txt, fn);
 	}
     }
-    ipEngine.Reset(parameters);
 }
 
 void MainFrame::OnMenuOpenImageSelected(wxCommandEvent& event)
@@ -1622,6 +1634,35 @@ void MainFrame::OnMenuOpenImageSelected(wxCommandEvent& event)
     videoSlider->SetValue(0);
     ipEngine.capture->Stop();
     play = false;
+
+    // create new capture
+    delete ipEngine.capture;
+    ipEngine.capture = new CaptureImage("test.png");
+    ipEngine.Reset(parameters);
+
+    UpdateUI();
+    
+    // clean UI pipeline
+    for (unsigned int i = 0; i < pipelineDialogs.size(); i++)
+    {
+	delete pipelineDialogs[i];
+    }
+    pipelineDialogs.clear();
+    ListBoxPipeline->Clear();
+    ListBoxPipeline->Refresh();
+
+    // reset and reload plugins
+    FileNode fn = parameters.rootNode["Pipeline"];
+    if (!fn.empty())
+    {
+	FileNodeIterator it = fn.begin(), it_end = fn.end();
+        for (; it != it_end; ++it)
+	{
+	    FileNode fn = *((*it).begin()); // ugly hack to go around duplicate key bug
+    	    string txt = CamelCaseToText(fn.name());
+    	    AddPipelinePlugin (txt, fn);
+	}
+    }
 }
 
 void MainFrame::OnMenuOpenVideoFileSelected(wxCommandEvent& event)
@@ -1634,7 +1675,20 @@ void MainFrame::OnMenuOpenVideoFileSelected(wxCommandEvent& event)
     play = false;
 
     // create new capture
-    ipEngine.capture = new CaptureVideo("../video.mp4");
+    delete ipEngine.capture;
+    ipEngine.capture = new CaptureVideo("video.mp4");
+    ipEngine.Reset(parameters);
+
+    UpdateUI();
+    
+    // clean UI pipeline
+    for (unsigned int i = 0; i < pipelineDialogs.size(); i++)
+    {
+	delete pipelineDialogs[i];
+    }
+    pipelineDialogs.clear();
+    ListBoxPipeline->Clear();
+    ListBoxPipeline->Refresh();
 
     // reset and reload plugins
     FileNode fn = parameters.rootNode["Pipeline"];
@@ -1648,7 +1702,6 @@ void MainFrame::OnMenuOpenVideoFileSelected(wxCommandEvent& event)
     	    AddPipelinePlugin (txt, fn);
 	}
     }
-    ipEngine.Reset(parameters);
 }
 
 void MainFrame::OnGLCanvas1LeftDown(wxMouseEvent& event)

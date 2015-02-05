@@ -46,7 +46,7 @@
 					<Add option="-s" />
 				</Linker>
 			</Target>
-			<Target title="DebugVimba">
+			<Target title="VimbaDebug">
 				<Option output="bin/Debug/useTracker" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Debug/" />
 				<Option type="0" />
@@ -71,7 +71,7 @@
 					<Add directory="/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit" />
 				</Linker>
 			</Target>
-			<Target title="ReleaseVimba">
+			<Target title="VimbaRelease">
 				<Option output="bin/Release/useTracker" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release/" />
 				<Option type="0" />
@@ -190,16 +190,16 @@
 		<Unit filename="plugins/SafeErosion.cpp" />
 		<Unit filename="plugins/Tracker.cpp" />
 		<Unit filename="vimba/ApiController.cpp">
-			<Option target="DebugVimba" />
-			<Option target="ReleaseVimba" />
+			<Option target="VimbaDebug" />
+			<Option target="VimbaRelease" />
 		</Unit>
 		<Unit filename="vimba/CameraObserver.cpp">
-			<Option target="DebugVimba" />
-			<Option target="ReleaseVimba" />
+			<Option target="VimbaDebug" />
+			<Option target="VimbaRelease" />
 		</Unit>
 		<Unit filename="vimba/FrameObserver.cpp">
-			<Option target="DebugVimba" />
-			<Option target="ReleaseVimba" />
+			<Option target="VimbaDebug" />
+			<Option target="VimbaRelease" />
 		</Unit>
 		<Unit filename="wxsmith/DialogColorSegmentation.wxs" />
 		<Unit filename="wxsmith/DialogDilation.wxs" />
