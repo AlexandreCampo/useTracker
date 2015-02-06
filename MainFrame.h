@@ -92,10 +92,6 @@ private:
     void OnbuttonHudClick(wxCommandEvent& event);
     void OnMenuLoadSettingsSelected(wxCommandEvent& event);
     void OnMenuSaveSettingsSelected(wxCommandEvent& event);
-    void OnMenuOpenAVTCamSelected(wxCommandEvent& event);
-    void OnMenuOpenUSBCamSelected(wxCommandEvent& event);
-    void OnMenuOpenImageSelected(wxCommandEvent& event);
-    void OnMenuOpenVideoFileSelected(wxCommandEvent& event);
     void OnGLCanvas1LeftDown(wxMouseEvent& event);
     void OnGLCanvas1LeftUp(wxMouseEvent& event);
     void OnGLCanvas1MouseMove(wxMouseEvent& event);
@@ -114,6 +110,7 @@ private:
     void OnSpinCtrlBgStartChange(wxSpinEvent& event);
     void OnCheckBoxRecalculateClick(wxCommandEvent& event);
     void OnRadioBoxMethodSelect(wxCommandEvent& event);
+    void OnMenuOpenCaptureSelected(wxCommandEvent& event);
     //*)
 
     //(*Identifiers(MainFrame)
@@ -158,10 +155,7 @@ private:
     static const long ID_FILEPICKERCTRL1;
     static const long ID_SCROLLEDWINDOW4;
     static const long ID_NOTEBOOK1;
-    static const long idMenuOpenVideo;
     static const long ID_MENUITEM1;
-    static const long idMenuOpenCaptureDevice;
-    static const long ID_MENUITEM2;
     static const long idMeuLoadSettings;
     static const long idMenuSaveSettings;
     static const long idMenuQuit;
@@ -179,11 +173,8 @@ private:
     wxScrolledWindow* ConfigTab;
     wxSpinCtrl* SpinCtrlDuration;
     wxBitmapButton* buttonPlay;
-    wxMenuItem* MenuOpenImage;
     wxBitmapButton* buttonForward;
     wxButton* ButtonBgRecalculate;
-    wxMenuItem* MenuOpenVideoFile;
-    wxMenuItem* MenuOpenUSBCam;
     wxMenuItem* MenuSaveSettings;
     wxBitmapButton* buttonStepBackwards;
     wxScrolledWindow* BackgroundTab;
@@ -193,7 +184,6 @@ private:
     wxSpinCtrl* SpinCtrlTimestep;
     wxStaticText* StaticText3;
     wxButton* ButtonBgLoad;
-    wxMenuItem* MenuOpenAVTCam;
     wxRadioBox* RadioBoxMethod;
     wxStaticLine* StaticLine1;
     wxGLCanvas* GLCanvas1;
@@ -214,6 +204,7 @@ private:
     wxStaticBitmap* StaticBitmap3;
     wxStaticBitmap* StaticBitmap1;
     wxStaticText* StaticText6;
+    wxMenuItem* MenuOpenCapture;
     wxMenuItem* MenuLoadSettings;
     wxFilePickerCtrl* FilePickerCtrlZones;
     wxBitmapButton* buttonOutput;

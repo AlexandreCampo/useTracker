@@ -474,29 +474,20 @@
 		<object class="wxMenuBar" variable="MenuBar1" member="no">
 			<object class="wxMenu" variable="Menu1" member="no">
 				<label>&amp;File</label>
-				<object class="wxMenuItem" name="idMenuOpenVideo" variable="MenuOpenVideoFile" member="yes">
-					<label>Open video file</label>
-					<handler function="OnMenuOpenVideoFileSelected" entry="EVT_MENU" />
-				</object>
-				<object class="wxMenuItem" name="ID_MENUITEM1" variable="MenuOpenImage" member="yes">
-					<label>Open image</label>
-					<handler function="OnMenuOpenImageSelected" entry="EVT_MENU" />
-				</object>
-				<object class="wxMenuItem" name="idMenuOpenCaptureDevice" variable="MenuOpenUSBCam" member="yes">
-					<label>Open USB camera</label>
-					<handler function="OnMenuOpenUSBCamSelected" entry="EVT_MENU" />
-				</object>
-				<object class="wxMenuItem" name="ID_MENUITEM2" variable="MenuOpenAVTCam" member="yes">
-					<label>Open AVT camera</label>
-					<handler function="OnMenuOpenAVTCamSelected" entry="EVT_MENU" />
+				<object class="wxMenuItem" name="ID_MENUITEM1" variable="MenuOpenCapture" member="yes">
+					<label>Open source</label>
+					<accel>Ctrl+O</accel>
+					<handler function="OnMenuOpenCaptureSelected" entry="EVT_MENU" />
 				</object>
 				<object class="break" />
 				<object class="wxMenuItem" name="idMeuLoadSettings" variable="MenuLoadSettings" member="yes">
 					<label>Load settings</label>
+					<accel>Ctrl+L</accel>
 					<handler function="OnMenuLoadSettingsSelected" entry="EVT_MENU" />
 				</object>
 				<object class="wxMenuItem" name="idMenuSaveSettings" variable="MenuSaveSettings" member="yes">
 					<label>Save settings</label>
+					<accel>Ctrl+S</accel>
 					<handler function="OnMenuSaveSettingsSelected" entry="EVT_MENU" />
 				</object>
 				<object class="break" />

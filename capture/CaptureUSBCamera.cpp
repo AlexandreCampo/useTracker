@@ -12,15 +12,15 @@ using namespace cv;
 
 CaptureUSBCamera::CaptureUSBCamera(int device) : Capture()
 {
-    Open(device);
-    type = USB_CAMERA;
+    if (Open(device))
+	type = USB_CAMERA;
 }
 
 CaptureUSBCamera::CaptureUSBCamera(FileNode& fn) : Capture()
 {
     LoadXML(fn);
-    Open(device);
-    type = USB_CAMERA;
+    if (Open(device))
+	type = USB_CAMERA;
 }
 
 CaptureUSBCamera::~CaptureUSBCamera()

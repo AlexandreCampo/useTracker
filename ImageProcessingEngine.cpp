@@ -37,6 +37,7 @@ using namespace std;
 #include "CaptureVideo.h"
 #include "CaptureImage.h"
 #include "CaptureUSBCamera.h"
+#include "CaptureDefault.h"
 #ifdef VIMBA
 #include "CaptureAVTCamera.h"
 #endif // VIMBA
@@ -70,6 +71,13 @@ ImageProcessingEngine::~ImageProcessingEngine ()
 
 void ImageProcessingEngine::Reset(Parameters& parameters)
 {
+    // no capture is a fatal error...
+    if (!capture)
+    {
+	cerr << "Fatal error: no capture source defined. Exiting." << endl;
+	exit (-1);
+    }
+
     // get background pic
     if (parameters.bgFilename.empty() && bgRecalculate && capture->type != Capture::IMAGE)
     {
@@ -188,8 +196,6 @@ void ImageProcessingEngine::LoadXML(FileNode& fn)
 		    capture = new CaptureAVTCamera(fn2);
 		}
 #endif // VIMBA
-
-//		capture->LoadXML(fn2);
 	    }
 	}
 
@@ -202,7 +208,7 @@ void ImageProcessingEngine::LoadXML(FileNode& fn)
 	bgFrames = (int)fn["BackgroundFrames"];
 	bgEndTime = (int)fn["BackgroundEndTime"];
 	bgStartTime = (int)fn["BackgroundStartTime"];
-	
+
 	string bt = (string)fn["BackgroundCalcType"];
 	if (bt == "median") bgCalcType = BG_MEDIAN;
 	else if (bt == "mean") bgCalcType = BG_MEAN;

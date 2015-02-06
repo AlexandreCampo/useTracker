@@ -19,15 +19,15 @@ using namespace cv;
 
 CaptureAVTCamera::CaptureAVTCamera(int device) : Capture()
 {
-    Open(device);
-    type = AVT_CAMERA;
+    if (Open(device))
+	type = AVT_CAMERA;
 }
 
 CaptureAVTCamera::CaptureAVTCamera(FileNode& fn) : Capture()
 {
     LoadXML(fn);
-    Open(device);
-    type = AVT_CAMERA;
+    if (Open(device))
+	type = AVT_CAMERA;
 }
 
 CaptureAVTCamera::~CaptureAVTCamera()
@@ -57,24 +57,14 @@ bool CaptureAVTCamera::Open (int device)
     if (err == VmbErrorSuccess)
     {
 	std::cout<<"Opening camera with ID: "<< cameraID <<"\n";
-
 	err = vimbaApiController.StartContinuousImageAcquisition(cameraID);
-
-	if (err == VmbErrorSuccess)
-	{
-	    // std::cout<< "Press <enter> to stop aquision...\n" ;
-	    // getchar();
-
-	    // vimbaApiController.StopContinuousImageAcquisition();
-	}
     }
 
     if (err != VmbErrorSuccess)
     {
     	std::string strError = vimbaApiController.ErrorCodeToMessage( err );
     	std::cout<<"\nAn error occured:"<<strError<<"\n";
-
-	exit(-1);
+	return false;
     }
 
     // Get the properties from the camera
@@ -109,7 +99,7 @@ bool CaptureAVTCamera::Open (int device)
     // cameraSource >> frame;
     frame = Mat (height, width, CV_8UC3);
 
-    type = AVT_CAMERA;
+    return (!frame.empty());
 }
 
 void CaptureAVTCamera::Close ()

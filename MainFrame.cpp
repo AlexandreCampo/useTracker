@@ -43,12 +43,14 @@
 #include "DialogTracker.h"
 #include "DialogRecordVideo.h"
 #include "DialogRecordPixels.h"
+#include "DialogOpenCapture.h"
 
 #include "Utils.h"
 #include "CaptureVideo.h"
 #include "CaptureUSBCamera.h"
 #include "CaptureImage.h"
 #include "CaptureAVTCamera.h"
+#include "CaptureDefault.h"
 #include "Tracker.h"
 
 #include "Pipeline.h"
@@ -124,10 +126,7 @@ const long MainFrame::ID_SPINCTRL8 = wxNewId();
 const long MainFrame::ID_FILEPICKERCTRL1 = wxNewId();
 const long MainFrame::ID_SCROLLEDWINDOW4 = wxNewId();
 const long MainFrame::ID_NOTEBOOK1 = wxNewId();
-const long MainFrame::idMenuOpenVideo = wxNewId();
 const long MainFrame::ID_MENUITEM1 = wxNewId();
-const long MainFrame::idMenuOpenCaptureDevice = wxNewId();
-const long MainFrame::ID_MENUITEM2 = wxNewId();
 const long MainFrame::idMeuLoadSettings = wxNewId();
 const long MainFrame::idMenuSaveSettings = wxNewId();
 const long MainFrame::idMenuQuit = wxNewId();
@@ -314,18 +313,12 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     SetSizer(FlexGridSizer1);
     MenuBar1 = new wxMenuBar();
     Menu1 = new wxMenu();
-    MenuOpenVideoFile = new wxMenuItem(Menu1, idMenuOpenVideo, _("Open video file"), wxEmptyString, wxITEM_NORMAL);
-    Menu1->Append(MenuOpenVideoFile);
-    MenuOpenImage = new wxMenuItem(Menu1, ID_MENUITEM1, _("Open image"), wxEmptyString, wxITEM_NORMAL);
-    Menu1->Append(MenuOpenImage);
-    MenuOpenUSBCam = new wxMenuItem(Menu1, idMenuOpenCaptureDevice, _("Open USB camera"), wxEmptyString, wxITEM_NORMAL);
-    Menu1->Append(MenuOpenUSBCam);
-    MenuOpenAVTCam = new wxMenuItem(Menu1, ID_MENUITEM2, _("Open AVT camera"), wxEmptyString, wxITEM_NORMAL);
-    Menu1->Append(MenuOpenAVTCam);
+    MenuOpenCapture = new wxMenuItem(Menu1, ID_MENUITEM1, _("Open source\tCtrl+O"), wxEmptyString, wxITEM_NORMAL);
+    Menu1->Append(MenuOpenCapture);
     Menu1->Break();
-    MenuLoadSettings = new wxMenuItem(Menu1, idMeuLoadSettings, _("Load settings"), wxEmptyString, wxITEM_NORMAL);
+    MenuLoadSettings = new wxMenuItem(Menu1, idMeuLoadSettings, _("Load settings\tCtrl+L"), wxEmptyString, wxITEM_NORMAL);
     Menu1->Append(MenuLoadSettings);
-    MenuSaveSettings = new wxMenuItem(Menu1, idMenuSaveSettings, _("Save settings"), wxEmptyString, wxITEM_NORMAL);
+    MenuSaveSettings = new wxMenuItem(Menu1, idMenuSaveSettings, _("Save settings\tCtrl+S"), wxEmptyString, wxITEM_NORMAL);
     Menu1->Append(MenuSaveSettings);
     Menu1->Break();
     MenuItem1 = new wxMenuItem(Menu1, idMenuQuit, _("Quit\tAlt-F4"), _("Quit the application"), wxITEM_NORMAL);
@@ -372,10 +365,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     Connect(ID_SPINCTRL8,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlTimestepChange);
     Connect(ID_FILEPICKERCTRL1,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&MainFrame::OnFilePickerCtrlZonesFileChanged);
     Connect(ID_NOTEBOOK1,wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED,(wxObjectEventFunction)&MainFrame::OnNotebook1PageChanged);
-    Connect(idMenuOpenVideo,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnMenuOpenVideoFileSelected);
-    Connect(ID_MENUITEM1,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnMenuOpenImageSelected);
-    Connect(idMenuOpenCaptureDevice,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnMenuOpenUSBCamSelected);
-    Connect(ID_MENUITEM2,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnMenuOpenAVTCamSelected);
+    Connect(ID_MENUITEM1,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnMenuOpenCaptureSelected);
     Connect(idMeuLoadSettings,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnMenuLoadSettingsSelected);
     Connect(idMenuSaveSettings,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnMenuSaveSettingsSelected);
     Connect(idMenuQuit,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnQuit);
@@ -459,6 +449,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_ALPHA | GLUT_DEPTH);
 
     ipEngine.LoadXML (parameters.rootNode);
+    if (!ipEngine.capture) ipEngine.capture = new CaptureDefault();
     ResetImageProcessingEngine();
 
     emptyFrame.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC3);
@@ -1534,70 +1525,6 @@ void MainFrame::OnMenuLoadSettingsSelected(wxCommandEvent& event)
     }
 }
 
-
-
-void MainFrame::OnMenuOpenAVTCamSelected(wxCommandEvent& event)
-{
-    // press stop...
-    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-media-playback-start-icon (1).png"))));
-    buttonPlay->Refresh();
-    videoSlider->SetValue(0);
-    ipEngine.capture->Stop();
-    play = false;
-
-    delete ipEngine.capture;
-    ipEngine.capture = new CaptureAVTCamera(0);
-    ResetImageProcessingEngine();
-}
-
-void MainFrame::OnMenuOpenUSBCamSelected(wxCommandEvent& event)
-{
-    // press stop...
-    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-media-playback-start-icon (1).png"))));
-    buttonPlay->Refresh();
-    videoSlider->SetValue(0);
-    ipEngine.capture->Stop();
-    play = false;
-
-    // create new capture
-    delete ipEngine.capture;
-    ipEngine.capture = new CaptureUSBCamera(1);
-
-    ResetImageProcessingEngine();
-}
-
-void MainFrame::OnMenuOpenImageSelected(wxCommandEvent& event)
-{
-    // press stop...
-    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-media-playback-start-icon (1).png"))));
-    buttonPlay->Refresh();
-    videoSlider->SetValue(0);
-    ipEngine.capture->Stop();
-    play = false;
-
-    // create new capture
-    delete ipEngine.capture;
-    ipEngine.capture = new CaptureImage("test.png");
-
-    ResetImageProcessingEngine();
-}
-
-void MainFrame::OnMenuOpenVideoFileSelected(wxCommandEvent& event)
-{
-    // press stop...
-    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-media-playback-start-icon (1).png"))));
-    buttonPlay->Refresh();
-    videoSlider->SetValue(0);
-    ipEngine.capture->Stop();
-    play = false;
-
-    // create new capture
-    delete ipEngine.capture;
-    ipEngine.capture = new CaptureVideo("video.mp4");
-
-    ResetImageProcessingEngine();
-}
-
 void MainFrame::OnGLCanvas1LeftDown(wxMouseEvent& event)
 {
     scrollRegisteredDown = true;
@@ -1892,7 +1819,7 @@ void MainFrame::ResetImageProcessingEngine()
 {
     ipEngine.Reset(parameters);
     UpdateUI();
-    
+
     // clean UI pipeline
     for (unsigned int i = 0; i < pipelineDialogs.size(); i++)
     {
@@ -1913,5 +1840,43 @@ void MainFrame::ResetImageProcessingEngine()
     	    string txt = CamelCaseToText(fn.name());
     	    AddPipelinePlugin (txt, fn);
 	}
+    }
+}
+
+void MainFrame::OnMenuOpenCaptureSelected(wxCommandEvent& event)
+{
+    // press stop...
+    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-media-playback-start-icon (1).png"))));
+    buttonPlay->Refresh();
+    videoSlider->SetValue(0);
+    ipEngine.capture->Stop();
+    play = false;
+
+    while (1)
+    {
+	// show dialog
+	DialogOpenCapture dialog(this);
+
+	// use capture if possible
+	if (dialog.ShowModal() == wxID_OK)
+	{
+	    if (dialog.capture->type != Capture::NONE)
+	    {
+		delete ipEngine.capture;
+		ipEngine.capture = dialog.capture;
+		ResetImageProcessingEngine();
+		AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+		GLCanvas1->Refresh();
+		break;
+	    }
+	    else
+	    {
+		wxMessageBox( wxT("Could not open this source, please select another one."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
+
+		// the capture object was created by dialog and won't be deleted there
+		delete dialog.capture;
+	    }
+	}
+	else break;
     }
 }

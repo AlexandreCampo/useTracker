@@ -25,7 +25,7 @@ DialogRecordPixels::DialogRecordPixels(wxWindow* parent,wxWindowID id,const wxPo
 	wxStaticBoxSizer* StaticBoxSizer1;
 
 	Create(parent, id, _("Record pixels"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE, _T("id"));
-	SetClientSize(wxSize(369,163));
+	SetClientSize(wxSize(-1,-1));
 	Move(wxDefaultPosition);
 	FlexGridSizer1 = new wxFlexGridSizer(0, 1, 0, 0);
 	FlexGridSizer1->AddGrowableCol(0);

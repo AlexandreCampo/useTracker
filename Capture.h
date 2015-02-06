@@ -9,8 +9,8 @@ struct Capture
     // members
     // ------------------------------------
 
-    enum Type {IMAGE, VIDEO, USB_CAMERA, AVT_CAMERA};
-    Type type = IMAGE;
+    enum Type {NONE, IMAGE, VIDEO, USB_CAMERA, AVT_CAMERA};
+    Type type = NONE;
 
     // time management
     double systime;

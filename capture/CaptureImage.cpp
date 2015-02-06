@@ -6,15 +6,15 @@ using namespace cv;
 
 CaptureImage::CaptureImage(string filename) : Capture()
 {
-    Open(filename);
-    type = IMAGE;
+    if (Open(filename))
+	type = IMAGE;
 }
 
 CaptureImage::CaptureImage(FileNode& fn) : Capture()
 {
     LoadXML(fn);
-    Open(filename);
-    type = IMAGE;
+    if (Open(filename))
+	type = IMAGE;
 }
 
 CaptureImage::~CaptureImage()
@@ -26,6 +26,10 @@ bool CaptureImage::Open (string filename)
 {
     this->filename = filename;
     frame = imread (filename.c_str());
+
+    width = frame.cols;
+    height = frame.rows;
+    fps = 1;
 
 //    SetTime(startTime);
 

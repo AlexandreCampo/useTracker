@@ -168,6 +168,8 @@
 		<Unit filename="dialogs/DialogExtractMotion.h" />
 		<Unit filename="dialogs/DialogMovingAverage.cpp" />
 		<Unit filename="dialogs/DialogMovingAverage.h" />
+		<Unit filename="dialogs/DialogOpenCapture.cpp" />
+		<Unit filename="dialogs/DialogOpenCapture.h" />
 		<Unit filename="dialogs/DialogRecordPixels.cpp" />
 		<Unit filename="dialogs/DialogRecordPixels.h" />
 		<Unit filename="dialogs/DialogRecordVideo.cpp" />
@@ -207,6 +209,7 @@
 		<Unit filename="wxsmith/DialogExtractBlobs.wxs" />
 		<Unit filename="wxsmith/DialogExtractMotion.wxs" />
 		<Unit filename="wxsmith/DialogMovingAverage.wxs" />
+		<Unit filename="wxsmith/DialogOpenCapture.wxs" />
 		<Unit filename="wxsmith/DialogRecordPixels.wxs" />
 		<Unit filename="wxsmith/DialogRecordVideo.wxs" />
 		<Unit filename="wxsmith/DialogSafeErosion.wxs" />
@@ -230,6 +233,7 @@
 					<wxDialog wxs="wxsmith/DialogTracker.wxs" src="dialogs/DialogTracker.cpp" hdr="dialogs/DialogTracker.h" fwddecl="0" i18n="1" name="DialogTracker" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogRecordPixels.wxs" src="dialogs/DialogRecordPixels.cpp" hdr="dialogs/DialogRecordPixels.h" fwddecl="0" i18n="1" name="DialogRecordPixels" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogRecordVideo.wxs" src="dialogs/DialogRecordVideo.cpp" hdr="dialogs/DialogRecordVideo.h" fwddecl="0" i18n="1" name="DialogRecordVideo" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogOpenCapture.wxs" src="dialogs/DialogOpenCapture.cpp" hdr="dialogs/DialogOpenCapture.h" fwddecl="0" i18n="1" name="DialogOpenCapture" language="CPP" />
 				</resources>
 			</wxsmith>
 			<debugger />

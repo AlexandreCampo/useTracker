@@ -9,15 +9,15 @@ using namespace cv;
 
 CaptureVideo::CaptureVideo(string filename) : Capture()
 {
-    Open (filename);
-    type = VIDEO;
+    if (Open (filename))
+	type = VIDEO;
 }
 
 CaptureVideo::CaptureVideo(FileNode& fn) : Capture()
 {
     LoadXML (fn);
-    Open (filename);
-    type = VIDEO;
+    if (Open (filename))
+	type = VIDEO;
 }
 
 CaptureVideo::~CaptureVideo()
