@@ -91,6 +91,10 @@ class DialogOpenCapture: public wxDialog
 		void OnButtonAVTCancelClick(wxCommandEvent& event);
 		void OnKeyDown(wxKeyEvent& event);
 		void OnChar(wxKeyEvent& event);
+		void OnNotebook1PageChanged(wxNotebookEvent& event);
+		void OnFilePickerCtrlImageFileChanged(wxFileDirPickerEvent& event);
+		void OnSpinCtrlAVTDeviceChange(wxSpinEvent& event);
+		void OnSpinCtrlUSBDeviceChange(wxSpinEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

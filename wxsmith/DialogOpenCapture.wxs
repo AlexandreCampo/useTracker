@@ -5,8 +5,6 @@
 		<minsize>-1,-1</minsize>
 		<maxsize>-1,-1</maxsize>
 		<id_arg>0</id_arg>
-		<handler function="OnKeyDown" entry="EVT_KEY_DOWN" />
-		<handler function="OnChar" entry="EVT_CHAR" />
 		<object class="wxNotebook" name="ID_NOTEBOOK1" variable="Notebook1" member="yes">
 			<pos>208,176</pos>
 			<minsize>-1,-1</minsize>
@@ -27,6 +25,7 @@
 									<object class="wxFilePickerCtrl" name="ID_FILEPICKERCTRL1" variable="FilePickerCtrlVideo" member="yes">
 										<message></message>
 										<wildcard></wildcard>
+										<focused>1</focused>
 										<style>wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL</style>
 										<handler function="OnFilePickerCtrlVideoFileChanged" entry="EVT_FILEPICKER_CHANGED" />
 									</object>
@@ -116,6 +115,7 @@
 								<object class="sizeritem">
 									<object class="wxButton" name="ID_BUTTON4" variable="ButtonUSBOk" member="yes">
 										<label>Ok</label>
+										<focused>1</focused>
 										<handler function="OnButtonUSBOkClick" entry="EVT_BUTTON" />
 									</object>
 									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
@@ -178,6 +178,7 @@
 								<object class="sizeritem">
 									<object class="wxButton" name="ID_BUTTON6" variable="ButtonAVTOk" member="yes">
 										<label>Ok</label>
+										<focused>1</focused>
 										<handler function="OnButtonAVTOkClick" entry="EVT_BUTTON" />
 									</object>
 									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
@@ -208,7 +209,9 @@
 									<object class="wxFilePickerCtrl" name="ID_FILEPICKERCTRL2" variable="FilePickerCtrlImage" member="yes">
 										<message></message>
 										<wildcard></wildcard>
+										<focused>1</focused>
 										<style>wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL</style>
+										<handler function="OnFilePickerCtrlImageFileChanged" entry="EVT_FILEPICKER_CHANGED" />
 									</object>
 									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 									<border>5</border>

@@ -5,7 +5,6 @@
 		<size>-1,-1</size>
 		<pos_arg>1</pos_arg>
 		<size_arg>1</size_arg>
-		<handler function="OnKeyDown" entry="EVT_KEY_DOWN" />
 		<object class="wxFlexGridSizer" variable="FlexGridSizer1" member="no">
 			<cols>1</cols>
 			<growablecols>0</growablecols>

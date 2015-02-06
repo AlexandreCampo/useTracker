@@ -5,6 +5,8 @@
 #include <wx/intl.h>
 //*)
 
+#include <iostream>
+
 //(*IdInit(DialogOpenCapture)
 const long DialogOpenCapture::ID_FILEPICKERCTRL1 = wxNewId();
 const long DialogOpenCapture::ID_BUTTON1 = wxNewId();
@@ -61,6 +63,7 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	FlexGridSizer1->AddGrowableCol(0);
 	StaticBoxSizer1 = new wxStaticBoxSizer(wxHORIZONTAL, PanelVideo, _("Select source"));
 	FilePickerCtrlVideo = new wxFilePickerCtrl(PanelVideo, ID_FILEPICKERCTRL1, wxEmptyString, wxEmptyString, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
+	FilePickerCtrlVideo->SetFocus();
 	StaticBoxSizer1->Add(FilePickerCtrlVideo, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer1->Add(StaticBoxSizer1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer2 = new wxFlexGridSizer(0, 3, 0, 0);
@@ -88,6 +91,7 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	ButtonUSBCancel = new wxButton(PanelUSB, ID_BUTTON3, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON3"));
 	FlexGridSizer4->Add(ButtonUSBCancel, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	ButtonUSBOk = new wxButton(PanelUSB, ID_BUTTON4, _("Ok"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON4"));
+	ButtonUSBOk->SetFocus();
 	FlexGridSizer4->Add(ButtonUSBOk, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer3->Add(FlexGridSizer4, 1, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
 	PanelUSB->SetSizer(FlexGridSizer3);
@@ -109,6 +113,7 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	ButtonAVTCancel = new wxButton(PanelAVT, ID_BUTTON5, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON5"));
 	FlexGridSizer6->Add(ButtonAVTCancel, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	ButtonAVTOk = new wxButton(PanelAVT, ID_BUTTON6, _("Ok"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON6"));
+	ButtonAVTOk->SetFocus();
 	FlexGridSizer6->Add(ButtonAVTOk, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer5->Add(FlexGridSizer6, 1, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
 	PanelAVT->SetSizer(FlexGridSizer5);
@@ -121,6 +126,7 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	FlexGridSizer7->AddGrowableCol(0);
 	StaticBoxSizer4 = new wxStaticBoxSizer(wxHORIZONTAL, PanelImage, _("Select source"));
 	FilePickerCtrlImage = new wxFilePickerCtrl(PanelImage, ID_FILEPICKERCTRL2, wxEmptyString, wxEmptyString, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL2"));
+	FilePickerCtrlImage->SetFocus();
 	StaticBoxSizer4->Add(FilePickerCtrlImage, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer7->Add(StaticBoxSizer4, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer8 = new wxFlexGridSizer(0, 3, 0, 0);
@@ -144,10 +150,9 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	Connect(ID_BUTTON4,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonUSBOkClick);
 	Connect(ID_BUTTON5,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonAVTCancelClick);
 	Connect(ID_BUTTON6,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonAVTOkClick);
+	Connect(ID_FILEPICKERCTRL2,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&DialogOpenCapture::OnFilePickerCtrlImageFileChanged);
 	Connect(ID_BUTTON7,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonImageCancelClick);
 	Connect(ID_BUTTON8,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonImageOkClick);
-	Connect(wxEVT_KEY_DOWN,(wxObjectEventFunction)&DialogOpenCapture::OnKeyDown);
-	Connect(wxEVT_CHAR,(wxObjectEventFunction)&DialogOpenCapture::OnChar);
 	//*)
 
 	// try to improve notebook layout
@@ -164,6 +169,7 @@ DialogOpenCapture::~DialogOpenCapture()
 
 void DialogOpenCapture::OnFilePickerCtrlVideoFileChanged(wxFileDirPickerEvent& event)
 {
+    ButtonVideoOk->SetFocus();
 }
 
 void DialogOpenCapture::OnButtonVideoCancelClick(wxCommandEvent& event)
@@ -210,3 +216,7 @@ void DialogOpenCapture::OnButtonAVTCancelClick(wxCommandEvent& event)
     EndModal(wxID_CANCEL);
 }
 
+void DialogOpenCapture::OnFilePickerCtrlImageFileChanged(wxFileDirPickerEvent& event)
+{
+    ButtonImageOk->SetFocus();
+}

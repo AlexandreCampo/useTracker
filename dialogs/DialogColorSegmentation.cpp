@@ -55,7 +55,7 @@ DialogColorSegmentation::DialogColorSegmentation(wxWindow* parent,wxWindowID id,
 	FlexGridSizer4 = new wxFlexGridSizer(0, 3, 0, 0);
 	wxString __wxRadioBoxChoices_1[2] =
 	{
-		_("HSL"),
+		_("HSV"),
 		_("RGB")
 	};
 	RadioBox1 = new wxRadioBox(this, ID_RADIOBOX1, _("Type"), wxDefaultPosition, wxDefaultSize, 2, __wxRadioBoxChoices_1, 2, 0, wxDefaultValidator, _T("ID_RADIOBOX1"));
@@ -76,7 +76,7 @@ DialogColorSegmentation::DialogColorSegmentation(wxWindow* parent,wxWindowID id,
 	SpinCtrlLowC2 = new wxSpinCtrl(this, ID_SPINCTRL2, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 255, 0, _T("ID_SPINCTRL2"));
 	SpinCtrlLowC2->SetValue(_T("0"));
 	FlexGridSizer1->Add(SpinCtrlLowC2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-	LowC3 = new wxStaticText(this, ID_STATICTEXT5, _("L"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT5"));
+	LowC3 = new wxStaticText(this, ID_STATICTEXT5, _("V"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT5"));
 	FlexGridSizer1->Add(LowC3, 1, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 0);
 	SpinCtrlLowC3 = new wxSpinCtrl(this, ID_SPINCTRL3, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 255, 0, _T("ID_SPINCTRL3"));
 	SpinCtrlLowC3->SetValue(_T("0"));
@@ -95,7 +95,7 @@ DialogColorSegmentation::DialogColorSegmentation(wxWindow* parent,wxWindowID id,
 	SpinCtrlHighC2 = new wxSpinCtrl(this, ID_SPINCTRL5, _T("255"), wxDefaultPosition, wxDefaultSize, 0, 0, 255, 255, _T("ID_SPINCTRL5"));
 	SpinCtrlHighC2->SetValue(_T("255"));
 	FlexGridSizer1->Add(SpinCtrlHighC2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-	HighC3 = new wxStaticText(this, ID_STATICTEXT8, _("L"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT8"));
+	HighC3 = new wxStaticText(this, ID_STATICTEXT8, _("V"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT8"));
 	FlexGridSizer1->Add(HighC3, 1, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 0);
 	SpinCtrlHighC3 = new wxSpinCtrl(this, ID_SPINCTRL6, _T("255"), wxDefaultPosition, wxDefaultSize, 0, 0, 255, 255, _T("ID_SPINCTRL6"));
 	SpinCtrlHighC3->SetValue(_T("255"));
@@ -123,7 +123,6 @@ DialogColorSegmentation::DialogColorSegmentation(wxWindow* parent,wxWindowID id,
 	Connect(ID_SPINCTRL5,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogColorSegmentation::OnSpinCtrlChange);
 	Connect(ID_SPINCTRL6,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogColorSegmentation::OnSpinCtrlChange);
 	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogColorSegmentation::OnButtonOkClick);
-	Connect(wxEVT_KEY_DOWN,(wxObjectEventFunction)&DialogColorSegmentation::OnKeyDown);
 	//*)
 
 	Fit();

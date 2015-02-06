@@ -78,7 +78,6 @@ DialogRecordVideo::DialogRecordVideo(wxWindow* parent,wxWindowID id,const wxPoin
 	FlexGridSizer1->SetSizeHints(this);
 
 	Connect(ID_CHECKBOX1,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogRecordVideo::OnCheckBoxOutputClick);
-	Connect(wxEVT_KEY_DOWN,(wxObjectEventFunction)&DialogRecordVideo::OnKeyDown);
 	//*)
 }
 

@@ -70,7 +70,6 @@ DialogExtractBlobs::DialogExtractBlobs(wxWindow* parent,wxWindowID id,const wxPo
 	Connect(ID_CHECKBOX1,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogExtractBlobs::OnCheckBoxOutputClick);
 	Connect(ID_FILEPICKERCTRL1,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&DialogExtractBlobs::OnFilePickerCtrl1FileChanged);
 	Connect(ID_BUTTON2,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogExtractBlobs::OnButtonOkClick);
-	Connect(wxEVT_KEY_DOWN,(wxObjectEventFunction)&DialogExtractBlobs::OnKeyDown);
 	//*)
 
 	Fit();

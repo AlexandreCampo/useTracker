@@ -7,7 +7,6 @@
 		<maxsize>-1,-1</maxsize>
 		<pos_arg>1</pos_arg>
 		<size_arg>1</size_arg>
-		<handler function="OnKeyDown" entry="EVT_KEY_DOWN" />
 		<object class="wxFlexGridSizer" variable="FlexGridSizer3" member="no">
 			<cols>1</cols>
 			<object class="sizeritem">
@@ -17,7 +16,7 @@
 						<object class="wxRadioBox" name="ID_RADIOBOX1" variable="RadioBox1" member="yes">
 							<label>Type</label>
 							<content>
-								<item>HSL</item>
+								<item>HSV</item>
 								<item>RGB</item>
 							</content>
 							<default>-1</default>
@@ -85,7 +84,7 @@
 									</object>
 									<object class="sizeritem">
 										<object class="wxStaticText" name="ID_STATICTEXT5" variable="LowC3" member="yes">
-											<label>L</label>
+											<label>V</label>
 										</object>
 										<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
 										<option>1</option>
@@ -150,7 +149,7 @@
 									</object>
 									<object class="sizeritem">
 										<object class="wxStaticText" name="ID_STATICTEXT8" variable="HighC3" member="yes">
-											<label>L</label>
+											<label>V</label>
 										</object>
 										<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
 										<option>1</option>

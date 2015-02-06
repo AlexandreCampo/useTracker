@@ -35,8 +35,6 @@ DialogSafeErosion::DialogSafeErosion(wxWindow* parent,wxWindowID id,const wxPoin
 	SetSizer(FlexGridSizer1);
 	FlexGridSizer1->Fit(this);
 	FlexGridSizer1->SetSizeHints(this);
-
-	Connect(wxEVT_KEY_DOWN,(wxObjectEventFunction)&DialogSafeErosion::OnKeyDown);
 	//*)
 
 	Fit();
