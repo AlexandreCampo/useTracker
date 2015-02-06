@@ -60,6 +60,7 @@ public:
     bool OnPipelineAdd(wxCoord x, wxCoord y, const wxString& str);
     bool OnPipelineMove(wxCoord x, wxCoord y, const wxString& str);
     bool OnPipelineRemove(wxCoord x, wxCoord y, const wxString& str);
+    int FilterEvent(wxEvent& event);
 
 private:
 

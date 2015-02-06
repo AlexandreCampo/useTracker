@@ -43,6 +43,7 @@ class DialogExtractMotion: public wxDialog
 		void OnButtonApplyClick(wxCommandEvent& event);
 		void OnButtonOkClick(wxCommandEvent& event);
 		void OnSpinCtrlExtractMotionSizeChange(wxSpinEvent& event);
+		void OnKeyDown(wxKeyEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

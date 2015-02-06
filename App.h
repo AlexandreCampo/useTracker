@@ -44,11 +44,15 @@ std::vector<PipelinePlugin*> CreatePipelinePluginVector(cv::FileNode& fn, unsign
 
 extern std::map<std::string, std::vector<PipelinePlugin*> (*)(cv::FileNode&, unsigned int)> NewPipelinePluginVector;
 
+class MainFrame;
 
 class App : public wxApp
 {
-    public:
-        virtual bool OnInit();
+public:
+    MainFrame* mainFrame = nullptr;
+        
+    virtual bool OnInit();
+    int FilterEvent(wxEvent& event);
 };
 
 #endif // APP_H

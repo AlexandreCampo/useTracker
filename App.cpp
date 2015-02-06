@@ -126,12 +126,17 @@ bool App::OnInit()
     wxXmlResource::Get()->InitAllHandlers();
     if ( wxsOK )
     {
-    	MainFrame* Frame = new MainFrame(0);
-    	Frame->Show();
-    	SetTopWindow(Frame);
+    	mainFrame = new MainFrame(0);
+    	mainFrame->Show();
+    	SetTopWindow(mainFrame);
     }
     //*)
     return wxsOK;
 }
 
 
+int App::FilterEvent(wxEvent& event)
+{
+    if (mainFrame) return mainFrame->FilterEvent(event);
+    return -1;
+}

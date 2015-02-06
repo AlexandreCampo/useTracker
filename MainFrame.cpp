@@ -452,18 +452,6 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     if (!ipEngine.capture) ipEngine.capture = new CaptureDefault();
     ResetImageProcessingEngine();
 
-    emptyFrame.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC3);
-    hud.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
-    hudApp.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
-
-    ipEngine.hud = hud;
-    ipEngine.takeSnapshot = true;
-
-    // start at 1x speed
-    playTimestep = (int)(1000.0 / ipEngine.capture->fps);
-    lastPlayTime = 0;
-    playSpeed = 0;
-
     // last step...
     Connect( wxID_ANY, wxEVT_IDLE, wxIdleEventHandler(MainFrame::OnIdle) );
 }
@@ -1820,6 +1808,18 @@ void MainFrame::ResetImageProcessingEngine()
     ipEngine.Reset(parameters);
     UpdateUI();
 
+    // regenerate and assign hud / empty frame
+    emptyFrame.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC3);
+    hud.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
+    hudApp.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
+    ipEngine.hud = hud;
+    ipEngine.takeSnapshot = true;
+
+    // start at 1x speed
+    playTimestep = (int)(1000.0 / ipEngine.capture->fps);
+    lastPlayTime = 0;
+    playSpeed = 0;
+
     // clean UI pipeline
     for (unsigned int i = 0; i < pipelineDialogs.size(); i++)
     {
@@ -1879,4 +1879,55 @@ void MainFrame::OnMenuOpenCaptureSelected(wxCommandEvent& event)
 	}
 	else break;
     }
+}
+
+int MainFrame::FilterEvent(wxEvent& event)
+{
+    if ((event.GetEventType() == wxEVT_CHAR))
+    {
+	if (((wxKeyEvent&)event).GetKeyCode() == WXK_SPACE)
+	{
+	    wxCommandEvent e;
+	    OnbuttonPlayClick(e);
+	    return true;
+	}
+	if (((wxKeyEvent&)event).GetKeyCode() == WXK_RIGHT)
+	{
+	    wxCommandEvent e;
+	    OnbuttonStepForwardClick(e);
+	    return true;
+	}
+	if (((wxKeyEvent&)event).GetKeyCode() == WXK_LEFT)
+	{
+	    wxCommandEvent e;
+	    OnbuttonStepBackwardsClick(e);
+	    return true;
+	}
+	if (((wxKeyEvent&)event).GetKeyCode() == WXK_CONTROL_R)
+	{
+	    wxCommandEvent e;
+	    OnbuttonOutputClick(e);
+	    return true;
+	}
+	if (((wxKeyEvent&)event).GetKeyCode() == '+' || ((wxKeyEvent&)event).GetKeyCode() == '=')
+	{
+	    wxCommandEvent e;
+	    OnbuttonForwardClick(e);
+	    return true;
+	}
+	if (((wxKeyEvent&)event).GetKeyCode() == '-')
+	{
+	    wxCommandEvent e;
+	    OnbuttonBackwardsClick(e);
+	    return true;
+	}
+	if (((wxKeyEvent&)event).GetKeyCode() == WXK_BACK)
+	{
+	    playSpeed = 0;
+	    playTimestep = (int)(1000.0 / ipEngine.capture->fps);
+	    return true;
+	}
+    }
+
+    return -1;
 }

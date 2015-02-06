@@ -89,6 +89,8 @@ class DialogOpenCapture: public wxDialog
 		void OnButtonImageCancelClick(wxCommandEvent& event);
 		void OnButtonImageOkClick(wxCommandEvent& event);
 		void OnButtonAVTCancelClick(wxCommandEvent& event);
+		void OnKeyDown(wxKeyEvent& event);
+		void OnChar(wxKeyEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

@@ -52,6 +52,7 @@ DialogDilation::DialogDilation(wxWindow* parent,wxWindowID id,const wxPoint& pos
 
 	Connect(ID_SPINCTRL1,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogDilation::OnSpinCtrlDilationSizeChange);
 	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogDilation::OnButtonOkClick);
+	Connect(wxEVT_KEY_DOWN,(wxObjectEventFunction)&DialogDilation::OnKeyDown);
 	//*)
 
 	Fit();
@@ -92,3 +93,4 @@ void DialogDilation::OnSpinCtrlDilationSizeChange(wxSpinEvent& event)
 {
     OnButtonApplyClick(event);
 }
+

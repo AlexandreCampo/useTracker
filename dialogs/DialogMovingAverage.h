@@ -49,6 +49,7 @@ class DialogMovingAverage: public wxDialog
 		void OnButtonOkClick(wxCommandEvent& event);
 		void OnSpinCtrlMovingAverageLengthChange(wxSpinEvent& event);
 		void OnSpinCtrlSegmentationThresholdChange(wxSpinEvent& event);
+		void OnKeyDown(wxKeyEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

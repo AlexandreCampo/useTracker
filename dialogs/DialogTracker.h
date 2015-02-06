@@ -132,6 +132,7 @@ class DialogTracker: public wxDialog
 		void OnCheckBoxReplayClick(wxCommandEvent& event);
 		void OnFilePickerCtrl2FileChanged(wxFileDirPickerEvent& event);
 		void OnCheckBoxUseVEClick(wxCommandEvent& event);
+		void OnKeyDown(wxKeyEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

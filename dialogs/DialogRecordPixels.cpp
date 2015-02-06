@@ -51,6 +51,7 @@ DialogRecordPixels::DialogRecordPixels(wxWindow* parent,wxWindowID id,const wxPo
 	Connect(ID_CHECKBOX1,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogRecordPixels::OnCheckBoxOutputClick);
 	Connect(ID_FILEPICKERCTRL1,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&DialogRecordPixels::OnFilePickerCtrl1FileChanged);
 	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogRecordPixels::OnButtonOkClick);
+	Connect(wxEVT_KEY_DOWN,(wxObjectEventFunction)&DialogRecordPixels::OnKeyDown);
 	//*)
 }
 
@@ -100,3 +101,4 @@ void DialogRecordPixels::OnCheckBoxOutputClick(wxCommandEvent& event)
 	    f->CloseOutput();
     }
 }
+

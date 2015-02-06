@@ -43,6 +43,7 @@ class DialogRecordPixels: public wxDialog
 		void OnButtonOkClick(wxCommandEvent& event);
 		void OnFilePickerCtrl1FileChanged(wxFileDirPickerEvent& event);
 		void OnCheckBoxOutputClick(wxCommandEvent& event);
+		void OnKeyDown(wxKeyEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

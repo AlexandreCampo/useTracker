@@ -52,6 +52,7 @@ DialogExtractMotion::DialogExtractMotion(wxWindow* parent,wxWindowID id,const wx
 
 	Connect(ID_SPINCTRL1,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogExtractMotion::OnSpinCtrlExtractMotionSizeChange);
 	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogExtractMotion::OnButtonOkClick);
+	Connect(wxEVT_KEY_DOWN,(wxObjectEventFunction)&DialogExtractMotion::OnKeyDown);
 	//*)
 
 	Fit();
@@ -94,3 +95,4 @@ void DialogExtractMotion::OnButtonApplyClick(wxCommandEvent& event)
     	f->threshold = SpinCtrlExtractMotionSize->GetValue();
     }
 }
+

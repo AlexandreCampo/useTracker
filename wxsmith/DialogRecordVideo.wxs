@@ -4,123 +4,124 @@
 		<title>Record video</title>
 		<pos_arg>1</pos_arg>
 		<size_arg>1</size_arg>
-			<object class="wxFlexGridSizer" variable="FlexGridSizer1" member="no">
-				<cols>1</cols>
-				<growablecols>0</growablecols>
-				<object class="sizeritem">
-					<object class="wxStaticBoxSizer" variable="StaticBoxSizer1" member="no">
-						<label>H264 Encoding parameters</label>
-						<object class="sizeritem">
-							<object class="wxFlexGridSizer" variable="FlexGridSizer3" member="no">
-								<cols>2</cols>
-								<growablecols>1</growablecols>
-								<object class="sizeritem">
-									<object class="wxStaticText" name="ID_STATICTEXT1" variable="StaticText1" member="yes">
-										<label>Bitrate (kB/s)</label>
-									</object>
-									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-									<border>5</border>
-									<option>1</option>
+		<handler function="OnKeyDown" entry="EVT_KEY_DOWN" />
+		<object class="wxFlexGridSizer" variable="FlexGridSizer1" member="no">
+			<cols>1</cols>
+			<growablecols>0</growablecols>
+			<object class="sizeritem">
+				<object class="wxStaticBoxSizer" variable="StaticBoxSizer1" member="no">
+					<label>H264 Encoding parameters</label>
+					<object class="sizeritem">
+						<object class="wxFlexGridSizer" variable="FlexGridSizer3" member="no">
+							<cols>2</cols>
+							<growablecols>1</growablecols>
+							<object class="sizeritem">
+								<object class="wxStaticText" name="ID_STATICTEXT1" variable="StaticText1" member="yes">
+									<label>Bitrate (kB/s)</label>
 								</object>
-								<object class="sizeritem">
-									<object class="wxSpinCtrl" name="ID_SPINCTRL1" variable="SpinCtrlBitrate" member="yes">
-										<value>1000</value>
-										<min>1</min>
-										<max>1000000</max>
-									</object>
-									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-									<border>5</border>
-									<option>1</option>
-								</object>
-								<object class="sizeritem">
-									<object class="wxStaticText" name="ID_STATICTEXT2" variable="StaticText2" member="yes">
-										<label>Encoding preset</label>
-									</object>
-									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-									<border>5</border>
-									<option>1</option>
-								</object>
-								<object class="sizeritem">
-									<object class="wxChoice" name="ID_CHOICE1" variable="ChoicePreset" member="yes">
-										<content>
-											<item>ultrafast</item>
-											<item>superfast</item>
-											<item>veryfast</item>
-											<item>faster</item>
-											<item>fast</item>
-											<item>medium</item>
-											<item>slow</item>
-											<item>slower</item>
-											<item>veryslow</item>
-										</content>
-										<selection>5</selection>
-									</object>
-									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-									<border>5</border>
-									<option>1</option>
-								</object>
+								<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+								<border>5</border>
+								<option>1</option>
 							</object>
-							<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-							<border>5</border>
-							<option>1</option>
-						</object>
-					</object>
-					<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-					<border>5</border>
-					<option>1</option>
-				</object>
-				<object class="sizeritem">
-					<object class="wxStaticBoxSizer" variable="StaticBoxSizer2" member="no">
-						<label>Output to file</label>
-						<object class="sizeritem">
-							<object class="wxFlexGridSizer" variable="FlexGridSizer4" member="no">
-								<cols>2</cols>
-								<growablecols>1</growablecols>
-								<object class="sizeritem">
-									<object class="wxCheckBox" name="ID_CHECKBOX1" variable="CheckBoxOutput" member="yes">
-										<handler function="OnCheckBoxOutputClick" entry="EVT_CHECKBOX" />
-									</object>
-									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-									<border>5</border>
-									<option>1</option>
+							<object class="sizeritem">
+								<object class="wxSpinCtrl" name="ID_SPINCTRL1" variable="SpinCtrlBitrate" member="yes">
+									<value>1000</value>
+									<min>1</min>
+									<max>1000000</max>
 								</object>
-								<object class="sizeritem">
-									<object class="wxFilePickerCtrl" name="ID_FILEPICKERCTRL1" variable="FilePickerCtrl1" member="yes">
-										<message></message>
-										<wildcard></wildcard>
-										<style>wxFLP_OVERWRITE_PROMPT|wxFLP_SAVE|wxFLP_USE_TEXTCTRL</style>
-									</object>
-									<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-									<border>5</border>
-									<option>1</option>
+								<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+								<border>5</border>
+								<option>1</option>
+							</object>
+							<object class="sizeritem">
+								<object class="wxStaticText" name="ID_STATICTEXT2" variable="StaticText2" member="yes">
+									<label>Encoding preset</label>
 								</object>
+								<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+								<border>5</border>
+								<option>1</option>
 							</object>
-							<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-							<border>5</border>
-							<option>1</option>
-						</object>
-					</object>
-					<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-					<border>5</border>
-					<option>1</option>
-				</object>
-				<object class="sizeritem">
-					<object class="wxFlexGridSizer" variable="FlexGridSizer2" member="no">
-						<cols>3</cols>
-						<object class="sizeritem">
-							<object class="wxButton" name="ID_BUTTON1" variable="ButtonOk" member="yes">
-								<label>Ok</label>
-								<focused>1</focused>
+							<object class="sizeritem">
+								<object class="wxChoice" name="ID_CHOICE1" variable="ChoicePreset" member="yes">
+									<content>
+										<item>ultrafast</item>
+										<item>superfast</item>
+										<item>veryfast</item>
+										<item>faster</item>
+										<item>fast</item>
+										<item>medium</item>
+										<item>slow</item>
+										<item>slower</item>
+										<item>veryslow</item>
+									</content>
+									<selection>5</selection>
+								</object>
+								<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+								<border>5</border>
+								<option>1</option>
 							</object>
-							<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-							<border>5</border>
-							<option>1</option>
 						</object>
+						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
 					</object>
-					<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
-					<border>5</border>
-					<option>1</option>
 				</object>
+				<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+				<border>5</border>
+				<option>1</option>
 			</object>
+			<object class="sizeritem">
+				<object class="wxStaticBoxSizer" variable="StaticBoxSizer2" member="no">
+					<label>Output to file</label>
+					<object class="sizeritem">
+						<object class="wxFlexGridSizer" variable="FlexGridSizer4" member="no">
+							<cols>2</cols>
+							<growablecols>1</growablecols>
+							<object class="sizeritem">
+								<object class="wxCheckBox" name="ID_CHECKBOX1" variable="CheckBoxOutput" member="yes">
+									<handler function="OnCheckBoxOutputClick" entry="EVT_CHECKBOX" />
+								</object>
+								<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+								<border>5</border>
+								<option>1</option>
+							</object>
+							<object class="sizeritem">
+								<object class="wxFilePickerCtrl" name="ID_FILEPICKERCTRL1" variable="FilePickerCtrl1" member="yes">
+									<message></message>
+									<wildcard></wildcard>
+									<style>wxFLP_OVERWRITE_PROMPT|wxFLP_SAVE|wxFLP_USE_TEXTCTRL</style>
+								</object>
+								<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+								<border>5</border>
+								<option>1</option>
+							</object>
+						</object>
+						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
+				</object>
+				<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+				<border>5</border>
+				<option>1</option>
+			</object>
+			<object class="sizeritem">
+				<object class="wxFlexGridSizer" variable="FlexGridSizer2" member="no">
+					<cols>3</cols>
+					<object class="sizeritem">
+						<object class="wxButton" name="ID_BUTTON1" variable="ButtonOk" member="yes">
+							<label>Ok</label>
+							<focused>1</focused>
+						</object>
+						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
+				</object>
+				<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
+				<border>5</border>
+				<option>1</option>
+			</object>
+		</object>
 	</object>
 </wxsmith>

@@ -7,62 +7,63 @@
 		<maxsize>-1,-1</maxsize>
 		<pos_arg>1</pos_arg>
 		<size_arg>1</size_arg>
-			<object class="wxFlexGridSizer" variable="FlexGridSizer3" member="no">
-				<cols>1</cols>
-				<object class="sizeritem">
-					<object class="wxStaticBoxSizer" variable="StaticBoxSizer1" member="no">
-						<label>Dilation</label>
-						<object class="sizeritem">
-							<object class="wxFlexGridSizer" variable="FlexGridSizer1" member="no">
-								<cols>2</cols>
-								<object class="sizeritem">
-									<object class="wxStaticText" name="ID_STATICTEXT1" variable="StaticText1" member="yes">
-										<label>Grow borders by (pixels)</label>
-									</object>
-									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-									<border>5</border>
-									<option>1</option>
+		<handler function="OnKeyDown" entry="EVT_KEY_DOWN" />
+		<object class="wxFlexGridSizer" variable="FlexGridSizer3" member="no">
+			<cols>1</cols>
+			<object class="sizeritem">
+				<object class="wxStaticBoxSizer" variable="StaticBoxSizer1" member="no">
+					<label>Dilation</label>
+					<object class="sizeritem">
+						<object class="wxFlexGridSizer" variable="FlexGridSizer1" member="no">
+							<cols>2</cols>
+							<object class="sizeritem">
+								<object class="wxStaticText" name="ID_STATICTEXT1" variable="StaticText1" member="yes">
+									<label>Grow borders by (pixels)</label>
 								</object>
-								<object class="sizeritem">
-									<object class="wxSpinCtrl" name="ID_SPINCTRL1" variable="SpinCtrlDilationSize" member="yes">
-										<value>1</value>
-										<min>1</min>
-										<max>1000</max>
-										<handler function="OnSpinCtrlDilationSizeChange" entry="EVT_SPINCTRL" />
-									</object>
-									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-									<border>5</border>
-									<option>1</option>
+								<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+								<border>5</border>
+								<option>1</option>
+							</object>
+							<object class="sizeritem">
+								<object class="wxSpinCtrl" name="ID_SPINCTRL1" variable="SpinCtrlDilationSize" member="yes">
+									<value>1</value>
+									<min>1</min>
+									<max>1000</max>
+									<handler function="OnSpinCtrlDilationSizeChange" entry="EVT_SPINCTRL" />
 								</object>
+								<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+								<border>5</border>
+								<option>1</option>
 							</object>
-							<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-							<border>5</border>
-							<option>1</option>
 						</object>
+						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
 					</object>
-					<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-					<border>5</border>
-					<option>1</option>
 				</object>
-				<object class="sizeritem">
-					<object class="wxFlexGridSizer" variable="FlexGridSizer2" member="no">
-						<cols>3</cols>
-						<object class="sizeritem">
-							<object class="wxButton" name="ID_BUTTON1" variable="ButtonOk" member="yes">
-								<label>OK</label>
-								<default>1</default>
-								<focused>1</focused>
-								<handler function="OnButtonOkClick" entry="EVT_BUTTON" />
-							</object>
-							<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
-							<border>5</border>
-							<option>1</option>
+				<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+				<border>5</border>
+				<option>1</option>
+			</object>
+			<object class="sizeritem">
+				<object class="wxFlexGridSizer" variable="FlexGridSizer2" member="no">
+					<cols>3</cols>
+					<object class="sizeritem">
+						<object class="wxButton" name="ID_BUTTON1" variable="ButtonOk" member="yes">
+							<label>OK</label>
+							<default>1</default>
+							<focused>1</focused>
+							<handler function="OnButtonOkClick" entry="EVT_BUTTON" />
 						</object>
+						<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
 					</object>
-					<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
-					<border>5</border>
-					<option>1</option>
 				</object>
+				<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
+				<border>5</border>
+				<option>1</option>
+			</object>
 		</object>
 	</object>
 </wxsmith>

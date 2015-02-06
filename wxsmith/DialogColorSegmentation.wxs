@@ -7,196 +7,197 @@
 		<maxsize>-1,-1</maxsize>
 		<pos_arg>1</pos_arg>
 		<size_arg>1</size_arg>
-			<object class="wxFlexGridSizer" variable="FlexGridSizer3" member="no">
-				<cols>1</cols>
-				<object class="sizeritem">
-					<object class="wxFlexGridSizer" variable="FlexGridSizer4" member="no">
-						<cols>3</cols>
-						<object class="sizeritem">
-							<object class="wxRadioBox" name="ID_RADIOBOX1" variable="RadioBox1" member="yes">
-								<label>Type</label>
-								<content>
-									<item>HSL</item>
-									<item>RGB</item>
-								</content>
-								<default>-1</default>
-								<dimension>2</dimension>
-								<handler function="OnRadioBoxSelect" entry="EVT_RADIOBOX" />
-							</object>
-							<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-							<border>5</border>
-							<option>1</option>
+		<handler function="OnKeyDown" entry="EVT_KEY_DOWN" />
+		<object class="wxFlexGridSizer" variable="FlexGridSizer3" member="no">
+			<cols>1</cols>
+			<object class="sizeritem">
+				<object class="wxFlexGridSizer" variable="FlexGridSizer4" member="no">
+					<cols>3</cols>
+					<object class="sizeritem">
+						<object class="wxRadioBox" name="ID_RADIOBOX1" variable="RadioBox1" member="yes">
+							<label>Type</label>
+							<content>
+								<item>HSL</item>
+								<item>RGB</item>
+							</content>
+							<default>-1</default>
+							<dimension>2</dimension>
+							<handler function="OnRadioBoxSelect" entry="EVT_RADIOBOX" />
 						</object>
-						<object class="sizeritem">
-							<object class="wxStaticBoxSizer" variable="StaticBoxSizer1" member="no">
-								<label>Bounding colors</label>
-								<object class="sizeritem">
-									<object class="wxFlexGridSizer" variable="FlexGridSizer1" member="no">
-										<cols>2</cols>
-										<object class="sizeritem">
-											<object class="wxStaticText" name="ID_STATICTEXT1" variable="StaticText1" member="yes">
-												<label>Lower bound color (min)</label>
-											</object>
-											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-											<border>5</border>
-											<option>1</option>
+						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
+					<object class="sizeritem">
+						<object class="wxStaticBoxSizer" variable="StaticBoxSizer1" member="no">
+							<label>Bounding colors</label>
+							<object class="sizeritem">
+								<object class="wxFlexGridSizer" variable="FlexGridSizer1" member="no">
+									<cols>2</cols>
+									<object class="sizeritem">
+										<object class="wxStaticText" name="ID_STATICTEXT1" variable="StaticText1" member="yes">
+											<label>Lower bound color (min)</label>
 										</object>
-										<object class="sizeritem">
-											<object class="wxColourPickerCtrl" name="ID_COLOURPICKERCTRL1" variable="ColourPickerCtrlMin" member="yes">
-												<colour>#000000</colour>
-												<handler function="OnColourPickerCtrlMinColourChanged" entry="EVT_COLOURPICKER_CHANGED" />
-											</object>
-											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-											<border>5</border>
-											<option>1</option>
-										</object>
-										<object class="sizeritem">
-											<object class="wxStaticText" name="ID_STATICTEXT3" variable="LowC1" member="yes">
-												<label>H</label>
-											</object>
-											<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
-											<option>1</option>
-										</object>
-										<object class="sizeritem">
-											<object class="wxSpinCtrl" name="ID_SPINCTRL1" variable="SpinCtrlLowC1" member="yes">
-												<value>0</value>
-												<max>360</max>
-												<handler function="OnSpinCtrlChange" entry="EVT_SPINCTRL" />
-											</object>
-											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-											<option>1</option>
-										</object>
-										<object class="sizeritem">
-											<object class="wxStaticText" name="ID_STATICTEXT4" variable="LowC2" member="yes">
-												<label>S</label>
-											</object>
-											<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
-											<option>1</option>
-										</object>
-										<object class="sizeritem">
-											<object class="wxSpinCtrl" name="ID_SPINCTRL2" variable="SpinCtrlLowC2" member="yes">
-												<value>0</value>
-												<max>255</max>
-												<handler function="OnSpinCtrlChange" entry="EVT_SPINCTRL" />
-											</object>
-											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-											<option>1</option>
-										</object>
-										<object class="sizeritem">
-											<object class="wxStaticText" name="ID_STATICTEXT5" variable="LowC3" member="yes">
-												<label>L</label>
-											</object>
-											<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
-											<option>1</option>
-										</object>
-										<object class="sizeritem">
-											<object class="wxSpinCtrl" name="ID_SPINCTRL3" variable="SpinCtrlLowC3" member="yes">
-												<value>0</value>
-												<max>255</max>
-												<handler function="OnSpinCtrlChange" entry="EVT_SPINCTRL" />
-											</object>
-											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-											<option>1</option>
-										</object>
-										<object class="sizeritem">
-											<object class="wxStaticText" name="ID_STATICTEXT2" variable="StaticText2" member="yes">
-												<label>Upper bound color (max)</label>
-											</object>
-											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-											<border>5</border>
-											<option>1</option>
-										</object>
-										<object class="sizeritem">
-											<object class="wxColourPickerCtrl" name="ID_COLOURPICKERCTRL2" variable="ColourPickerCtrlMax" member="yes">
-												<colour>#000000</colour>
-												<handler function="OnColourPickerCtrlMaxColourChanged" entry="EVT_COLOURPICKER_CHANGED" />
-											</object>
-											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-											<border>5</border>
-											<option>1</option>
-										</object>
-										<object class="sizeritem">
-											<object class="wxStaticText" name="ID_STATICTEXT7" variable="HighC1" member="yes">
-												<label>H</label>
-											</object>
-											<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
-											<option>1</option>
-										</object>
-										<object class="sizeritem">
-											<object class="wxSpinCtrl" name="ID_SPINCTRL4" variable="SpinCtrlHighC1" member="yes">
-												<value>360</value>
-												<max>360</max>
-												<handler function="OnSpinCtrlChange" entry="EVT_SPINCTRL" />
-											</object>
-											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-											<option>1</option>
-										</object>
-										<object class="sizeritem">
-											<object class="wxStaticText" name="ID_STATICTEXT6" variable="HighC2" member="yes">
-												<label>S</label>
-											</object>
-											<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
-											<option>1</option>
-										</object>
-										<object class="sizeritem">
-											<object class="wxSpinCtrl" name="ID_SPINCTRL5" variable="SpinCtrlHighC2" member="yes">
-												<value>255</value>
-												<max>255</max>
-												<handler function="OnSpinCtrlChange" entry="EVT_SPINCTRL" />
-											</object>
-											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-											<option>1</option>
-										</object>
-										<object class="sizeritem">
-											<object class="wxStaticText" name="ID_STATICTEXT8" variable="HighC3" member="yes">
-												<label>L</label>
-											</object>
-											<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
-											<option>1</option>
-										</object>
-										<object class="sizeritem">
-											<object class="wxSpinCtrl" name="ID_SPINCTRL6" variable="SpinCtrlHighC3" member="yes">
-												<value>255</value>
-												<max>255</max>
-												<handler function="OnSpinCtrlChange" entry="EVT_SPINCTRL" />
-											</object>
-											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-											<option>1</option>
-										</object>
+										<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
+										<option>1</option>
 									</object>
-									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-									<border>5</border>
-									<option>1</option>
+									<object class="sizeritem">
+										<object class="wxColourPickerCtrl" name="ID_COLOURPICKERCTRL1" variable="ColourPickerCtrlMin" member="yes">
+											<colour>#000000</colour>
+											<handler function="OnColourPickerCtrlMinColourChanged" entry="EVT_COLOURPICKER_CHANGED" />
+										</object>
+										<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
+										<option>1</option>
+									</object>
+									<object class="sizeritem">
+										<object class="wxStaticText" name="ID_STATICTEXT3" variable="LowC1" member="yes">
+											<label>H</label>
+										</object>
+										<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
+										<option>1</option>
+									</object>
+									<object class="sizeritem">
+										<object class="wxSpinCtrl" name="ID_SPINCTRL1" variable="SpinCtrlLowC1" member="yes">
+											<value>0</value>
+											<max>360</max>
+											<handler function="OnSpinCtrlChange" entry="EVT_SPINCTRL" />
+										</object>
+										<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+										<option>1</option>
+									</object>
+									<object class="sizeritem">
+										<object class="wxStaticText" name="ID_STATICTEXT4" variable="LowC2" member="yes">
+											<label>S</label>
+										</object>
+										<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
+										<option>1</option>
+									</object>
+									<object class="sizeritem">
+										<object class="wxSpinCtrl" name="ID_SPINCTRL2" variable="SpinCtrlLowC2" member="yes">
+											<value>0</value>
+											<max>255</max>
+											<handler function="OnSpinCtrlChange" entry="EVT_SPINCTRL" />
+										</object>
+										<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+										<option>1</option>
+									</object>
+									<object class="sizeritem">
+										<object class="wxStaticText" name="ID_STATICTEXT5" variable="LowC3" member="yes">
+											<label>L</label>
+										</object>
+										<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
+										<option>1</option>
+									</object>
+									<object class="sizeritem">
+										<object class="wxSpinCtrl" name="ID_SPINCTRL3" variable="SpinCtrlLowC3" member="yes">
+											<value>0</value>
+											<max>255</max>
+											<handler function="OnSpinCtrlChange" entry="EVT_SPINCTRL" />
+										</object>
+										<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+										<option>1</option>
+									</object>
+									<object class="sizeritem">
+										<object class="wxStaticText" name="ID_STATICTEXT2" variable="StaticText2" member="yes">
+											<label>Upper bound color (max)</label>
+										</object>
+										<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
+										<option>1</option>
+									</object>
+									<object class="sizeritem">
+										<object class="wxColourPickerCtrl" name="ID_COLOURPICKERCTRL2" variable="ColourPickerCtrlMax" member="yes">
+											<colour>#000000</colour>
+											<handler function="OnColourPickerCtrlMaxColourChanged" entry="EVT_COLOURPICKER_CHANGED" />
+										</object>
+										<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+										<border>5</border>
+										<option>1</option>
+									</object>
+									<object class="sizeritem">
+										<object class="wxStaticText" name="ID_STATICTEXT7" variable="HighC1" member="yes">
+											<label>H</label>
+										</object>
+										<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
+										<option>1</option>
+									</object>
+									<object class="sizeritem">
+										<object class="wxSpinCtrl" name="ID_SPINCTRL4" variable="SpinCtrlHighC1" member="yes">
+											<value>360</value>
+											<max>360</max>
+											<handler function="OnSpinCtrlChange" entry="EVT_SPINCTRL" />
+										</object>
+										<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+										<option>1</option>
+									</object>
+									<object class="sizeritem">
+										<object class="wxStaticText" name="ID_STATICTEXT6" variable="HighC2" member="yes">
+											<label>S</label>
+										</object>
+										<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
+										<option>1</option>
+									</object>
+									<object class="sizeritem">
+										<object class="wxSpinCtrl" name="ID_SPINCTRL5" variable="SpinCtrlHighC2" member="yes">
+											<value>255</value>
+											<max>255</max>
+											<handler function="OnSpinCtrlChange" entry="EVT_SPINCTRL" />
+										</object>
+										<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+										<option>1</option>
+									</object>
+									<object class="sizeritem">
+										<object class="wxStaticText" name="ID_STATICTEXT8" variable="HighC3" member="yes">
+											<label>L</label>
+										</object>
+										<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
+										<option>1</option>
+									</object>
+									<object class="sizeritem">
+										<object class="wxSpinCtrl" name="ID_SPINCTRL6" variable="SpinCtrlHighC3" member="yes">
+											<value>255</value>
+											<max>255</max>
+											<handler function="OnSpinCtrlChange" entry="EVT_SPINCTRL" />
+										</object>
+										<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+										<option>1</option>
+									</object>
 								</object>
+								<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+								<border>5</border>
+								<option>1</option>
 							</object>
-							<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-							<border>5</border>
-							<option>1</option>
 						</object>
+						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
 					</object>
-					<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-					<border>5</border>
-					<option>1</option>
 				</object>
-				<object class="sizeritem">
-					<object class="wxFlexGridSizer" variable="FlexGridSizer2" member="no">
-						<cols>3</cols>
-						<object class="sizeritem">
-							<object class="wxButton" name="ID_BUTTON1" variable="ButtonOk" member="yes">
-								<label>OK</label>
-								<default>1</default>
-								<focused>1</focused>
-								<handler function="OnButtonOkClick" entry="EVT_BUTTON" />
-							</object>
-							<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
-							<border>5</border>
-							<option>1</option>
-						</object>
-					</object>
-					<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
-					<border>5</border>
-					<option>1</option>
-				</object>
+				<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+				<border>5</border>
+				<option>1</option>
 			</object>
+			<object class="sizeritem">
+				<object class="wxFlexGridSizer" variable="FlexGridSizer2" member="no">
+					<cols>3</cols>
+					<object class="sizeritem">
+						<object class="wxButton" name="ID_BUTTON1" variable="ButtonOk" member="yes">
+							<label>OK</label>
+							<default>1</default>
+							<focused>1</focused>
+							<handler function="OnButtonOkClick" entry="EVT_BUTTON" />
+						</object>
+						<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
+				</object>
+				<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
+				<border>5</border>
+				<option>1</option>
+			</object>
+		</object>
 	</object>
 </wxsmith>

@@ -56,6 +56,7 @@ class DialogExtractBlobs: public wxDialog
 		void OnFilePickerCtrl1FileChanged(wxFileDirPickerEvent& event);
 		void OnCheckBoxOutputClick(wxCommandEvent& event);
 		void OnCheckBoxRecordLabelsClick(wxCommandEvent& event);
+		void OnKeyDown(wxKeyEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

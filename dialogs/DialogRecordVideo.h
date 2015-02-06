@@ -55,6 +55,7 @@ class DialogRecordVideo: public wxDialog
 		void OnCheckBoxOutputClick(wxCommandEvent& event);
 		void OnButtonOkClick(wxCommandEvent& event);
 		void OnFilePickerCtrl1FileChanged(wxFileDirPickerEvent& event);
+		void OnKeyDown(wxKeyEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

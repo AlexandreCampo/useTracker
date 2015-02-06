@@ -64,6 +64,7 @@ DialogMovingAverage::DialogMovingAverage(wxWindow* parent,wxWindowID id,const wx
 	Connect(ID_SPINCTRL1,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogMovingAverage::OnSpinCtrlMovingAverageLengthChange);
 	Connect(ID_SPINCTRL2,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogMovingAverage::OnSpinCtrlSegmentationThresholdChange);
 	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogMovingAverage::OnButtonOkClick);
+	Connect(wxEVT_KEY_DOWN,(wxObjectEventFunction)&DialogMovingAverage::OnKeyDown);
 	//*)
 
 	Fit();
@@ -116,3 +117,4 @@ void DialogMovingAverage::OnSpinCtrlSegmentationThresholdChange(wxSpinEvent& eve
 {
     OnButtonApplyClick (event);
 }
+

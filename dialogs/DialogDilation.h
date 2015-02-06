@@ -43,6 +43,7 @@ class DialogDilation: public wxDialog
 		void OnButtonApplyClick(wxCommandEvent& event);
 		void OnButtonOkClick(wxCommandEvent& event);
 		void OnSpinCtrlDilationSizeChange(wxSpinEvent& event);
+		void OnKeyDown(wxKeyEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

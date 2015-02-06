@@ -150,6 +150,8 @@
 		<Unit filename="Utils.h" />
 		<Unit filename="capture/CaptureAVTCamera.cpp" />
 		<Unit filename="capture/CaptureAVTCamera.h" />
+		<Unit filename="capture/CaptureDefault.cpp" />
+		<Unit filename="capture/CaptureDefault.h" />
 		<Unit filename="capture/CaptureImage.cpp" />
 		<Unit filename="capture/CaptureImage.h" />
 		<Unit filename="capture/CaptureUSBCamera.cpp" />

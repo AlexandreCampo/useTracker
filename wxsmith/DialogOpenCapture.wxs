@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <wxsmith>
 	<object class="wxDialog" name="DialogOpenCapture">
+		<title>Open new capture source</title>
 		<minsize>-1,-1</minsize>
 		<maxsize>-1,-1</maxsize>
 		<id_arg>0</id_arg>
+		<handler function="OnKeyDown" entry="EVT_KEY_DOWN" />
+		<handler function="OnChar" entry="EVT_CHAR" />
 		<object class="wxNotebook" name="ID_NOTEBOOK1" variable="Notebook1" member="yes">
 			<pos>208,176</pos>
 			<minsize>-1,-1</minsize>
@@ -203,6 +206,8 @@
 								<label>Select source</label>
 								<object class="sizeritem">
 									<object class="wxFilePickerCtrl" name="ID_FILEPICKERCTRL2" variable="FilePickerCtrlImage" member="yes">
+										<message></message>
+										<wildcard></wildcard>
 										<style>wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL</style>
 									</object>
 									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>

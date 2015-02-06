@@ -52,6 +52,7 @@ DialogErosion::DialogErosion(wxWindow* parent,wxWindowID id,const wxPoint& pos,c
 
 	Connect(ID_SPINCTRL1,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogErosion::OnSpinCtrlErosionSizeChange);
 	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogErosion::OnButtonOkClick);
+	Connect(wxEVT_KEY_DOWN,(wxObjectEventFunction)&DialogErosion::OnKeyDown);
 	//*)
 
 	Fit();
@@ -93,3 +94,4 @@ void DialogErosion::OnButtonApplyClick(wxCommandEvent& event)
     for (auto f : plugin)
     	f->SetSize(SpinCtrlErosionSize->GetValue());
 }
+

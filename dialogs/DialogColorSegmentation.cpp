@@ -123,6 +123,7 @@ DialogColorSegmentation::DialogColorSegmentation(wxWindow* parent,wxWindowID id,
 	Connect(ID_SPINCTRL5,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogColorSegmentation::OnSpinCtrlChange);
 	Connect(ID_SPINCTRL6,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogColorSegmentation::OnSpinCtrlChange);
 	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogColorSegmentation::OnButtonOkClick);
+	Connect(wxEVT_KEY_DOWN,(wxObjectEventFunction)&DialogColorSegmentation::OnKeyDown);
 	//*)
 
 	Fit();
@@ -144,74 +145,74 @@ void DialogColorSegmentation::SetPlugin (vector<PipelinePlugin*> pfv)
 {
     for (auto func : pfv)
 	plugin.push_back(dynamic_cast<ColorSegmentation*> (func));
-    
+
     if (plugin[0]->type == ColorSegmentation::BGR)
     {
 	RadioBox1->SetSelection(1);
-	
+
 	SpinCtrlLowC1->SetValue(plugin[0]->minBGR[2]);
 	SpinCtrlLowC2->SetValue(plugin[0]->minBGR[1]);
 	SpinCtrlLowC3->SetValue(plugin[0]->minBGR[0]);
 	SpinCtrlHighC1->SetValue(plugin[0]->maxBGR[2]);
 	SpinCtrlHighC2->SetValue(plugin[0]->maxBGR[1]);
 	SpinCtrlHighC3->SetValue(plugin[0]->maxBGR[0]);
-	
+
 	LowC1->SetLabel("R");
 	LowC2->SetLabel("G");
 	LowC3->SetLabel("B");
 	HighC1->SetLabel("R");
 	HighC2->SetLabel("G");
 	HighC3->SetLabel("B");
-	
+
 	SpinCtrlLowC1->SetRange (0, 255);
 	SpinCtrlLowC2->SetRange (0, 255);
 	SpinCtrlLowC2->SetRange (0, 255);
 	SpinCtrlHighC1->SetRange (0, 255);
 	SpinCtrlHighC2->SetRange (0, 255);
 	SpinCtrlHighC2->SetRange (0, 255);
-	    
+
 	Vec3b min = plugin[0]->minBGR;
 	Vec3b max = plugin[0]->maxBGR;
-	
+
 	ColourPickerCtrlMin->SetColour (wxColour(min[2], min[1], min[0]));
 	ColourPickerCtrlMax->SetColour (wxColour(max[2], max[1], max[0]));
-	    
+
     }
-    else 
+    else
     {
 	RadioBox1->SetSelection(0);
-	
+
 	SpinCtrlLowC1->SetValue(plugin[0]->minHSV[0] * 2);
 	SpinCtrlLowC2->SetValue(plugin[0]->minHSV[1]);
 	SpinCtrlLowC3->SetValue(plugin[0]->minHSV[2]);
 	SpinCtrlHighC1->SetValue(plugin[0]->maxHSV[0] * 2);
 	SpinCtrlHighC2->SetValue(plugin[0]->maxHSV[1]);
 	SpinCtrlHighC3->SetValue(plugin[0]->maxHSV[2]);
-	
+
 	LowC1->SetLabel("H");
 	LowC2->SetLabel("S");
 	LowC3->SetLabel("V");
 	HighC1->SetLabel("H");
 	HighC2->SetLabel("S");
 	HighC3->SetLabel("V");
-	
+
 	SpinCtrlLowC1->SetRange (0, 360);
 	SpinCtrlLowC2->SetRange (0, 255);
 	SpinCtrlLowC2->SetRange (0, 255);
 	SpinCtrlHighC1->SetRange (0, 360);
 	SpinCtrlHighC2->SetRange (0, 255);
 	SpinCtrlHighC2->SetRange (0, 255);
-	
+
 	pixelSrc.at<Vec3b>(0,0) = plugin[0]->minHSV;
 	cvtColor(pixelSrc, pixelDst, CV_HSV2RGB);
 	Vec3b& rgbMin = pixelDst.at<Vec3b>(0,0);
 	ColourPickerCtrlMin->SetColour (wxColour(rgbMin[0], rgbMin[1], rgbMin[2]));
-	
+
 	pixelSrc.at<Vec3b>(0,0) = plugin[0]->maxHSV;
 	cvtColor(pixelSrc, pixelDst, CV_HSV2RGB);
 	Vec3b& rgbMax = pixelDst.at<Vec3b>(0,0);
 	ColourPickerCtrlMax->SetColour (wxColour(rgbMax[0], rgbMax[1], rgbMax[2]));
-    }	
+    }
 }
 
 void DialogColorSegmentation::OnButtonCancelClick(wxCommandEvent& event)
@@ -337,7 +338,7 @@ void DialogColorSegmentation::OnColourPickerCtrlMinColourChanged(wxColourPickerE
     {
 	pixelSrc.at<Vec3b>(0,0) = Vec3b (col.Blue(), col.Green(), col.Red());
 	cvtColor(pixelSrc, pixelDst, CV_BGR2HSV);
-	for (auto f : plugin) 
+	for (auto f : plugin)
 	    f->minHSV = pixelDst.at<Vec3b>(0,0);
 
 	SpinCtrlLowC1->SetValue(plugin[0]->minHSV[0] * 2);
@@ -376,7 +377,7 @@ void DialogColorSegmentation::OnColourPickerCtrlMaxColourChanged(wxColourPickerE
     else if (sel == 1)
     {
 	Vec3b bgr (col.Blue(), col.Green(), col.Red());
-	for (auto f : plugin) 
+	for (auto f : plugin)
 	    f->maxBGR = bgr;
 
 	SpinCtrlHighC1->SetValue(col.Red());
@@ -384,3 +385,4 @@ void DialogColorSegmentation::OnColourPickerCtrlMaxColourChanged(wxColourPickerE
 	SpinCtrlHighC3->SetValue(col.Blue());
     }
 }
+
