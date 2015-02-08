@@ -12,7 +12,9 @@ const long DialogTracker::ID_CHECKBOX3 = wxNewId();
 const long DialogTracker::ID_CHECKBOX1 = wxNewId();
 const long DialogTracker::ID_FILEPICKERCTRL1 = wxNewId();
 const long DialogTracker::ID_CHECKBOX4 = wxNewId();
-const long DialogTracker::ID_FILEPICKERCTRL2 = wxNewId();
+const long DialogTracker::ID_BUTTON1 = wxNewId();
+const long DialogTracker::ID_STATICTEXTTRAILENGTH = wxNewId();
+const long DialogTracker::ID_SPINCTRLTRAILLENGTH = wxNewId();
 const long DialogTracker::ID_BUTTON2 = wxNewId();
 //*)
 
@@ -47,6 +49,7 @@ DialogTracker::DialogTracker(wxWindow* parent,wxWindowID id,const wxPoint& pos,c
 	wxStaticBoxSizer* StaticBoxSizer2;
 	wxFlexGridSizer* FlexGridSizer1;
 	wxFlexGridSizer* FlexGridSizer2;
+	wxFlexGridSizer* FlexGridSizer7;
 	wxFlexGridSizer* FlexGridSizer4;
 	wxStaticBoxSizer* StaticBoxSizer3;
 	wxFlexGridSizer* FlexGridSizer6;
@@ -88,13 +91,21 @@ DialogTracker::DialogTracker(wxWindow* parent,wxWindowID id,const wxPoint& pos,c
 	StaticBoxSizer2->Add(FlexGridSizer3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer1->Add(StaticBoxSizer2, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticBoxSizer4 = new wxStaticBoxSizer(wxHORIZONTAL, this, _("Replay data"));
-	FlexGridSizer6 = new wxFlexGridSizer(0, 2, 0, 0);
-	FlexGridSizer6->AddGrowableCol(1);
-	CheckBoxReplay = new wxCheckBox(this, ID_CHECKBOX4, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX4"));
+	FlexGridSizer6 = new wxFlexGridSizer(0, 1, 0, 0);
+	FlexGridSizer6->AddGrowableCol(0);
+	CheckBoxReplay = new wxCheckBox(this, ID_CHECKBOX4, _("Replay data from history"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX4"));
 	CheckBoxReplay->SetValue(false);
 	FlexGridSizer6->Add(CheckBoxReplay, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	FilePickerCtrl2 = new wxFilePickerCtrl(this, ID_FILEPICKERCTRL2, wxEmptyString, wxEmptyString, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL2"));
-	FlexGridSizer6->Add(FilePickerCtrl2, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	ButtonLoadHistory = new wxButton(this, ID_BUTTON1, _("Load data to history"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
+	FlexGridSizer6->Add(ButtonLoadHistory, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer7 = new wxFlexGridSizer(0, 2, 0, 0);
+	FlexGridSizer7->AddGrowableCol(1);
+	StaticTextTrailLength = new wxStaticText(this, ID_STATICTEXTTRAILENGTH, _("History trail length (frames)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXTTRAILENGTH"));
+	FlexGridSizer7->Add(StaticTextTrailLength, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	SpinCtrlTrailLength = new wxSpinCtrl(this, ID_SPINCTRLTRAILLENGTH, _T("10"), wxDefaultPosition, wxDefaultSize, 0, 0, 500, 10, _T("ID_SPINCTRLTRAILLENGTH"));
+	SpinCtrlTrailLength->SetValue(_T("10"));
+	FlexGridSizer7->Add(SpinCtrlTrailLength, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer6->Add(FlexGridSizer7, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticBoxSizer4->Add(FlexGridSizer6, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer1->Add(StaticBoxSizer4, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer2 = new wxFlexGridSizer(1, 3, 0, 0);
@@ -110,7 +121,8 @@ DialogTracker::DialogTracker(wxWindow* parent,wxWindowID id,const wxPoint& pos,c
 	Connect(ID_CHECKBOX1,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogTracker::OnCheckBoxOutputClick1);
 	Connect(ID_FILEPICKERCTRL1,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&DialogTracker::OnFilePickerCtrl1FileChanged);
 	Connect(ID_CHECKBOX4,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogTracker::OnCheckBoxReplayClick);
-	Connect(ID_FILEPICKERCTRL2,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&DialogTracker::OnFilePickerCtrl2FileChanged);
+	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogTracker::OnButtonLoadHistoryClick);
+	Connect(ID_SPINCTRLTRAILLENGTH,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogTracker::OnSpinCtrlTrailLengthChange);
 	Connect(ID_BUTTON2,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogTracker::OnButtonOkClick);
 	//*)
 
@@ -340,3 +352,30 @@ void DialogTracker::OnCheckBoxUseVEClick(wxCommandEvent& event)
 	f->useVirtualEntities = event.IsChecked();
 }
 
+
+void DialogTracker::OnButtonLoadHistoryClick(wxCommandEvent& event)
+{
+    wxString caption = wxT("Choose a data file to replay");
+    wxString wildcard = wxT("Text file (*.txt)|*.txt");
+    wxFileDialog dialog(this, caption, "", "", wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+
+    if (dialog.ShowModal() == wxID_OK)
+    {
+	wxString path = dialog.GetPath();
+
+	// process data
+	for (auto f : plugin)
+	{
+	    f->LoadHistory(path.ToStdString());
+	    f->SetReplay(true);
+	}
+	SpinCtrlEntitiesCount->SetValue(plugin[0]->entitiesCount);
+	CheckBoxReplay->SetValue(true);
+    }
+}
+
+void DialogTracker::OnSpinCtrlTrailLengthChange(wxSpinEvent& event)
+{
+    for (auto f : plugin)
+	f->trailLength = event.GetPosition();
+}

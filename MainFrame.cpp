@@ -953,46 +953,13 @@ void MainFrame::OnbuttonBgRecalculateClick(wxCommandEvent& event)
 
 }
 
-void MainFrame::OnbuttonSelectOutputVideoFileClick(wxCommandEvent& event)
-{
-    wxString caption = wxT("Choose a file to output tracked video");
-    wxString wildcard = wxT("Movies (*.avi)|*.avi");
-    wxString defaultDir = wxEmptyString;
-    wxString defaultFilename = wxEmptyString;
-    wxFileDialog dialog(this, caption, defaultDir, defaultFilename, wildcard,  wxFD_OPEN);
-
-    if (dialog.ShowModal() == wxID_OK)
-    {
-	wxString path = dialog.GetPath();
-//	int filterIndex = dialog.GetFilterIndex();
-    }
-
-    // process data
-}
-
-void MainFrame::OnbuttonSelectOutputTextFileClick(wxCommandEvent& event)
-{
-    wxString caption = wxT("Choose a file to output tracked positions");
-    wxString wildcard = wxT("Text file (*.txt)|*.txt");
-    wxString defaultDir = wxEmptyString;
-    wxString defaultFilename = wxEmptyString;
-    wxFileDialog dialog(this, caption, defaultDir, defaultFilename, wildcard, wxFD_OPEN);
-
-    if (dialog.ShowModal() == wxID_OK)
-    {
-	wxString path = dialog.GetPath();
-//	int filterIndex = dialog.GetFilterIndex();
-    }
-
-    // process data
-}
 void MainFrame::OnbuttonSelectZonesFileClick(wxCommandEvent& event)
 {
     wxString caption = wxT("Choose an image to define zones of interest");
     wxString wildcard = wxT("Image file (*.png)|*.png");
     wxString defaultDir = wxEmptyString;
     wxString defaultFilename = wxEmptyString;
-    wxFileDialog dialog(this, caption, defaultDir, defaultFilename, wildcard, wxFD_OPEN);
+    wxFileDialog dialog(this, caption, defaultDir, defaultFilename, wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
     if (dialog.ShowModal() == wxID_OK)
     {

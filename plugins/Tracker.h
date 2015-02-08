@@ -18,6 +18,7 @@ struct Tracker : public PipelinePlugin
     struct Entity
     {
 	int x, y;
+	int size;
 	std::vector<float> dx, dy;
 	int diffIdx;
 	bool assigned;
@@ -31,6 +32,7 @@ struct Tracker : public PipelinePlugin
 	    {
 		x = 0;
 		y = 0;
+		size = 0;
 		assigned = false;
 		zone = 1;//ZONE_VISIBLE;
 		lastFrameDetected = -1000;

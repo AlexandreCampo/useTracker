@@ -2,6 +2,7 @@
 #define DIALOGTRACKER_H
 
 //(*Headers(DialogTracker)
+#include <wx/spinctrl.h>
 #include <wx/checkbox.h>
 #include <wx/dialog.h>
 #include <wx/sizer.h>
@@ -29,14 +30,16 @@ class DialogTracker: public wxDialog
 		virtual ~DialogTracker();
 
 		//(*Declarations(DialogTracker)
+		wxStaticText* StaticTextTrailLength;
 		wxButton* buttonOk;
 		wxCheckBox* CheckBoxReplay;
 		wxCheckBox* CheckBoxUseVE;
+		wxSpinCtrl* SpinCtrlTrailLength;
 		wxCheckBox* CheckBoxOutput;
 		wxStaticText* StaticText1a;
+		wxButton* ButtonLoadHistory;
 		wxCheckBox* CheckBoxVEZone;
 		wxFilePickerCtrl* FilePickerCtrl1;
-		wxFilePickerCtrl* FilePickerCtrl2;
 		//*)
 
 		wxStaticText* StaticText1;
@@ -88,7 +91,9 @@ class DialogTracker: public wxDialog
 		static const long ID_CHECKBOX1;
 		static const long ID_FILEPICKERCTRL1;
 		static const long ID_CHECKBOX4;
-		static const long ID_FILEPICKERCTRL2;
+		static const long ID_BUTTON1;
+		static const long ID_STATICTEXTTRAILENGTH;
+		static const long ID_SPINCTRLTRAILLENGTH;
 		static const long ID_BUTTON2;
 		//*)
 
@@ -133,6 +138,8 @@ class DialogTracker: public wxDialog
 		void OnFilePickerCtrl2FileChanged(wxFileDirPickerEvent& event);
 		void OnCheckBoxUseVEClick(wxCommandEvent& event);
 		void OnKeyDown(wxKeyEvent& event);
+		void OnButtonLoadHistoryClick(wxCommandEvent& event);
+		void OnSpinCtrlTrailLengthChange(wxSpinEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

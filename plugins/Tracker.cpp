@@ -4,6 +4,8 @@
 #include "ImageProcessingEngine.h"
 #include "Blob.h"
 
+#include <fstream>
+
 //#include "../dlib/optimization/max_cost_assignment.h"
 //using namespace dlib;
 
@@ -88,7 +90,7 @@ void Tracker::Replay()
 	    }
 	}
     }
-    else 
+    else
     {
 	historyIndex = history.size();
     }
@@ -216,6 +218,7 @@ void Tracker::Track()
 	// ok all tests passed, make it a detected entity
 	entities[e].x = blobs[b].x;
 	entities[e].y = blobs[b].y;
+	entities[e].size = blobs[b].size;
 	entities[e].assigned = true;
 	entities[e].zone = blobs[b].zone;
 //	    entities[e].zone = ZONE_VISIBLE;
@@ -287,7 +290,7 @@ void Tracker::OutputHud (Mat& hud)
 		{
 		    pos.x = history[eh].x;
 		    pos.y = history[eh].y;
-		    
+
 		    if (last[e].x >= 0)
 		    {
 			line(hud, pos, last[e], cvScalar(32,32,32,255), 2, CV_AA);
@@ -322,7 +325,7 @@ void Tracker::OutputHud (Mat& hud)
 	}
     }
 
-    // plot id number, if possible 
+    // plot id number, if possible
     if (!replay || historyIndex < history.size())
     {
 	for (unsigned int e = 0; e < entitiesCount; e++)
@@ -350,6 +353,7 @@ void Tracker::OutputStep ()
 		<< e << "\t"
 		<< entities[e].assigned << "\t"
 		<< entities[e].zone << "\t"
+		<< entities[e].size << "\t"
 		<< entities[e].x << "\t"
 		<< entities[e].y
 		<< std::endl;
@@ -367,7 +371,7 @@ void Tracker::OpenOutput()
 	outputStream.open(outputFilename.c_str(), std::ios::out);
 	if (outputStream.is_open())
 	{
-	    outputStream << "time \t frame \t lastFrameDetected \t lastFrameNotDetected \t entity \t assigned \t zone \t x \t y " << std::endl;
+	    outputStream << "time \t frame \t lastFrameDetected \t lastFrameNotDetected \t entity \t assigned \t zone \t size \t x \t y " << std::endl;
 	}
     }
 }
@@ -454,5 +458,35 @@ void Tracker::ClearHistory()
 
 void Tracker::LoadHistory(string filename)
 {
+    std::ifstream file(filename);
+    std::string str;
 
+    // eat up first line
+    for (int i = 0; i < 10; i++)
+	file >> str;
+
+    history.clear();
+
+    // read first line separately
+    int count = 0;
+    unsigned int frameNumber;
+    Entity e;
+
+    file >> str >> historyStartFrame >> e.lastFrameDetected >> e.lastFrameNotDetected >> str
+	 >> e.assigned >> e.zone >> e.size >> e.x >> e.y;
+
+    do
+    {
+	history.push_back(e);
+		
+	file >> str >> frameNumber >> e.lastFrameDetected >> e.lastFrameNotDetected >> str
+	     >> e.assigned >> e.zone >> e.size >> e.x >> e.y;
+
+	if (count == 0)
+	    if (frameNumber != historyStartFrame)
+		count = history.size();
+	
+    } while (!file.eof()); // if eof is reached while parsing data, do not record the entity
+
+    SetMaxEntities (count);
 }
