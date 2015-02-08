@@ -33,6 +33,7 @@
 #include <wx/statbmp.h>
 //*)
 
+#include <wx/dcclient.h>
 #include <wx/checklst.h>
 #include <wx/listbox.h>
 #include <wx/dnd.h>
@@ -60,7 +61,6 @@ public:
     bool OnPipelineAdd(wxCoord x, wxCoord y, const wxString& str);
     bool OnPipelineMove(wxCoord x, wxCoord y, const wxString& str);
     bool OnPipelineRemove(wxCoord x, wxCoord y, const wxString& str);
-    int FilterEvent(wxEvent& event);
 
 private:
 
@@ -112,6 +112,8 @@ private:
     void OnCheckBoxRecalculateClick(wxCommandEvent& event);
     void OnRadioBoxMethodSelect(wxCommandEvent& event);
     void OnMenuOpenCaptureSelected(wxCommandEvent& event);
+    void OnGLCanvas1Char(wxKeyEvent& event);
+    void OnGLCanvas1MouseEnter(wxMouseEvent& event);
     //*)
 
     //(*Identifiers(MainFrame)
@@ -234,6 +236,7 @@ private:
     bool AddPipelinePlugin (std::string str, cv::FileNode& fn, int pos = -1, bool showDialog = false);
 
     void PrintInfoToHud();
+    void DrawTrackerSelection(wxClientDC& dc);
     std::string TextToCamelCase (std::string txt);
     std::string CamelCaseToText (std::string txt);
 

@@ -25,7 +25,7 @@ void RecordVideo::OpenOutput ()
     // close output if it is already opened
     if (outputOpened) CloseOutput();
 
-    // now init a new video 
+    // now init a new video
     frameCount = 0;
 
     av_log_set_level(AV_LOG_FATAL);
@@ -96,7 +96,7 @@ void RecordVideo::OpenOutput ()
      av_opt_set(codec_context->priv_data, "preset", preset.c_str(), 0);
 
     /* put sample parameters */
-    codec_context->bit_rate = bitrate * 1000;
+    codec_context->bit_rate = bitrate * 1000 * 8;
 
     /* resolution must be a multiple of two */
     codec_context->width = pipeline->width;
@@ -301,6 +301,8 @@ void RecordVideo::LoadXML (FileNode& fn)
 	active = (int)fn["Active"];
 	output = (int)fn["Output"];
 	outputFilename = (string)fn["OutputFilename"];
+	preset = (string)fn["Preset"];
+	bitrate = (int)fn["Bitrate"];
     }
 }
 
@@ -309,6 +311,8 @@ void RecordVideo::SaveXML (FileStorage& fs)
     fs << "Active" << active;
     fs << "Output" << output;
     fs << "OutputFilename" << outputFilename;
+    fs << "Preset" << preset;
+    fs << "Bitrate" << (int)bitrate;
 }
 
 

@@ -72,7 +72,7 @@ ImageProcessingEngine::~ImageProcessingEngine ()
 void ImageProcessingEngine::Reset(Parameters& parameters)
 {
     // no capture is a fatal error...
-    if (!capture)
+    if (capture == nullptr)
     {
 	cerr << "Fatal error: no capture source defined. Exiting." << endl;
 	exit (-1);
@@ -166,7 +166,9 @@ void ImageProcessingEngine::LoadXML(FileNode& fn)
     }
     else if (parameters.avtDevice >= 0)
     {
+#ifdef VIMBA
 	capture = new CaptureAVTCamera (parameters.avtDevice);
+	#endif //VIMBA
     }
 
     // read xml file
@@ -532,6 +534,8 @@ void ImageProcessingEngine::Step(bool drawHud)
 	    threshold(pipelineSnapshotMarked, pipelineSnapshot, 0, 255, THRESH_BINARY);
 	}
     }
+
+    cout << "stepping ipEngine at time/frame " << capture->time << " " << capture->frameNumber << endl;
 }
 
 bool ImageProcessingEngine::GetNextFrame(bool needed)

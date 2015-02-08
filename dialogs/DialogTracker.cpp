@@ -108,6 +108,7 @@ DialogTracker::DialogTracker(wxWindow* parent,wxWindowID id,const wxPoint& pos,c
 
 	Connect(ID_CHECKBOX2,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogTracker::OnCheckBoxUseVEClick);
 	Connect(ID_CHECKBOX1,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogTracker::OnCheckBoxOutputClick1);
+	Connect(ID_FILEPICKERCTRL1,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&DialogTracker::OnFilePickerCtrl1FileChanged);
 	Connect(ID_CHECKBOX4,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogTracker::OnCheckBoxReplayClick);
 	Connect(ID_FILEPICKERCTRL2,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&DialogTracker::OnFilePickerCtrl2FileChanged);
 	Connect(ID_BUTTON2,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogTracker::OnButtonOkClick);

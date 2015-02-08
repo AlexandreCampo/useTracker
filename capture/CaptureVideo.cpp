@@ -40,13 +40,16 @@ bool CaptureVideo::Open (string filename)
     height = source.get(CV_CAP_PROP_FRAME_HEIGHT);
     fps = source.get(CV_CAP_PROP_FPS);
 
-    cout << "detected w/h/fps " << width << " " << height << " " << fps << std::endl;
+    // fps incorrectly detected
+    if (fps <= 0) fps = 1;
 
-    // SetTime(startTime);
-    // currentTime = (float)GetVideoTimeMsec() / 1000.0;
+    cout << "detected w/h/fps " << width << " " << height << " " << fps << std::endl;
 
     // read first frame to allow display
     source >> frame;
+
+    GetTime();
+    GetFrameNumber();
 
     return (!frame.empty());
 }

@@ -183,29 +183,30 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     GLCanvas1 = new wxGLCanvas(this, ID_GLCANVAS1, wxDefaultPosition, wxSize(-1,-1), 0, _T("ID_GLCANVAS1"), GLCanvasAttributes_1);
     GLCanvas1->SetMinSize(wxSize(800,600));
     GLCanvas1->SetMaxSize(wxSize(-1,-1));
+    GLCanvas1->SetFocus();
     FlexGridSizer6->Add(GLCanvas1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer2 = new wxFlexGridSizer(1, 9, 0, 0);
     FlexGridSizer2->AddGrowableCol(7);
-    buttonOutput = new wxBitmapButton(this, ID_BITMAPBUTTON1, wxBitmap(wxImage(_T("./images/Actions-system-search-icon.png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW, wxDefaultValidator, _T("ID_BITMAPBUTTON1"));
+    buttonOutput = new wxBitmapButton(this, ID_BITMAPBUTTON1, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-system-search-icon.png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW, wxDefaultValidator, _T("ID_BITMAPBUTTON1"));
     FlexGridSizer2->Add(buttonOutput, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonStop = new wxBitmapButton(this, ID_BITMAPBUTTON3, wxBitmap(wxImage(_T("./images/Actions-media-playback-stop-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON3"));
+    buttonStop = new wxBitmapButton(this, ID_BITMAPBUTTON3, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-stop-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON3"));
     FlexGridSizer2->Add(buttonStop, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonBackwards = new wxBitmapButton(this, ID_BITMAPBUTTON4, wxBitmap(wxImage(_T("./images/Actions-media-seek-backward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON4"));
+    buttonBackwards = new wxBitmapButton(this, ID_BITMAPBUTTON4, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-seek-backward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON4"));
     FlexGridSizer2->Add(buttonBackwards, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonStepBackwards = new wxBitmapButton(this, ID_BITMAPBUTTON9, wxBitmap(wxImage(_T("./images/Actions-media-skip-backward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON9"));
+    buttonStepBackwards = new wxBitmapButton(this, ID_BITMAPBUTTON9, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-skip-backward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON9"));
     FlexGridSizer2->Add(buttonStepBackwards, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonPlay = new wxBitmapButton(this, ID_BITMAPBUTTON2, wxBitmap(wxImage(_T("./images/Actions-media-playback-start-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON2"));
-    buttonPlay->SetBitmapSelected(wxBitmap(wxImage(_T("./images/Actions-media-playback-pause-icon (1).png"))));
+    buttonPlay = new wxBitmapButton(this, ID_BITMAPBUTTON2, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-start-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON2"));
+    buttonPlay->SetBitmapSelected(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-pause-icon (1).png"))));
     FlexGridSizer2->Add(buttonPlay, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonStepForward = new wxBitmapButton(this, ID_BITMAPBUTTON10, wxBitmap(wxImage(_T("./images/Actions-media-skip-forward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON10"));
+    buttonStepForward = new wxBitmapButton(this, ID_BITMAPBUTTON10, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-skip-forward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON10"));
     FlexGridSizer2->Add(buttonStepForward, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonForward = new wxBitmapButton(this, ID_BITMAPBUTTON8, wxBitmap(wxImage(_T("./images/Actions-media-seek-forward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON8"));
+    buttonForward = new wxBitmapButton(this, ID_BITMAPBUTTON8, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-seek-forward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON8"));
     FlexGridSizer2->Add(buttonForward, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     videoSlider = new wxSlider(this, ID_SLIDER1, 0, 0, 1000, wxDefaultPosition, wxSize(-1,-1), 0, wxDefaultValidator, _T("ID_SLIDER1"));
     videoSlider->SetMinSize(wxSize(-1,-1));
     videoSlider->SetMaxSize(wxSize(-1,-1));
     FlexGridSizer2->Add(videoSlider, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 12);
-    buttonHud = new wxBitmapButton(this, ID_BITMAPBUTTON11, wxBitmap(wxImage(_T("./images/Apps-utilities-system-monitor-icon active (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON11"));
+    buttonHud = new wxBitmapButton(this, ID_BITMAPBUTTON11, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Apps-utilities-system-monitor-icon active (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON11"));
     FlexGridSizer2->Add(buttonHud, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     FlexGridSizer6->Add(FlexGridSizer2, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer1->Add(FlexGridSizer6, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
@@ -260,15 +261,15 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FlexGridSizer5->Add(CheckBoxRecalculate, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     StaticBoxSizer2->Add(FlexGridSizer5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer4 = new wxFlexGridSizer(0, 2, 0, 0);
-    StaticBitmap1 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP1, wxBitmap(wxImage(_T("./images/Categories-applications-system-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP1"));
+    StaticBitmap1 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP1, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Categories-applications-system-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP1"));
     FlexGridSizer4->Add(StaticBitmap1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonBgRecalculate = new wxButton(BackgroundTab, ID_BUTTON1, _("Recalculate"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
     FlexGridSizer4->Add(ButtonBgRecalculate, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    StaticBitmap2 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP2, wxBitmap(wxImage(_T("./images/Actions-document-open-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP2"));
+    StaticBitmap2 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP2, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-document-open-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP2"));
     FlexGridSizer4->Add(StaticBitmap2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonBgLoad = new wxButton(BackgroundTab, ID_BUTTON3, _("Load background"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON3"));
     FlexGridSizer4->Add(ButtonBgLoad, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    StaticBitmap3 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP3, wxBitmap(wxImage(_T("./images/Actions-document-save-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP3"));
+    StaticBitmap3 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP3, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-document-save-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP3"));
     FlexGridSizer4->Add(StaticBitmap3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonBgSave = new wxButton(BackgroundTab, ID_BUTTON4, _("Save background"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON4"));
     FlexGridSizer4->Add(ButtonBgSave, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
@@ -334,12 +335,14 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FlexGridSizer1->SetSizeHints(this);
 
     GLCanvas1->Connect(wxEVT_PAINT,(wxObjectEventFunction)&MainFrame::OnGLCanvas1Paint,0,this);
+    GLCanvas1->Connect(wxEVT_CHAR,(wxObjectEventFunction)&MainFrame::OnGLCanvas1Char,0,this);
     GLCanvas1->Connect(wxEVT_LEFT_DOWN,(wxObjectEventFunction)&MainFrame::OnGLCanvas1LeftDown,0,this);
     GLCanvas1->Connect(wxEVT_LEFT_UP,(wxObjectEventFunction)&MainFrame::OnGLCanvas1LeftUp,0,this);
     GLCanvas1->Connect(wxEVT_LEFT_DCLICK,(wxObjectEventFunction)&MainFrame::OnGLCanvas1LeftDClick,0,this);
     GLCanvas1->Connect(wxEVT_RIGHT_DOWN,(wxObjectEventFunction)&MainFrame::OnGLCanvas1RightDown,0,this);
     GLCanvas1->Connect(wxEVT_RIGHT_UP,(wxObjectEventFunction)&MainFrame::OnGLCanvas1RightUp,0,this);
     GLCanvas1->Connect(wxEVT_MOTION,(wxObjectEventFunction)&MainFrame::OnGLCanvas1MouseMove,0,this);
+    GLCanvas1->Connect(wxEVT_ENTER_WINDOW,(wxObjectEventFunction)&MainFrame::OnGLCanvas1MouseEnter,0,this);
     GLCanvas1->Connect(wxEVT_SIZE,(wxObjectEventFunction)&MainFrame::OnGLCanvas1Resize,0,this);
     Connect(ID_BITMAPBUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnbuttonOutputClick);
     Connect(ID_BITMAPBUTTON3,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnbuttonStopClick);
@@ -375,9 +378,9 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     // end of codeblocks generated code... now comes mine.
 
     // disable AVT menu if not compiled with VIMBA
-    #ifndef VIMBA
-    Menu1->Enable (ID_MENUITEM2, false);
-    #endif // VIMBA
+    //#ifndef VIMBA
+    //Menu1->Enable (ID_MENUITEM2, false);
+    //#endif // VIMBA
 
     // replace timestep spinctrl with a double spinctrl
     // SpinCtrlStartTimeDouble = new wxSpinCtrlDouble(ConfigTab, ID_SPINCTRL6x, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 1000000000, 0, 0.01, _T("ID_SPINCTRL6"));
@@ -638,9 +641,12 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
     // wait a bit
     // todo debug
 //    wxLongLong currentTime = wxGetLocalTimeMillis();
-    wxLongLong td = playTimestep - (wxGetLocalTimeMillis() - lastPlayTime);
-    if (td > 16) td = 16; // minimum UI refresh rate
-    if (td > 0) wxMilliSleep (td.ToLong());
+
+    // TODO
+    // wxLongLong td = playTimestep - (wxGetLocalTimeMillis() - lastPlayTime);
+    // if (td > 16) td = 16; // minimum UI refresh rate
+    // if (td > 0) wxMilliSleep (td.ToLong());
+
 //    wxLongLong currentTime2 = wxGetLocalTimeMillis();
 //    cout << "From idle " << currentTime << " " << currentTime2 << endl;
 
@@ -650,7 +656,7 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
     {
 	if (play)
 	{
-	    if (wxGetLocalTimeMillis() - lastPlayTime >= playTimestep)
+//	    if (wxGetLocalTimeMillis() - lastPlayTime >= playTimestep)
 	    {
 		lastPlayTime = wxGetLocalTimeMillis();
 		bool gotFrame = ipEngine.GetNextFrame();
@@ -659,7 +665,7 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 		if (!gotFrame)
 		{
 		    ipEngine.capture->frame = emptyFrame;
-		    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-media-playback-start-icon (1).png"))));
+		    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
 		    buttonPlay->Refresh();
 		    play = false;
 		}
@@ -688,6 +694,18 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
     GLCanvas1->Refresh();
 
     // Draw a selection range if needed
+    DrawTrackerSelection(dc);
+
+    // refresh slider pos and drawing
+    if (!sliderMoving) videoSlider->SetValue(ipEngine.capture->GetFrameNumber() * 1000 / (ipEngine.capture->GetFrameCount()+1));
+//    videoSlider->Refresh();
+
+
+    evt.RequestMore(); // render continuously, not only once on idle
+}
+
+void MainFrame::DrawTrackerSelection(wxClientDC& dc)
+{
     if (ListBoxPipeline->GetCount() > 0)
     {
 	PipelinePlugin* pp = ipEngine.pipelines[ipEngine.threadsCount].plugins[ipEngine.snapshotPos];
@@ -729,13 +747,6 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 	    dc.DrawCircle (px2, py, 2);
 	}
     }
-
-    // refresh slider pos and drawing
-    if (!sliderMoving) videoSlider->SetValue(ipEngine.capture->GetFrameNumber() * 1000 / (ipEngine.capture->GetFrameCount()+1));
-//    videoSlider->Refresh();
-
-
-    evt.RequestMore(); // render continuously, not only once on idle
 }
 
 void MainFrame::PrintInfoToHud()
@@ -801,14 +812,14 @@ void MainFrame::OnbuttonOutputClick(wxCommandEvent& event)
 {
     if (!output)
     {
-	buttonOutput->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-system-search-icon-running.png"))));
+	buttonOutput->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-system-search-icon-running.png"))));
 	buttonOutput->Refresh();
 	ipEngine.OpenOutput();
 	output = true;
     }
     else
     {
-	buttonOutput->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-system-search-icon.png"))));
+	buttonOutput->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-system-search-icon.png"))));
 	buttonOutput->Refresh();
 	ipEngine.CloseOutput();
 	output = false;
@@ -819,14 +830,14 @@ void MainFrame::OnbuttonPlayClick(wxCommandEvent& event)
 {
     if (!play)
     {
-	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-media-playback-pause-icon (1).png"))));
+	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-pause-icon (1).png"))));
 	buttonPlay->Refresh();
 	play = true;
 	manualPlay = false;
     }
     else
     {
-	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-media-playback-start-icon (1).png"))));
+	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
 	buttonPlay->Refresh();
 	play = false;
     }
@@ -834,7 +845,7 @@ void MainFrame::OnbuttonPlayClick(wxCommandEvent& event)
 
 void MainFrame::OnbuttonStopClick(wxCommandEvent& event)
 {
-    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-media-playback-start-icon (1).png"))));
+    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
     buttonPlay->Refresh();
     videoSlider->SetValue(0);
     ipEngine.capture->Stop();
@@ -1023,7 +1034,7 @@ void MainFrame::OnButtonBgLoadClick(wxCommandEvent& event)
     wxString defaultDir = fn.GetFullName();
     wxString defaultFilename = fn.GetPath();
 
-    wxFileDialog dialog(this, caption, defaultDir, defaultFilename, wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    wxFileDialog dialog(this, caption, "", "", wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
     if (dialog.ShowModal() == wxID_OK)
     {
@@ -1055,7 +1066,7 @@ void MainFrame::OnButtonBgSaveClick(wxCommandEvent& event)
     wxString wildcard = wxT("Image file (*.png)|*.png");
     wxString defaultDir = wxEmptyString;
     wxString defaultFilename = wxEmptyString;
-    wxFileDialog dialog(this, caption, defaultDir, defaultFilename, wildcard, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+    wxFileDialog dialog(this, caption, "", "", wildcard, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
     if (dialog.ShowModal() == wxID_OK)
     {
@@ -1239,22 +1250,17 @@ void MainFrame::OnbuttonBackwardsClick(wxCommandEvent& event)
 void MainFrame::OnbuttonStepForwardClick(wxCommandEvent& event)
 {
     // disable play as we enter frame by frame
-    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-media-playback-start-icon (1).png"))));
+    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
     buttonPlay->Refresh();
     play = false;
     manualPlay = true;
 
     // request next frame manually
-    if (ipEngine.GetNextFrame())
-    {
-	// update last valid frame
-//	previousFrame = ipEngine.frame;
-    }
-    else
+    if (!ipEngine.GetNextFrame())
     {
 	// did not get a frame, pause and use last valid frame for display
 	ipEngine.capture->frame = emptyFrame; //previousFrame;
-	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-media-playback-start-icon (1).png"))));
+	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
 	buttonPlay->Refresh();
 	play = false;
     }
@@ -1267,7 +1273,7 @@ void MainFrame::OnbuttonStepBackwardsClick(wxCommandEvent& event)
 	CaptureVideo* capv = dynamic_cast<CaptureVideo*>(ipEngine.capture);
 
 	// disable play as we enter frame by frame
-	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-media-playback-start-icon (1).png"))));
+	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
 	buttonPlay->Refresh();
 	play = false;
 	manualPlay = true;
@@ -1281,13 +1287,13 @@ void MainFrame::OnbuttonHudClick(wxCommandEvent& event)
 {
     if (hudVisible == true)
     {
-	buttonHud->SetBitmap(wxBitmap(wxImage(_T("./images/Apps-utilities-system-monitor-icon inactive (1).png"))));
+	buttonHud->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Apps-utilities-system-monitor-icon inactive (1).png"))));
 	buttonPlay->Refresh();
 	hudVisible = false;
     }
     else
     {
-	buttonHud->SetBitmap(wxBitmap(wxImage(_T("./images/Apps-utilities-system-monitor-icon active (1).png"))));
+	buttonHud->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Apps-utilities-system-monitor-icon active (1).png"))));
 	buttonPlay->Refresh();
 	hudVisible = true;
     }
@@ -1501,15 +1507,25 @@ void MainFrame::OnMenuLoadSettingsSelected(wxCommandEvent& event)
     {
 	wxString path = dialog.GetPath();
 
-	// press stop...
-	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-media-playback-start-icon (1).png"))));
-	buttonPlay->Refresh();
-	videoSlider->SetValue(0);
-	ipEngine.capture->Stop();
-	play = false;
+	parameters.file.release();
+	parameters.file.open(path.ToStdString(), FileStorage::READ);
+	if (parameters.file.isOpened())
+	{
+	    // press stop...
+	    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
+	    buttonPlay->Refresh();
+	    videoSlider->SetValue(0);
+	    ipEngine.capture->Stop();
+	    play = false;
 
-	ipEngine.LoadXML (parameters.rootNode);
-	ResetImageProcessingEngine();
+	    parameters.rootNode = parameters.file["Configuration"];
+	    ipEngine.LoadXML (parameters.rootNode);
+	    ResetImageProcessingEngine();
+	}
+	else
+	{
+	    wxMessageBox( wxT("Could not load settings from this file."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
+	}
     }
 }
 
@@ -1807,6 +1823,8 @@ void MainFrame::ResetImageProcessingEngine()
 {
     ipEngine.Reset(parameters);
     UpdateUI();
+    AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+    GLCanvas1->Refresh();
 
     // regenerate and assign hud / empty frame
     emptyFrame.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC3);
@@ -1846,7 +1864,7 @@ void MainFrame::ResetImageProcessingEngine()
 void MainFrame::OnMenuOpenCaptureSelected(wxCommandEvent& event)
 {
     // press stop...
-    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("./images/Actions-media-playback-start-icon (1).png"))));
+    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
     buttonPlay->Refresh();
     videoSlider->SetValue(0);
     ipEngine.capture->Stop();
@@ -1881,53 +1899,56 @@ void MainFrame::OnMenuOpenCaptureSelected(wxCommandEvent& event)
     }
 }
 
-int MainFrame::FilterEvent(wxEvent& event)
+void MainFrame::OnGLCanvas1Char(wxKeyEvent& event)
 {
-    if ((event.GetEventType() == wxEVT_CHAR))
+    wxCommandEvent e;
+    switch (event.GetKeyCode())
     {
-	if (((wxKeyEvent&)event).GetKeyCode() == WXK_SPACE)
-	{
-	    wxCommandEvent e;
-	    OnbuttonPlayClick(e);
-	    return true;
-	}
-	if (((wxKeyEvent&)event).GetKeyCode() == WXK_RIGHT)
-	{
-	    wxCommandEvent e;
-	    OnbuttonStepForwardClick(e);
-	    return true;
-	}
-	if (((wxKeyEvent&)event).GetKeyCode() == WXK_LEFT)
-	{
-	    wxCommandEvent e;
-	    OnbuttonStepBackwardsClick(e);
-	    return true;
-	}
-	if (((wxKeyEvent&)event).GetKeyCode() == WXK_CONTROL_R)
-	{
-	    wxCommandEvent e;
-	    OnbuttonOutputClick(e);
-	    return true;
-	}
-	if (((wxKeyEvent&)event).GetKeyCode() == '+' || ((wxKeyEvent&)event).GetKeyCode() == '=')
-	{
-	    wxCommandEvent e;
-	    OnbuttonForwardClick(e);
-	    return true;
-	}
-	if (((wxKeyEvent&)event).GetKeyCode() == '-')
-	{
-	    wxCommandEvent e;
-	    OnbuttonBackwardsClick(e);
-	    return true;
-	}
-	if (((wxKeyEvent&)event).GetKeyCode() == WXK_BACK)
-	{
-	    playSpeed = 0;
-	    playTimestep = (int)(1000.0 / ipEngine.capture->fps);
-	    return true;
-	}
-    }
+    case WXK_SPACE:
+	OnbuttonPlayClick(e);
+	break;
 
-    return -1;
+    case WXK_RIGHT:
+	OnbuttonStepForwardClick(e);
+	break;
+
+    case WXK_LEFT:
+	OnbuttonStepBackwardsClick(e);
+	break;
+
+    case WXK_CONTROL_R:
+	OnbuttonOutputClick(e);
+	break;
+
+    case WXK_CONTROL_O:
+	OnMenuOpenCaptureSelected(e);
+	break;
+
+    case WXK_CONTROL_L:
+	OnMenuLoadSettingsSelected(e);
+	break;
+
+    case WXK_CONTROL_S:
+	OnMenuSaveSettingsSelected(e);
+	break;
+
+    case '+':
+    case '=':
+	OnbuttonForwardClick(e);
+	break;
+
+    case '-':
+	OnbuttonBackwardsClick(e);
+	break;
+
+    case WXK_BACK:
+	playSpeed = 0;
+	playTimestep = (int)(1000.0 / ipEngine.capture->fps);
+	break;
+    }
+}
+
+void MainFrame::OnGLCanvas1MouseEnter(wxMouseEvent& event)
+{
+    GLCanvas1->SetFocus();
 }

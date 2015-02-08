@@ -1,5 +1,7 @@
 #include "DialogRecordVideo.h"
 
+#include <iostream>
+
 //(*InternalHeaders(DialogRecordVideo)
 #include <wx/string.h>
 #include <wx/intl.h>
@@ -77,7 +79,11 @@ DialogRecordVideo::DialogRecordVideo(wxWindow* parent,wxWindowID id,const wxPoin
 	FlexGridSizer1->Fit(this);
 	FlexGridSizer1->SetSizeHints(this);
 
+	Connect(ID_SPINCTRL1,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogRecordVideo::OnSpinCtrlBitrateChange);
+	Connect(ID_CHOICE1,wxEVT_COMMAND_CHOICE_SELECTED,(wxObjectEventFunction)&DialogRecordVideo::OnChoicePresetSelect);
 	Connect(ID_CHECKBOX1,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogRecordVideo::OnCheckBoxOutputClick);
+	Connect(ID_FILEPICKERCTRL1,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&DialogRecordVideo::OnFilePickerCtrl1FileChanged);
+	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogRecordVideo::OnButtonOkClick);
 	//*)
 }
 
@@ -93,6 +99,10 @@ void DialogRecordVideo::SetPlugin (std::vector<PipelinePlugin*> pfv)
 	plugin.push_back(dynamic_cast<RecordVideo*> (func));
     FilePickerCtrl1->SetPath(plugin[0]->outputFilename);
     CheckBoxOutput->SetValue(plugin[0]->output);
+    ChoicePreset->SetStringSelection(plugin[0]->preset);
+    SpinCtrlBitrate->SetValue(plugin[0]->bitrate);
+
+    std::cout << "Set dialog bitrate to " << SpinCtrlBitrate->GetValue() << std::endl;
 }
 
 

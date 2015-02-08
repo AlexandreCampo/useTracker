@@ -50,9 +50,9 @@ public:
     int frameCount;
 
     std::string outputFilename;
-    std::string preset;
+    std::string preset = "medium";
     bool outputOpened = false;
-    long bitrate = 1000;
+    int bitrate = 250;
 
 
     RecordVideo();

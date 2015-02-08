@@ -52,7 +52,6 @@ public:
     MainFrame* mainFrame = nullptr;
         
     virtual bool OnInit();
-    int FilterEvent(wxEvent& event);
 };
 
 #endif // APP_H

@@ -71,11 +71,14 @@ void Tracker::Replay()
     // locate data
     unsigned int currentFrame = pipeline->parent->capture->frameNumber;
 
+    // TODO DEBUG
 //    cout << "Tracker : current frame=" << currentFrame << " h-start=" << historyStartFrame << " h-size=" << history.size() << endl;
 
     if (currentFrame >= historyStartFrame)
     {
 	historyIndex = (currentFrame - historyStartFrame) * entitiesCount;
+
+//	cout << "using hindex=" << historyIndex << endl;
 
 	if (historyIndex < history.size())
 	{
@@ -84,6 +87,10 @@ void Tracker::Replay()
 		entities[e] = history[historyIndex+e];
 	    }
 	}
+    }
+    else 
+    {
+	historyIndex = history.size();
     }
 }
 
@@ -242,9 +249,14 @@ void Tracker::Track()
 
     // save to history
 //    cout << "Tracker : " << "saved data from frame " << pipeline->parent->capture->frameNumber << endl;
+
+    if (history.empty()) historyStartFrame = pipeline->parent->capture->frameNumber;
+
+//    cout << "Tracked frame " << pipeline->parent->capture->frameNumber << " hindex" << history.size() / entitiesCount << " hstart = " << historyStartFrame << endl;
+
     for (unsigned int e = 0; e < entitiesCount; e++)
     {
-	history.push_back(entities[e]);
+    	history.push_back(entities[e]);
     }
     historyIndex += entitiesCount;
 }
@@ -258,34 +270,16 @@ void Tracker::OutputHud (Mat& hud)
     // draw a trail if history available
     // first, draw past positions
     vector<Point> last;
-    
+
     for (unsigned int i = 0; i < entitiesCount; i++)
     {
 	last.push_back(Point(-1,-1));
     }
 
-    for (unsigned int h = historyIndex - trailLength * entitiesCount; h < historyIndex - entitiesCount; h += entitiesCount)
+    // draw past trail if possible (data available)
+    if (!replay || historyIndex < history.size())
     {
-	if (h >= 0 && h < history.size())
-	{
-	    for (unsigned int e = 0, eh = h; e < entitiesCount; e++, eh++)
-	    {
-		pos.x = history[eh].x;
-		pos.y = history[eh].y;
-
-		if (last[e].x >= 0)
-		{
-		    line(hud, pos, last[e], cvScalar(0,255,164,255), 2, CV_AA);
-		}
-		last[e] = pos;
-	    }       	    
-	}
-    }
-
-    // then, try to draw future positions if in replay mode
-    if (replay)
-    {
-	for (unsigned int h = historyIndex; h < historyIndex + trailLength*entitiesCount; h+=entitiesCount)
+	for (unsigned int h = historyIndex - trailLength * entitiesCount; h <= historyIndex; h += entitiesCount)
 	{
 	    if (h >= 0 && h < history.size())
 	    {
@@ -296,21 +290,49 @@ void Tracker::OutputHud (Mat& hud)
 		    
 		    if (last[e].x >= 0)
 		    {
-			line(hud, pos, last[e], cvScalar(255,255,255,255), 2, CV_AA);
+			line(hud, pos, last[e], cvScalar(32,32,32,255), 2, CV_AA);
 		    }
 		    last[e] = pos;
-		}       	    
+		}
+//		cout << "past trail at h=" << h <<endl;
 	    }
 	}
     }
 
-    for (unsigned int e = 0; e < entitiesCount; e++)
+    // then, try to draw future positions if in replay mode
+    if (replay)
     {
-	sprintf (str, "%d", e);
-	pos.x = entities[e].x;
-	pos.y = entities[e].y;
-	putText(hud, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,0,0,255), 2, CV_AA);
-	putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,255,200,255), 2, CV_AA);
+	for (unsigned int h = historyIndex + entitiesCount; h < historyIndex + trailLength*entitiesCount; h+=entitiesCount)
+	{
+	    if (h >= 0 && h < history.size())
+	    {
+		for (unsigned int e = 0, eh = h; e < entitiesCount; e++, eh++)
+		{
+		    pos.x = history[eh].x;
+		    pos.y = history[eh].y;
+
+		    if (last[e].x >= 0)
+		    {
+			line(hud, pos, last[e], cvScalar(255,255,255,255), 2, CV_AA);
+		    }
+		    last[e] = pos;
+		}
+//		cout << "future trail at h=" << h <<endl;
+	    }
+	}
+    }
+
+    // plot id number, if possible 
+    if (!replay || historyIndex < history.size())
+    {
+	for (unsigned int e = 0; e < entitiesCount; e++)
+	{
+	    sprintf (str, "%d", e);
+	    pos.x = entities[e].x;
+	    pos.y = entities[e].y;
+	    putText(hud, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,0,0,255), 2, CV_AA);
+	    putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,255,200,255), 2, CV_AA);
+	}
     }
 }
 
@@ -432,5 +454,5 @@ void Tracker::ClearHistory()
 
 void Tracker::LoadHistory(string filename)
 {
-    
+
 }

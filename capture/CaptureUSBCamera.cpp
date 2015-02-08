@@ -42,17 +42,20 @@ bool CaptureUSBCamera::Open (int device)
 	return false;
     }
 
-    // Get the properties from the camera (can't get fps from opencv...)
     source.set(CV_CAP_PROP_FRAME_WIDTH, 1920);
     source.set(CV_CAP_PROP_FRAME_HEIGHT, 1080);
 
-    usleep (500000);
+    fps = source.get(CV_CAP_PROP_FPS);
 
-    double t1 = GetTime ();
-    for (int i = 0; i < 20; i++)
-	source >> frame;
-    double t2 = GetTime ();
-    fps = 20.0 / (t2 - t1);
+    // manually estimate fps (opencv bug workaround)
+    if (fps <= 0)
+    {
+	double t1 = GetTime ();
+	for (int i = 0; i < 20; i++)
+	    source >> frame;
+	double t2 = GetTime ();
+	fps = 20.0 / (t2 - t1);
+    }
 
     width = source.get(CV_CAP_PROP_FRAME_WIDTH);
     height = source.get(CV_CAP_PROP_FRAME_HEIGHT);

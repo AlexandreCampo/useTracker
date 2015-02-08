@@ -22,15 +22,18 @@
 							<mMinAlpha>68719476736</mMinAlpha>
 							<mDepthSize>16</mDepthSize>
 							<size>-1,-1</size>
+							<focused>1</focused>
 							<minsize>800,600</minsize>
 							<maxsize>-1,-1</maxsize>
 							<handler function="OnGLCanvas1Paint" entry="EVT_PAINT" />
+							<handler function="OnGLCanvas1Char" entry="EVT_CHAR" />
 							<handler function="OnGLCanvas1LeftDown" entry="EVT_LEFT_DOWN" />
 							<handler function="OnGLCanvas1LeftUp" entry="EVT_LEFT_UP" />
 							<handler function="OnGLCanvas1LeftDClick" entry="EVT_LEFT_DCLICK" />
 							<handler function="OnGLCanvas1RightDown" entry="EVT_RIGHT_DOWN" />
 							<handler function="OnGLCanvas1RightUp" entry="EVT_RIGHT_UP" />
 							<handler function="OnGLCanvas1MouseMove" entry="EVT_MOTION" />
+							<handler function="OnGLCanvas1MouseEnter" entry="EVT_ENTER_WINDOW" />
 							<handler function="OnGLCanvas1Resize" entry="EVT_SIZE" />
 						</object>
 						<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>

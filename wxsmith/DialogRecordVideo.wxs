@@ -27,6 +27,7 @@
 									<value>1000</value>
 									<min>1</min>
 									<max>1000000</max>
+									<handler function="OnSpinCtrlBitrateChange" entry="EVT_SPINCTRL" />
 								</object>
 								<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 								<border>5</border>
@@ -54,6 +55,7 @@
 										<item>veryslow</item>
 									</content>
 									<selection>5</selection>
+									<handler function="OnChoicePresetSelect" entry="EVT_CHOICE" />
 								</object>
 								<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 								<border>5</border>
@@ -89,6 +91,7 @@
 									<message></message>
 									<wildcard></wildcard>
 									<style>wxFLP_OVERWRITE_PROMPT|wxFLP_SAVE|wxFLP_USE_TEXTCTRL</style>
+									<handler function="OnFilePickerCtrl1FileChanged" entry="EVT_FILEPICKER_CHANGED" />
 								</object>
 								<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 								<border>5</border>
@@ -111,6 +114,7 @@
 						<object class="wxButton" name="ID_BUTTON1" variable="ButtonOk" member="yes">
 							<label>Ok</label>
 							<focused>1</focused>
+							<handler function="OnButtonOkClick" entry="EVT_BUTTON" />
 						</object>
 						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 						<border>5</border>

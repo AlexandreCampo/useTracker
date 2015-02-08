@@ -196,7 +196,9 @@ void DialogOpenCapture::OnButtonUSBCancelClick(wxCommandEvent& event)
 
 void DialogOpenCapture::OnButtonAVTOkClick(wxCommandEvent& event)
 {
-    capture = new CaptureAVTCamera(SpinCtrlAVTDevice->GetValue());
+#ifdef VIMBA
+capture = new CaptureAVTCamera(SpinCtrlAVTDevice->GetValue());
+#endif // VIMBA
     EndModal(wxID_OK);
 }
 

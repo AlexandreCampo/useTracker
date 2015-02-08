@@ -133,10 +133,3 @@ bool App::OnInit()
     //*)
     return wxsOK;
 }
-
-
-int App::FilterEvent(wxEvent& event)
-{
-    if (mainFrame) return mainFrame->FilterEvent(event);
-    return -1;
-}

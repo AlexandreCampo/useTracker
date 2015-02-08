@@ -2,6 +2,9 @@
 #include "Background.h"
 #include <opencv2/imgproc/imgproc.hpp>
 
+// TODO DEBUG
+#include "Utils.h"
+
 // All the new API is put into "cv" namespace
 using namespace cv;
 using namespace std;
@@ -11,8 +14,8 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
 {
     int width = capture->width;
     int height = capture->height;
-    Mat background (height, width, CV_8UC3);
-    Mat frame;
+    Mat background = Mat::zeros(height, width, CV_8UC3);
+//    Mat frame;
 
     // do not calc bg for an image...
     if (capture->type == Capture::IMAGE) return background;
@@ -39,13 +42,9 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
     while (readCount < framesCount)
     {
 	capture->GetFrame (startTime + intervalTime * readCount);
-//    	video.set(CV_CAP_PROP_POS_MSEC, (startTime + intervalTime * readCount) * 1000.0);
 
-//    	float msgTime = float(video.get(CV_CAP_PROP_POS_MSEC) / 1000.0);
 	double msgTime = capture->time;
     	cerr << "using frame at time " << msgTime << endl;
-
-    	//video >> frame;
 
     	if (capture->frame.empty())
     	    break;
@@ -162,9 +161,9 @@ Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, u
 {
     int width = capture->width;
     int height = capture->height;
-    Mat background (height, width, CV_8UC3);
-    Mat accu (height, width, CV_32FC3);
-    Mat frame;
+    Mat background = Mat::zeros(height, width, CV_8UC3);
+    Mat accu = Mat::zeros(height, width, CV_32FC3);
+//    Mat frame;
 
     // do not calc bg for an image...
     if (capture->type == Capture::IMAGE) return background;
@@ -189,16 +188,15 @@ Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, u
     {
 	capture->GetFrame(startTime + intervalTime * readCount);
 
-//    	video.set(CV_CAP_PROP_POS_MSEC, (startTime + intervalTime * readCount) * 1000.0);
-
-	//  	float msgTime = float(video.get(CV_CAP_PROP_POS_MSEC) / 1000.0);
 	double msgTime = capture->time;
     	cerr << "using frame at time " << msgTime << endl;
 
-    	//video >> frame;
-
     	if (capture->frame.empty())
     	    break;
+
+	char fname[256];
+	sprintf(fname, "dbg_%d.png", readCount);
+	SaveMatToPNG (capture->frame, fname);
 
     	cv::accumulate (capture->frame, accu);
 
@@ -211,7 +209,6 @@ Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, u
 
     cerr << "Background calculated" << endl;
 
-//    video.set(CV_CAP_PROP_POS_MSEC, 0.0);
     capture->Stop();
 
     return background;
