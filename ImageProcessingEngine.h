@@ -87,7 +87,7 @@ struct ImageProcessingEngine
     void LoadXML (cv::FileNode& fn);
     void SaveXML (cv::FileStorage& fs);
     void Step (bool drawHud = false);
-    bool GetNextFrame(bool needed = true);
+    bool GetNextFrame();
     void OpenOutput();
     void CloseOutput();
 

@@ -71,7 +71,7 @@ void Tracker::Apply()
 void Tracker::Replay()
 {
     // locate data
-    unsigned int currentFrame = pipeline->parent->capture->frameNumber;
+    unsigned int currentFrame = pipeline->parent->capture->GetFrameNumber();
 
     // TODO DEBUG
 //    cout << "Tracker : current frame=" << currentFrame << " h-start=" << historyStartFrame << " h-size=" << history.size() << endl;
@@ -111,7 +111,7 @@ void Tracker::Track()
 	if (entities[e].zone != ZONE_VISIBLE && !previousEntities[e].assigned) continue;
 
 	// if entity not detected for a long time
-	if (pipeline->parent->capture->frameNumber - entities[e].lastFrameDetected >= motionEstimatorTimeout * pipeline->parent->capture->fps) continue;
+	if (pipeline->parent->capture->GetFrameNumber() - entities[e].lastFrameDetected >= motionEstimatorTimeout * pipeline->parent->capture->fps) continue;
 
 	// extrapolate motion of  entities
 	float dx = 0.0, dy = 0.0;
@@ -180,14 +180,14 @@ void Tracker::Track()
 	// this test is not applied on first assignment
 	if (entities[e].lastFrameDetected >= 0)
 	{
-	    float maxMotion = maxMotionPerSecond * (pipeline->parent->capture->frameNumber - entities[e].lastFrameDetected) / pipeline->parent->capture->fps;
+	    float maxMotion = maxMotionPerSecond * (pipeline->parent->capture->GetFrameNumber() - entities[e].lastFrameDetected) / pipeline->parent->capture->fps;
 	    if (interdistances[d].distsq > maxMotion * maxMotion) continue;
 	}
 
 	bool createVirtualEntity = false;
 
 	// if the entity is a virtual one, assigned long enough, promote it to a real one
-	if (e >= entitiesCount && (pipeline->parent->capture->frameNumber - entities[e].lastFrameNotDetected) > virtualEntitiesLifetime * pipeline->parent->capture->fps)
+	if (e >= entitiesCount && (pipeline->parent->capture->GetFrameNumber() - entities[e].lastFrameNotDetected) > virtualEntitiesLifetime * pipeline->parent->capture->fps)
 	{
 	    // find the corresponding real entity
 	    entities[e].toforget = true;
@@ -203,7 +203,7 @@ void Tracker::Track()
 	{
 	    if (virtualEntitiesZone && entities[e].zone != ZONE_VISIBLE) createVirtualEntity = true;
 	    else if (interdistances[d].distsq > virtualEntitiesDistsq) createVirtualEntity = true;
-	    else if (pipeline->parent->capture->frameNumber - entities[e].lastFrameDetected > virtualEntitiesDelay * pipeline->parent->capture->fps) createVirtualEntity = true;
+	    else if (pipeline->parent->capture->GetFrameNumber() - entities[e].lastFrameDetected > virtualEntitiesDelay * pipeline->parent->capture->fps) createVirtualEntity = true;
 	}
 
 	if (createVirtualEntity && useVirtualEntities)
@@ -211,7 +211,7 @@ void Tracker::Track()
 	    entities[e].toforget = true;
 	    entities.push_back(Entity(motionEstimatorLength));
 	    entities.back().linkedEntity = e;
-	    entities.back().lastFrameNotDetected = pipeline->parent->capture->frameNumber - pipeline->parent->capture->timestep * pipeline->parent->capture->fps;
+	    entities.back().lastFrameNotDetected = pipeline->parent->capture->GetFrameNumber() - pipeline->parent->timestep * pipeline->parent->capture->fps;
 	    e = entities.size() - 1;
 	}
 
@@ -224,7 +224,7 @@ void Tracker::Track()
 //	    entities[e].zone = ZONE_VISIBLE;
 	blobs[b].available = false;
 	blobs[b].assignment = e;
-	entities[e].lastFrameDetected = pipeline->parent->capture->frameNumber;
+	entities[e].lastFrameDetected = pipeline->parent->capture->GetFrameNumber();
 
 	if (e < previousEntities.size())
 	    UpdateMotionEstimator (entities[e], previousEntities[e]);
@@ -244,18 +244,18 @@ void Tracker::Track()
     // and reset counters if not detected
     for (unsigned int e = 0; e < entities.size(); e++)
     {
-	if (!entities[e].assigned) entities[e].lastFrameNotDetected = pipeline->parent->capture->frameNumber;
+	if (!entities[e].assigned) entities[e].lastFrameNotDetected = pipeline->parent->capture->GetFrameNumber();
     }
 
     // if (textStream.is_open()) outputText (textStream, entities, frameNumber, video->GetFrameTime());
 
 
     // save to history
-//    cout << "Tracker : " << "saved data from frame " << pipeline->parent->capture->frameNumber << endl;
+//    cout << "Tracker : " << "saved data from frame " << pipeline->parent->capture->GetFrameNumber() << endl;
 
-    if (history.empty()) historyStartFrame = pipeline->parent->capture->frameNumber;
+    if (history.empty()) historyStartFrame = pipeline->parent->capture->GetFrameNumber();
 
-//    cout << "Tracked frame " << pipeline->parent->capture->frameNumber << " hindex" << history.size() / entitiesCount << " hstart = " << historyStartFrame << endl;
+//    cout << "Tracked frame " << pipeline->parent->capture->GetFrameNumber() << " hindex" << history.size() / entitiesCount << " hstart = " << historyStartFrame << endl;
 
     for (unsigned int e = 0; e < entitiesCount; e++)
     {
@@ -346,8 +346,8 @@ void Tracker::OutputStep ()
 	for (unsigned int e = 0; e < entities.size(); e++)
 	{
 	    outputStream
-		<< pipeline->parent->capture->time << "\t"
-		<< pipeline->parent->capture->frameNumber << "\t"
+		<< pipeline->parent->capture->GetTime() << "\t"
+		<< pipeline->parent->capture->GetFrameNumber() << "\t"
 		<< entities[e].lastFrameDetected << "\t"
 		<< entities[e].lastFrameNotDetected << "\t"
 		<< e << "\t"
@@ -450,7 +450,7 @@ void Tracker::ClearHistory()
 {
 //    cout << "===============================================Clearing history=======================================================================" << endl;
 
-    historyStartFrame = pipeline->parent->capture->frameNumber;
+    historyStartFrame = pipeline->parent->capture->GetFrameNumber();
     historyIndex = 0;
 //    cout << "H start = " << historyStartFrame << endl;
     history.clear();

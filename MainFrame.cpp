@@ -623,10 +623,6 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
     GLCanvas1->SwapBuffers();
 }
 
-void MainFrame::OnTimerNotify ()
-{
-}
-
 void MainFrame::OnIdle(wxIdleEvent& evt)
 {
     wxClientDC dc(this);
@@ -638,27 +634,36 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
     else
 	ipEngine.snapshotPos = ipEngine.pipelines[0].plugins.size() - 1;
 
-    // wait a bit
-    // todo debug
-//    wxLongLong currentTime = wxGetLocalTimeMillis();
+    // estimate time to wait before getting next frame
+    bool getNextFrame = true;
+    wxLongLong currentTime = wxGetUTCTimeUSec();
 
-    // TODO
-    // wxLongLong td = playTimestep - (wxGetLocalTimeMillis() - lastPlayTime);
-    // if (td > 16) td = 16; // minimum UI refresh rate
-    // if (td > 0) wxMilliSleep (td.ToLong());
+    // calculate delay to grab next frame (reserve some usec, better be slightly in advance)
+    wxLongLong td = ipEngine.capture->GetNextFrameSystemTime() - currentTime - 1000;
 
-//    wxLongLong currentTime2 = wxGetLocalTimeMillis();
-//    cout << "From idle " << currentTime << " " << currentTime2 << endl;
+    cout << currentTime << " : Next frame scheduled at " << ipEngine.capture->GetNextFrameSystemTime() << " in " << td << " useconds, waited... now is  ";
 
+    if (td > 0)
+    {
+	if (td < 33000)
+	{
+	    wxMicroSleep(td.ToLong());
+	}
+	else
+	{
+	    getNextFrame = false;
+	}
+    }
+
+    cout << wxGetUTCTimeUSec() << " -> getframe=" << (int)getNextFrame<< endl;
 
     // process frames only out of bg tab
     if (activeTab != BackgroundTab)
     {
 	if (play)
 	{
-//	    if (wxGetLocalTimeMillis() - lastPlayTime >= playTimestep)
+	    if (getNextFrame)
 	    {
-		lastPlayTime = wxGetLocalTimeMillis();
 		bool gotFrame = ipEngine.GetNextFrame();
 
 		// end of stream ?
@@ -699,8 +704,7 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
     // refresh slider pos and drawing
     if (!sliderMoving) videoSlider->SetValue(ipEngine.capture->GetFrameNumber() * 1000 / (ipEngine.capture->GetFrameCount()+1));
 //    videoSlider->Refresh();
-
-
+    
     evt.RequestMore(); // render continuously, not only once on idle
 }
 
@@ -803,11 +807,6 @@ void MainFrame::PrintInfoToHud()
     }
 }
 
-void MainFrame::Step()
-{
-
-}
-
 void MainFrame::OnbuttonOutputClick(wxCommandEvent& event)
 {
     if (!output)
@@ -834,12 +833,14 @@ void MainFrame::OnbuttonPlayClick(wxCommandEvent& event)
 	buttonPlay->Refresh();
 	play = true;
 	manualPlay = false;
+	ipEngine.capture->Play();
     }
     else
     {
 	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
 	buttonPlay->Refresh();
 	play = false;
+	ipEngine.capture->Pause();
     }
 }
 
@@ -1192,26 +1193,30 @@ void MainFrame::OnListBoxPipelineCheck(wxCommandEvent& event)
 
 void MainFrame::OnbuttonForwardClick(wxCommandEvent& event)
 {
-    playSpeed++;
+    CaptureVideo* cap = dynamic_cast<CaptureVideo*> (ipEngine.capture);
+    if (cap)
+    {
+	playSpeed++;
 
-    if (playSpeed > 0)
-	playTimestep = (int)(1000.0 / (ipEngine.capture->fps * (playSpeed + 1)));
-    else if (playSpeed < 0)
-	playTimestep = (int)(1000.0 * (-playSpeed + 1) / ipEngine.capture->fps);
-    else
-	playTimestep = (int)(1000.0 / ipEngine.capture->fps);
+	if (playSpeed >= 0)
+	    cap->SetSpeedFaster(playSpeed + 1);
+	else
+	    cap->SetSpeedSlower(-playSpeed + 1);
+    }
 }
 
 void MainFrame::OnbuttonBackwardsClick(wxCommandEvent& event)
 {
-    playSpeed--;
+    CaptureVideo* cap = dynamic_cast<CaptureVideo*> (ipEngine.capture);
+    if (cap)
+    {
+	playSpeed--;
 
-    if (playSpeed > 0)
-	playTimestep = (int)(1000.0 / (ipEngine.capture->fps * (playSpeed + 1)));
-    else if (playSpeed < 0)
-	playTimestep = (int)(1000.0 * (-playSpeed + 1) / ipEngine.capture->fps);
-    else
-	playTimestep = (int)(1000.0 / ipEngine.capture->fps);
+	if (playSpeed >= 0)
+	    cap->SetSpeedFaster(playSpeed + 1);
+	else
+	    cap->SetSpeedSlower(-playSpeed + 1);
+    }
 }
 
 void MainFrame::OnbuttonStepForwardClick(wxCommandEvent& event)
@@ -1221,6 +1226,7 @@ void MainFrame::OnbuttonStepForwardClick(wxCommandEvent& event)
     buttonPlay->Refresh();
     play = false;
     manualPlay = true;
+    ipEngine.capture->Pause();
 
     // request next frame manually
     if (!ipEngine.GetNextFrame())
@@ -1244,6 +1250,7 @@ void MainFrame::OnbuttonStepBackwardsClick(wxCommandEvent& event)
 	buttonPlay->Refresh();
 	play = false;
 	manualPlay = true;
+	capv->Pause();
 
 	// jump video to previous frame...
 	capv->GetPreviousFrame();
@@ -1800,11 +1807,6 @@ void MainFrame::ResetImageProcessingEngine()
     ipEngine.hud = hud;
     ipEngine.takeSnapshot = true;
 
-    // start at 1x speed
-    playTimestep = (int)(1000.0 / ipEngine.capture->fps);
-    lastPlayTime = 0;
-    playSpeed = 0;
-
     // clean UI pipeline
     for (unsigned int i = 0; i < pipelineDialogs.size(); i++)
     {
@@ -1909,8 +1911,12 @@ void MainFrame::OnGLCanvas1Char(wxKeyEvent& event)
 	break;
 
     case WXK_BACK:
-	playSpeed = 0;
-	playTimestep = (int)(1000.0 / ipEngine.capture->fps);
+	if (ipEngine.capture->type == Capture::VIDEO)
+	{
+	    CaptureVideo* cap = dynamic_cast<CaptureVideo*> (ipEngine.capture);
+	    playSpeed = 0;
+	    cap->SetSpeedFaster(1);
+	}
 	break;
     }
 }

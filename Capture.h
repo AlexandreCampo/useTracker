@@ -3,6 +3,7 @@
 
 #include <string>
 #include <opencv2/highgui/highgui.hpp>
+#include <wx/time.h>
 
 struct Capture
 {
@@ -12,20 +13,6 @@ struct Capture
     enum Type {NONE, IMAGE, VIDEO, USB_CAMERA, AVT_CAMERA};
     Type type = NONE;
 
-    // time management
-    double systime;
-    double initTime;
-    double time;
-    double lastTime;
-    float timestep;
-
-    float startTime;
-    float duration;
-
-#ifdef WIN32
-    double frequency;
-#endif
-
     // properties
     int width;
     int height;
@@ -34,31 +21,27 @@ struct Capture
     // output
     cv::Mat frame;
 
-    unsigned int frameNumber = 0;
-
     // methods
     // -----------------------------
-    Capture ();
     virtual ~Capture() {};
 
-    virtual bool GetNextFrame (bool needed) = 0;
+    virtual bool GetNextFrame () = 0;
+    virtual wxLongLong GetNextFrameSystemTime () = 0;
     virtual bool GetFrame (double time) = 0;
 
-    /* virtual bool Open (std::string filename) {}; */
-    /* virtual bool Open (int device) {}; */
     virtual void Close () = 0;
 
-    double GetSystemTime();
-    virtual double GetTime();
+    virtual double GetTime() = 0;
     virtual long GetFrameNumber() = 0;
     virtual long GetFrameCount() = 0;
-    virtual void SetFrameNumber(long f) {};
 
-    virtual void Stop() {};
+    virtual void Play() = 0;
+    virtual void Stop() = 0;
+    virtual void Pause() = 0;
 
-    void SetStartTime (float time);
-    void SetDuration(float time);
-    void SetTimestep(float t);
+    int GetWidth() {return width;};
+    int GetHeight() {return height;};
+    double GetFPS() {return fps;};
 
     virtual void LoadXML (cv::FileNode& fn) = 0;
     virtual void SaveXML (cv::FileStorage& fs) = 0;

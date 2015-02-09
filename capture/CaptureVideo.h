@@ -8,6 +8,16 @@ struct CaptureVideo : Capture
     std::string filename;
     cv::VideoCapture source;
 
+
+    unsigned int frameNumber = 0;
+    bool isPaused = true;
+    wxLongLong startTime = 0;
+    wxLongLong nextFrameTime = 0;
+    wxLongLong playTimestep = 0;
+    wxLongLong time = 0;
+    int playSpeed = 0;
+
+
     CaptureVideo(std::string filename);
     CaptureVideo(cv::FileNode& fn);
     ~CaptureVideo();
@@ -15,11 +25,20 @@ struct CaptureVideo : Capture
     bool Open(std::string filename);
     void Close();
 
-    bool GetNextFrame (bool needed = false);
-    bool GetPreviousFrame(bool needed = true);
+    bool GetNextFrame ();
+    bool GetPreviousFrame();
+    wxLongLong GetNextFrameSystemTime();
+
     bool GetFrame (double time);
 
+    void Start();
     void Stop();
+
+    void Play();
+    void Pause();
+
+    void SetSpeedFaster(int speed);
+    void SetSpeedSlower(int speed);
 
     long GetFrameNumber();
     long GetFrameCount();

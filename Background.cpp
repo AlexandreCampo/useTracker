@@ -20,7 +20,7 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
     // do not calc bg for an image...
     if (capture->type == Capture::IMAGE) return background;
 
-    // if endtime is very small, consider that we want to use the entire capture duration. In case 
+    // if endtime is very small, consider that we want to use the entire capture duration. In case
     // this a webcam, give up calculation
     if (endTime < 0.01)
     {
@@ -43,7 +43,7 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
     {
 	capture->GetFrame (startTime + intervalTime * readCount);
 
-	double msgTime = capture->time;
+	double msgTime = capture->GetTime();
     	cerr << "using frame at time " << msgTime << endl;
 
     	if (capture->frame.empty())
@@ -168,7 +168,7 @@ Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, u
     // do not calc bg for an image...
     if (capture->type == Capture::IMAGE) return background;
 
-    // if endtime is very small, consider that we want to use the entire capture duration. In case 
+    // if endtime is very small, consider that we want to use the entire capture duration. In case
     // this a webcam, give up calculation
     if (endTime < 0.01)
     {
@@ -188,7 +188,7 @@ Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, u
     {
 	capture->GetFrame(startTime + intervalTime * readCount);
 
-	double msgTime = capture->time;
+	double msgTime = capture->GetTime();
     	cerr << "using frame at time " << msgTime << endl;
 
     	if (capture->frame.empty())

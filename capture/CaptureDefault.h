@@ -9,11 +9,17 @@ struct CaptureDefault : public Capture
 {
     CaptureDefault();
 
-    bool GetNextFrame (bool blocking = false);
+    bool GetNextFrame ();
+    wxLongLong GetNextFrameSystemTime ();
     bool GetFrame (double time);
+
+    void Pause() {};
+    void Play() {};
+    void Stop() {};
 
     long GetFrameNumber();
     long GetFrameCount();
+    double GetTime();
 
     void Close() {};
     void LoadXML (cv::FileNode& fn) {};

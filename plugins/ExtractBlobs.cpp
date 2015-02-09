@@ -256,7 +256,7 @@ void ExtractBlobs::OutputStep()
     {
 	for (unsigned int b = 0; b < pipeline->parent->blobs.size(); b++)
 	{
-	    outputStream << pipeline->parent->capture->time << "\t" << pipeline->parent->capture->frameNumber << "\t" << pipeline->parent->blobs[b].x << "\t" << pipeline->parent->blobs[b].y << "\t" << pipeline->parent->blobs[b].angle << "\t" << pipeline->parent->blobs[b].size << std::endl;
+	    outputStream << pipeline->parent->capture->GetTime() << "\t" << pipeline->parent->capture->GetFrameNumber() << "\t" << pipeline->parent->blobs[b].x << "\t" << pipeline->parent->blobs[b].y << "\t" << pipeline->parent->blobs[b].angle << "\t" << pipeline->parent->blobs[b].size << std::endl;
 	}
     }
 }

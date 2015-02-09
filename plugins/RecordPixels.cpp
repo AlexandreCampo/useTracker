@@ -34,8 +34,8 @@ void RecordPixels::OutputStep()
 		if (row[x] > 0)
 		{
 		    outputStream
-			<< pipeline->parent->capture->time << "\t"
-			<< pipeline->parent->capture->frameNumber << "\t"
+			<< pipeline->parent->capture->GetTime()<< "\t"
+			<< pipeline->parent->capture->GetFrameNumber() << "\t"
 			<< (int) (pipeline->zoneMap.at<unsigned char>(y,x)) << "\t"
 			<< x << "\t"
 			<< y

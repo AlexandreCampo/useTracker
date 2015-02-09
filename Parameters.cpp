@@ -20,7 +20,7 @@ void Parameters::parseCommandLine (int argc, char** argv)
 	("help,h", "produce help message")
 	("nogui,n", "command line only, disable graphical interface")
 	("parameters,p", po::value<string>(), "configuration file with parameters in xml format")
-	("file,f", po::value<string>(), "use specified video file")
+	("inputfile,i", po::value<string>(), "use specified video file")
 	("usb,u", po::value<int>(), "use specified USB camera device")
 	("avt,a", po::value<int>(), "use specified AVT camera device")
 	("mask,m", po::value<string>(), "mask image for zones of interest filename")
@@ -81,9 +81,9 @@ void Parameters::parseCommandLine (int argc, char** argv)
 	std::cout << "Using AVT camera, device=" << avtDevice << " as data source" << std::endl;
     }
 
-    if (vm.count("file"))
+    if (vm.count("inputfile"))
     {
-	inputVideoFilename = vm["file"].as<string>();
+	inputVideoFilename = vm["inputfile"].as<string>();
 	std::cout << "Using video file " << inputVideoFilename << " as data source" << std::endl;
     }
 

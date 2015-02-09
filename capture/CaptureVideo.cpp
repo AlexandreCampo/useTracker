@@ -2,6 +2,7 @@
 #include "CaptureVideo.h"
 
 #include <iostream>
+#include <wx/time.h>
 
 using namespace std;
 using namespace cv;
@@ -43,12 +44,15 @@ bool CaptureVideo::Open (string filename)
     // fps incorrectly detected
     if (fps <= 0) fps = 1;
 
+    playSpeed = 0;
+    playTimestep = (wxLongLong)(1000000.0 / fps);
+    isPaused = true;
+
     cout << "detected w/h/fps " << width << " " << height << " " << fps << std::endl;
 
     // read first frame to allow display
     source >> frame;
 
-    GetTime();
     GetFrameNumber();
 
     return (!frame.empty());
@@ -59,15 +63,38 @@ void CaptureVideo::Close ()
 
 }
 
-bool CaptureVideo::GetNextFrame (bool needed)
+bool CaptureVideo::GetNextFrame ()
 {
     source >> frame;
 
     GetFrameNumber();
-    GetTime();
+
+    nextFrameTime += playTimestep;
 
     return !frame.empty();
 }
+
+wxLongLong CaptureVideo::GetNextFrameSystemTime()
+{
+    return nextFrameTime;
+}
+
+void CaptureVideo::Pause()
+{
+    isPaused = true;
+}
+
+void CaptureVideo::Play()
+{
+    // restart timing
+    if (isPaused)
+    {
+	nextFrameTime = wxGetUTCTimeUSec() + playTimestep;
+	isPaused = false;
+    }
+}
+
+
 
 bool CaptureVideo::GetFrame (double time)
 {
@@ -75,19 +102,20 @@ bool CaptureVideo::GetFrame (double time)
 
     source >> frame;
 
-    GetTime();
+//    GetTime();
     GetFrameNumber();
+    nextFrameTime += playTimestep;
 
     return !frame.empty();
 }
 
-bool CaptureVideo::GetPreviousFrame(bool needed)
+bool CaptureVideo::GetPreviousFrame()
 {
     int f = GetFrameNumber();
     SetFrameNumber(f-2);
 
-    GetTime();
     GetFrameNumber();
+    nextFrameTime += playTimestep;
 
     return (!frame.empty());
 }
@@ -97,7 +125,7 @@ void CaptureVideo::Stop()
     source.set(CV_CAP_PROP_POS_FRAMES, 0);
     source >> frame;
 
-    GetTime();
+    isPaused = true;
     GetFrameNumber();
 }
 
@@ -107,7 +135,7 @@ void CaptureVideo::SetFrameNumber(long frameNumber)
 
     source >> frame;
 
-    GetTime();
+    nextFrameTime += playTimestep;
     GetFrameNumber();
 }
 
@@ -122,19 +150,33 @@ long CaptureVideo::GetFrameCount ()
     return source.get(CV_CAP_PROP_FRAME_COUNT);
 }
 
+// related to movie time
 void CaptureVideo::SetTime(double time)
 {
     source.set(CV_CAP_PROP_POS_MSEC, time * 1000.0);
     source >> frame;
 
-    GetTime();
+    nextFrameTime += playTimestep;
     GetFrameNumber();
 }
 
+void CaptureVideo::SetSpeedFaster(int speed)
+{
+    if (speed > 1) playTimestep.Assign(1000000.0 / (fps * speed));
+    else playTimestep.Assign(1000000.0 / fps);
+}
+
+void CaptureVideo::SetSpeedSlower(int speed)
+{
+    if (speed > 1) playTimestep.Assign(1000000.0 * speed / fps);
+    else playTimestep.Assign(1000000.0 / fps);
+}
+
+// related to movie time
 double CaptureVideo::GetTime()
 {
-    time = (double)source.get(CV_CAP_PROP_POS_MSEC) / 1000.0;
-    return time;
+    return (double)source.get(CV_CAP_PROP_POS_MSEC) / 1000.0;
+    //return time;
 }
 
 void CaptureVideo::SaveXML(FileStorage& fs)

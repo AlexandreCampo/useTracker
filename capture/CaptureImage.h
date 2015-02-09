@@ -8,7 +8,6 @@
 struct CaptureImage : public Capture
 {
     std::string filename;
-//    cv::Mat source;
 
     CaptureImage(std::string filename);
     CaptureImage(cv::FileNode& fn);
@@ -17,11 +16,17 @@ struct CaptureImage : public Capture
     bool Open(std::string filename);
     void Close();
 
-    bool GetNextFrame (bool blocking = false);
+    void Pause() {};
+    void Play() {};
+    void Stop() {};
+
+    bool GetNextFrame ();
+    wxLongLong GetNextFrameSystemTime();
     bool GetFrame (double time);
 
     long GetFrameNumber();
     long GetFrameCount();
+    double GetTime();
 
     void LoadXML (cv::FileNode& fn);
     void SaveXML (cv::FileStorage& fs);

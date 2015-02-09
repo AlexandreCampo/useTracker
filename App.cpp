@@ -84,6 +84,7 @@ int main(int argc, char **argv)
 
 	// run the engine
 	ipEngine.OpenOutput();
+	ipEngine.capture->Play();
 
 	while (ipEngine.GetNextFrame())
 	{

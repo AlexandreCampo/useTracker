@@ -37,14 +37,12 @@
 #include <wx/checklst.h>
 #include <wx/listbox.h>
 #include <wx/dnd.h>
-#include <wx/timer.h>
 #include "ImageProcessingEngine.h"
 #include "Parameters.h"
 
 #include <opencv2/opencv.hpp>
 
 
-struct Timer;
 class MyTextDropTargetAdd;
 class MyTextDropTargetMove;
 class MyTextDropTargetRemove;
@@ -57,7 +55,6 @@ public:
     MainFrame(wxWindow* parent,wxWindowID id = -1);
     virtual ~MainFrame();
 
-    void OnTimerNotify ();
     bool OnPipelineAdd(wxCoord x, wxCoord y, const wxString& str);
     bool OnPipelineMove(wxCoord x, wxCoord y, const wxString& str);
     bool OnPipelineRemove(wxCoord x, wxCoord y, const wxString& str);
@@ -222,16 +219,12 @@ private:
 
 // My methods
 
-//void OnUpdateFrameParameters ();
     void OnUpdateInternalParameters (wxCommandEvent& event);
 
-//void OnUpdateFrameParameters (wxCommandEvent& event);
     void OnListBoxPipelinePluginsBeginDrag(wxMouseEvent& event);
     void OnListBoxPipelineBeginDrag(wxMouseEvent& event);
     void OnListBoxPipelineCheck(wxCommandEvent& event);
 
-//void Draw (Mat& oglScreen, Mat& hud);
-    void Step();
     void OnIdle(wxIdleEvent& evt);
     bool AddPipelinePlugin (std::string str, cv::FileNode& fn, int pos = -1, bool showDialog = false);
 
@@ -264,10 +257,6 @@ private:
 
     bool showProcessing = false;
 
-    Timer* timer;
-    wxLongLong playTimestep;
-    wxLongLong lastPlayTime;
-//volatile bool timerNotified = false;
 
 // main screen
     float orthoX;
@@ -302,28 +291,15 @@ private:
     bool sliderMoving;
     bool hudVisible;
 
-    int playSpeed;
+    int playSpeed = 0;
 
-//	char* textureBuffer;
-//	char* textureBufferHud;
-//	int textureWidth = 1;
-//	int textureHeight = 1;
     cv::Mat emptyFrame;
 
     cv::Mat oglScreen;
     cv::Mat hudApp;
     cv::Mat hud;
-//	Mat previousFrame;
 
     DECLARE_EVENT_TABLE()
-};
-
-struct Timer : public wxTimer
-{
-    MainFrame* frame;
-
-    Timer (MainFrame* frame) {this->frame = frame;}
-    void Notify() {frame->OnTimerNotify();}
 };
 
 

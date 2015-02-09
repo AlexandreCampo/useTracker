@@ -8,6 +8,14 @@ struct CaptureUSBCamera : public Capture
     int device;
     cv::VideoCapture source;
 
+    unsigned int frameNumber = 0;
+    bool isPaused = false;
+    bool isStopped = true;
+    wxLongLong startTime = 0;
+    wxLongLong pauseTime = 0;
+    wxLongLong nextFrameTime = 0;
+    wxLongLong playTimestep = 0;
+
     CaptureUSBCamera(int device);
     CaptureUSBCamera(cv::FileNode& fn);
     ~CaptureUSBCamera();
@@ -15,11 +23,15 @@ struct CaptureUSBCamera : public Capture
     bool Open(int device);
     void Close();
 
-    bool GetNextFrame (bool blocking = false);
-    bool GetFrame (double time);
-//    double GetTime();
+    void Pause();
+    void Play();
+    void Stop();
 
-    //bool EndReached();
+    bool GetNextFrame ();
+    wxLongLong GetNextFrameSystemTime();
+    bool GetFrame (double time);
+    double GetTime();
+
     long GetFrameNumber();
     long GetFrameCount();
 

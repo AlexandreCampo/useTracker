@@ -1,11 +1,12 @@
 
 #include "CaptureUSBCamera.h"
-//#include "cap_v4l.h"
 
 #include <iostream>
 #include <chrono>
 #include <thread>
 #include <unistd.h>
+
+#include <wx/time.h>
 
 using namespace std;
 using namespace cv;
@@ -30,8 +31,6 @@ CaptureUSBCamera::~CaptureUSBCamera()
 
 bool CaptureUSBCamera::Open (int device)
 {
-//    CvCaptureCAM_V4L_CPP* cap = new CvCaptureCAM_V4L_CPP(1);
-
     this->device = device;
     source.open(device);
 
@@ -50,18 +49,21 @@ bool CaptureUSBCamera::Open (int device)
     // manually estimate fps (opencv bug workaround)
     if (fps <= 0)
     {
-	double t1 = GetTime ();
-	for (int i = 0; i < 20; i++)
-	    source >> frame;
-	double t2 = GetTime ();
-	fps = 20.0 / (t2 - t1);
+	for (int i = 0; i < 10; i++) source >> frame;
+	wxLongLong t1 = wxGetUTCTimeUSec();
+	for (int i = 0; i < 10; i++) source >> frame;
+	wxLongLong t2 = wxGetUTCTimeUSec();
+	fps = 10.0 / (t2 - t1).ToDouble();
     }
 
     width = source.get(CV_CAP_PROP_FRAME_WIDTH);
     height = source.get(CV_CAP_PROP_FRAME_HEIGHT);
     cout << "set to w/h/fps " << width << " " << height << " " << fps << std::endl;
 
-    time = GetTime();
+    playTimestep = (wxLongLong)(1000000.0 / fps);
+    startTime = wxGetUTCTimeUSec();
+    pauseTime = startTime;
+    isPaused = true;
 
     source >> frame;
 
@@ -73,22 +75,58 @@ void CaptureUSBCamera::Close ()
 
 }
 
-bool CaptureUSBCamera::GetNextFrame (bool blocking)
+bool CaptureUSBCamera::GetNextFrame ()
 {
     source >> frame;
 
-    GetTime();
     frameNumber++;
+
+    nextFrameTime += playTimestep;
 
     return !frame.empty();
 }
 
+wxLongLong CaptureUSBCamera::GetNextFrameSystemTime()
+{
+    return nextFrameTime;
+}
+
+void CaptureUSBCamera::Stop()
+{
+    isPaused = false;
+    isStopped = true;    
+    frameNumber = 0;
+}
+
+void CaptureUSBCamera::Pause()
+{
+    isPaused = true;
+    pauseTime = wxGetUTCTimeUSec();
+}
+
+void CaptureUSBCamera::Play()
+{
+    if (isPaused)
+    {
+	startTime += wxGetUTCTimeUSec() - pauseTime;
+	nextFrameTime = wxGetUTCTimeUSec() + playTimestep;
+	isPaused = false;
+    }
+    if (isStopped)
+    {
+	startTime = wxGetUTCTimeUSec();
+	nextFrameTime = startTime + playTimestep;
+	isStopped =false;	
+    }
+}
+
 bool CaptureUSBCamera::GetFrame (double time)
 {
-    while (GetTime() < time) this_thread::sleep_for(chrono::milliseconds(10)); 
+    while (GetTime() < time) this_thread::sleep_for(chrono::milliseconds(10));
     source >> frame;
 
     frameNumber++;
+    nextFrameTime = wxGetUTCTimeUSec() + playTimestep;
 
     return !frame.empty();
 }
@@ -102,6 +140,13 @@ long CaptureUSBCamera::GetFrameNumber ()
 long CaptureUSBCamera::GetFrameCount ()
 {
     return 1;
+}
+
+double CaptureUSBCamera::GetTime()
+{
+    if (isPaused) return (pauseTime - startTime).ToDouble() / 1000000.0;
+    else if (isStopped) return 0;
+    else return (wxGetUTCTimeUSec() - startTime).ToDouble() / 1000000.0;
 }
 
 void CaptureUSBCamera::SaveXML(FileStorage& fs)

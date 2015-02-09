@@ -31,11 +31,8 @@ bool CaptureImage::Open (string filename)
     height = frame.rows;
     fps = 1;
 
-//    SetTime(startTime);
+//    frameNumber = 0;
 
-    // read first frame to allow display
-//    frame = source;
-//    source >> frame;
     return (!frame.empty());
 }
 
@@ -44,10 +41,14 @@ void CaptureImage::Close ()
 
 }
 
-bool CaptureImage::GetNextFrame (bool blocking)
+bool CaptureImage::GetNextFrame ()
 {
-//    frame = source;
     return false; // no other frame available
+}
+
+wxLongLong CaptureImage::GetNextFrameSystemTime()
+{
+    return 0;
 }
 
 bool CaptureImage::GetFrame (double time)
@@ -65,6 +66,10 @@ long CaptureImage::GetFrameCount ()
     return 1;
 }
 
+double CaptureImage::GetTime()
+{
+    return 0;
+}
 
 void CaptureImage::SaveXML(FileStorage& fs)
 {

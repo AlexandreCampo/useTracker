@@ -21,9 +21,14 @@ CaptureDefault::CaptureDefault() : Capture()
     type = IMAGE;
 }
 
-bool CaptureDefault::GetNextFrame (bool blocking)
+bool CaptureDefault::GetNextFrame ()
 {
     return false;
+}
+
+wxLongLong CaptureDefault::GetNextFrameSystemTime()
+{
+    return 0;
 }
 
 bool CaptureDefault::GetFrame (double time)
@@ -39,4 +44,9 @@ long CaptureDefault::GetFrameNumber ()
 long CaptureDefault::GetFrameCount ()
 {
     return 1;
+}
+
+double CaptureDefault::GetTime()
+{
+    return 0;
 }

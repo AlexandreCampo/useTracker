@@ -535,11 +535,11 @@ void ImageProcessingEngine::Step(bool drawHud)
 	}
     }
 
-    cout << "stepping ipEngine at time/frame " << capture->time << " " << capture->frameNumber << endl;
+    cout << "stepping ipEngine at time/frame " << capture->GetTime() << " " << capture->GetFrameNumber() << endl;
 }
 
-bool ImageProcessingEngine::GetNextFrame(bool needed)
+bool ImageProcessingEngine::GetNextFrame()
 {
-    return capture->GetNextFrame(needed);
+    return capture->GetNextFrame();
 }
 
