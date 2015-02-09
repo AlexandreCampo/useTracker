@@ -641,21 +641,13 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
     // calculate delay to grab next frame (reserve some usec, better be slightly in advance)
     wxLongLong td = ipEngine.capture->GetNextFrameSystemTime() - currentTime - 1000;
 
-    cout << currentTime << " : Next frame scheduled at " << ipEngine.capture->GetNextFrameSystemTime() << " in " << td << " useconds, waited... now is  ";
-
+    // wait for next frame / refresh ?
     if (td > 0)
     {
-	if (td < 33000)
-	{
-	    wxMicroSleep(td.ToLong());
-	}
-	else
-	{
-	    getNextFrame = false;
-	}
+	// min UI refresh rate
+	if (td < 33000) wxMicroSleep(td.ToLong());
+	else getNextFrame = false;
     }
-
-    cout << wxGetUTCTimeUSec() << " -> getframe=" << (int)getNextFrame<< endl;
 
     // process frames only out of bg tab
     if (activeTab != BackgroundTab)
@@ -703,52 +695,54 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 
     // refresh slider pos and drawing
     if (!sliderMoving) videoSlider->SetValue(ipEngine.capture->GetFrameNumber() * 1000 / (ipEngine.capture->GetFrameCount()+1));
-//    videoSlider->Refresh();
     
     evt.RequestMore(); // render continuously, not only once on idle
 }
 
 void MainFrame::DrawTrackerSelection(wxClientDC& dc)
 {
-    if (ListBoxPipeline->GetCount() > 0)
+    if (ipEngine.capture->type == Capture::VIDEO)
     {
-	PipelinePlugin* pp = ipEngine.pipelines[ipEngine.threadsCount].plugins[ipEngine.snapshotPos];
-	Tracker* tracker = dynamic_cast<Tracker*>(pp);
-
-	if (tracker && tracker->history.size() > 0)
+	if (ListBoxPipeline->GetCount() > 0)
 	{
-	    float hstart = tracker->historyStartFrame;
-	    float hlength = tracker->history.size() / tracker->entitiesCount;
-	    float totalFrames = ipEngine.capture->GetFrameCount()+1;
-
-	    wxPoint pos = videoSlider->GetPosition();
-	    wxSize sz = videoSlider->GetSize();
-
-	    pos.x += 5;
-	    sz.x -= 10;
-
-	    // clear area
-	    wxPoint clearpos = pos;
-	    wxSize clearsz = sz;
-	    clearpos.y += sz.y + 1;
-	    clearpos.x -= 9;
-	    clearsz.y = 8;
-	    clearsz.x += 14;
-	    dc.SetPen(wxNullPen);
-	    dc.SetBrush(dc.GetBackground());
-	    dc.DrawRectangle(clearpos, clearsz);
-
-	    int px1 = pos.x + sz.x * hstart / totalFrames;
-	    int px2 = pos.x + sz.x * (hstart+hlength) / totalFrames;
-
-	    dc.SetPen(wxPen(wxColour(255, 100, 100), 2, wxSOLID));
-	    dc.SetBrush(wxNullBrush);
-	    int py = pos.y + sz.y + 1 + 4;
-	    dc.DrawLine(px1, py, px2, py);
-	    dc.SetPen(wxPen(wxColour(255, 100, 100), 4, wxSOLID));
-	    dc.SetBrush(wxBrush(wxColour(255, 100, 100)));
-	    dc.DrawCircle (px1, py, 2);
-	    dc.DrawCircle (px2, py, 2);
+	    PipelinePlugin* pp = ipEngine.pipelines[ipEngine.threadsCount].plugins[ipEngine.snapshotPos];
+	    Tracker* tracker = dynamic_cast<Tracker*>(pp);
+	    
+	    if (tracker && tracker->history.size() > 0)
+	    {
+		float hstart = tracker->historyStartFrame;
+		float hlength = tracker->history.size() / tracker->entitiesCount;
+		float totalFrames = ipEngine.capture->GetFrameCount()+1;
+		
+		wxPoint pos = videoSlider->GetPosition();
+		wxSize sz = videoSlider->GetSize();
+		
+		pos.x += 5;
+		sz.x -= 10;
+		
+		// clear area
+		wxPoint clearpos = pos;
+		wxSize clearsz = sz;
+		clearpos.y += sz.y + 1;
+		clearpos.x -= 9;
+		clearsz.y = 8;
+		clearsz.x += 14;
+		dc.SetPen(wxNullPen);
+		dc.SetBrush(dc.GetBackground());
+		dc.DrawRectangle(clearpos, clearsz);
+		
+		int px1 = pos.x + sz.x * hstart / totalFrames;
+		int px2 = pos.x + sz.x * (hstart+hlength) / totalFrames;
+		
+		dc.SetPen(wxPen(wxColour(255, 100, 100), 2, wxSOLID));
+		dc.SetBrush(wxNullBrush);
+		int py = pos.y + sz.y + 1 + 4;
+		dc.DrawLine(px1, py, px2, py);
+		dc.SetPen(wxPen(wxColour(255, 100, 100), 4, wxSOLID));
+		dc.SetBrush(wxBrush(wxColour(255, 100, 100)));
+		dc.DrawCircle (px1, py, 2);
+		dc.DrawCircle (px2, py, 2);
+	    }
 	}
     }
 }

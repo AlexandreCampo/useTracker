@@ -534,8 +534,6 @@ void ImageProcessingEngine::Step(bool drawHud)
 	    threshold(pipelineSnapshotMarked, pipelineSnapshot, 0, 255, THRESH_BINARY);
 	}
     }
-
-    cout << "stepping ipEngine at time/frame " << capture->GetTime() << " " << capture->GetFrameNumber() << endl;
 }
 
 bool ImageProcessingEngine::GetNextFrame()

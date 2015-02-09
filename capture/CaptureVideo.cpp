@@ -164,12 +164,14 @@ void CaptureVideo::SetSpeedFaster(int speed)
 {
     if (speed > 1) playTimestep.Assign(1000000.0 / (fps * speed));
     else playTimestep.Assign(1000000.0 / fps);
+    nextFrameTime = wxGetUTCTimeUSec() + playTimestep;
 }
 
 void CaptureVideo::SetSpeedSlower(int speed)
 {
     if (speed > 1) playTimestep.Assign(1000000.0 * speed / fps);
     else playTimestep.Assign(1000000.0 / fps);
+    nextFrameTime = wxGetUTCTimeUSec() + playTimestep;
 }
 
 // related to movie time
