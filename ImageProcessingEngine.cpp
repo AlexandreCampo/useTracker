@@ -537,6 +537,8 @@ void ImageProcessingEngine::Step(bool drawHud)
 	    return;
     }
 
+//    cout << "ip step at " << ctime << endl;
+
     // passed all tests, proceed to image analysis
     nextStepTime += timestep;
 

@@ -42,10 +42,10 @@ bool CaptureVideo::Open (string filename)
     fps = source.get(CV_CAP_PROP_FPS);
 
     // fps incorrectly detected
-    if (fps <= 0) fps = 1;
+    if (fps <= 0.000001) fps = 1;
 
     playSpeed = 0;
-    playTimestep = (wxLongLong)(1000000.0 / fps);
+    playTimestep.Assign(1000000.0 / fps);
     isPaused = true;
 
     cout << "detected w/h/fps " << width << " " << height << " " << fps << std::endl;

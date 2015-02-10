@@ -47,20 +47,21 @@ bool CaptureUSBCamera::Open (int device)
     fps = source.get(CV_CAP_PROP_FPS);
 
     // manually estimate fps (opencv bug workaround)
-    if (fps <= 0)
+    if (fps <= 0.000001)
     {
 	for (int i = 0; i < 10; i++) source >> frame;
 	wxLongLong t1 = wxGetUTCTimeUSec();
 	for (int i = 0; i < 10; i++) source >> frame;
 	wxLongLong t2 = wxGetUTCTimeUSec();
-	fps = 10.0 / (t2 - t1).ToDouble();
+	double delay = (t2 - t1).ToDouble() / 1000000.0;
+	fps = 10.0 / delay;
     }
 
     width = source.get(CV_CAP_PROP_FRAME_WIDTH);
     height = source.get(CV_CAP_PROP_FRAME_HEIGHT);
     cout << "set to w/h/fps " << width << " " << height << " " << fps << std::endl;
 
-    playTimestep = (wxLongLong)(1000000.0 / fps);
+    playTimestep.Assign(1000000.0 / fps);
     startTime = wxGetUTCTimeUSec();
     pauseTime = startTime;
     isPaused = true;
