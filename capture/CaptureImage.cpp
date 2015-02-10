@@ -31,8 +31,6 @@ bool CaptureImage::Open (string filename)
     height = frame.rows;
     fps = 1;
 
-//    frameNumber = 0;
-
     return (!frame.empty());
 }
 

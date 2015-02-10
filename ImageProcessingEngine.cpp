@@ -205,6 +205,7 @@ void ImageProcessingEngine::LoadXML(FileNode& fn)
 	startTime = (float)fn["StartTime"];
 	durationTime = (float)fn["DurationTime"];
 	timestep = (float)fn["Timestep"];
+	useTimeBoundaries = (int)fn["UseTimeBounds"];
 	bgFilename = (string)fn["BackgroundFilename"];
 	bgRecalculate = (int)fn["BackgroundRecalculate"];
 	bgFrames = (int)fn["BackgroundFrames"];
@@ -227,6 +228,7 @@ void ImageProcessingEngine::SaveXML(FileStorage& fs)
     fs << "StartTime" << startTime;
     fs << "DurationTime" << durationTime;
     fs << "Timestep" << timestep;
+    fs << "UseTimeBounds" << (int)useTimeBoundaries;
     fs << "BackgroundFilename" << bgFilename;
     fs << "BackgroundRecalculate" << bgRecalculate;
     fs << "BackgroundFrames" << bgFrames;
@@ -502,37 +504,69 @@ void ImageProcessingEngine::OpenOutput ()
 
 void ImageProcessingEngine::Step(bool drawHud)
 {
-    threadsDrawHud = drawHud;
-//    threadsOutput = output; // not used anymore (?)
+    bool forceStep = false;
 
+    double ctime = capture->GetTime();
 
-//    if (time < parameters.startTime + parameters.durationTime)
+    // first check the status of the capture
+    if (capture->statusChanged)
     {
-	// check if frame is static
-	lastFrameNumber = frameNumber;
-	frameNumber = capture->GetFrameNumber();
-	staticFrame = (frameNumber == lastFrameNumber);
-
-	// prepare marked buffer
-	marked.setTo(255);
-
-	// call the threads
-	for (unsigned int i = 0; i <= threadsCount; i++)
+	if (capture->isPaused || capture->isStopped)
 	{
-	    threadsStart[i]->unlock();
+	    forceStep = true;
+	}
+	// play was pressed
+	else
+	{
+	    nextStepTime = ctime;
 	}
 
-	// wait for end of their operation
-	for (unsigned int i = 0; i <= threadsCount; i++)
-	{
-	    threadsDone[i]->lock();
-	}
+	// reset the flag
+	capture->statusChanged = false;
+    }
 
-	// take snapshot if needed
-	if (takeSnapshot)
-	{
-	    threshold(pipelineSnapshotMarked, pipelineSnapshot, 0, 255, THRESH_BINARY);
-	}
+    if (!forceStep)
+    {
+	// check time boundaries
+	if (useTimeBoundaries)
+	    if (ctime < startTime || ctime > (startTime + durationTime))
+		return;
+
+	// finally respect timestep if it is set
+	if (timestep > 0.00001 && ctime < nextStepTime)
+	    return;
+    }
+
+    // passed all tests, proceed to image analysis
+    nextStepTime += timestep;
+
+    threadsDrawHud = drawHud;
+    hud.setTo (0);
+
+    // check if frame is static
+    lastFrameNumber = frameNumber;
+    frameNumber = capture->GetFrameNumber();
+    staticFrame = (frameNumber == lastFrameNumber);
+
+    // prepare marked buffer
+    marked.setTo(255);
+
+    // call the threads
+    for (unsigned int i = 0; i <= threadsCount; i++)
+    {
+	threadsStart[i]->unlock();
+    }
+
+    // wait for end of their operation
+    for (unsigned int i = 0; i <= threadsCount; i++)
+    {
+	threadsDone[i]->lock();
+    }
+
+    // take snapshot if needed
+    if (takeSnapshot)
+    {
+	threshold(pipelineSnapshotMarked, pipelineSnapshot, 0, 255, THRESH_BINARY);
     }
 }
 

@@ -62,26 +62,6 @@ class DialogTracker: public wxDialog
 		wxStaticText* StaticText12;
 		wxSpinCtrlDouble* SpinCtrlVELifetime;
 
-		/* SpinCtrlEntitiesCount = new wxSpinCtrl(Panel1, ID_SPINCTRL1, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 100000, 0, _T("ID_SPINCTRL1")); */
-		/* StaticText2 = new wxStaticText(Panel1, ID_STATICTEXT2, _("Min interdistance"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT2")); */
-		/* SpinCtrlMinInterdistance = new wxSpinCtrlDouble(Panel1, ID_SPINCTRL2, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 100000000, 0, _T("ID_SPINCTRL2")); */
-		/* StaticText3 = new wxStaticText(Panel1, ID_STATICTEXT3, _("Max motion (pixel/sec)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT3")); */
-		/* SpinCtrlMaxMotion = new wxSpinCtrlDouble(Panel1, ID_SPINCTRL3, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 1000000000, 0, _T("ID_SPINCTRL3")); */
-		/* StaticText4 = new wxStaticText(Panel1, ID_STATICTEXT4, _("Extrapolation decay"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT4")); */
-		/* SpinCtrlExtrapolationDecay = new wxSpinCtrlDouble(Panel1, ID_SPINCTRL4, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 1, 0, _T("ID_SPINCTRL4")); */
-		/* StaticText5 = new wxStaticText(Panel1, ID_STATICTEXT5, _("Extrapolation history size"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT5")); */
-		/* SpinCtrlExtrapolationHistorySize = new wxSpinCtrl(Panel1, ID_SPINCTRL5, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 1000, 0, _T("ID_SPINCTRL5")); */
-		/* StaticText6 = new wxStaticText(Panel1, ID_STATICTEXT6, _("Extrapolation timeout"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT6")); */
-		/* SpinCtrlExtrapolationTimeout = new wxSpinCtrlDouble(Panel1, ID_SPINCTRL6, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 1000, 0, _T("ID_SPINCTRL6")); */
-
-		/* StaticText10 = new wxStaticText(Panel1, ID_STATICTEXT10, _("Create when last position dist >"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT10")); */
-		/* SpinCtrlVEDistance = new wxSpinCtrlDouble(Panel1, ID_SPINCTRL8, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 100000, 0, _T("ID_SPINCTRL8")); */
-		/* StaticText11 = new wxStaticText(Panel1, ID_STATICTEXT11, _("Time to promotion"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT11")); */
-		/* SpinCtrlVEDelay = new wxSpinCtrlDouble(Panel1, ID_SPINCTRL9, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 1000, 0, _T("ID_SPINCTRL9")); */
-		/* StaticText12 = new wxStaticText(Panel1, ID_STATICTEXT12, _("Max lifetime"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT12")); */
-		/* SpinCtrlVELifetime = new wxSpinCtrlDouble(Panel1, ID_SPINCTRL10, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 1000, 0, _T("ID_SPINCTRL10")); */
-
-
 	protected:
 
 		//(*Identifiers(DialogTracker)
@@ -125,22 +105,22 @@ class DialogTracker: public wxDialog
 		void OnFilePickerCtrl1FileChanged(wxFileDirPickerEvent& event);
 		void OnCheckBoxOutputClick(wxCommandEvent& event);
 		void OnCheckBoxOutputClick1(wxCommandEvent& event);
-		void OnSpinCtrlExtrapolationTimeoutChange(wxSpinEvent& event);
-		void OnSpinCtrlExtrapolationHistorySizeChange(wxSpinEvent& event);
-		void OnSpinCtrlExtrapolationDecayChange(wxSpinEvent& event);
-		void OnSpinCtrlMaxMotionChange(wxSpinEvent& event);
-		void OnSpinCtrlMinInterdistanceChange(wxSpinEvent& event);
-		void OnSpinCtrlEntitiesCountChange(wxSpinEvent& event);
-		void OnSpinCtrlVELifetimeChange(wxSpinEvent& event);
-		void OnSpinCtrlVEDistanceChange(wxSpinEvent& event);
-		void OnSpinCtrlVEDelayChange(wxSpinEvent& event);
 		void OnCheckBoxReplayClick(wxCommandEvent& event);
-		void OnFilePickerCtrl2FileChanged(wxFileDirPickerEvent& event);
 		void OnCheckBoxUseVEClick(wxCommandEvent& event);
 		void OnKeyDown(wxKeyEvent& event);
 		void OnButtonLoadHistoryClick(wxCommandEvent& event);
 		void OnSpinCtrlTrailLengthChange(wxSpinEvent& event);
 		//*)
+
+		void OnSpinCtrlExtrapolationTimeoutChange(wxSpinDoubleEvent& event);
+		void OnSpinCtrlExtrapolationHistorySizeChange(wxSpinEvent& event);
+		void OnSpinCtrlExtrapolationDecayChange(wxSpinDoubleEvent& event);
+		void OnSpinCtrlMaxMotionChange(wxSpinDoubleEvent& event);
+		void OnSpinCtrlMinInterdistanceChange(wxSpinDoubleEvent& event);
+		void OnSpinCtrlEntitiesCountChange(wxSpinEvent& event);
+		void OnSpinCtrlVELifetimeChange(wxSpinDoubleEvent& event);
+		void OnSpinCtrlVEDistanceChange(wxSpinDoubleEvent& event);
+		void OnSpinCtrlVEDelayChange(wxSpinDoubleEvent& event);
 
 		DECLARE_EVENT_TABLE()
 };

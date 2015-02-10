@@ -9,8 +9,6 @@ struct CaptureUSBCamera : public Capture
     cv::VideoCapture source;
 
     unsigned int frameNumber = 0;
-    bool isPaused = false;
-    bool isStopped = true;
     wxLongLong startTime = 0;
     wxLongLong pauseTime = 0;
     wxLongLong nextFrameTime = 0;

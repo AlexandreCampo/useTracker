@@ -64,6 +64,9 @@ struct ImageProcessingEngine
     float startTime = 0.0;
     float durationTime = 0.0;
     float timestep = 0.0;
+    float nextStepTime = 0.0;
+    bool useTimeBoundaries = false;
+
 
     // background
     enum BgCalcType {BG_MEAN, BG_MEDIAN};

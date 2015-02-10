@@ -182,16 +182,15 @@ DialogTracker::DialogTracker(wxWindow* parent,wxWindowID id,const wxPoint& pos,c
 	StaticBoxSizerVE = StaticBoxSizer3;
 	FlexGridSizerMain = FlexGridSizer1;
 
-	Connect(ID_SPINCTRL1,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogTracker::OnSpinCtrlEntitiesCountChange);
-	Connect(ID_SPINCTRL2,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogTracker::OnSpinCtrlMinInterdistanceChange);
-	Connect(ID_SPINCTRL3,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogTracker::OnSpinCtrlMaxMotionChange);
-	Connect(ID_SPINCTRL4,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogTracker::OnSpinCtrlExtrapolationDecayChange);
-	Connect(ID_SPINCTRL5,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogTracker::OnSpinCtrlExtrapolationHistorySizeChange);
-	Connect(ID_SPINCTRL6,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogTracker::OnSpinCtrlExtrapolationTimeoutChange);
-	Connect(ID_SPINCTRL8,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogTracker::OnSpinCtrlVEDistanceChange);
-	Connect(ID_SPINCTRL9,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogTracker::OnSpinCtrlVEDelayChange);
-	Connect(ID_SPINCTRL10,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogTracker::OnSpinCtrlVELifetimeChange);
-
+	SpinCtrlEntitiesCount->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &DialogTracker::OnSpinCtrlEntitiesCountChange, this);
+	SpinCtrlMinInterdistance->Bind(wxEVT_SPINCTRLDOUBLE, &DialogTracker::OnSpinCtrlMinInterdistanceChange, this);
+	SpinCtrlMaxMotion->Bind(wxEVT_SPINCTRLDOUBLE, &DialogTracker::OnSpinCtrlMaxMotionChange, this);
+	SpinCtrlExtrapolationDecay->Bind(wxEVT_SPINCTRLDOUBLE, &DialogTracker::OnSpinCtrlExtrapolationDecayChange, this);
+	SpinCtrlExtrapolationHistorySize->Bind(wxEVT_COMMAND_SPINCTRL_UPDATED, &DialogTracker::OnSpinCtrlExtrapolationHistorySizeChange, this);
+	SpinCtrlExtrapolationTimeout->Bind(wxEVT_SPINCTRLDOUBLE, &DialogTracker::OnSpinCtrlExtrapolationTimeoutChange, this);
+	SpinCtrlVEDistance->Bind(wxEVT_SPINCTRLDOUBLE, &DialogTracker::OnSpinCtrlVEDistanceChange, this);
+	SpinCtrlVEDelay->Bind(wxEVT_SPINCTRLDOUBLE, &DialogTracker::OnSpinCtrlVEDelayChange, this);
+	SpinCtrlVELifetime->Bind(wxEVT_SPINCTRLDOUBLE, &DialogTracker::OnSpinCtrlVELifetimeChange, this);
 }
 
 DialogTracker::~DialogTracker()
@@ -267,58 +266,58 @@ void DialogTracker::OnCheckBoxOutputClick1(wxCommandEvent& event)
     }
 }
 
-void DialogTracker::OnSpinCtrlExtrapolationTimeoutChange(wxSpinEvent& event)
+void DialogTracker::OnSpinCtrlExtrapolationTimeoutChange(wxSpinDoubleEvent& event)
 {
     for (auto f : plugin)
-	f->motionEstimatorTimeout = event.GetPosition();
+	f->motionEstimatorTimeout = event.GetValue();
 }
 
 void DialogTracker::OnSpinCtrlExtrapolationHistorySizeChange(wxSpinEvent& event)
 {
     for (auto f : plugin)
-	f->motionEstimatorLength = event.GetPosition();
+	f->motionEstimatorLength = event.GetValue();
 }
 
-void DialogTracker::OnSpinCtrlExtrapolationDecayChange(wxSpinEvent& event)
+void DialogTracker::OnSpinCtrlExtrapolationDecayChange(wxSpinDoubleEvent& event)
 {
     for (auto f : plugin)
-	f->extrapolationDecay = event.GetPosition();
+	f->extrapolationDecay = event.GetValue();
 }
 
-void DialogTracker::OnSpinCtrlMaxMotionChange(wxSpinEvent& event)
+void DialogTracker::OnSpinCtrlMaxMotionChange(wxSpinDoubleEvent& event)
 {
     for (auto f : plugin)
-	f->maxMotionPerSecond = event.GetPosition();
+	f->maxMotionPerSecond = event.GetValue();
 }
 
-void DialogTracker::OnSpinCtrlMinInterdistanceChange(wxSpinEvent& event)
+void DialogTracker::OnSpinCtrlMinInterdistanceChange(wxSpinDoubleEvent& event)
 {
     for (auto f : plugin)
-	f->minInterdistance = event.GetPosition();
+	f->minInterdistance = event.GetValue();
 }
 
 void DialogTracker::OnSpinCtrlEntitiesCountChange(wxSpinEvent& event)
 {
     for (auto f : plugin)
-        f->SetMaxEntities(event.GetPosition());
+        f->SetMaxEntities(event.GetValue());
 }
 
-void DialogTracker::OnSpinCtrlVELifetimeChange(wxSpinEvent& event)
+void DialogTracker::OnSpinCtrlVELifetimeChange(wxSpinDoubleEvent& event)
 {
     for (auto f : plugin)
-	f->virtualEntitiesLifetime = event.GetPosition();
+	f->virtualEntitiesLifetime = event.GetValue();
 }
 
-void DialogTracker::OnSpinCtrlVEDistanceChange(wxSpinEvent& event)
+void DialogTracker::OnSpinCtrlVEDistanceChange(wxSpinDoubleEvent& event)
 {
     for (auto f : plugin)
-	f->virtualEntitiesDistsq = event.GetPosition() * event.GetPosition();
+	f->virtualEntitiesDistsq = event.GetValue() * event.GetValue();
 }
 
-void DialogTracker::OnSpinCtrlVEDelayChange(wxSpinEvent& event)
+void DialogTracker::OnSpinCtrlVEDelayChange(wxSpinDoubleEvent& event)
 {
     for (auto f : plugin)
-	f->virtualEntitiesDelay = event.GetPosition();
+	f->virtualEntitiesDelay = event.GetValue();
 }
 
 void DialogTracker::OnCheckBoxReplayClick(wxCommandEvent& event)
@@ -327,18 +326,6 @@ void DialogTracker::OnCheckBoxReplayClick(wxCommandEvent& event)
     {
 	f->SetReplay(event.IsChecked());
     }
-}
-
-void DialogTracker::OnFilePickerCtrl2FileChanged(wxFileDirPickerEvent& event)
-{
-    string path (FilePickerCtrl1->GetPath().ToStdString());
-
-    for (auto f : plugin)
-    {
-//	f->LoadHistory(path);
-//	f->SetReplay(true);
-    }
-    CheckBoxReplay->SetValue(true);
 }
 
 void DialogTracker::OnCheckBoxUseVEClick(wxCommandEvent& event)
@@ -377,5 +364,5 @@ void DialogTracker::OnButtonLoadHistoryClick(wxCommandEvent& event)
 void DialogTracker::OnSpinCtrlTrailLengthChange(wxSpinEvent& event)
 {
     for (auto f : plugin)
-	f->trailLength = event.GetPosition();
+	f->trailLength = event.GetValue();
 }

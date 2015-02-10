@@ -82,16 +82,19 @@ wxLongLong CaptureVideo::GetNextFrameSystemTime()
 void CaptureVideo::Pause()
 {
     isPaused = true;
+    statusChanged = true;
 }
 
 void CaptureVideo::Play()
 {
     // restart timing
-    if (isPaused)
+    if (isPaused || isStopped)
     {
 	nextFrameTime = wxGetUTCTimeUSec() + playTimestep;
 	isPaused = false;
-    }
+	isStopped = false;
+	statusChanged = true;
+    }    
 }
 
 
@@ -99,12 +102,11 @@ void CaptureVideo::Play()
 bool CaptureVideo::GetFrame (double time)
 {
     source.set(CV_CAP_PROP_POS_MSEC, time * 1000.0);
-
     source >> frame;
 
-//    GetTime();
     GetFrameNumber();
     nextFrameTime += playTimestep;
+    statusChanged = true;
 
     return !frame.empty();
 }
@@ -125,7 +127,8 @@ void CaptureVideo::Stop()
     source.set(CV_CAP_PROP_POS_FRAMES, 0);
     source >> frame;
 
-    isPaused = true;
+    isStopped = true;
+    statusChanged = true;
     GetFrameNumber();
 }
 
@@ -134,6 +137,7 @@ void CaptureVideo::SetFrameNumber(long frameNumber)
     source.set(CV_CAP_PROP_POS_FRAMES, frameNumber);
 
     source >> frame;
+    statusChanged = true;
 
     nextFrameTime += playTimestep;
     GetFrameNumber();
@@ -151,14 +155,14 @@ long CaptureVideo::GetFrameCount ()
 }
 
 // related to movie time
-void CaptureVideo::SetTime(double time)
-{
-    source.set(CV_CAP_PROP_POS_MSEC, time * 1000.0);
-    source >> frame;
+// void CaptureVideo::SetTime(double time)
+// {
+//     source.set(CV_CAP_PROP_POS_MSEC, time * 1000.0);
+//     source >> frame;
 
-    nextFrameTime += playTimestep;
-    GetFrameNumber();
-}
+//     nextFrameTime += playTimestep;
+//     GetFrameNumber();
+// }
 
 void CaptureVideo::SetSpeedFaster(int speed)
 {

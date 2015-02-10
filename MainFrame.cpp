@@ -123,6 +123,8 @@ const long MainFrame::ID_STATICTEXT7 = wxNewId();
 const long MainFrame::ID_SPINCTRL7 = wxNewId();
 const long MainFrame::ID_STATICTEXT8 = wxNewId();
 const long MainFrame::ID_SPINCTRL8 = wxNewId();
+const long MainFrame::ID_STATICTEXT9 = wxNewId();
+const long MainFrame::ID_CHECKBOX2 = wxNewId();
 const long MainFrame::ID_FILEPICKERCTRL1 = wxNewId();
 const long MainFrame::ID_SCROLLEDWINDOW4 = wxNewId();
 const long MainFrame::ID_NOTEBOOK1 = wxNewId();
@@ -187,26 +189,26 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FlexGridSizer6->Add(GLCanvas1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer2 = new wxFlexGridSizer(1, 9, 0, 0);
     FlexGridSizer2->AddGrowableCol(7);
-    buttonOutput = new wxBitmapButton(this, ID_BITMAPBUTTON1, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-system-search-icon.png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW, wxDefaultValidator, _T("ID_BITMAPBUTTON1"));
+    buttonOutput = new wxBitmapButton(this, ID_BITMAPBUTTON1, wxBitmap(wxImage(_T("./images/Actions-system-search-icon.png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW, wxDefaultValidator, _T("ID_BITMAPBUTTON1"));
     FlexGridSizer2->Add(buttonOutput, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonStop = new wxBitmapButton(this, ID_BITMAPBUTTON3, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-stop-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON3"));
+    buttonStop = new wxBitmapButton(this, ID_BITMAPBUTTON3, wxBitmap(wxImage(_T("./images/Actions-media-playback-stop-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON3"));
     FlexGridSizer2->Add(buttonStop, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonBackwards = new wxBitmapButton(this, ID_BITMAPBUTTON4, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-seek-backward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON4"));
+    buttonBackwards = new wxBitmapButton(this, ID_BITMAPBUTTON4, wxBitmap(wxImage(_T("./images/Actions-media-seek-backward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON4"));
     FlexGridSizer2->Add(buttonBackwards, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonStepBackwards = new wxBitmapButton(this, ID_BITMAPBUTTON9, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-skip-backward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON9"));
+    buttonStepBackwards = new wxBitmapButton(this, ID_BITMAPBUTTON9, wxBitmap(wxImage(_T("./images/Actions-media-skip-backward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON9"));
     FlexGridSizer2->Add(buttonStepBackwards, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonPlay = new wxBitmapButton(this, ID_BITMAPBUTTON2, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-start-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON2"));
-    buttonPlay->SetBitmapSelected(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-pause-icon (1).png"))));
+    buttonPlay = new wxBitmapButton(this, ID_BITMAPBUTTON2, wxBitmap(wxImage(_T("./images/Actions-media-playback-start-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON2"));
+    buttonPlay->SetBitmapSelected(wxBitmap(wxImage(_T("./images/Actions-media-playback-pause-icon (1).png"))));
     FlexGridSizer2->Add(buttonPlay, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonStepForward = new wxBitmapButton(this, ID_BITMAPBUTTON10, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-skip-forward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON10"));
+    buttonStepForward = new wxBitmapButton(this, ID_BITMAPBUTTON10, wxBitmap(wxImage(_T("./images/Actions-media-skip-forward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON10"));
     FlexGridSizer2->Add(buttonStepForward, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonForward = new wxBitmapButton(this, ID_BITMAPBUTTON8, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-seek-forward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON8"));
+    buttonForward = new wxBitmapButton(this, ID_BITMAPBUTTON8, wxBitmap(wxImage(_T("./images/Actions-media-seek-forward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON8"));
     FlexGridSizer2->Add(buttonForward, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     videoSlider = new wxSlider(this, ID_SLIDER1, 0, 0, 1000, wxDefaultPosition, wxSize(-1,-1), 0, wxDefaultValidator, _T("ID_SLIDER1"));
     videoSlider->SetMinSize(wxSize(-1,-1));
     videoSlider->SetMaxSize(wxSize(-1,-1));
     FlexGridSizer2->Add(videoSlider, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 12);
-    buttonHud = new wxBitmapButton(this, ID_BITMAPBUTTON11, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Apps-utilities-system-monitor-icon active (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON11"));
+    buttonHud = new wxBitmapButton(this, ID_BITMAPBUTTON11, wxBitmap(wxImage(_T("./images/Apps-utilities-system-monitor-icon active (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON11"));
     FlexGridSizer2->Add(buttonHud, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     FlexGridSizer6->Add(FlexGridSizer2, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer1->Add(FlexGridSizer6, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
@@ -261,15 +263,15 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FlexGridSizer5->Add(CheckBoxRecalculate, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     StaticBoxSizer2->Add(FlexGridSizer5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer4 = new wxFlexGridSizer(0, 2, 0, 0);
-    StaticBitmap1 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP1, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Categories-applications-system-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP1"));
+    StaticBitmap1 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP1, wxBitmap(wxImage(_T("./images/Categories-applications-system-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP1"));
     FlexGridSizer4->Add(StaticBitmap1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonBgRecalculate = new wxButton(BackgroundTab, ID_BUTTON1, _("Recalculate"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
     FlexGridSizer4->Add(ButtonBgRecalculate, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    StaticBitmap2 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP2, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-document-open-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP2"));
+    StaticBitmap2 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP2, wxBitmap(wxImage(_T("./images/Actions-document-open-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP2"));
     FlexGridSizer4->Add(StaticBitmap2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonBgLoad = new wxButton(BackgroundTab, ID_BUTTON3, _("Load background"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON3"));
     FlexGridSizer4->Add(ButtonBgLoad, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    StaticBitmap3 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP3, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-document-save-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP3"));
+    StaticBitmap3 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP3, wxBitmap(wxImage(_T("./images/Actions-document-save-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP3"));
     FlexGridSizer4->Add(StaticBitmap3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonBgSave = new wxButton(BackgroundTab, ID_BUTTON4, _("Save background"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON4"));
     FlexGridSizer4->Add(ButtonBgSave, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
@@ -298,6 +300,11 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     SpinCtrlTimestep = new wxSpinCtrl(ConfigTab, ID_SPINCTRL8, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 100, 0, _T("ID_SPINCTRL8"));
     SpinCtrlTimestep->SetValue(_T("0"));
     GridBagSizer1->Add(SpinCtrlTimestep, wxGBPosition(3, 1), wxDefaultSpan, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 1);
+    StaticText9 = new wxStaticText(ConfigTab, ID_STATICTEXT9, _("Use time bounds"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT9"));
+    GridBagSizer1->Add(StaticText9, wxGBPosition(4, 0), wxDefaultSpan, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    CheckBoxUseTimeBounds = new wxCheckBox(ConfigTab, ID_CHECKBOX2, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX2"));
+    CheckBoxUseTimeBounds->SetValue(false);
+    GridBagSizer1->Add(CheckBoxUseTimeBounds, wxGBPosition(4, 1), wxDefaultSpan, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     StaticBoxSizer1->Add(GridBagSizer1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 1);
     FlexGridSizer3->Add(StaticBoxSizer1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     StaticBoxSizer4 = new wxStaticBoxSizer(wxHORIZONTAL, ConfigTab, _("Zones of interest"));
@@ -365,7 +372,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     Connect(ID_BUTTON4,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnButtonBgSaveClick);
     Connect(ID_SPINCTRL6,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlStartTimeChange);
     Connect(ID_SPINCTRL7,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlDurationChange);
-    Connect(ID_SPINCTRL8,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlTimestepChange);
+    Connect(ID_CHECKBOX2,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&MainFrame::OnCheckBoxUseTimeBoundsClick);
     Connect(ID_FILEPICKERCTRL1,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&MainFrame::OnFilePickerCtrlZonesFileChanged);
     Connect(ID_NOTEBOOK1,wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED,(wxObjectEventFunction)&MainFrame::OnNotebook1PageChanged);
     Connect(ID_MENUITEM1,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnMenuOpenCaptureSelected);
@@ -375,31 +382,18 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     Connect(idMenuAbout,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnAbout);
     //*)
 
-    // end of codeblocks generated code... now comes mine.
+    // end of codeblocks generated code... now comes some customization.
 
     // disable AVT menu if not compiled with VIMBA
     //#ifndef VIMBA
     //Menu1->Enable (ID_MENUITEM2, false);
     //#endif // VIMBA
 
-    // replace timestep spinctrl with a double spinctrl
-    // SpinCtrlStartTimeDouble = new wxSpinCtrlDouble(ConfigTab, ID_SPINCTRL6x, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 1000000000, 0, 0.01, _T("ID_SPINCTRL6"));
-    // SpinCtrlStartTimeDouble->SetValue(_T("0"));
-    // GridBagSizer1->Replace(SpinCtrlStartTime, SpinCtrlStartTimeDouble);
-    // SpinCtrlDurationDouble = new wxSpinCtrlDouble(ConfigTab, ID_SPINCTRL7x, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 1000000000, 0, 0.01, _T("ID_SPINCTRL7"));
-    // SpinCtrlDurationDouble->SetValue(_T("0"));
-    // GridBagSizer1->Replace(SpinCtrlDuration, SpinCtrlDurationDouble);
+    // codeblocks 13.12 / wxsmith does not support spinctrldouble yet... adding manually
     SpinCtrlTimestepDouble = new wxSpinCtrlDouble(ConfigTab, ID_SPINCTRL8x, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 100, 0, 0.01, _T("ID_SPINCTRL8"));
     SpinCtrlTimestepDouble->SetValue(_T("0"));
     GridBagSizer1->Replace(SpinCtrlTimestep, SpinCtrlTimestepDouble);
-
-    // Disconnect(ID_SPINCTRL6,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlStartTimeChange);
-    // Disconnect(ID_SPINCTRL7,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlDurationChange);
-    Disconnect(ID_SPINCTRL8,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlTimestepChange);
-
-    // Connect(ID_SPINCTRL6x,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlStartTimeChange);
-    // Connect(ID_SPINCTRL7x,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlDurationChange);
-    Connect(ID_SPINCTRL8x,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlTimestepChange);
+    SpinCtrlTimestepDouble->Bind(wxEVT_SPINCTRLDOUBLE, &MainFrame::OnSpinCtrlDoubleTimestepChange, this);
 
     // adjust scrollbars in tabs
     int sz = FlexGridSizer3->CalcMin().GetHeight() * 115 / 100;
@@ -486,11 +480,6 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 
     glColor4f (1.0f, 1.0f, 1.0f, 1.0f);
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//  glBlendFunc  (GL_ONE_MINUS_DST_ALPHA, GL_DST_ALPHA);
-//  glBlendFunc  (GL_ONE_MINUS_SRC_COLOR, GL_SRC_COLOR);
-//  glBlendFunc  (GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
-//	glBlendFunc (GL_ONE, GL_ONE);
-//	glBlendEquation (GL_FUNC_ADD);
     glEnable     (GL_BLEND);
     glEnable(GL_TEXTURE_2D);
 
@@ -498,7 +487,6 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-//    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
 
     // Set Projection Matrix
     glViewport(0, 0, glCanvasWidth, glCanvasHeight);
@@ -544,8 +532,6 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
     }
 
     // Draw a textured quad
-//    glColor4f (1.0f, 1.0f, 1.0f, 1.0f);
-
     glBegin(GL_QUADS);
     glTexCoord2f(zoomStartX, zoomStartY); glVertex2f(0.0f, 0.0f);
     glTexCoord2f(zoomEndX, zoomStartY); glVertex2f(oglScreen.cols, 0.0f);
@@ -580,19 +566,6 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 	glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, hud.rows);
 	glEnd();
 
-	// // TODO HACK DEBUG
-	// for (int y = 300; y < 400; y++)
-	// {
-	//     unsigned char* row = hudApp.ptr<unsigned char>(y);
-	//     for (int x = 0; x < hudApp.cols; x++)
-	//     {
-	// 	row[x*4 + 0] = 0;
-	// 	row[x*4 + 1] = 0;
-	// 	row[x*4 + 2] = 255;
-	// 	row[x*4 + 3] = 32;
-	//     }
-	// }
-
 	// Create Texture
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage2D(
@@ -605,7 +578,6 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 	    GL_BGRA,
 	    GL_UNSIGNED_BYTE,
 	    hudApp.data);
-
 
 	// Draw a textured quad
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -670,7 +642,6 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 	}
 
 	// print hud
-	hud.setTo (0);
 	hudApp.setTo (0);
 	if (hudVisible) PrintInfoToHud();
 
@@ -695,7 +666,7 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 
     // refresh slider pos and drawing
     if (!sliderMoving) videoSlider->SetValue(ipEngine.capture->GetFrameNumber() * 1000 / (ipEngine.capture->GetFrameCount()+1));
-    
+
     evt.RequestMore(); // render continuously, not only once on idle
 }
 
@@ -707,19 +678,19 @@ void MainFrame::DrawTrackerSelection(wxClientDC& dc)
 	{
 	    PipelinePlugin* pp = ipEngine.pipelines[ipEngine.threadsCount].plugins[ipEngine.snapshotPos];
 	    Tracker* tracker = dynamic_cast<Tracker*>(pp);
-	    
+
 	    if (tracker && tracker->history.size() > 0)
 	    {
 		float hstart = tracker->historyStartFrame;
 		float hlength = tracker->history.size() / tracker->entitiesCount;
 		float totalFrames = ipEngine.capture->GetFrameCount()+1;
-		
+
 		wxPoint pos = videoSlider->GetPosition();
 		wxSize sz = videoSlider->GetSize();
-		
+
 		pos.x += 5;
 		sz.x -= 10;
-		
+
 		// clear area
 		wxPoint clearpos = pos;
 		wxSize clearsz = sz;
@@ -730,10 +701,10 @@ void MainFrame::DrawTrackerSelection(wxClientDC& dc)
 		dc.SetPen(wxNullPen);
 		dc.SetBrush(dc.GetBackground());
 		dc.DrawRectangle(clearpos, clearsz);
-		
+
 		int px1 = pos.x + sz.x * hstart / totalFrames;
 		int px2 = pos.x + sz.x * (hstart+hlength) / totalFrames;
-		
+
 		dc.SetPen(wxPen(wxColour(255, 100, 100), 2, wxSOLID));
 		dc.SetBrush(wxNullBrush);
 		int py = pos.y + sz.y + 1 + 4;
@@ -1699,9 +1670,9 @@ void MainFrame::OnSpinCtrlDurationChange(wxSpinEvent& event)
     ipEngine.durationTime = event.GetPosition();
 }
 
-void MainFrame::OnSpinCtrlTimestepChange(wxSpinEvent& event)
+void MainFrame::OnSpinCtrlDoubleTimestepChange(wxSpinDoubleEvent& event)
 {
-    ipEngine.timestep = event.GetPosition();
+    ipEngine.timestep = event.GetValue();
 }
 
 void MainFrame::OnFilePickerCtrlZonesFileChanged(wxFileDirPickerEvent& event)
@@ -1918,4 +1889,9 @@ void MainFrame::OnGLCanvas1Char(wxKeyEvent& event)
 void MainFrame::OnGLCanvas1MouseEnter(wxMouseEvent& event)
 {
     GLCanvas1->SetFocus();
+}
+
+void MainFrame::OnCheckBoxUseTimeBoundsClick(wxCommandEvent& event)
+{
+    ipEngine.useTimeBoundaries = event.IsChecked();
 }

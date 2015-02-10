@@ -100,8 +100,6 @@ private:
     void OnToggleButtonProcessingToggle(wxCommandEvent& event);
     void OnSpinCtrlStartTimeChange(wxSpinEvent& event);
     void OnSpinCtrlDurationChange(wxSpinEvent& event);
-    void OnSpinCtrlTimestepIntChange(wxSpinEvent& event);
-    void OnSpinCtrlTimestepChange(wxSpinEvent& event);
     void OnFilePickerCtrlZonesFileChanged(wxFileDirPickerEvent& event);
     void OnSpinCtrlBgFramesChange(wxSpinEvent& event);
     void OnSpinCtrlBgEndChange(wxSpinEvent& event);
@@ -111,6 +109,7 @@ private:
     void OnMenuOpenCaptureSelected(wxCommandEvent& event);
     void OnGLCanvas1Char(wxKeyEvent& event);
     void OnGLCanvas1MouseEnter(wxMouseEvent& event);
+    void OnCheckBoxUseTimeBoundsClick(wxCommandEvent& event);
     //*)
 
     //(*Identifiers(MainFrame)
@@ -152,6 +151,8 @@ private:
     static const long ID_SPINCTRL7;
     static const long ID_STATICTEXT8;
     static const long ID_SPINCTRL8;
+    static const long ID_STATICTEXT9;
+    static const long ID_CHECKBOX2;
     static const long ID_FILEPICKERCTRL1;
     static const long ID_SCROLLEDWINDOW4;
     static const long ID_NOTEBOOK1;
@@ -186,6 +187,7 @@ private:
     wxButton* ButtonBgLoad;
     wxRadioBox* RadioBoxMethod;
     wxStaticLine* StaticLine1;
+    wxCheckBox* CheckBoxUseTimeBounds;
     wxGLCanvas* GLCanvas1;
     wxBitmapButton* buttonStepForward;
     wxStaticText* StaticText8;
@@ -208,6 +210,7 @@ private:
     wxMenuItem* MenuLoadSettings;
     wxFilePickerCtrl* FilePickerCtrlZones;
     wxBitmapButton* buttonOutput;
+    wxStaticText* StaticText9;
     wxCheckBox* CheckBoxRecalculate;
     wxBitmapButton* buttonHud;
     wxStaticBitmap* StaticBitmap2;
@@ -218,6 +221,8 @@ private:
     /* wxSpinCtrlDouble* SpinCtrlDurationDouble; */
 
 // My methods
+
+    void OnSpinCtrlDoubleTimestepChange(wxSpinDoubleEvent& event);
 
     void OnUpdateInternalParameters (wxCommandEvent& event);
 

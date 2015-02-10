@@ -10,7 +10,6 @@ struct CaptureVideo : Capture
 
 
     unsigned int frameNumber = 0;
-    bool isPaused = true;
     wxLongLong startTime = 0;
     wxLongLong nextFrameTime = 0;
     wxLongLong playTimestep = 0;

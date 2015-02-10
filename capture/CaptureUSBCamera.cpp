@@ -95,12 +95,14 @@ void CaptureUSBCamera::Stop()
 {
     isPaused = false;
     isStopped = true;    
+    statusChanged = true;
     frameNumber = 0;
 }
 
 void CaptureUSBCamera::Pause()
 {
     isPaused = true;
+    statusChanged = true;
     pauseTime = wxGetUTCTimeUSec();
 }
 
@@ -110,12 +112,14 @@ void CaptureUSBCamera::Play()
     {
 	startTime += wxGetUTCTimeUSec() - pauseTime;
 	nextFrameTime = wxGetUTCTimeUSec() + playTimestep;
+	statusChanged = true;
 	isPaused = false;
     }
     if (isStopped)
     {
 	startTime = wxGetUTCTimeUSec();
 	nextFrameTime = startTime + playTimestep;
+	statusChanged = true;
 	isStopped =false;	
     }
 }

@@ -20,6 +20,10 @@ struct Capture
 
     // output
     cv::Mat frame;
+    
+    bool isPaused = false;
+    bool isStopped = true;
+    bool statusChanged = true;
 
     // methods
     // -----------------------------
