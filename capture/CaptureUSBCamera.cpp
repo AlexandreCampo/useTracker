@@ -81,7 +81,6 @@ bool CaptureUSBCamera::GetNextFrame ()
     source >> frame;
 
     frameNumber++;
-
     nextFrameTime += playTimestep;
 
     return !frame.empty();

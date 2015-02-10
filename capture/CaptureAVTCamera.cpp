@@ -72,7 +72,7 @@ bool CaptureAVTCamera::Open (int device)
     height = vimbaApiController.GetHeight();
 
     // estimate FPS by retrieving xx frames and measuring time
-    double t1 = GetTime ();
+    wxLongLong t1 = wxGetUTCTimeUSec();
     int frameCount = 0;
     while (1)
     {
@@ -88,15 +88,18 @@ bool CaptureAVTCamera::Open (int device)
 	}
 	usleep (10);
     }
-    double t2 = GetTime ();
-    fps = 20.0 / (t2 - t1);
+    wxLongLong t2 = wxGetUTCTimeUSec();
+    double delay = (t2 - t1).ToDouble() / 1000000.0;
+    fps = 20.0 / delay;
 
     std::cout << "Camera properties\n";
     std::cout << "width = " << width << std::endl <<" height = "<< height << " fps = " << fps << std::endl;
 
-//    currentTime = 0.0;
+    playTimestep.Assign(1000000.0 / fps);
+    startTime = wxGetUTCTimeUSec();
+    pauseTime = startTime;
+    isPaused = true;
 
-    // cameraSource >> frame;
     frame = Mat (height, width, CV_8UC3);
 
     return (!frame.empty());
@@ -107,16 +110,54 @@ void CaptureAVTCamera::Close ()
 
 }
 
-bool CaptureAVTCamera::GetNextFrame (bool blocking)
+bool CaptureAVTCamera::GetNextFrame ()
 {
     if (vimbaApiController.FrameAvailable())
 	vimbaApiController.GetFrame(frame);
     else return false;
 
-    GetTime();
     frameNumber++;
+    nextFrameTime += playTimestep;
 
     return !frame.empty();
+}
+
+wxLongLong CaptureAVTCamera::GetNextFrameSystemTime()
+{
+    return nextFrameTime;
+}
+
+void CaptureAVTCamera::Stop()
+{
+    isPaused = false;
+    isStopped = true;    
+    statusChanged = true;
+    frameNumber = 0;
+}
+
+void CaptureAVTCamera::Pause()
+{
+    isPaused = true;
+    statusChanged = true;
+    pauseTime = wxGetUTCTimeUSec();
+}
+
+void CaptureAVTCamera::Play()
+{
+    if (isPaused)
+    {
+	startTime += wxGetUTCTimeUSec() - pauseTime;
+	nextFrameTime = wxGetUTCTimeUSec() + playTimestep;
+	statusChanged = true;
+	isPaused = false;
+    }
+    if (isStopped)
+    {
+	startTime = wxGetUTCTimeUSec();
+	nextFrameTime = startTime + playTimestep;
+	statusChanged = true;
+	isStopped =false;	
+    }
 }
 
 bool CaptureAVTCamera::GetFrame (double time)
@@ -128,6 +169,7 @@ bool CaptureAVTCamera::GetFrame (double time)
     else return false;
 
     frameNumber++;
+    nextFrameTime = wxGetUTCTimeUSec() + playTimestep;
 
     return !frame.empty();
 }
@@ -143,15 +185,12 @@ long CaptureAVTCamera::GetFrameCount ()
 }
 
 
-// double CaptureAVTCamera::GetVideoTime()
-// {
-//     return (double)source.get(CV_CAP_PROP_POS_MSEC) / 1000.0;
-// }
-
-// float TrackerMain::GetVideoTimeRatio()
-// {
-//     return source.get(CV_CAP_PROP_POS_AVI_RATIO);
-// }
+double CaptureAVTCamera::GetTime()
+{
+    if (isPaused) return (pauseTime - startTime).ToDouble() / 1000000.0;
+    else if (isStopped) return 0;
+    else return (wxGetUTCTimeUSec() - startTime).ToDouble() / 1000000.0;
+}
 
 
 void CaptureAVTCamera::SaveXML(FileStorage& fs)

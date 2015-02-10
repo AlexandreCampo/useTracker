@@ -14,6 +14,11 @@ struct CaptureAVTCamera : Capture
     int device;
     AVT::VmbAPI::ApiController vimbaApiController;
 
+    unsigned int frameNumber = 0;
+    wxLongLong startTime = 0;
+    wxLongLong pauseTime = 0;
+    wxLongLong nextFrameTime = 0;
+    wxLongLong playTimestep = 0;
 
     CaptureAVTCamera(int device);
     CaptureAVTCamera(cv::FileNode& fn);
@@ -22,9 +27,14 @@ struct CaptureAVTCamera : Capture
     bool Open(int device);
     void Close();
 
-    bool GetNextFrame (bool blocking = false);
+    void Pause();
+    void Play();
+    void Stop();
+
+    bool GetNextFrame ();
     bool GetFrame (double time);
-//    double GetVideoTime
+    wxLongLong GetNextFrameSystemTime();
+    double GetTime();
 
     long GetFrameNumber();
     long GetFrameCount();
