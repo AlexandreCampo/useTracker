@@ -15,7 +15,6 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
     int width = capture->width;
     int height = capture->height;
     Mat background = Mat::zeros(height, width, CV_8UC3);
-//    Mat frame;
 
     // do not calc bg for an image...
     if (capture->type == Capture::IMAGE) return background;
@@ -150,7 +149,6 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
     cerr << "Background calculated" << endl;
 
     capture->Stop();
-//    video.set(CV_CAP_PROP_POS_MSEC, 0.0);
 
     return background;
 }
@@ -163,7 +161,6 @@ Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, u
     int height = capture->height;
     Mat background = Mat::zeros(height, width, CV_8UC3);
     Mat accu = Mat::zeros(height, width, CV_32FC3);
-//    Mat frame;
 
     // do not calc bg for an image...
     if (capture->type == Capture::IMAGE) return background;
@@ -193,10 +190,6 @@ Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, u
 
     	if (capture->frame.empty())
     	    break;
-
-	char fname[256];
-	sprintf(fname, "dbg_%d.png", readCount);
-	SaveMatToPNG (capture->frame, fname);
 
     	cv::accumulate (capture->frame, accu);
 
