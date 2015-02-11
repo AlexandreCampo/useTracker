@@ -189,7 +189,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FlexGridSizer6->Add(GLCanvas1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer2 = new wxFlexGridSizer(1, 9, 0, 0);
     FlexGridSizer2->AddGrowableCol(7);
-    buttonOutput = new wxBitmapButton(this, ID_BITMAPBUTTON1, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-system-search-icon.png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW, wxDefaultValidator, _T("ID_BITMAPBUTTON1"));
+    buttonOutput = new wxBitmapButton(this, ID_BITMAPBUTTON1, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-record-icon inactive.png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW, wxDefaultValidator, _T("ID_BITMAPBUTTON1"));
     FlexGridSizer2->Add(buttonOutput, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     buttonStop = new wxBitmapButton(this, ID_BITMAPBUTTON3, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-stop-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON3"));
     FlexGridSizer2->Add(buttonStop, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
@@ -776,14 +776,14 @@ void MainFrame::OnbuttonOutputClick(wxCommandEvent& event)
 {
     if (!output)
     {
-	buttonOutput->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-system-search-icon-running.png"))));
+	buttonOutput->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-record-icon active.png"))));
 	buttonOutput->Refresh();
 	ipEngine.OpenOutput();
 	output = true;
     }
     else
     {
-	buttonOutput->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-system-search-icon.png"))));
+	buttonOutput->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-record-icon inactive.png"))));
 	buttonOutput->Refresh();
 	ipEngine.CloseOutput();
 	output = false;
