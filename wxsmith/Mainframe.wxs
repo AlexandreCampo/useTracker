@@ -47,7 +47,7 @@
 							<growablecols>7</growablecols>
 							<object class="sizeritem">
 								<object class="wxBitmapButton" name="ID_BITMAPBUTTON1" variable="buttonOutput" member="yes">
-									<bitmap>/usr/local/share/useTracker/images/Actions-system-search-icon.png</bitmap>
+									<bitmap>/usr/local/share/useTracker/images/Actions-media-record-icon inactive.png</bitmap>
 									<handler function="OnbuttonOutputClick" entry="EVT_BUTTON" />
 								</object>
 								<flag>wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>

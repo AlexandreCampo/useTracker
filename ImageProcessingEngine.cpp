@@ -273,13 +273,28 @@ void ImageProcessingEngine::PushBack (vector<PipelinePlugin*> pfv, bool reset)
 
 void ImageProcessingEngine::Insert (int pos, vector<PipelinePlugin*> pfv, bool reset)
 {
-    // multithreaded
-    if (pfv.size() > 1)
+    // pfv is complete, do a raw copy
+    if (pfv.size() == threadsCount + 1)
+    {
+	for (unsigned int i = 0; i <= threadsCount; i++)
+	{
+	    pipelines[i].plugins.insert(pipelines[i].plugins.begin()+pos, pfv[i]);
+	    if (reset)
+	    {
+		if (pfv[i])
+		{
+		    pfv[i]->pipeline = &pipelines[i];
+		    pfv[i]->Reset();
+		}
+	    }
+	}	
+    }    
+    // multithreaded, pfv contains plugin ptrs for multithreading, not for single thread
+    else if (pfv.size() == threadsCount)
     {
 	for (unsigned int i = 0; i < threadsCount; i++)
 	{
 	    pipelines[i].plugins.insert(pipelines[i].plugins.begin()+pos, pfv[i]);
-//	    pipelines[i].plugins.push_back(pfv[i]);
 	    if (reset)
 	    {
 		pfv[i]->pipeline = &pipelines[i];
@@ -288,14 +303,13 @@ void ImageProcessingEngine::Insert (int pos, vector<PipelinePlugin*> pfv, bool r
 	}
 	pipelines[threadsCount].plugins.push_back(nullptr);
     }
-    // single thread
+    // single thread, pfv contains a single plugin ptr
     else
     {
 	for (unsigned int i = 0; i < threadsCount; i++)
 	    pipelines[i].plugins.push_back(nullptr);
 
 	pipelines[threadsCount].plugins.insert(pipelines[threadsCount].plugins.begin()+pos, pfv[0]);
-//	pipelines[threadsCount].plugins.push_back(pfv[0]);
 	if (reset)
 	{
 	    pfv[0]->pipeline = &pipelines[threadsCount];
