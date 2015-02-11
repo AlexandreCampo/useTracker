@@ -110,7 +110,7 @@
 							</object>
 							<object class="sizeritem">
 								<object class="wxSlider" name="ID_SLIDER1" variable="videoSlider" member="yes">
-									<max>1000</max>
+									<max>10000</max>
 									<size>-1,-1</size>
 									<minsize>-1,-1</minsize>
 									<maxsize>-1,-1</maxsize>

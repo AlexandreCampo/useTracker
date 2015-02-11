@@ -26,6 +26,7 @@
 #include <wx/filename.h>
 #include <wx/filedlg.h>
 #include <wx/graphics.h>
+#include <wx/tooltip.h>
 
 #include "Background.h"
 
@@ -204,7 +205,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FlexGridSizer2->Add(buttonStepForward, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     buttonForward = new wxBitmapButton(this, ID_BITMAPBUTTON8, wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-seek-forward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON8"));
     FlexGridSizer2->Add(buttonForward, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    videoSlider = new wxSlider(this, ID_SLIDER1, 0, 0, 1000, wxDefaultPosition, wxSize(-1,-1), 0, wxDefaultValidator, _T("ID_SLIDER1"));
+    videoSlider = new wxSlider(this, ID_SLIDER1, 0, 0, 10000, wxDefaultPosition, wxSize(-1,-1), 0, wxDefaultValidator, _T("ID_SLIDER1"));
     videoSlider->SetMinSize(wxSize(-1,-1));
     videoSlider->SetMaxSize(wxSize(-1,-1));
     FlexGridSizer2->Add(videoSlider, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 12);
@@ -665,7 +666,10 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
     DrawTrackerSelection(dc);
 
     // refresh slider pos and drawing
-    if (!sliderMoving) videoSlider->SetValue(ipEngine.capture->GetFrameNumber() * 1000 / (ipEngine.capture->GetFrameCount()+1));
+    if (!sliderMoving)
+    {
+	videoSlider->SetValue(ipEngine.capture->GetFrameNumber() * 10000 / (ipEngine.capture->GetFrameCount()+1));
+    }
 
     evt.RequestMore(); // render continuously, not only once on idle
 }
@@ -831,9 +835,10 @@ void MainFrame::OnvideoSliderCmdScrollChanged(wxScrollEvent& event)
     if(ipEngine.capture->type == Capture::VIDEO)
     {
 	CaptureVideo* capv = dynamic_cast<CaptureVideo*>(ipEngine.capture);
-	int targetFrame = videoSlider->GetValue() * ipEngine.capture->GetFrameCount() / 1000;
+	int targetFrame = videoSlider->GetValue() * ipEngine.capture->GetFrameCount() / 10000;
 	capv->SetFrameNumber(targetFrame);
 	sliderMoving = false;
+	videoSlider->UnsetToolTip();
 
 	// clear any tracking history (if tracker plugin is present)
 	for (unsigned int i= 0; i < ipEngine.pipelines[0].plugins.size(); i++)
@@ -847,6 +852,16 @@ void MainFrame::OnvideoSliderCmdScrollChanged(wxScrollEvent& event)
 
 void MainFrame::OnvideoSliderCmdScrollThumbTrack(wxScrollEvent& event)
 {
+    if (ipEngine.capture->type == Capture::VIDEO)
+    {
+	wxLongLong s;
+	int targetFrame = videoSlider->GetValue() * ipEngine.capture->GetFrameCount() / 10;
+	s.Assign(targetFrame / ipEngine.capture->fps);
+	wxTimeSpan ts (0,0,0,s);
+	wxString f ("%H:%M:%S");
+	videoSlider->SetToolTip(ts.Format(f));
+    }
+
     sliderMoving = true;
 }
 

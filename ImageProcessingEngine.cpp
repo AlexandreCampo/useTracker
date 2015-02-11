@@ -228,7 +228,7 @@ void ImageProcessingEngine::SaveXML(FileStorage& fs)
     fs << "StartTime" << startTime;
     fs << "DurationTime" << durationTime;
     fs << "Timestep" << timestep;
-    fs << "UseTimeBounds" << (int)useTimeBoundaries;
+    fs << "UseTimeBounds" << useTimeBoundaries;
     fs << "BackgroundFilename" << bgFilename;
     fs << "BackgroundRecalculate" << bgRecalculate;
     fs << "BackgroundFrames" << bgFrames;
@@ -242,8 +242,25 @@ void ImageProcessingEngine::SaveXML(FileStorage& fs)
 
 void ImageProcessingEngine::PushBack (vector<PipelinePlugin*> pfv, bool reset)
 {
-    // multithreaded
-    if (pfv.size() > 1)
+    // pfv is complete, do a raw copy
+    if (pfv.size() == threadsCount + 1)
+    {
+	for (unsigned int i = 0; i <= threadsCount; i++)
+	{
+	    pipelines[i].plugins.push_back(pfv[i]);
+	    if (reset)
+	    {
+		if (pfv[i])
+		{
+		    pfv[i]->pipeline = &pipelines[i];
+		    pfv[i]->Reset();
+		}
+	    }
+	}
+    }
+
+    // multithreaded, pfv contains plugin ptrs for multithreading, not for single thread
+    else if (pfv.size() == threadsCount)
     {
 	for (unsigned int i = 0; i < threadsCount; i++)
 	{
@@ -256,7 +273,7 @@ void ImageProcessingEngine::PushBack (vector<PipelinePlugin*> pfv, bool reset)
 	}
 	pipelines[threadsCount].plugins.push_back(nullptr);
     }
-    // single thread
+    // single thread, pfv contains a single plugin ptr
     else
     {
 	for (unsigned int i = 0; i < threadsCount; i++)

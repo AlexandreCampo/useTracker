@@ -217,8 +217,6 @@ private:
     //*)
 
     wxSpinCtrlDouble* SpinCtrlTimestepDouble;
-    /* wxSpinCtrlDouble* SpinCtrlStartTimeDouble; */
-    /* wxSpinCtrlDouble* SpinCtrlDurationDouble; */
 
 // My methods
 
