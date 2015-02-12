@@ -121,7 +121,7 @@ void ImageProcessingEngine::Reset(Parameters& parameters)
 	if (zoneMap.cols != capture->width || zoneMap.rows != capture->height)
 	{
 	    cerr << "Zones mask image and video dimensions mismatch... please update your mask" << std::endl;
-	    exit (-1);
+	    zoneMap = Mat::ones(capture->height, capture->width, CV_8U);
 	}
     }
     // no mask provided, generate a blank one
@@ -143,6 +143,53 @@ void ImageProcessingEngine::Reset(Parameters& parameters)
 	threadsCount = std::thread::hardware_concurrency();
 
     SetupThreads();
+
+    std::cerr << "Tracker core has been reset and is ready" << std::endl;
+}
+
+void ImageProcessingEngine::Reset()
+{
+    // no capture is a fatal error...
+    if (capture == nullptr)
+    {
+	cerr << "Fatal error: no capture source defined. Exiting." << endl;
+	exit (-1);
+    }
+
+    // get background pic
+    if (background.cols != capture->width || background.rows != capture->height)
+    {
+	cerr << "Background and video dimensions mismatch... please update your background" << std::endl;
+	background = Mat::zeros(capture->height, capture->width, CV_8UC3);
+    }
+
+    // if provided, load png of mask
+    if (zoneMap.cols != capture->width || zoneMap.rows != capture->height)
+    {
+	cerr << "Zones mask image and video dimensions mismatch... please update your mask" << std::endl;
+	zoneMap = Mat::ones(capture->height, capture->width, CV_8U);
+    }
+
+    // pipeline data
+    marked.create (capture->height, capture->width, CV_8U);
+    labels.create (capture->height, capture->width, CV_32S);
+
+    pipelineSnapshot.create (capture->height, capture->width, CV_8U);
+    pipelineSnapshotMarked.create (capture->height, capture->width, CV_8U);
+
+    if (threadsCount == 0)
+	threadsCount = std::thread::hardware_concurrency();
+
+    // reset pipelines
+    int sliceHeight = capture->height / threadsCount;
+    int y = 0;
+    for (unsigned int i = 0; i < threadsCount; i++)
+    {
+	if (i == threadsCount - 1) sliceHeight = capture->height - y;
+	pipelines[i].Reset(Rect(0, y, capture->width, sliceHeight));
+	y += sliceHeight;
+    }
+    pipelines[threadsCount].Reset(Rect(0, 0, capture->width, capture->height));
 
     std::cerr << "Tracker core has been reset and is ready" << std::endl;
 }
@@ -368,7 +415,6 @@ void ImageProcessingEngine::SetupThreads ()
     threadsRestart.clear();
     threadsStop = false;
 
-
     // destroy pipelines
     pipelines.clear();
 
@@ -383,7 +429,6 @@ void ImageProcessingEngine::SetupThreads ()
     }
     // this is the pipeline for the non multithreaded plugins
     pipelines.push_back(Pipeline(this, Rect(0, 0, capture->width, capture->height)));
-
 
     // spawn new threads, including special thread, also allocate new mutexes
     for (unsigned int i = 0; i <= threadsCount; i++)

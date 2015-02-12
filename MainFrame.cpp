@@ -448,7 +448,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
 
     ipEngine.LoadXML (parameters.rootNode);
     if (!ipEngine.capture) ipEngine.capture = new CaptureDefault();
-    ResetImageProcessingEngine();
+    ResetImageProcessingEngine(parameters);
 
     // last step...
     Connect( wxID_ANY, wxEVT_IDLE, wxIdleEventHandler(MainFrame::OnIdle) );
@@ -1470,7 +1470,7 @@ void MainFrame::OnMenuLoadSettingsSelected(wxCommandEvent& event)
 
 	    parameters.rootNode = parameters.file["Configuration"];
 	    ipEngine.LoadXML (parameters.rootNode);
-	    ResetImageProcessingEngine();
+	    ResetImageProcessingEngine(parameters);
 	}
 	else
 	{
@@ -1769,7 +1769,7 @@ void MainFrame::UpdateUI ()
 	FilePickerCtrlZones->SetPath(ipEngine.zonesFilename);
 }
 
-void MainFrame::ResetImageProcessingEngine()
+void MainFrame::ResetImageProcessingEngine(Parameters& parameters)
 {
     ipEngine.Reset(parameters);
     UpdateUI();
@@ -1803,6 +1803,19 @@ void MainFrame::ResetImageProcessingEngine()
     	    AddPipelinePlugin (txt, fn);
 	}
     }
+}
+
+void MainFrame::ResetImageProcessingEngine()
+{
+    // regenerate and assign hud / empty frame
+    hud.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
+    hudApp.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
+    ipEngine.hud = hud;
+
+    ipEngine.Reset();
+    UpdateUI();
+    AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+    GLCanvas1->Refresh();
 }
 
 void MainFrame::OnMenuOpenCaptureSelected(wxCommandEvent& event)

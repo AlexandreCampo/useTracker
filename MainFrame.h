@@ -241,6 +241,7 @@ private:
     void AdjustOrthoAspectRatio(int w, int h);
     void UpdateUI();
 
+    void ResetImageProcessingEngine(Parameters& parameters);
     void ResetImageProcessingEngine();
 
 // My members

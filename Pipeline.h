@@ -34,6 +34,7 @@ public:
 
     Pipeline (ImageProcessingEngine* ipEngine, cv::Rect roi);
     ~Pipeline ();
+    void Reset (cv::Rect roi);
 };
 
 #endif

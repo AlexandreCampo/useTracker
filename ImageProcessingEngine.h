@@ -87,6 +87,7 @@ struct ImageProcessingEngine
     ImageProcessingEngine ();
     ~ImageProcessingEngine ();
     void Reset (Parameters& parameters);
+    void Reset();
     void LoadXML (cv::FileNode& fn);
     void SaveXML (cv::FileStorage& fs);
     void Step (bool drawHud = false);
