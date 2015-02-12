@@ -33,6 +33,9 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
 
     cerr << "Calculating median background" << endl;
 
+    capture->Stop();
+    capture->Play();
+
     unsigned char* samples = new unsigned char [framesCount * width * height * 3];
 
     unsigned int readCount = 0;
@@ -61,6 +64,8 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
     	}
     	readCount++;
     }
+
+    capture->Stop();
 
     // ok finished extracting frames from movie
     // automatically calculate background
@@ -148,8 +153,6 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
     delete[] samples;
     cerr << "Background calculated" << endl;
 
-    capture->Stop();
-
     return background;
 }
 
@@ -178,6 +181,9 @@ Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, u
     }
 
     cerr << "Calculating mean background" << endl;
+
+    capture->Stop();
+    capture->Play();
 
     unsigned int readCount = 0;
     float intervalTime = (endTime - startTime) / framesCount;

@@ -199,8 +199,10 @@ FramePtr ApiController::GetFrame()
 }
 
 // Get the oldest frame and encode data in the given Mat
-void ApiController::GetFrame(cv::Mat& m)
+bool ApiController::GetFrame(cv::Mat& m)
 {
+    bool success = false;
+
     FramePtr frame = SP_DYN_CAST( m_pFrameObserver, FrameObserver )->GetFrame();
 
     VmbFrameStatusType status;
@@ -211,29 +213,35 @@ void ApiController::GetFrame(cv::Mat& m)
     {
 	unsigned char* buffer;
 	VmbErrorType err = SP_ACCESS( frame )->GetImage( buffer );
-
-	VmbUint32_t size;
-	err = SP_ACCESS( frame )->GetImageSize( size );
-
-	// Copy it
-	VmbImage            SourceImage,DestImage;
-//	VmbError_t          Result;
-	SourceImage.Size    = sizeof( SourceImage );
-	DestImage.Size      = sizeof( DestImage );
 	
-	VmbSetImageInfoFromPixelFormat( m_nPixelFormat, m_nWidth, m_nHeight, &SourceImage );
-
-	VmbSetImageInfoFromPixelFormat( VmbPixelFormatBgr8, m_nWidth, m_nHeight, &DestImage );
-
-	SourceImage.Data    = buffer;
-	DestImage.Data      = m.data;
-
-	VmbImageTransform(&SourceImage, &DestImage, NULL, 0);
-	//memcpy (m.data, buffer, size);
+	if( err == VmbErrorSuccess )
+	{
+	    VmbUint32_t size;
+	    err = SP_ACCESS( frame )->GetImageSize( size );
+	    
+	    // Copy it
+	    VmbImage            SourceImage,DestImage;
+//	VmbError_t          Result;
+	    SourceImage.Size    = sizeof( SourceImage );
+	    DestImage.Size      = sizeof( DestImage );
+	    
+	    VmbSetImageInfoFromPixelFormat( m_nPixelFormat, m_nWidth, m_nHeight, &SourceImage );
+	    VmbSetImageInfoFromPixelFormat( VmbPixelFormatBgr8, m_nWidth, m_nHeight, &DestImage );
+	    
+	    SourceImage.Data    = buffer;
+	    DestImage.Data      = m.data;
+	    
+	    VmbImageTransform(&SourceImage, &DestImage, NULL, 0);
+	    //memcpy (m.data, buffer, size);
+	    
+	    success = true;
+	}
     }
 
     // done copying the frame, give it back to the camera
     SP_ACCESS( m_pCamera )->QueueFrame( frame );
+
+    return success;
 }
 
 

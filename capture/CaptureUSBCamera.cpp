@@ -78,12 +78,18 @@ void CaptureUSBCamera::Close ()
 
 bool CaptureUSBCamera::GetNextFrame ()
 {
+    Mat previousFrame = frame;
     source >> frame;
 
     frameNumber++;
     nextFrameTime += playTimestep;
 
-    return !frame.empty();
+    if (frame.empty())
+    {
+	frame = previousFrame;
+	return false;
+    }
+    return true;
 }
 
 wxLongLong CaptureUSBCamera::GetNextFrameSystemTime()
@@ -127,12 +133,21 @@ void CaptureUSBCamera::Play()
 bool CaptureUSBCamera::GetFrame (double time)
 {
     while (GetTime() < time) this_thread::sleep_for(chrono::milliseconds(10));
-    source >> frame;
+    Mat previousFrame = frame;
+
+    // take several frames otherwise we get an old buffered frame
+    for (int i = 0; i < 4; i++)
+	source >> frame;
 
     frameNumber++;
     nextFrameTime = wxGetUTCTimeUSec() + playTimestep;
 
-    return !frame.empty();
+    if (frame.empty())
+    {
+	frame = previousFrame;
+	return false;
+    }
+    return true;
 }
 
 long CaptureUSBCamera::GetFrameNumber ()

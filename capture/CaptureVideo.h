@@ -41,7 +41,7 @@ struct CaptureVideo : Capture
 
     long GetFrameNumber();
     long GetFrameCount();
-    void SetFrameNumber(long f);
+    bool SetFrameNumber(long f);
 
     void SetTime(double time);
     double GetTime();

@@ -59,7 +59,7 @@ class ApiController
     VmbPixelFormatType  GetPixelFormat();
     CameraPtrVector     GetCameraList();
     FramePtr            GetFrame();
-    void GetFrame(cv::Mat& m);
+    bool GetFrame(cv::Mat& m);
     bool FrameAvailable();
     unsigned int GetQueueFrameSize();
     VmbErrorType        QueueFrame( FramePtr pFrame );

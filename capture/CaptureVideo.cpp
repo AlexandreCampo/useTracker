@@ -51,6 +51,7 @@ bool CaptureVideo::Open (string filename)
     cout << "detected w/h/fps " << width << " " << height << " " << fps << std::endl;
 
     // read first frame to allow display
+    Mat prevFrame = frame;
     source >> frame;
 
     GetFrameNumber();
@@ -65,13 +66,19 @@ void CaptureVideo::Close ()
 
 bool CaptureVideo::GetNextFrame ()
 {
+    Mat previousFrame = frame;
     source >> frame;
 
     GetFrameNumber();
 
     nextFrameTime += playTimestep;
 
-    return !frame.empty();
+    if (frame.empty())
+    {
+	frame = previousFrame;
+	return false;
+    }
+    return true;
 }
 
 wxLongLong CaptureVideo::GetNextFrameSystemTime()
@@ -94,32 +101,37 @@ void CaptureVideo::Play()
 	isPaused = false;
 	isStopped = false;
 	statusChanged = true;
-    }    
+    }
 }
-
-
 
 bool CaptureVideo::GetFrame (double time)
 {
     source.set(CV_CAP_PROP_POS_MSEC, time * 1000.0);
+
+    Mat previousFrame = frame;
     source >> frame;
 
     GetFrameNumber();
     nextFrameTime += playTimestep;
     statusChanged = true;
 
-    return !frame.empty();
+    if (frame.empty())
+    {
+	frame = previousFrame;
+	return false;
+    }
+    return true;
 }
 
 bool CaptureVideo::GetPreviousFrame()
 {
     int f = GetFrameNumber();
-    SetFrameNumber(f-2);
+    bool ok = SetFrameNumber(f-2);
 
     GetFrameNumber();
     nextFrameTime += playTimestep;
 
-    return (!frame.empty());
+    return ok;
 }
 
 void CaptureVideo::Stop()
@@ -132,15 +144,23 @@ void CaptureVideo::Stop()
     GetFrameNumber();
 }
 
-void CaptureVideo::SetFrameNumber(long frameNumber)
+bool CaptureVideo::SetFrameNumber(long frameNumber)
 {
     source.set(CV_CAP_PROP_POS_FRAMES, frameNumber);
 
+    Mat previousFrame = frame;    
     source >> frame;
     statusChanged = true;
 
     nextFrameTime += playTimestep;
     GetFrameNumber();
+
+    if (frame.empty())
+    {
+	frame = previousFrame;
+	return false;
+    }
+    return true;
 }
 
 long CaptureVideo::GetFrameNumber ()

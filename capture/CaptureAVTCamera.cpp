@@ -7,7 +7,7 @@
 #include <iostream>
 //#include <chrono>
 
-#include <unistd.h>
+#include <wx/utils.h>
 
 #ifdef VIMBA
 #include "vimba/ApiController.h"
@@ -47,7 +47,7 @@ bool CaptureAVTCamera::Open (int device)
 	AVT::VmbAPI::CameraPtrVector cameras = vimbaApiController.GetCameraList();
 	if (cameras.empty())
 	{
-	    err = VmbErrorNotFound;	    
+	    err = VmbErrorNotFound;
 	}
 	else
 	{
@@ -80,13 +80,13 @@ bool CaptureAVTCamera::Open (int device)
 	{
 	    unsigned char* buffer;
 	    AVT::VmbAPI::FramePtr pFrame = vimbaApiController.GetFrame();
-        VmbErrorType err = SP_ACCESS( pFrame )->GetImage( buffer );
+	    VmbErrorType err = SP_ACCESS( pFrame )->GetImage( buffer );
             if( err == VmbErrorSuccess ) frameCount++;
 	    vimbaApiController.QueueFrame(pFrame);
 
 	    if (frameCount == 20) break;
 	}
-	usleep (10);
+	wxMicroSleep (10);
     }
     wxLongLong t2 = wxGetUTCTimeUSec();
     double delay = (t2 - t1).ToDouble() / 1000000.0;
@@ -112,9 +112,23 @@ void CaptureAVTCamera::Close ()
 
 bool CaptureAVTCamera::GetNextFrame ()
 {
-    if (vimbaApiController.FrameAvailable())
-	vimbaApiController.GetFrame(frame);
-    else return false;
+    bool gotFrame = false;
+    wxLongLong startTime = wxGetUTCTimeUSec();
+
+    // try to get a frame during x useconds
+    while (1)
+    {
+	if (vimbaApiController.FrameAvailable())
+	{
+	    gotFrame = vimbaApiController.GetFrame(frame);
+	}
+
+	if (gotFrame) break;
+	else if (wxGetUTCTimeUSec() - startTime > 100000) return false;
+
+	// did not get a frame, wait a bit before retrying
+	wxMicroSleep (100);
+    }
 
     frameNumber++;
     nextFrameTime += playTimestep;
@@ -130,7 +144,7 @@ wxLongLong CaptureAVTCamera::GetNextFrameSystemTime()
 void CaptureAVTCamera::Stop()
 {
     isPaused = false;
-    isStopped = true;    
+    isStopped = true;
     statusChanged = true;
     frameNumber = 0;
 }
@@ -156,13 +170,13 @@ void CaptureAVTCamera::Play()
 	startTime = wxGetUTCTimeUSec();
 	nextFrameTime = startTime + playTimestep;
 	statusChanged = true;
-	isStopped =false;	
+	isStopped =false;
     }
 }
 
 bool CaptureAVTCamera::GetFrame (double time)
 {
-    while (GetTime() < time) this_thread::sleep_for(chrono::milliseconds(10)); 
+    while (GetTime() < time) this_thread::sleep_for(chrono::milliseconds(10));
 
     if (vimbaApiController.FrameAvailable())
 	vimbaApiController.GetFrame(frame);

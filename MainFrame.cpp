@@ -612,7 +612,7 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
     wxLongLong currentTime = wxGetUTCTimeUSec();
 
     // calculate delay to grab next frame (reserve some usec, better be slightly in advance)
-    wxLongLong td = ipEngine.capture->GetNextFrameSystemTime() - currentTime - 1000;
+    wxLongLong td = ipEngine.capture->GetNextFrameSystemTime() - currentTime - 500;
 
     // wait for next frame / refresh ?
     if (td > 0)
@@ -634,7 +634,6 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 		// end of stream ?
 		if (!gotFrame)
 		{
-		    ipEngine.capture->frame = emptyFrame;
 		    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
 		    buttonPlay->Refresh();
 		    play = false;
@@ -656,8 +655,6 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 	oglScreen = ipEngine.capture->frame;
     else if (activeTab == BackgroundTab)
     oglScreen = ipEngine.background;
-    else
-	oglScreen = emptyFrame;
 
     // render ogl + hud with blending
     GLCanvas1->Refresh();
@@ -1211,8 +1208,7 @@ void MainFrame::OnbuttonStepForwardClick(wxCommandEvent& event)
     // request next frame manually
     if (!ipEngine.GetNextFrame())
     {
-	// did not get a frame, pause and use last valid frame for display
-	ipEngine.capture->frame = emptyFrame; //previousFrame;
+	// did not get a frame, pause
 	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/local/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
 	buttonPlay->Refresh();
 	play = false;
@@ -1781,7 +1777,6 @@ void MainFrame::ResetImageProcessingEngine()
     GLCanvas1->Refresh();
 
     // regenerate and assign hud / empty frame
-    emptyFrame.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC3);
     hud.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
     hudApp.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
     ipEngine.hud = hud;

@@ -296,8 +296,6 @@ private:
 
     int playSpeed = 0;
 
-    cv::Mat emptyFrame;
-
     cv::Mat oglScreen;
     cv::Mat hudApp;
     cv::Mat hud;
