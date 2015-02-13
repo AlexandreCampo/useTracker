@@ -351,8 +351,8 @@ void ImageProcessingEngine::Insert (int pos, vector<PipelinePlugin*> pfv, bool r
 		    pfv[i]->Reset();
 		}
 	    }
-	}	
-    }    
+	}
+    }
     // multithreaded, pfv contains plugin ptrs for multithreading, not for single thread
     else if (pfv.size() == threadsCount)
     {
@@ -365,13 +365,13 @@ void ImageProcessingEngine::Insert (int pos, vector<PipelinePlugin*> pfv, bool r
 		pfv[i]->Reset();
 	    }
 	}
-	pipelines[threadsCount].plugins.push_back(nullptr);
+	pipelines[threadsCount].plugins.insert(pipelines[threadsCount].plugins.begin()+pos, nullptr);
     }
     // single thread, pfv contains a single plugin ptr
     else
     {
 	for (unsigned int i = 0; i < threadsCount; i++)
-	    pipelines[i].plugins.push_back(nullptr);
+	    pipelines[i].plugins.insert(pipelines[i].plugins.begin()+pos, nullptr);
 
 	pipelines[threadsCount].plugins.insert(pipelines[threadsCount].plugins.begin()+pos, pfv[0]);
 	if (reset)
@@ -505,7 +505,7 @@ void ImageProcessingEngine::PipelineThread (unsigned int p)
 		if (pipelines[p].plugins[i])
 		{
 		    // sync with other threads until they all wait
-		    for (unsigned int i = 0; i < threadsCount; i++) threadsPause[i]->lock();
+		    for (unsigned int j = 0; j < threadsCount; j++) threadsPause[j]->lock();
 
 		    if (pipelines[p].plugins[i]->active || (takeSnapshot && snapshotPos == i))
 		    {
@@ -529,7 +529,7 @@ void ImageProcessingEngine::PipelineThread (unsigned int p)
 		    }
 
 		    // end of operation, free all threads
-		    for (unsigned int i = 0; i < threadsCount; i++) threadsRestart[i]->unlock();
+		    for (unsigned int j = 0; j < threadsCount; j++) threadsRestart[j]->unlock();
 		}
 	    }
 	}

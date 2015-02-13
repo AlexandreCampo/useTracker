@@ -39,6 +39,7 @@ class DialogOpenCapture: public wxDialog
 		wxButton* ButtonVideoCancel;
 		wxButton* ButtonVideoOk;
 		wxStaticText* StaticText1;
+		wxStaticText* StaticText3;
 		wxButton* ButtonUSBCancel;
 		wxButton* ButtonAVTOk;
 		wxFilePickerCtrl* FilePickerCtrlVideo;
@@ -46,6 +47,7 @@ class DialogOpenCapture: public wxDialog
 		wxPanel* PanelUSB;
 		wxFilePickerCtrl* FilePickerCtrlImage;
 		wxSpinCtrl* SpinCtrlUSBDevice;
+		wxStaticText* StaticText4;
 		wxPanel* PanelAVT;
 		wxStaticText* StaticText2;
 		wxNotebook* Notebook1;
@@ -67,6 +69,8 @@ class DialogOpenCapture: public wxDialog
 		static const long ID_PANEL2;
 		static const long ID_STATICTEXT2;
 		static const long ID_SPINCTRL2;
+		static const long ID_STATICTEXT4;
+		static const long ID_STATICTEXT3;
 		static const long ID_BUTTON5;
 		static const long ID_BUTTON6;
 		static const long ID_PANEL3;

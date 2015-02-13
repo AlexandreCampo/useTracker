@@ -469,9 +469,8 @@
 										<label>Zones of interest</label>
 										<object class="sizeritem">
 											<object class="wxFilePickerCtrl" name="ID_FILEPICKERCTRL1" variable="FilePickerCtrlZones" member="yes">
-												<message></message>
-												<wildcard></wildcard>
-												<style>wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN</style>
+												<message>Choose an image to use for zones</message>
+												<wildcard>*.png</wildcard>
 												<handler function="OnFilePickerCtrlZonesFileChanged" entry="EVT_FILEPICKER_CHANGED" />
 											</object>
 											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>

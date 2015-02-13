@@ -25,6 +25,7 @@
 #include "MovingAverage.h"
 #include "RecordVideo.h"
 #include "RecordPixels.h"
+#include "ZonesOfInterest.h"
 
 
 #include "Parameters.h"
@@ -57,6 +58,7 @@ int main(int argc, char **argv)
     NewPipelinePluginVector["MovingAverage"] = &CreatePipelinePluginVector<MovingAverage>;
     NewPipelinePluginVector["RecordVideo"] = &CreatePipelinePluginVector<RecordVideo>;
     NewPipelinePluginVector["RecordPixels"] = &CreatePipelinePluginVector<RecordPixels>;
+    NewPipelinePluginVector["ZonesOfInterest"] = &CreatePipelinePluginVector<ZonesOfInterest>;
 
     // read command line, load parameters
     parameters.parseCommandLine (argc, argv);
@@ -86,9 +88,19 @@ int main(int argc, char **argv)
 	ipEngine.OpenOutput();
 	ipEngine.capture->Play();
 
+	long totalFrames = ipEngine.capture->GetFrameCount();
+
+	long progress = 0;
 	while (ipEngine.GetNextFrame())
 	{
 	    ipEngine.Step();
+	    long frameNumber = ipEngine.capture->GetFrameNumber();
+	    long newProgress = (frameNumber * 100) / totalFrames;
+	    if (newProgress > progress)
+	    {
+		progress = newProgress;
+		std::cout << "Progress : " << newProgress  << "% | frame " << frameNumber << "/" << totalFrames << " | time " << ipEngine.capture->GetTime() << "s" <<  std::endl;
+	    }
 	}
 
 	ipEngine.CloseOutput();

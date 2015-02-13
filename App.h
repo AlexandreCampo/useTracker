@@ -23,17 +23,14 @@ std::vector<PipelinePlugin*> CreatePipelinePluginVector(cv::FileNode& fn, unsign
     std::vector<PipelinePlugin*> pfv;
     T* firstInstance = new T;
 
+    pfv.push_back(firstInstance);
+
     PipelinePlugin* p = static_cast<PipelinePlugin*>(firstInstance);
 
     if (p->multithreaded)
-//    if (static_cast<PipelinePlugin*>(T)->template multithreaded)
     {
-	for (unsigned int i = 0; i < threadsCount; i++)
+	for (unsigned int i = 1; i < threadsCount; i++)
 	    pfv.push_back(new T);
-    }
-    else
-    {
-	pfv.push_back(firstInstance);
     }
 
     for (auto f : pfv)

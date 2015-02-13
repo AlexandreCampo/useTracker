@@ -309,7 +309,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     StaticBoxSizer1->Add(GridBagSizer1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 1);
     FlexGridSizer3->Add(StaticBoxSizer1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     StaticBoxSizer4 = new wxStaticBoxSizer(wxHORIZONTAL, ConfigTab, _("Zones of interest"));
-    FilePickerCtrlZones = new wxFilePickerCtrl(ConfigTab, ID_FILEPICKERCTRL1, wxEmptyString, wxEmptyString, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
+    FilePickerCtrlZones = new wxFilePickerCtrl(ConfigTab, ID_FILEPICKERCTRL1, wxEmptyString, _("Choose an image to use for zones"), _T("*.png"), wxDefaultPosition, wxDefaultSize, wxFLP_FILE_MUST_EXIST|wxFLP_OPEN, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
     StaticBoxSizer4->Add(FilePickerCtrlZones, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer3->Add(StaticBoxSizer4, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ConfigTab->SetSizer(FlexGridSizer3);
@@ -417,6 +417,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     ListBoxPipeline->Bind(wxEVT_LISTBOX_DCLICK, &MainFrame::OnListBoxPipelineDClick, this);
     ListBoxPipeline->Bind(wxEVT_CHECKLISTBOX, &MainFrame::OnListBoxPipelineCheck, this);
 
+    ListBoxPipelinePlugins->Append("zones of interest");
     ListBoxPipelinePlugins->Append("background difference");
     ListBoxPipelinePlugins->Append("color segmentation");
     ListBoxPipelinePlugins->Append("erosion");
@@ -999,7 +1000,7 @@ void MainFrame::OnButtonBgLoadClick(wxCommandEvent& event)
 	}
 	else
 	{
-	    ipEngine.background = bg;
+	    bg.copyTo(ipEngine.background);
 	    ipEngine.bgFilename = path.ToStdString();
 	}
     }
@@ -1362,6 +1363,10 @@ bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool s
 	dialog->SetPlugin(pfv);
 	dlg = dialog;
     }
+    else if (str == "zones of interest")
+    {
+	dlg = nullptr;
+    }
     else return false;
 
     if (pos < 0)
@@ -1688,34 +1693,19 @@ void MainFrame::OnSpinCtrlDoubleTimestepChange(wxSpinDoubleEvent& event)
 
 void MainFrame::OnFilePickerCtrlZonesFileChanged(wxFileDirPickerEvent& event)
 {
-    wxString caption = wxT("Choose an image to use for zones");
-    wxString wildcard = wxT("Image file (*.png)|*.png");
-
-    wxFileName fn (ipEngine.zonesFilename);
-
-    wxString defaultDir = fn.GetFullName();
-    wxString defaultFilename = fn.GetPath();
-
-    wxFileDialog dialog(this, caption, defaultDir, defaultFilename, wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
-
-    if (dialog.ShowModal() == wxID_OK)
-    {
-	wxString path = dialog.GetPath();
+	wxString path = event.GetPath();
 
 	// process data
 	Mat zones = imread (path.ToStdString(), CV_LOAD_IMAGE_GRAYSCALE);
 
 	if (zones.cols != ipEngine.capture->width || zones.rows != ipEngine.capture->height)
 	{
-	    cerr << "Zones image and video dimensions mismatch... please update your image" << std::endl;
-
 	    wxMessageBox( wxT("Zones image and video dimensions mismatch."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
 	}
 	else
 	{
-	    ipEngine.zoneMap = zones;
+	    zones.copyTo(ipEngine.zoneMap);
 	    ipEngine.zonesFilename = path.ToStdString();
-	}
     }
 }
 

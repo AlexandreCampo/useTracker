@@ -90,7 +90,7 @@ void Parameters::parseCommandLine (int argc, char** argv)
     if (vm.count("mask"))
     {
 	zonesFilename = vm["mask"].as<string>();
-	std::cout << "Using mask image for zones of interest" << zonesFilename << " as mask" << std::endl;
+	std::cout << "Using mask image for zones of interest " << zonesFilename << " as mask" << std::endl;
     }
 
     if (vm.count("start"))

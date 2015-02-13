@@ -19,6 +19,8 @@ const long DialogOpenCapture::ID_BUTTON4 = wxNewId();
 const long DialogOpenCapture::ID_PANEL2 = wxNewId();
 const long DialogOpenCapture::ID_STATICTEXT2 = wxNewId();
 const long DialogOpenCapture::ID_SPINCTRL2 = wxNewId();
+const long DialogOpenCapture::ID_STATICTEXT4 = wxNewId();
+const long DialogOpenCapture::ID_STATICTEXT3 = wxNewId();
 const long DialogOpenCapture::ID_BUTTON5 = wxNewId();
 const long DialogOpenCapture::ID_BUTTON6 = wxNewId();
 const long DialogOpenCapture::ID_PANEL3 = wxNewId();
@@ -47,6 +49,7 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	wxFlexGridSizer* FlexGridSizer6;
 	wxFlexGridSizer* FlexGridSizer3;
 	wxStaticBoxSizer* StaticBoxSizer4;
+	wxBoxSizer* BoxSizer1;
 	wxFlexGridSizer* FlexGridSizer5;
 	wxStaticBoxSizer* StaticBoxSizer1;
 
@@ -109,6 +112,12 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	SpinCtrlAVTDevice->SetValue(_T("0"));
 	StaticBoxSizer3->Add(SpinCtrlAVTDevice, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer5->Add(StaticBoxSizer3, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	BoxSizer1 = new wxBoxSizer(wxVERTICAL);
+	StaticText4 = new wxStaticText(PanelAVT, ID_STATICTEXT4, _("No Vimba API support in this version!"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT4"));
+	BoxSizer1->Add(StaticText4, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	StaticText3 = new wxStaticText(PanelAVT, ID_STATICTEXT3, _("Please check documentation"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT3"));
+	BoxSizer1->Add(StaticText3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer5->Add(BoxSizer1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer6 = new wxFlexGridSizer(0, 3, 0, 0);
 	ButtonAVTCancel = new wxButton(PanelAVT, ID_BUTTON5, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON5"));
 	FlexGridSizer6->Add(ButtonAVTCancel, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
@@ -153,11 +162,20 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	Connect(ID_FILEPICKERCTRL2,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&DialogOpenCapture::OnFilePickerCtrlImageFileChanged);
 	Connect(ID_BUTTON7,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonImageCancelClick);
 	Connect(ID_BUTTON8,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonImageOkClick);
+	Connect(wxEVT_CHAR,(wxObjectEventFunction)&DialogOpenCapture::OnChar);
 	//*)
+
+	// enable or disable VIMBA capture
+	#ifndef VIMBA
+	buttonAVTOk->Enable(false);
+	#else
+	BoxSizer1->Show(false);
+        #endif // VIMBA
 
 	// try to improve notebook layout
 	Notebook1->Fit();
 	this->Fit();
+
 }
 
 DialogOpenCapture::~DialogOpenCapture()
@@ -221,4 +239,11 @@ void DialogOpenCapture::OnButtonAVTCancelClick(wxCommandEvent& event)
 void DialogOpenCapture::OnFilePickerCtrlImageFileChanged(wxFileDirPickerEvent& event)
 {
     ButtonImageOk->SetFocus();
+}
+
+void DialogOpenCapture::OnChar (wxKeyEvent& event)
+{
+    wxCommandEvent e;
+    if (event.GetKeyCode() == WXK_ESCAPE)
+	EndModal(wxID_CANCEL);
 }

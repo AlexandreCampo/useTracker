@@ -8,10 +8,7 @@
 //#include <chrono>
 
 #include <wx/utils.h>
-
-#ifdef VIMBA
 #include "vimba/ApiController.h"
-#endif //VIMBA
 
 using namespace std;
 using namespace cv;
