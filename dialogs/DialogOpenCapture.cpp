@@ -176,6 +176,8 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	Notebook1->Fit();
 	this->Fit();
 
+	FilePickerCtrlVideo->SetFocus();
+	ConnectCharEvent(this);
 }
 
 DialogOpenCapture::~DialogOpenCapture()
@@ -246,4 +248,30 @@ void DialogOpenCapture::OnChar (wxKeyEvent& event)
     wxCommandEvent e;
     if (event.GetKeyCode() == WXK_ESCAPE)
 	EndModal(wxID_CANCEL);
+
+    else
+	event.Skip();
 }
+
+ 
+void DialogOpenCapture::ConnectCharEvent(wxWindow* pclComponent)
+{
+  if(pclComponent)
+  {
+    pclComponent->Connect(wxID_ANY,
+                          wxEVT_CHAR,
+                          wxKeyEventHandler(DialogOpenCapture::OnChar),
+                          (wxObject*) NULL,
+                          this);
+ 
+    wxWindowListNode* pclNode = pclComponent->GetChildren().GetFirst();
+    while(pclNode)
+    {
+      wxWindow* pclChild = pclNode->GetData();
+      this->ConnectCharEvent(pclChild);
+ 
+      pclNode = pclNode->GetNext();
+    }
+  }
+}
+ 

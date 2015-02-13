@@ -101,6 +101,8 @@ class DialogOpenCapture: public wxDialog
 		void OnSpinCtrlUSBDeviceChange(wxSpinEvent& event);
 		//*)
 
+		void ConnectCharEvent(wxWindow* pclComponent);
+
 		DECLARE_EVENT_TABLE()
 };
 
