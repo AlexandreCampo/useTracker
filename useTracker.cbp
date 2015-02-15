@@ -193,6 +193,8 @@
 		<Unit filename="plugins/RecordVideo.cpp" />
 		<Unit filename="plugins/SafeErosion.cpp" />
 		<Unit filename="plugins/Tracker.cpp" />
+		<Unit filename="plugins/ZonesOfInterest.cpp" />
+		<Unit filename="plugins/ZonesOfInterest.h" />
 		<Unit filename="vimba/ApiController.cpp">
 			<Option target="VimbaDebug" />
 			<Option target="VimbaRelease" />
