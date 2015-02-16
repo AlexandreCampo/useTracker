@@ -42,9 +42,6 @@ using namespace std;
 #include "CaptureAVTCamera.h"
 #endif // VIMBA
 
-//Parameters parameters;
-//char dbgFilename[256];
-
 
 ImageProcessingEngine::ImageProcessingEngine ()
 {
@@ -198,55 +195,55 @@ void ImageProcessingEngine::Reset()
 
 void ImageProcessingEngine::LoadXML(FileNode& fn)
 {
-    // reset capture
-    if (capture) delete capture;
-    capture = nullptr;
+//     // reset capture
+//     if (capture) delete capture;
+//     capture = nullptr;
 
-    // priority to cmdline params
-    if (!parameters.inputVideoFilename.empty())
-    {
-	capture = new CaptureVideo (parameters.inputVideoFilename);
-    }
-    else if (parameters.usbDevice >= 0)
-    {
-	capture = new CaptureUSBCamera (parameters.usbDevice);
-    }
-    else if (parameters.avtDevice >= 0)
-    {
-#ifdef VIMBA
-	capture = new CaptureAVTCamera (parameters.avtDevice);
-	#endif //VIMBA
-    }
+//     // priority to cmdline params
+//     if (!parameters.inputVideoFilename.empty())
+//     {
+// 	capture = new CaptureVideo (parameters.inputVideoFilename);
+//     }
+//     else if (parameters.usbDevice >= 0)
+//     {
+// 	capture = new CaptureUSBCamera (parameters.usbDevice);
+//     }
+//     else if (parameters.avtDevice >= 0)
+//     {
+// #ifdef VIMBA
+// 	capture = new CaptureAVTCamera (parameters.avtDevice);
+// 	#endif //VIMBA
+//     }
 
-    // read xml file
-    if (!fn.empty())
-    {
-	if (!capture)
-	{
-	    FileNode fn2 = fn["Source"];
-	    if (!fn2.empty())
-	    {
-		string type = (string)fn2["Type"];
-		if (type == "video")
-		{
-		    capture = new CaptureVideo(fn2);
-		}
-		else if (type == "USBcamera")
-		{
-		capture = new CaptureUSBCamera(fn2);
-		}
-		else if (type == "image")
-		{
-		    capture = new CaptureImage(fn2);
-		}
-#ifdef VIMBA
-		else if (type == "AVTcamera")
-		{
-		    capture = new CaptureAVTCamera(fn2);
-		}
-#endif // VIMBA
-	    }
-	}
+     // read xml file
+     if (!fn.empty())
+     {
+// 	if (!capture)
+// 	{
+// 	    FileNode fn2 = fn["Source"];
+// 	    if (!fn2.empty())
+// 	    {
+// 		string type = (string)fn2["Type"];
+// 		if (type == "video")
+// 		{
+// 		    capture = new CaptureVideo(fn2);
+// 		}
+// 		else if (type == "USBcamera")
+// 		{
+// 		capture = new CaptureUSBCamera(fn2);
+// 		}
+// 		else if (type == "image")
+// 		{
+// 		    capture = new CaptureImage(fn2);
+// 		}
+// #ifdef VIMBA
+// 		else if (type == "AVTcamera")
+// 		{
+// 		    capture = new CaptureAVTCamera(fn2);
+// 		}
+// #endif // VIMBA
+// 	    }
+// 	}
 
 	threadsCount = (int)fn["Threads"];
 	startTime = (float)fn["StartTime"];
@@ -269,7 +266,7 @@ void ImageProcessingEngine::LoadXML(FileNode& fn)
 
 void ImageProcessingEngine::SaveXML(FileStorage& fs)
 {
-    capture->SaveXML(fs);
+//    capture->SaveXML(fs);
 
 //    fs << "Threads" << (int)threadsCount;
     fs << "StartTime" << startTime;
@@ -489,11 +486,8 @@ void ImageProcessingEngine::PipelineThread (unsigned int p)
 		// the special thread will take care of this plugin, wait...
 		else
 		{
-//		    if (pipelines[p].plugins[i]->active || (takeSnapshot && snapshotPos == i))
-		    {
-			threadsPause[p]->unlock();
-			threadsRestart[p]->lock();
-		    }
+		    threadsPause[p]->unlock();
+		    threadsRestart[p]->lock();
 		}
 	    }
 	}
@@ -612,8 +606,6 @@ void ImageProcessingEngine::Step(bool drawHud)
 	if (timestep > 0.00001 && ctime < nextStepTime)
 	    return;
     }
-
-//    cout << "ip step at " << ctime << endl;
 
     // passed all tests, proceed to image analysis
     nextStepTime += timestep;

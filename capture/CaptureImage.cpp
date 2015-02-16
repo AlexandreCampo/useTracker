@@ -22,6 +22,11 @@ CaptureImage::~CaptureImage()
 
 }
 
+string CaptureImage::GetName()
+{
+    return filename;
+}
+
 bool CaptureImage::Open (string filename)
 {
     this->filename = filename;

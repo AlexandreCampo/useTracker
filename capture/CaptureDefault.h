@@ -24,6 +24,8 @@ struct CaptureDefault : public Capture
     void Close() {};
     void LoadXML (cv::FileNode& fn) {};
     void SaveXML (cv::FileStorage& fs) {};
+
+    std::string GetName() {return std::string();};
 };
 
 

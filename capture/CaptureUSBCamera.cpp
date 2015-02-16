@@ -29,6 +29,12 @@ CaptureUSBCamera::~CaptureUSBCamera()
 
 }
 
+string CaptureUSBCamera::GetName()
+{
+    string str = "USB Camera device ";
+    return str + std::to_string(device);
+}
+
 bool CaptureUSBCamera::Open (int device)
 {
     this->device = device;
@@ -100,7 +106,7 @@ wxLongLong CaptureUSBCamera::GetNextFrameSystemTime()
 void CaptureUSBCamera::Stop()
 {
     isPaused = false;
-    isStopped = true;    
+    isStopped = true;
     statusChanged = true;
     frameNumber = 0;
 }
@@ -126,7 +132,7 @@ void CaptureUSBCamera::Play()
 	startTime = wxGetUTCTimeUSec();
 	nextFrameTime = startTime + playTimestep;
 	statusChanged = true;
-	isStopped =false;	
+	isStopped =false;
     }
 }
 

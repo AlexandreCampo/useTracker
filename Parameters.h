@@ -19,7 +19,7 @@ public:
 
     std::string parametersFilename;
     std::string bgFilename;
-    std::string inputVideoFilename;
+    std::string inputFilename;
     std::string zonesFilename;
     int usbDevice = -1;
     int avtDevice = -1;

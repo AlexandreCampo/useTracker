@@ -30,6 +30,8 @@ struct CaptureImage : public Capture
 
     void LoadXML (cv::FileNode& fn);
     void SaveXML (cv::FileStorage& fs);
+
+    std::string GetName();
 };
 
 

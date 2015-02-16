@@ -26,6 +26,11 @@ CaptureVideo::~CaptureVideo()
 
 }
 
+string CaptureVideo::GetName()
+{
+    return filename;
+}
+
 bool CaptureVideo::Open (string filename)
 {
     // open the video file

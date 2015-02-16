@@ -122,7 +122,7 @@ App& wxGetApp()
 
 wxAppConsole *wxCreateApp()
 {
-    wxAppConsole::CheckBuildOptions(WX_BUILD_OPTIONS_SIGNATURE, "Tracker");
+    wxAppConsole::CheckBuildOptions(WX_BUILD_OPTIONS_SIGNATURE, "useTracker");
     return new App;
 }
 

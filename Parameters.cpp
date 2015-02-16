@@ -82,9 +82,9 @@ void Parameters::parseCommandLine (int argc, char** argv)
     }
 
     if (vm.count("inputfile"))
-    {
-	inputVideoFilename = vm["inputfile"].as<string>();
-	std::cout << "Using video file " << inputVideoFilename << " as data source" << std::endl;
+    {       
+	inputFilename = vm["inputfile"].as<string>();
+	std::cout << "Using file " << inputFilename << " as data source" << std::endl;
     }
 
     if (vm.count("mask"))

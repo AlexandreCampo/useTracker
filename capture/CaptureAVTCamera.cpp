@@ -32,6 +32,12 @@ CaptureAVTCamera::~CaptureAVTCamera()
 
 }
 
+string CaptureAVTCamera::GetName()
+{
+    string str = "AVT Camera device ";
+    return str + std::to_string(device);
+}
+
 bool CaptureAVTCamera::Open (int device)
 {
     this->device = device;

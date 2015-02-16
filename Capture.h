@@ -25,6 +25,8 @@ struct Capture
     bool isStopped = true;
     bool statusChanged = true;
 
+    std::string name;
+
     // methods
     // -----------------------------
     virtual ~Capture() {};
@@ -49,6 +51,8 @@ struct Capture
 
     virtual void LoadXML (cv::FileNode& fn) = 0;
     virtual void SaveXML (cv::FileStorage& fs) = 0;
+
+    virtual std::string GetName() = 0;
 };
 
 

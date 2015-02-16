@@ -47,6 +47,7 @@
 #include "DialogOpenCapture.h"
 
 #include "Utils.h"
+#include "Capture.h"
 #include "CaptureVideo.h"
 #include "CaptureUSBCamera.h"
 #include "CaptureImage.h"
@@ -448,7 +449,35 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_ALPHA | GLUT_DEPTH);
 
     ipEngine.LoadXML (parameters.rootNode);
+
+    // load capture source from command line params if possible
+    if (!parameters.inputFilename.empty())
+    {
+	// try to load input as video
+        ipEngine.capture = new CaptureVideo (parameters.inputFilename);
+
+	// if video not loaded, try image
+	if (ipEngine.capture->type == Capture::NONE)
+	{
+	    delete ipEngine.capture;
+	    ipEngine.capture = new CaptureImage (parameters.inputFilename);
+	}
+    }
+    else if (parameters.usbDevice >= 0)
+    {
+	ipEngine.capture = new CaptureUSBCamera (parameters.usbDevice);
+    }
+    else if (parameters.avtDevice >= 0)
+    {
+#ifdef VIMBA
+	ipEngine.capture = new CaptureAVTCamera (parameters.avtDevice);
+#endif //VIMBA
+    }
+
     if (!ipEngine.capture) ipEngine.capture = new CaptureDefault();
+    wxString str = "USE Tracker: ";
+    this->SetTitle(str + ipEngine.capture->GetName());
+
     ResetImageProcessingEngine(parameters);
 
     // last step...
@@ -1832,6 +1861,10 @@ void MainFrame::OnMenuOpenCaptureSelected(wxCommandEvent& event)
 		ResetImageProcessingEngine();
 		AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
 		GLCanvas1->Refresh();
+
+		wxString str = "USE Tracker: ";
+//		str += ipEngine.capture->GetName();
+		this->SetTitle(str + ipEngine.capture->GetName());
 		break;
 	    }
 	    else
