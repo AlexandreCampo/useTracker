@@ -167,7 +167,7 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 
 	// enable or disable VIMBA capture
 	#ifndef VIMBA
-	buttonAVTOk->Enable(false);
+	ButtonAVTOk->Enable(false);
 	#else
 	BoxSizer1->Show(false);
         #endif // VIMBA
