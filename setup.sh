@@ -27,7 +27,7 @@ echo "Building USE Tracker"
 make release
 
 # install images
-sudo mkdir /usr/share/useTracker
+sudo mkdir -p /usr/share/useTracker
 sudo cp -a images /usr/share/useTracker/
 
 # install program
