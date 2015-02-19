@@ -9,41 +9,16 @@ function error
 }
 
 # make sure the following dependencies have been installed 
-gksu -m "The setup program of the FaMouS simulator is about to install the following required dependencies : make g++ dos2unix automake libtool libglu1-mesa-dev libgl1-mesa-dev freeglut3-dev libgsl0-dev libtinyxml-dev libboost-program-options-dev" "apt-get --yes install make g++ dos2unix automake libtool libglu1-mesa-dev libgl1-mesa-dev freeglut3-dev libgsl0-dev libtinyxml-dev libboost-program-options-dev" || error "$LINENO: Could not install the required dependencies."
+echo The setup program of the USE Tracker is about to update your system
+sudo apt-get -qq update
+sudo apt-get -qq upgrade
 
+echo
+echo
+echo "Installing Dependencies"
+#sudo apt-get -qq install make g++ automake freeglut3-dev libboost-program-options-dev libopencv-dev build-essential pkg-config libjpeg-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libgtk2.0-dev x264 libx264-dev v4l-utils ffmpeg || error "$LINENO: Aborted, could not install the required dependencies."
 
-# install dependencies
-wget  http://sourceforge.net/projects/premake/files/Premake/4.3/premake-4.3-linux.tar.gz/download || error "$LINENO: Could not download premake4 from the web."
-mv download pm.tgz
-tar zxvf pm.tgz 
-rm pm.tgz
-
-cd bullet
-wget http://bullet.googlecode.com/files/bullet-2.78.zip  || error "$LINENO: Could not download bullet from the web."
-unzip -u bullet-2.78.zip
-cp btRigidBody.h bullet-2.78/src/BulletDynamics/Dynamics/btRigidBody.h
-cd bullet-2.78  || error "$LINENO: bullet library is not where expected."
-dos2unix autogen.sh
-chmod u+x autogen.sh
-./autogen.sh
-./configure --disable-demos || error "$LINENO: Configuration of bullet failed."
-make clean
-make  || error "$LINENO: Compilation of bullet failed."
-gksu -m "The setup program of the FaMouS simulator is about to install the modified bullet 2.78 library on your system" "make install" || error "$LINENO: Could not install modified bullet 2.78."
-gksu ldconfig || error "$LINENO: Failed to update dynamic linker informations."
-cd ../../
-
-# from here on, the most difficult is done. The simulator should compile seamlessly if previous things are properly set up.
-./premake4 clean
-./premake4 gmake
-make clean
-make
-
-cd experiments/discrimination
-../../premake4 clean
-../../premake4 gmake
-make clean
-make
-
-
-
+echo
+echo
+echo "Building USE Tracker
+make release
