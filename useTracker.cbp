@@ -121,7 +121,7 @@
 			<Add option="`wx-config --libs all --gl-libs` -lGL -lGLU -lglut" />
 			<Add option="-lpthread" />
 			<Add option="`pkg-config --libs opencv`" />
-			<Add option="`pkg-config --libs libavcodec libavfilter libavformat libswscale libavutil`" />
+			<Add option="`pkg-config --libs libavcodec libavformat libswscale libavutil`" />
 			<Add option="-ldl" />
 			<Add option="-lva" />
 			<Add option="-lbz2" />

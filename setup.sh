@@ -16,9 +16,17 @@ sudo apt-get -qq upgrade
 echo
 echo
 echo "Installing Dependencies"
-#sudo apt-get -qq install make g++ automake freeglut3-dev libboost-program-options-dev libopencv-dev build-essential pkg-config libjpeg-dev libavcodec-dev libavformat-dev libswscale-dev libv4l-dev libgtk2.0-dev x264 libx264-dev v4l-utils ffmpeg || error "$LINENO: Aborted, could not install the required dependencies."
+sudo apt-get install g++ libwxbase3.0-dev libopencv-dev libboost-program-options-dev libwxgtk3.0-dev libwxgtk-media3.0-dev freeglut3.0-dev libva-dev libbz2-dev libx264-dev || error "$LINENO: Aborted, could not install the required dependencies."
 
 echo
 echo
 echo "Building USE Tracker
 make release
+
+# install images
+sudo mkdir /usr/local/share/useTracker
+sudo cp -a images /usr/share/useTracker/
+
+# install program
+sudo cp ./bin/Release/useTracker /usr/bin/
+

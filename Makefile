@@ -16,7 +16,7 @@ CFLAGS = -std=c++11 -Wall `wx-config --cflags all` `pkg-config --cflags opencv` 
 RESINC = 
 LIBDIR = 
 LIB = 
-LDFLAGS = `wx-config --libs all --gl-libs` -lGL -lGLU -lglut -lpthread `pkg-config --libs opencv` `pkg-config --libs libavcodec libavfilter libavformat libswscale libavutil` -ldl -lva -lbz2 -lz -lm -lpng -lx264 -lboost_program_options
+LDFLAGS = `wx-config --libs all --gl-libs` -lGL -lGLU -lglut -lpthread `pkg-config --libs opencv` `pkg-config --libs libavcodec libavformat libswscale libavutil` -ldl -lva -lbz2 -lz -lm -lpng -lx264 -lboost_program_options
 
 INC_DEBUG = $(INC)
 CFLAGS_DEBUG = $(CFLAGS) -pg -g
