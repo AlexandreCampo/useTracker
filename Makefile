@@ -12,25 +12,25 @@ LD = g++
 WINDRES = windres
 
 INC = 
-CFLAGS = -std=c++11 -Wall `wx-config --cflags all` `pkg-config --cflags opencv` -I ./ -I ./plugins -I./capture -I./dialogs
+CFLAGS = -std=c++11 -Wall `wx-config --cflags all` `pkg-config --cflags opencv` -I ./ -I ./plugins -I./capture -I./dialogs -march=native -flto -pipe
 RESINC = 
 LIBDIR = 
 LIB = 
-LDFLAGS = `wx-config --libs all --gl-libs` -lGL -lGLU -lglut -lpthread `pkg-config --libs opencv` `pkg-config --libs libavcodec libavformat libswscale libavutil` -ldl -lva -lbz2 -lz -lm -lpng -lx264 -lboost_program_options
+LDFLAGS = -flto `wx-config --libs all --gl-libs` -lGL -lGLU -lglut -lpthread `pkg-config --libs opencv` `pkg-config --libs libavcodec libavformat libswscale libavutil` -ldl -lva -lbz2 -lz -lm -lpng -lx264 -lboost_program_options
 
 INC_DEBUG = $(INC)
-CFLAGS_DEBUG = $(CFLAGS) -pg -g
+CFLAGS_DEBUG = $(CFLAGS) -g
 RESINC_DEBUG = $(RESINC)
 RCFLAGS_DEBUG = $(RCFLAGS)
 LIBDIR_DEBUG = $(LIBDIR)
 LIB_DEBUG = $(LIB)
-LDFLAGS_DEBUG =  -pg $(LDFLAGS)
+LDFLAGS_DEBUG = $(LDFLAGS)
 OBJDIR_DEBUG = obj/Debug
 DEP_DEBUG = 
 OUT_DEBUG = bin/Debug/useTracker
 
 INC_RELEASE = $(INC)
-CFLAGS_RELEASE = $(CFLAGS) -march=corei7-avx -fexpensive-optimizations -O3 -mfpmath=sse -pipe -fforce-addr -frerun-cse-after-loop -frerun-loop-opt -falign-functions=4 -maccumulate-outgoing-args -ffast-math -fprefetch-loop-arrays -pthread
+CFLAGS_RELEASE = $(CFLAGS) -fomit-frame-pointer -fexpensive-optimizations -O3
 RESINC_RELEASE = $(RESINC)
 RCFLAGS_RELEASE = $(RCFLAGS)
 LIBDIR_RELEASE = $(LIBDIR)

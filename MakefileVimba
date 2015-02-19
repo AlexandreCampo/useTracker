@@ -12,11 +12,11 @@ LD = g++
 WINDRES = windres
 
 INC = 
-CFLAGS = -std=c++11 -Wall `wx-config --cflags all` `pkg-config --cflags opencv` -I ./ -I ./plugins -I./capture -I./dialogs
+CFLAGS = -std=c++11 -Wall `wx-config --cflags all` `pkg-config --cflags opencv` -I ./ -I ./plugins -I./capture -I./dialogs -march=native -flto -pipe
 RESINC = 
 LIBDIR = 
 LIB = 
-LDFLAGS = `wx-config --libs all --gl-libs` -lGL -lGLU -lglut -lpthread `pkg-config --libs opencv` `pkg-config --libs libavcodec libavformat libswscale libavutil` -ldl -lva -lbz2 -lz -lm -lpng -lx264 -lboost_program_options
+LDFLAGS = -flto `wx-config --libs all --gl-libs` -lGL -lGLU -lglut -lpthread `pkg-config --libs opencv` `pkg-config --libs libavcodec libavformat libswscale libavutil` -ldl -lva -lbz2 -lz -lm -lpng -lx264 -lboost_program_options
 
 INC_VIMBADEBUG = $(INC)
 CFLAGS_VIMBADEBUG = $(CFLAGS) -pg -g -I /home/alex/usr/Vimba_1_3/ -DVIMBA=1
@@ -30,7 +30,7 @@ DEP_VIMBADEBUG =
 OUT_VIMBADEBUG = bin/Debug/useTracker
 
 INC_VIMBARELEASE = $(INC)
-CFLAGS_VIMBARELEASE = $(CFLAGS) -march=corei7-avx -fexpensive-optimizations -O3 -I /home/alex/usr/Vimba_1_3/ -mfpmath=sse -pipe -fforce-addr -frerun-cse-after-loop -frerun-loop-opt -falign-functions=4 -maccumulate-outgoing-args -ffast-math -fprefetch-loop-arrays -pthread -DVIMBA=1
+CFLAGS_VIMBARELEASE = $(CFLAGS) -march=corei7-avx -fexpensive-optimizations -O3 -I /home/alex/usr/Vimba_1_3/ -DVIMBA=1
 RESINC_VIMBARELEASE = $(RESINC)
 RCFLAGS_VIMBARELEASE = $(RCFLAGS)
 LIBDIR_VIMBARELEASE = $(LIBDIR) -L/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit -L/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit

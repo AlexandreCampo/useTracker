@@ -14,12 +14,8 @@
 				<Option parameters="-i ../movie.avi -b ../f_bg.png -m ../mask2.png -p ../params.xml" />
 				<Option projectLinkerOptionsRelation="2" />
 				<Compiler>
-					<Add option="-pg" />
 					<Add option="-g" />
 				</Compiler>
-				<Linker>
-					<Add option="-pg" />
-				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option output="bin/Release/useTracker" prefix_auto="1" extension_auto="1" />
@@ -28,19 +24,9 @@
 				<Option compiler="gcc" />
 				<Option projectLinkerOptionsRelation="2" />
 				<Compiler>
-					<Add option="-march=corei7-avx" />
+					<Add option="-fomit-frame-pointer" />
 					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
-					<Add option="-mfpmath=sse" />
-					<Add option="-pipe" />
-					<Add option="-fforce-addr" />
-					<Add option="-frerun-cse-after-loop" />
-					<Add option="-frerun-loop-opt" />
-					<Add option="-falign-functions=4" />
-					<Add option="-maccumulate-outgoing-args" />
-					<Add option="-ffast-math" />
-					<Add option="-fprefetch-loop-arrays" />
-					<Add option="-pthread" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -82,16 +68,6 @@
 					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
 					<Add option="-I /home/alex/usr/Vimba_1_3/" />
-					<Add option="-mfpmath=sse" />
-					<Add option="-pipe" />
-					<Add option="-fforce-addr" />
-					<Add option="-frerun-cse-after-loop" />
-					<Add option="-frerun-loop-opt" />
-					<Add option="-falign-functions=4" />
-					<Add option="-maccumulate-outgoing-args" />
-					<Add option="-ffast-math" />
-					<Add option="-fprefetch-loop-arrays" />
-					<Add option="-pthread" />
 					<Add option="-DVIMBA=1" />
 				</Compiler>
 				<Linker>
@@ -116,8 +92,12 @@
 			<Add option="-I ./plugins" />
 			<Add option="-I./capture" />
 			<Add option="-I./dialogs" />
+			<Add option="-march=native" />
+			<Add option="-flto" />
+			<Add option="-pipe" />
 		</Compiler>
 		<Linker>
+			<Add option="-flto" />
 			<Add option="`wx-config --libs all --gl-libs` -lGL -lGLU -lglut" />
 			<Add option="-lpthread" />
 			<Add option="`pkg-config --libs opencv`" />
