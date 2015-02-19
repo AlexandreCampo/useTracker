@@ -47,7 +47,7 @@
 							<growablecols>7</growablecols>
 							<object class="sizeritem">
 								<object class="wxBitmapButton" name="ID_BITMAPBUTTON1" variable="buttonOutput" member="yes">
-									<bitmap>/usr/local/share/useTracker/images/Actions-media-record-icon inactive.png</bitmap>
+									<bitmap>/usr/share/useTracker/images/Actions-media-record-icon inactive.png</bitmap>
 									<handler function="OnbuttonOutputClick" entry="EVT_BUTTON" />
 								</object>
 								<flag>wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
@@ -55,7 +55,7 @@
 							</object>
 							<object class="sizeritem">
 								<object class="wxBitmapButton" name="ID_BITMAPBUTTON3" variable="buttonStop" member="yes">
-									<bitmap>/usr/local/share/useTracker/images/Actions-media-playback-stop-icon (1).png</bitmap>
+									<bitmap>/usr/share/useTracker/images/Actions-media-playback-stop-icon (1).png</bitmap>
 									<style>wxBU_AUTODRAW|wxNO_BORDER</style>
 									<handler function="OnbuttonStopClick" entry="EVT_BUTTON" />
 								</object>
@@ -64,7 +64,7 @@
 							</object>
 							<object class="sizeritem">
 								<object class="wxBitmapButton" name="ID_BITMAPBUTTON4" variable="buttonBackwards" member="yes">
-									<bitmap>/usr/local/share/useTracker/images/Actions-media-seek-backward-icon (1).png</bitmap>
+									<bitmap>/usr/share/useTracker/images/Actions-media-seek-backward-icon (1).png</bitmap>
 									<style>wxBU_AUTODRAW|wxNO_BORDER</style>
 									<handler function="OnbuttonBackwardsClick" entry="EVT_BUTTON" />
 								</object>
@@ -73,7 +73,7 @@
 							</object>
 							<object class="sizeritem">
 								<object class="wxBitmapButton" name="ID_BITMAPBUTTON9" variable="buttonStepBackwards" member="yes">
-									<bitmap>/usr/local/share/useTracker/images/Actions-media-skip-backward-icon (1).png</bitmap>
+									<bitmap>/usr/share/useTracker/images/Actions-media-skip-backward-icon (1).png</bitmap>
 									<style>wxBU_AUTODRAW|wxNO_BORDER</style>
 									<handler function="OnbuttonStepBackwardsClick" entry="EVT_BUTTON" />
 								</object>
@@ -82,8 +82,8 @@
 							</object>
 							<object class="sizeritem">
 								<object class="wxBitmapButton" name="ID_BITMAPBUTTON2" variable="buttonPlay" member="yes">
-									<bitmap>/usr/local/share/useTracker/images/Actions-media-playback-start-icon (1).png</bitmap>
-									<selected>/usr/local/share/useTracker/images/Actions-media-playback-pause-icon (1).png</selected>
+									<bitmap>/usr/share/useTracker/images/Actions-media-playback-start-icon (1).png</bitmap>
+									<selected>/usr/share/useTracker/images/Actions-media-playback-pause-icon (1).png</selected>
 									<style>wxBU_AUTODRAW|wxNO_BORDER</style>
 									<handler function="OnbuttonPlayClick" entry="EVT_BUTTON" />
 								</object>
@@ -92,7 +92,7 @@
 							</object>
 							<object class="sizeritem">
 								<object class="wxBitmapButton" name="ID_BITMAPBUTTON10" variable="buttonStepForward" member="yes">
-									<bitmap>/usr/local/share/useTracker/images/Actions-media-skip-forward-icon (1).png</bitmap>
+									<bitmap>/usr/share/useTracker/images/Actions-media-skip-forward-icon (1).png</bitmap>
 									<style>wxBU_AUTODRAW|wxNO_BORDER</style>
 									<handler function="OnbuttonStepForwardClick" entry="EVT_BUTTON" />
 								</object>
@@ -101,7 +101,7 @@
 							</object>
 							<object class="sizeritem">
 								<object class="wxBitmapButton" name="ID_BITMAPBUTTON8" variable="buttonForward" member="yes">
-									<bitmap>/usr/local/share/useTracker/images/Actions-media-seek-forward-icon (1).png</bitmap>
+									<bitmap>/usr/share/useTracker/images/Actions-media-seek-forward-icon (1).png</bitmap>
 									<style>wxBU_AUTODRAW|wxNO_BORDER</style>
 									<handler function="OnbuttonForwardClick" entry="EVT_BUTTON" />
 								</object>
@@ -123,7 +123,7 @@
 							</object>
 							<object class="sizeritem">
 								<object class="wxBitmapButton" name="ID_BITMAPBUTTON11" variable="buttonHud" member="yes">
-									<bitmap>/usr/local/share/useTracker/images/Apps-utilities-system-monitor-icon active (1).png</bitmap>
+									<bitmap>/usr/share/useTracker/images/Apps-utilities-system-monitor-icon active (1).png</bitmap>
 									<style>wxBU_AUTODRAW|wxNO_BORDER</style>
 									<handler function="OnbuttonHudClick" entry="EVT_BUTTON" />
 								</object>
@@ -295,7 +295,7 @@
 												<cols>2</cols>
 												<object class="sizeritem">
 													<object class="wxStaticBitmap" name="ID_STATICBITMAP1" variable="StaticBitmap1" member="yes">
-														<bitmap>/usr/local/share/useTracker/images/Categories-applications-system-icon (1).png</bitmap>
+														<bitmap>/usr/share/useTracker/images/Categories-applications-system-icon (1).png</bitmap>
 													</object>
 													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 													<border>5</border>
@@ -312,7 +312,7 @@
 												</object>
 												<object class="sizeritem">
 													<object class="wxStaticBitmap" name="ID_STATICBITMAP2" variable="StaticBitmap2" member="yes">
-														<bitmap>/usr/local/share/useTracker/images/Actions-document-open-icon (1).png</bitmap>
+														<bitmap>/usr/share/useTracker/images/Actions-document-open-icon (1).png</bitmap>
 													</object>
 													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 													<border>5</border>
@@ -329,7 +329,7 @@
 												</object>
 												<object class="sizeritem">
 													<object class="wxStaticBitmap" name="ID_STATICBITMAP3" variable="StaticBitmap3" member="yes">
-														<bitmap>/usr/local/share/useTracker/images/Actions-document-save-icon (1).png</bitmap>
+														<bitmap>/usr/share/useTracker/images/Actions-document-save-icon (1).png</bitmap>
 													</object>
 													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 													<border>5</border>
