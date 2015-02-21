@@ -27,7 +27,7 @@
 										<message></message>
 										<wildcard></wildcard>
 										<focused>1</focused>
-										<style>wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL</style>
+										<style>wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL</style>
 										<handler function="OnFilePickerCtrlVideoFileChanged" entry="EVT_FILEPICKER_CHANGED" />
 									</object>
 									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
@@ -235,7 +235,7 @@
 										<message></message>
 										<wildcard></wildcard>
 										<focused>1</focused>
-										<style>wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL</style>
+										<style>wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL</style>
 										<handler function="OnFilePickerCtrlImageFileChanged" entry="EVT_FILEPICKER_CHANGED" />
 									</object>
 									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>

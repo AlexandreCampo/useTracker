@@ -65,7 +65,7 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	FlexGridSizer1 = new wxFlexGridSizer(0, 1, 0, 0);
 	FlexGridSizer1->AddGrowableCol(0);
 	StaticBoxSizer1 = new wxStaticBoxSizer(wxHORIZONTAL, PanelVideo, _("Select source"));
-	FilePickerCtrlVideo = new wxFilePickerCtrl(PanelVideo, ID_FILEPICKERCTRL1, wxEmptyString, wxEmptyString, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
+	FilePickerCtrlVideo = new wxFilePickerCtrl(PanelVideo, ID_FILEPICKERCTRL1, wxEmptyString, wxEmptyString, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
 	FilePickerCtrlVideo->SetFocus();
 	StaticBoxSizer1->Add(FilePickerCtrlVideo, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer1->Add(StaticBoxSizer1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
@@ -134,7 +134,7 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	FlexGridSizer7 = new wxFlexGridSizer(0, 1, 0, 0);
 	FlexGridSizer7->AddGrowableCol(0);
 	StaticBoxSizer4 = new wxStaticBoxSizer(wxHORIZONTAL, PanelImage, _("Select source"));
-	FilePickerCtrlImage = new wxFilePickerCtrl(PanelImage, ID_FILEPICKERCTRL2, wxEmptyString, wxEmptyString, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL2"));
+	FilePickerCtrlImage = new wxFilePickerCtrl(PanelImage, ID_FILEPICKERCTRL2, wxEmptyString, wxEmptyString, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL2"));
 	FilePickerCtrlImage->SetFocus();
 	StaticBoxSizer4->Add(FilePickerCtrlImage, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer7->Add(StaticBoxSizer4, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);

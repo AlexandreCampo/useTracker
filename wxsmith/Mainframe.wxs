@@ -471,6 +471,7 @@
 											<object class="wxFilePickerCtrl" name="ID_FILEPICKERCTRL1" variable="FilePickerCtrlZones" member="yes">
 												<message>Choose an image to use for zones</message>
 												<wildcard>*.png</wildcard>
+												<style>wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN</style>
 												<handler function="OnFilePickerCtrlZonesFileChanged" entry="EVT_FILEPICKER_CHANGED" />
 											</object>
 											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>

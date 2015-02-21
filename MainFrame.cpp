@@ -310,7 +310,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     StaticBoxSizer1->Add(GridBagSizer1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 1);
     FlexGridSizer3->Add(StaticBoxSizer1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     StaticBoxSizer4 = new wxStaticBoxSizer(wxHORIZONTAL, ConfigTab, _("Zones of interest"));
-    FilePickerCtrlZones = new wxFilePickerCtrl(ConfigTab, ID_FILEPICKERCTRL1, wxEmptyString, _("Choose an image to use for zones"), _T("*.png"), wxDefaultPosition, wxDefaultSize, wxFLP_FILE_MUST_EXIST|wxFLP_OPEN, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
+    FilePickerCtrlZones = new wxFilePickerCtrl(ConfigTab, ID_FILEPICKERCTRL1, wxEmptyString, _("Choose an image to use for zones"), _T("*.png"), wxDefaultPosition, wxDefaultSize, wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
     StaticBoxSizer4->Add(FilePickerCtrlZones, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer3->Add(StaticBoxSizer4, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ConfigTab->SetSizer(FlexGridSizer3);
