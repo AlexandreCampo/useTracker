@@ -27,6 +27,7 @@
 #include "RecordPixels.h"
 #include "ZonesOfInterest.h"
 #include "Aruco.h"
+#include "SimpleTags.h"
 
 
 #include "Parameters.h"
@@ -61,6 +62,7 @@ int main(int argc, char **argv)
     NewPipelinePluginVector["RecordPixels"] = &CreatePipelinePluginVector<RecordPixels>;
     NewPipelinePluginVector["ZonesOfInterest"] = &CreatePipelinePluginVector<ZonesOfInterest>;
     NewPipelinePluginVector["Aruco"] = &CreatePipelinePluginVector<Aruco>;
+    NewPipelinePluginVector["SimpleTags"] = &CreatePipelinePluginVector<Aruco>;
 
     // read command line, load parameters
     parameters.parseCommandLine (argc, argv);

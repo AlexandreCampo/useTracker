@@ -18,6 +18,7 @@ void Aruco::Reset()
 
     detector.setThresholdParams (thresh1, thresh2);
     detector.setCornerRefinementMethod (MarkerDetector::SUBPIX);
+//    detector.setCornerRefinementMethod (MarkerDetector::HARRIS);
     detector.setMinMaxSize (minSize,maxSize);
     detector.setThresholdMethod(thresholdMethod);
 }
@@ -33,10 +34,13 @@ void Aruco::OutputHud (Mat& hud)
 {
     for (unsigned int i = 0; i < markers.size(); i++)
     {
-//	cout<<endl<<markers[i];
-	markers[i].draw(hud, Scalar(0,0,255), 1);
+        // cv::line ( hud,markers[i][0],markers[i][1],cvScalar ( 0,0,255 ),2 ,CV_AA );
+        // cv::line ( hud,markers[i][1],markers[i][2],cvScalar ( 0,0,255 ),2 ,CV_AA );
+        // cv::line ( hud,markers[i][2],markers[i][3],cvScalar ( 0,0,255 ),2 ,CV_AA );
+        // cv::line ( hud,markers[i][3],markers[i][0],cvScalar ( 0,0,255 ),2 ,CV_AA );
+
+	markers[i].draw(hud, Scalar(0,255,0), 1);
     }
-//    if (markers.size()!=0)            cout<<endl;
 }
 
 void Aruco::SetMinSize(double minSize)
