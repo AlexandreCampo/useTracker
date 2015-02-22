@@ -62,7 +62,7 @@ int main(int argc, char **argv)
     NewPipelinePluginVector["RecordPixels"] = &CreatePipelinePluginVector<RecordPixels>;
     NewPipelinePluginVector["ZonesOfInterest"] = &CreatePipelinePluginVector<ZonesOfInterest>;
     NewPipelinePluginVector["Aruco"] = &CreatePipelinePluginVector<Aruco>;
-    NewPipelinePluginVector["SimpleTags"] = &CreatePipelinePluginVector<Aruco>;
+    NewPipelinePluginVector["SimpleTags"] = &CreatePipelinePluginVector<SimpleTags>;
 
     // read command line, load parameters
     parameters.parseCommandLine (argc, argv);

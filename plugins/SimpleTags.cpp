@@ -1,9 +1,14 @@
 
 #include "SimpleTags.h"
 
-// (Blob& blob, Mat& frame, int pwidth, int pheight, float minBlobSize, int videoWidth, int videoHeight, Mat& inMotion, int verbose, char* filename)
+#include "ImageProcessingEngine.h"
+#include "Blob.h"
+#include "Utils.h"
 
-void SimpleTags::SimpleTags()
+using namespace std;
+using namespace cv;
+
+SimpleTags::SimpleTags()
 {
 
 }
@@ -13,7 +18,7 @@ void SimpleTags::Reset()
 
 }
 
-void SimpleTags::OutputHud()
+void SimpleTags::OutputHud(Mat& hud)
 {
 
 }
@@ -41,20 +46,20 @@ void SimpleTags::Apply()
 		float px = (float)x - pwidth / 2.0;
 		float py = (float)y - pheight / 2.0;
 		float d = sqrt(px*px + py*py);
-		
-		float a = atan2 (py, px) + blob.angle;
+
+		float a = atan2 (py, px) + blobs[b].angle;
 //	    a = atan2 (py, px);
-		int fx = d * cos (a) + blob.x;
-		int fy = d * sin (a) + blob.y;
-		
+		int fx = d * cos (a) + blobs[b].x;
+		int fy = d * sin (a) + blobs[b].y;
+
 		// stay within bounds of frame
 		if (fy >=0 && fy < pipeline->height && fx >= 0 && fx < pipeline->width)
 		{
 		    Vec3b bgr = pipeline->frame.at<Vec3b>(fy,fx);
-		    
+
 		    int v = (int)bgr[0] + (int)bgr[1] + (int)bgr[2];
 		    pattern.at<unsigned char>(y,x) = (unsigned char)(v/3);
-		    
+
 		    // if that pixel is part of inMotion map, make it white
 //		bool inMotion = false;
 		    // int idx = fx + fy * videoWidth;
@@ -77,7 +82,7 @@ void SimpleTags::Apply()
 	    }
 	}
 //    for (int x = 0; x < pwidth; x++) pattern [x] = 0;
-	
+
 	// now stack vertical pixels
 	int p[500];
 	for (int x = 0; x < pwidth; x++) p[x] = 0;
@@ -97,13 +102,13 @@ void SimpleTags::Apply()
 	    if (p[x] < min) min = p[x];
 	}
 	int mean = (min + max) / 2;
-	
+
 	// todo maybe median is better here...
-	
+
 	// threshold
 	for (int x = 0; x < pwidth; x++)
 	    if (p[x] >= mean) p[x] = 255; else p[x] = 0;
-	
+
 	// discriminate front / rear
 	int left = 0;
 	int right = 0;
@@ -111,7 +116,7 @@ void SimpleTags::Apply()
 	    left += p[x];
 	for (int x = pwidth / 2; x < pwidth; x++)
 	    right += p[x];
-	
+
 	// flip the pattern ?
 // 	if (right > left)
 // 	{
@@ -129,7 +134,7 @@ void SimpleTags::Apply()
 // 		pattern[x] = flip [pwidth-1-x];
 // 	    }
 // 	}
-	
+
     // the rest needs checking with real exps...
 
     // save for debug
@@ -148,4 +153,14 @@ void SimpleTags::Apply()
 
 //    delete [] pattern;
 //    delete [] flip;
+}
+
+void SimpleTags::LoadXML (cv::FileNode& fn)
+{
+
+}
+
+void SimpleTags::SaveXML (cv::FileStorage& fs)
+{
+
 }

@@ -17,7 +17,7 @@ public:
 
     SimpleTags();
 
-    void Reset(){};
+    void Reset();
     void Apply();
     void OutputHud (cv::Mat& hud);
     void LoadXML (cv::FileNode& fn);

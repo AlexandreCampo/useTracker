@@ -1404,6 +1404,10 @@ bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool s
 	dialog->SetPlugin(pfv);
 	dlg = dialog;
     }
+    else if (str == "simple tags")
+    {
+	dlg = nullptr;
+    }
     else return false;
 
     if (pos < 0)
