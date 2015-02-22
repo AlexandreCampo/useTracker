@@ -21,9 +21,34 @@ echo
 echo "Installing Dependencies"
 sudo apt-get --yes install g++ libwxbase3.0-dev libopencv-dev libboost-program-options-dev libwxgtk3.0-dev libwxgtk-media3.0-dev freeglut3-dev libva-dev libbz2-dev libx264-dev || error "$LINENO: Aborted, could not install the required dependencies."
 
+# download and compile latest stable opencv
+echo
+echo
+echo "Downloading ArUco" $version
+version="$(wget -q -O - http://sourceforge.net/projects/aruco/files/ | egrep -m1 -o '\"[0-9](\.[0-9]+)+' | cut -c2-)"
+wget -O aruco-$version.tgz http://sourceforge.net/projects/aruco/files/$version/aruco-"$version".tgz/download
+
+echo
+echo
+echo "Building ArUco" $version
+tar zxvf aruco-$version.zip
+cd aruco-$version
+cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release .
+make
+sudo make install
+
+echo
+echo
+echo "Installing ArUco" $version
+sudo make install 
+sudo ldconfig
+echo "ArUco" $version "ready to be used"
+
+
 echo
 echo
 echo "Building USE Tracker"
+make clean
 make release
 
 # install images

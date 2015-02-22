@@ -45,6 +45,7 @@
 #include "DialogRecordVideo.h"
 #include "DialogRecordPixels.h"
 #include "DialogOpenCapture.h"
+#include "DialogAruco.h"
 
 #include "Utils.h"
 #include "Capture.h"
@@ -407,7 +408,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
 
     // setup drag and drop for image processing pipeline
     ListBoxPipeline = new wxCheckListBox(StaticBox1, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(ProcessingTab,wxSize(115,120)), 0, 0, wxLB_SINGLE|wxLB_NEEDED_SB);
-    ListBoxPipelinePlugins = new wxListBox(StaticBox2, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(ProcessingTab,wxSize(115,150)), 0, 0, wxLB_SINGLE);
+    ListBoxPipelinePlugins = new wxListBox(StaticBox2, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(ProcessingTab,wxSize(115,170)), 0, 0, wxLB_SINGLE);
 
     textDropTargetAdd = new MyTextDropTargetAdd (this);
     textDropTargetMove = new MyTextDropTargetMove (this);
@@ -432,6 +433,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     ListBoxPipelinePlugins->Append("simple tags");
     ListBoxPipelinePlugins->Append("record video");
     ListBoxPipelinePlugins->Append("record pixels");
+    ListBoxPipelinePlugins->Append("aruco");
 
     // connect opengl view with current displayed tab
     activeTab = ProcessingTab;
@@ -1395,6 +1397,12 @@ bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool s
     else if (str == "zones of interest")
     {
 	dlg = nullptr;
+    }
+    else if (str == "aruco")
+    {
+	DialogAruco* dialog = new DialogAruco(this);
+	dialog->SetPlugin(pfv);
+	dlg = dialog;
     }
     else return false;
 
