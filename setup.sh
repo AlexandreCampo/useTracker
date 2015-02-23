@@ -43,7 +43,7 @@ echo "Installing ArUco" $version
 sudo make install 
 sudo ldconfig
 echo "ArUco" $version "ready to be used"
-
+cd ..
 
 echo
 echo
