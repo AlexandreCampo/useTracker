@@ -888,6 +888,7 @@ void MainFrame::OnvideoSliderCmdScrollThumbTrack(wxScrollEvent& event)
 	wxTimeSpan ts (0,0,0,s);
 	wxString f ("%H:%M:%S");
 	videoSlider->SetToolTip(ts.Format(f));
+	videoSlider->GetToolTip()->SetDelay(50);
     }
 
     sliderMoving = true;
