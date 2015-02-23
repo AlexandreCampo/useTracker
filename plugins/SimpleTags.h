@@ -10,6 +10,8 @@ class SimpleTags : public PipelinePlugin
 {
 public:
 
+    Mat pattern;
+    std::vector<int> p;
     int pwidth = 100;
     int pheight = 20;
 
