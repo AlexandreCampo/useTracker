@@ -31,7 +31,7 @@ wget -O aruco-$version.tgz http://sourceforge.net/projects/aruco/files/$version/
 echo
 echo
 echo "Building ArUco" $version
-tar zxvf aruco-$version.zip
+tar zxvf aruco-$version.tgz
 cd aruco-$version
 cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release .
 make
