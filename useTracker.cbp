@@ -27,9 +27,12 @@
 					<Add option="-fomit-frame-pointer" />
 					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
+					<Add option="-march=native" />
+					<Add option="-flto" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add option="-flto" />
 				</Linker>
 			</Target>
 			<Target title="VimbaDebug">
@@ -40,13 +43,11 @@
 				<Option parameters="-i ../movie.avi -b ../f_bg.png -m ../mask2.png -p ../params.xml" />
 				<Option projectLinkerOptionsRelation="2" />
 				<Compiler>
-					<Add option="-pg" />
 					<Add option="-g" />
 					<Add option="-I /home/alex/usr/Vimba_1_3/" />
 					<Add option="-DVIMBA=1" />
 				</Compiler>
 				<Linker>
-					<Add option="-pg" />
 					<Add option="-lVimbaCPP" />
 					<Add option="-lVimbaC" />
 					<Add option="-lAVTImageTransform" />
@@ -67,11 +68,14 @@
 					<Add option="-march=corei7-avx" />
 					<Add option="-fexpensive-optimizations" />
 					<Add option="-O3" />
+					<Add option="-march=native" />
+					<Add option="-flto" />
 					<Add option="-I /home/alex/usr/Vimba_1_3/" />
 					<Add option="-DVIMBA=1" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
+					<Add option="-flto" />
 					<Add option="-lVimbaCPP" />
 					<Add option="-lVimbaC" />
 					<Add option="-lAVTImageTransform" />
@@ -92,12 +96,9 @@
 			<Add option="-I ./plugins" />
 			<Add option="-I./capture" />
 			<Add option="-I./dialogs" />
-			<Add option="-march=native" />
-			<Add option="-flto" />
 			<Add option="-pipe" />
 		</Compiler>
 		<Linker>
-			<Add option="-flto" />
 			<Add option="`wx-config --libs all --gl-libs` -lGL -lGLU -lglut" />
 			<Add option="-lpthread" />
 			<Add option="`pkg-config --libs opencv`" />

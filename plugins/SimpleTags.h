@@ -11,7 +11,7 @@ class SimpleTags : public PipelinePlugin
 public:
 
     int pwidth = 100;
-    int pheight = 25;
+    int pheight = 20;
 
     SimpleTags();
 

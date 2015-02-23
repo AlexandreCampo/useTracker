@@ -12,30 +12,30 @@ LD = g++
 WINDRES = windres
 
 INC = 
-CFLAGS = -std=c++11 -Wall `wx-config --cflags all` `pkg-config --cflags opencv` -I ./ -I ./plugins -I./capture -I./dialogs -march=native -flto -pipe
+CFLAGS = -std=c++11 -Wall `wx-config --cflags all` `pkg-config --cflags opencv` -I ./ -I ./plugins -I./capture -I./dialogs -pipe
 RESINC = 
 LIBDIR = 
 LIB = 
-LDFLAGS = -flto `wx-config --libs all --gl-libs` -lGL -lGLU -lglut -lpthread `pkg-config --libs opencv` `pkg-config --libs libavcodec libavformat libswscale libavutil` -ldl -lva -lbz2 -lz -lm -lpng -lx264 -lboost_program_options -laruco
+LDFLAGS = `wx-config --libs all --gl-libs` -lGL -lGLU -lglut -lpthread `pkg-config --libs opencv` `pkg-config --libs libavcodec libavformat libswscale libavutil` -ldl -lva -lbz2 -lz -lm -lpng -lx264 -lboost_program_options -laruco
 
 INC_VIMBADEBUG = $(INC)
-CFLAGS_VIMBADEBUG = $(CFLAGS) -pg -g -I /home/alex/usr/Vimba_1_3/ -DVIMBA=1
+CFLAGS_VIMBADEBUG = $(CFLAGS) -g -I /home/alex/usr/Vimba_1_3/ -DVIMBA=1
 RESINC_VIMBADEBUG = $(RESINC)
 RCFLAGS_VIMBADEBUG = $(RCFLAGS)
 LIBDIR_VIMBADEBUG = $(LIBDIR) -L/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit -L/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit
 LIB_VIMBADEBUG = $(LIB)
-LDFLAGS_VIMBADEBUG =  -pg -lVimbaCPP -lVimbaC -lAVTImageTransform -Wl,-rpath-link,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/ -Wl,-rpath,/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit/ -Wl,-rpath,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/ $(LDFLAGS)
+LDFLAGS_VIMBADEBUG =  -lVimbaCPP -lVimbaC -lAVTImageTransform -Wl,-rpath-link,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/ -Wl,-rpath,/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit/ -Wl,-rpath,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/ $(LDFLAGS)
 OBJDIR_VIMBADEBUG = obj/Debug
 DEP_VIMBADEBUG = 
 OUT_VIMBADEBUG = bin/Debug/useTracker
 
 INC_VIMBARELEASE = $(INC)
-CFLAGS_VIMBARELEASE = $(CFLAGS) -march=corei7-avx -fexpensive-optimizations -O3 -I /home/alex/usr/Vimba_1_3/ -DVIMBA=1
+CFLAGS_VIMBARELEASE = $(CFLAGS) -march=corei7-avx -fexpensive-optimizations -O3 -march=native -flto -I /home/alex/usr/Vimba_1_3/ -DVIMBA=1
 RESINC_VIMBARELEASE = $(RESINC)
 RCFLAGS_VIMBARELEASE = $(RCFLAGS)
 LIBDIR_VIMBARELEASE = $(LIBDIR) -L/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit -L/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit
 LIB_VIMBARELEASE = $(LIB)
-LDFLAGS_VIMBARELEASE =  -s -lVimbaCPP -lVimbaC -lAVTImageTransform -Wl,-rpath-link,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/ -Wl,-rpath,/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit/ -Wl,-rpath,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/ $(LDFLAGS)
+LDFLAGS_VIMBARELEASE =  -s -flto -lVimbaCPP -lVimbaC -lAVTImageTransform -Wl,-rpath-link,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/ -Wl,-rpath,/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit/ -Wl,-rpath,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/ $(LDFLAGS)
 OBJDIR_VIMBARELEASE = obj/Release
 DEP_VIMBARELEASE = 
 OUT_VIMBARELEASE = bin/Release/useTracker

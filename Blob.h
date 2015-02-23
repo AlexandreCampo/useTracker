@@ -8,7 +8,7 @@ public:
     bool available = true;
     unsigned int assignment;
     unsigned int zone;
-    unsigned int tagId;
+    int tagId;
     float angle = 0.0;
     float length = 0.0;
 
