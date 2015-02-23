@@ -23,7 +23,8 @@ void ExtractBlobs::Reset()
 void ExtractBlobs::Apply()
 {
     // reset labels if necessary
-    pipeline->labels.setTo (-1);
+    if (recordLabels) 
+	pipeline->labels.setTo (-1);
 
     // remove matches with mask
 //    pipeline->marked &= pipeline->zoneMap;

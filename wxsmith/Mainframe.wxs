@@ -21,9 +21,9 @@
 							<mLevel>4294967296</mLevel>
 							<mMinAlpha>68719476736</mMinAlpha>
 							<mDepthSize>16</mDepthSize>
-							<size>-1,-1</size>
+							<size>900,675</size>
 							<focused>1</focused>
-							<minsize>800,600</minsize>
+							<minsize>-1,-1</minsize>
 							<maxsize>-1,-1</maxsize>
 							<handler function="OnGLCanvas1Paint" entry="EVT_PAINT" />
 							<handler function="OnGLCanvas1Char" entry="EVT_CHAR" />
@@ -148,6 +148,7 @@
 						<object class="wxScrolledWindow" name="ID_SCROLLEDWINDOW1" variable="ProcessingTab" member="yes">
 							<object class="wxFlexGridSizer" variable="FlexGridSizer11" member="no">
 								<cols>1</cols>
+								<growablecols>0</growablecols>
 								<object class="sizeritem">
 									<object class="wxToggleButton" name="ID_TOGGLEBUTTON1" variable="ToggleButtonProcessing" member="yes">
 										<label>Show Processing</label>
@@ -160,14 +161,6 @@
 								<object class="sizeritem">
 									<object class="wxStaticBox" name="ID_STATICBOX1" variable="StaticBox1" member="yes">
 										<label>Processing pipeline</label>
-									</object>
-									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-									<border>5</border>
-									<option>1</option>
-								</object>
-								<object class="sizeritem">
-									<object class="wxStaticLine" name="ID_STATICLINE1" variable="StaticLine1" member="yes">
-										<size>10,-1</size>
 									</object>
 									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 									<border>5</border>
@@ -189,6 +182,7 @@
 						<object class="wxScrolledWindow" name="ID_SCROLLEDWINDOW2" variable="BackgroundTab" member="yes">
 							<object class="wxFlexGridSizer" variable="FlexGridSizer10" member="no">
 								<cols>1</cols>
+								<growablecols>0</growablecols>
 								<object class="sizeritem">
 									<object class="wxStaticBoxSizer" variable="StaticBoxSizer2" member="no">
 										<label>Background calculation</label>

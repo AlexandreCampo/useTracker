@@ -39,6 +39,11 @@ void GetBlobsAngles::Apply()
 		stats[idx].varx += dx * dx;
 		stats[idx].vary += dy * dy;
 
+		int dist = dx * dx + dy * dy;
+
+		if (dist > stats[idx].maxdist)
+		    stats[idx].maxdist = dist;
+
 		// Point pos;
 		// // pos.x = x;
 		// // pos.y = y;
@@ -63,7 +68,8 @@ void GetBlobsAngles::Apply()
 	    {
 		blobs[i].angle = atan2 (1, (float)stats[i].cov / (float)stats[i].vary);
 	    }
-//	    cout << "Blob " << i << " angle " << blobs[i].angle << " params " << stats[i].cov << " " << stats[i].varx << " " << stats[i].vary << endl;
+	    blobs[i].length = sqrt((float)stats[i].maxdist) * 2.0;
+//	    cout << "Blob " << i << " angle " << blobs[i].angle << " length " << blobs[i].length  << " params " << stats[i].cov << " " << stats[i].varx << " " << stats[i].vary << endl;
 	}
     }
 //    cout << "--------" << endl;

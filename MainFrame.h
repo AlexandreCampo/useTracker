@@ -24,7 +24,6 @@
 #include <wx/slider.h>
 #include <wx/statbox.h>
 #include <wx/filepicker.h>
-#include <wx/statline.h>
 #include <wx/frame.h>
 #include <wx/tglbtn.h>
 #include <wx/gbsizer.h>
@@ -125,7 +124,6 @@ private:
     static const long ID_BITMAPBUTTON11;
     static const long ID_TOGGLEBUTTON1;
     static const long ID_STATICBOX1;
-    static const long ID_STATICLINE1;
     static const long ID_STATICBOX2;
     static const long ID_SCROLLEDWINDOW1;
     static const long ID_STATICTEXT1;
@@ -186,7 +184,6 @@ private:
     wxStaticText* StaticText3;
     wxButton* ButtonBgLoad;
     wxRadioBox* RadioBoxMethod;
-    wxStaticLine* StaticLine1;
     wxCheckBox* CheckBoxUseTimeBounds;
     wxGLCanvas* GLCanvas1;
     wxBitmapButton* buttonStepForward;

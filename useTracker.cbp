@@ -110,6 +110,7 @@
 			<Add option="-lpng" />
 			<Add option="-lx264" />
 			<Add option="-lboost_program_options" />
+			<Add option="-laruco" />
 		</Linker>
 		<Unit filename="App.cpp" />
 		<Unit filename="App.h" />
@@ -138,6 +139,8 @@
 		<Unit filename="capture/CaptureUSBCamera.h" />
 		<Unit filename="capture/CaptureVideo.cpp" />
 		<Unit filename="capture/CaptureVideo.h" />
+		<Unit filename="dialogs/DialogAruco.cpp" />
+		<Unit filename="dialogs/DialogAruco.h" />
 		<Unit filename="dialogs/DialogColorSegmentation.cpp" />
 		<Unit filename="dialogs/DialogColorSegmentation.h" />
 		<Unit filename="dialogs/DialogDilation.cpp" />
@@ -160,18 +163,21 @@
 		<Unit filename="dialogs/DialogSafeErosion.h" />
 		<Unit filename="dialogs/DialogTracker.cpp" />
 		<Unit filename="dialogs/DialogTracker.h" />
+		<Unit filename="plugins/Aruco.cpp" />
+		<Unit filename="plugins/Aruco.h" />
 		<Unit filename="plugins/ColorSegmentation.cpp" />
 		<Unit filename="plugins/Dilation.cpp" />
 		<Unit filename="plugins/Erosion.cpp" />
 		<Unit filename="plugins/ExtractBlobs.cpp" />
 		<Unit filename="plugins/ExtractMotion.cpp" />
-		<Unit filename="plugins/ExtractSimpleTags.cpp" />
 		<Unit filename="plugins/FrameDifference.cpp" />
 		<Unit filename="plugins/GetBlobsAngles.cpp" />
 		<Unit filename="plugins/MovingAverage.cpp" />
 		<Unit filename="plugins/RecordPixels.cpp" />
 		<Unit filename="plugins/RecordVideo.cpp" />
 		<Unit filename="plugins/SafeErosion.cpp" />
+		<Unit filename="plugins/SimpleTags.cpp" />
+		<Unit filename="plugins/SimpleTags.h" />
 		<Unit filename="plugins/Tracker.cpp" />
 		<Unit filename="plugins/ZonesOfInterest.cpp" />
 		<Unit filename="plugins/ZonesOfInterest.h" />
@@ -187,6 +193,7 @@
 			<Option target="VimbaDebug" />
 			<Option target="VimbaRelease" />
 		</Unit>
+		<Unit filename="wxsmith/DialogAruco.wxs" />
 		<Unit filename="wxsmith/DialogColorSegmentation.wxs" />
 		<Unit filename="wxsmith/DialogDilation.wxs" />
 		<Unit filename="wxsmith/DialogErosion.wxs" />
@@ -218,6 +225,7 @@
 					<wxDialog wxs="wxsmith/DialogRecordPixels.wxs" src="dialogs/DialogRecordPixels.cpp" hdr="dialogs/DialogRecordPixels.h" fwddecl="0" i18n="1" name="DialogRecordPixels" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogRecordVideo.wxs" src="dialogs/DialogRecordVideo.cpp" hdr="dialogs/DialogRecordVideo.h" fwddecl="0" i18n="1" name="DialogRecordVideo" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogOpenCapture.wxs" src="dialogs/DialogOpenCapture.cpp" hdr="dialogs/DialogOpenCapture.h" fwddecl="0" i18n="1" name="DialogOpenCapture" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogAruco.wxs" src="dialogs/DialogAruco.cpp" hdr="dialogs/DialogAruco.h" fwddecl="0" i18n="1" name="DialogAruco" language="CPP" />
 				</resources>
 			</wxsmith>
 			<debugger />

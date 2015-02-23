@@ -10,10 +10,8 @@ class SimpleTags : public PipelinePlugin
 {
 public:
 
-//    int minSize = 10;
-
-    int pwidth = 34;
-    int pheight = 10;
+    int pwidth = 100;
+    int pheight = 25;
 
     SimpleTags();
 

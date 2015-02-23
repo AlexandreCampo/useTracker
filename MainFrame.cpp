@@ -100,7 +100,6 @@ const long MainFrame::ID_SLIDER1 = wxNewId();
 const long MainFrame::ID_BITMAPBUTTON11 = wxNewId();
 const long MainFrame::ID_TOGGLEBUTTON1 = wxNewId();
 const long MainFrame::ID_STATICBOX1 = wxNewId();
-const long MainFrame::ID_STATICLINE1 = wxNewId();
 const long MainFrame::ID_STATICBOX2 = wxNewId();
 const long MainFrame::ID_SCROLLEDWINDOW1 = wxNewId();
 const long MainFrame::ID_STATICTEXT1 = wxNewId();
@@ -185,8 +184,8 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     	WX_GL_DEPTH_SIZE,      16,
     	WX_GL_STENCIL_SIZE,    0,
     	0, 0 };
-    GLCanvas1 = new wxGLCanvas(this, ID_GLCANVAS1, wxDefaultPosition, wxSize(-1,-1), 0, _T("ID_GLCANVAS1"), GLCanvasAttributes_1);
-    GLCanvas1->SetMinSize(wxSize(800,600));
+    GLCanvas1 = new wxGLCanvas(this, ID_GLCANVAS1, wxDefaultPosition, wxSize(900,675), 0, _T("ID_GLCANVAS1"), GLCanvasAttributes_1);
+    GLCanvas1->SetMinSize(wxSize(-1,-1));
     GLCanvas1->SetMaxSize(wxSize(-1,-1));
     GLCanvas1->SetFocus();
     FlexGridSizer6->Add(GLCanvas1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
@@ -219,12 +218,11 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     Notebook1->SetMaxSize(wxSize(-1,650));
     ProcessingTab = new wxScrolledWindow(Notebook1, ID_SCROLLEDWINDOW1, wxDefaultPosition, wxDefaultSize, wxVSCROLL|wxHSCROLL, _T("ID_SCROLLEDWINDOW1"));
     FlexGridSizer11 = new wxFlexGridSizer(0, 1, 0, 0);
+    FlexGridSizer11->AddGrowableCol(0);
     ToggleButtonProcessing = new wxToggleButton(ProcessingTab, ID_TOGGLEBUTTON1, _("Show Processing"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_TOGGLEBUTTON1"));
     FlexGridSizer11->Add(ToggleButtonProcessing, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     StaticBox1 = new wxStaticBox(ProcessingTab, ID_STATICBOX1, _("Processing pipeline"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICBOX1"));
     FlexGridSizer11->Add(StaticBox1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    StaticLine1 = new wxStaticLine(ProcessingTab, ID_STATICLINE1, wxDefaultPosition, wxSize(10,-1), wxLI_HORIZONTAL, _T("ID_STATICLINE1"));
-    FlexGridSizer11->Add(StaticLine1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     StaticBox2 = new wxStaticBox(ProcessingTab, ID_STATICBOX2, _("Available functions"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICBOX2"));
     FlexGridSizer11->Add(StaticBox2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ProcessingTab->SetSizer(FlexGridSizer11);
@@ -232,6 +230,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FlexGridSizer11->SetSizeHints(ProcessingTab);
     BackgroundTab = new wxScrolledWindow(Notebook1, ID_SCROLLEDWINDOW2, wxDefaultPosition, wxDefaultSize, wxVSCROLL|wxHSCROLL, _T("ID_SCROLLEDWINDOW2"));
     FlexGridSizer10 = new wxFlexGridSizer(0, 1, 0, 0);
+    FlexGridSizer10->AddGrowableCol(0);
     StaticBoxSizer2 = new wxStaticBoxSizer(wxVERTICAL, BackgroundTab, _("Background calculation"));
     FlexGridSizer5 = new wxFlexGridSizer(0, 2, 0, 0);
     StaticText1 = new wxStaticText(BackgroundTab, ID_STATICTEXT1, _("Start time"), wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT, _T("ID_STATICTEXT1"));
@@ -407,8 +406,8 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     BackgroundTab->SetScrollbars (0, 5, 0, sz/5);
 
     // setup drag and drop for image processing pipeline
-    ListBoxPipeline = new wxCheckListBox(StaticBox1, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(ProcessingTab,wxSize(115,120)), 0, 0, wxLB_SINGLE|wxLB_NEEDED_SB);
-    ListBoxPipelinePlugins = new wxListBox(StaticBox2, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(ProcessingTab,wxSize(115,170)), 0, 0, wxLB_SINGLE);
+    ListBoxPipeline = new wxCheckListBox(StaticBox1, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(ProcessingTab,wxSize(115,100)), 0, 0, wxLB_SINGLE|wxLB_NEEDED_SB);
+    ListBoxPipelinePlugins = new wxListBox(StaticBox2, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(ProcessingTab,wxSize(115,180)), 0, 0, wxLB_SINGLE);
 
     textDropTargetAdd = new MyTextDropTargetAdd (this);
     textDropTargetMove = new MyTextDropTargetMove (this);

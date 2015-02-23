@@ -16,7 +16,7 @@ CFLAGS = -std=c++11 -Wall `wx-config --cflags all` `pkg-config --cflags opencv` 
 RESINC = 
 LIBDIR = 
 LIB = 
-LDFLAGS = -flto `wx-config --libs all --gl-libs` -lGL -lGLU -lglut -lpthread `pkg-config --libs opencv` `pkg-config --libs libavcodec libavformat libswscale libavutil` -ldl -lva -lbz2 -lz -lm -lpng -lx264 -lboost_program_options
+LDFLAGS = -flto `wx-config --libs all --gl-libs` -lGL -lGLU -lglut -lpthread `pkg-config --libs opencv` `pkg-config --libs libavcodec libavformat libswscale libavutil` -ldl -lva -lbz2 -lz -lm -lpng -lx264 -lboost_program_options -laruco
 
 INC_VIMBADEBUG = $(INC)
 CFLAGS_VIMBADEBUG = $(CFLAGS) -pg -g -I /home/alex/usr/Vimba_1_3/ -DVIMBA=1
@@ -40,9 +40,9 @@ OBJDIR_VIMBARELEASE = obj/Release
 DEP_VIMBARELEASE = 
 OUT_VIMBARELEASE = bin/Release/useTracker
 
-OBJ_VIMBADEBUG = $(OBJDIR_VIMBADEBUG)/plugins/ColorSegmentation.o $(OBJDIR_VIMBADEBUG)/plugins/RecordPixels.o $(OBJDIR_VIMBADEBUG)/plugins/MovingAverage.o $(OBJDIR_VIMBADEBUG)/plugins/GetBlobsAngles.o $(OBJDIR_VIMBADEBUG)/plugins/FrameDifference.o $(OBJDIR_VIMBADEBUG)/plugins/ExtractSimpleTags.o $(OBJDIR_VIMBADEBUG)/plugins/ExtractMotion.o $(OBJDIR_VIMBADEBUG)/plugins/ExtractBlobs.o $(OBJDIR_VIMBADEBUG)/plugins/Erosion.o $(OBJDIR_VIMBADEBUG)/plugins/Dilation.o $(OBJDIR_VIMBADEBUG)/plugins/RecordVideo.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogTracker.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogSafeErosion.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogRecordVideo.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogRecordPixels.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogOpenCapture.o $(OBJDIR_VIMBADEBUG)/vimba/FrameObserver.o $(OBJDIR_VIMBADEBUG)/vimba/CameraObserver.o $(OBJDIR_VIMBADEBUG)/vimba/ApiController.o $(OBJDIR_VIMBADEBUG)/plugins/ZonesOfInterest.o $(OBJDIR_VIMBADEBUG)/plugins/Tracker.o $(OBJDIR_VIMBADEBUG)/plugins/SafeErosion.o $(OBJDIR_VIMBADEBUG)/Parameters.o $(OBJDIR_VIMBADEBUG)/capture/CaptureDefault.o $(OBJDIR_VIMBADEBUG)/capture/CaptureAVTCamera.o $(OBJDIR_VIMBADEBUG)/Utils.o $(OBJDIR_VIMBADEBUG)/Pipeline.o $(OBJDIR_VIMBADEBUG)/MainFrame.o $(OBJDIR_VIMBADEBUG)/ImageProcessingEngine.o $(OBJDIR_VIMBADEBUG)/Capture.o $(OBJDIR_VIMBADEBUG)/Background.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogDilation.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogMovingAverage.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogExtractMotion.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogExtractBlobs.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogErosion.o $(OBJDIR_VIMBADEBUG)/App.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogColorSegmentation.o $(OBJDIR_VIMBADEBUG)/capture/CaptureVideo.o $(OBJDIR_VIMBADEBUG)/capture/CaptureUSBCamera.o $(OBJDIR_VIMBADEBUG)/capture/CaptureImage.o
+OBJ_VIMBADEBUG = $(OBJDIR_VIMBADEBUG)/plugins/ColorSegmentation.o $(OBJDIR_VIMBADEBUG)/plugins/SafeErosion.o $(OBJDIR_VIMBADEBUG)/plugins/RecordVideo.o $(OBJDIR_VIMBADEBUG)/plugins/RecordPixels.o $(OBJDIR_VIMBADEBUG)/plugins/MovingAverage.o $(OBJDIR_VIMBADEBUG)/plugins/GetBlobsAngles.o $(OBJDIR_VIMBADEBUG)/plugins/FrameDifference.o $(OBJDIR_VIMBADEBUG)/plugins/ExtractMotion.o $(OBJDIR_VIMBADEBUG)/plugins/ExtractBlobs.o $(OBJDIR_VIMBADEBUG)/plugins/Erosion.o $(OBJDIR_VIMBADEBUG)/plugins/Dilation.o $(OBJDIR_VIMBADEBUG)/plugins/SimpleTags.o $(OBJDIR_VIMBADEBUG)/plugins/Aruco.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogTracker.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogSafeErosion.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogRecordVideo.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogRecordPixels.o $(OBJDIR_VIMBADEBUG)/vimba/FrameObserver.o $(OBJDIR_VIMBADEBUG)/vimba/CameraObserver.o $(OBJDIR_VIMBADEBUG)/vimba/ApiController.o $(OBJDIR_VIMBADEBUG)/plugins/ZonesOfInterest.o $(OBJDIR_VIMBADEBUG)/plugins/Tracker.o $(OBJDIR_VIMBADEBUG)/Parameters.o $(OBJDIR_VIMBADEBUG)/capture/CaptureDefault.o $(OBJDIR_VIMBADEBUG)/capture/CaptureAVTCamera.o $(OBJDIR_VIMBADEBUG)/Utils.o $(OBJDIR_VIMBADEBUG)/Pipeline.o $(OBJDIR_VIMBADEBUG)/capture/CaptureImage.o $(OBJDIR_VIMBADEBUG)/MainFrame.o $(OBJDIR_VIMBADEBUG)/ImageProcessingEngine.o $(OBJDIR_VIMBADEBUG)/Capture.o $(OBJDIR_VIMBADEBUG)/Background.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogDilation.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogOpenCapture.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogMovingAverage.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogExtractMotion.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogExtractBlobs.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogErosion.o $(OBJDIR_VIMBADEBUG)/App.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogColorSegmentation.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogAruco.o $(OBJDIR_VIMBADEBUG)/capture/CaptureVideo.o $(OBJDIR_VIMBADEBUG)/capture/CaptureUSBCamera.o
 
-OBJ_VIMBARELEASE = $(OBJDIR_VIMBARELEASE)/plugins/ColorSegmentation.o $(OBJDIR_VIMBARELEASE)/plugins/RecordPixels.o $(OBJDIR_VIMBARELEASE)/plugins/MovingAverage.o $(OBJDIR_VIMBARELEASE)/plugins/GetBlobsAngles.o $(OBJDIR_VIMBARELEASE)/plugins/FrameDifference.o $(OBJDIR_VIMBARELEASE)/plugins/ExtractSimpleTags.o $(OBJDIR_VIMBARELEASE)/plugins/ExtractMotion.o $(OBJDIR_VIMBARELEASE)/plugins/ExtractBlobs.o $(OBJDIR_VIMBARELEASE)/plugins/Erosion.o $(OBJDIR_VIMBARELEASE)/plugins/Dilation.o $(OBJDIR_VIMBARELEASE)/plugins/RecordVideo.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogTracker.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogSafeErosion.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogRecordVideo.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogRecordPixels.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogOpenCapture.o $(OBJDIR_VIMBARELEASE)/vimba/FrameObserver.o $(OBJDIR_VIMBARELEASE)/vimba/CameraObserver.o $(OBJDIR_VIMBARELEASE)/vimba/ApiController.o $(OBJDIR_VIMBARELEASE)/plugins/ZonesOfInterest.o $(OBJDIR_VIMBARELEASE)/plugins/Tracker.o $(OBJDIR_VIMBARELEASE)/plugins/SafeErosion.o $(OBJDIR_VIMBARELEASE)/Parameters.o $(OBJDIR_VIMBARELEASE)/capture/CaptureDefault.o $(OBJDIR_VIMBARELEASE)/capture/CaptureAVTCamera.o $(OBJDIR_VIMBARELEASE)/Utils.o $(OBJDIR_VIMBARELEASE)/Pipeline.o $(OBJDIR_VIMBARELEASE)/MainFrame.o $(OBJDIR_VIMBARELEASE)/ImageProcessingEngine.o $(OBJDIR_VIMBARELEASE)/Capture.o $(OBJDIR_VIMBARELEASE)/Background.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogDilation.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogMovingAverage.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogExtractMotion.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogExtractBlobs.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogErosion.o $(OBJDIR_VIMBARELEASE)/App.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogColorSegmentation.o $(OBJDIR_VIMBARELEASE)/capture/CaptureVideo.o $(OBJDIR_VIMBARELEASE)/capture/CaptureUSBCamera.o $(OBJDIR_VIMBARELEASE)/capture/CaptureImage.o
+OBJ_VIMBARELEASE = $(OBJDIR_VIMBARELEASE)/plugins/ColorSegmentation.o $(OBJDIR_VIMBARELEASE)/plugins/SafeErosion.o $(OBJDIR_VIMBARELEASE)/plugins/RecordVideo.o $(OBJDIR_VIMBARELEASE)/plugins/RecordPixels.o $(OBJDIR_VIMBARELEASE)/plugins/MovingAverage.o $(OBJDIR_VIMBARELEASE)/plugins/GetBlobsAngles.o $(OBJDIR_VIMBARELEASE)/plugins/FrameDifference.o $(OBJDIR_VIMBARELEASE)/plugins/ExtractMotion.o $(OBJDIR_VIMBARELEASE)/plugins/ExtractBlobs.o $(OBJDIR_VIMBARELEASE)/plugins/Erosion.o $(OBJDIR_VIMBARELEASE)/plugins/Dilation.o $(OBJDIR_VIMBARELEASE)/plugins/SimpleTags.o $(OBJDIR_VIMBARELEASE)/plugins/Aruco.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogTracker.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogSafeErosion.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogRecordVideo.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogRecordPixels.o $(OBJDIR_VIMBARELEASE)/vimba/FrameObserver.o $(OBJDIR_VIMBARELEASE)/vimba/CameraObserver.o $(OBJDIR_VIMBARELEASE)/vimba/ApiController.o $(OBJDIR_VIMBARELEASE)/plugins/ZonesOfInterest.o $(OBJDIR_VIMBARELEASE)/plugins/Tracker.o $(OBJDIR_VIMBARELEASE)/Parameters.o $(OBJDIR_VIMBARELEASE)/capture/CaptureDefault.o $(OBJDIR_VIMBARELEASE)/capture/CaptureAVTCamera.o $(OBJDIR_VIMBARELEASE)/Utils.o $(OBJDIR_VIMBARELEASE)/Pipeline.o $(OBJDIR_VIMBARELEASE)/capture/CaptureImage.o $(OBJDIR_VIMBARELEASE)/MainFrame.o $(OBJDIR_VIMBARELEASE)/ImageProcessingEngine.o $(OBJDIR_VIMBARELEASE)/Capture.o $(OBJDIR_VIMBARELEASE)/Background.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogDilation.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogOpenCapture.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogMovingAverage.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogExtractMotion.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogExtractBlobs.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogErosion.o $(OBJDIR_VIMBARELEASE)/App.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogColorSegmentation.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogAruco.o $(OBJDIR_VIMBARELEASE)/capture/CaptureVideo.o $(OBJDIR_VIMBARELEASE)/capture/CaptureUSBCamera.o
 
 all: vimbadebug vimbarelease
 
@@ -66,6 +66,12 @@ out_vimbadebug: before_vimbadebug $(OBJ_VIMBADEBUG) $(DEP_VIMBADEBUG)
 $(OBJDIR_VIMBADEBUG)/plugins/ColorSegmentation.o: plugins/ColorSegmentation.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/ColorSegmentation.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/ColorSegmentation.o
 
+$(OBJDIR_VIMBADEBUG)/plugins/SafeErosion.o: plugins/SafeErosion.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/SafeErosion.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/SafeErosion.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/RecordVideo.o: plugins/RecordVideo.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/RecordVideo.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/RecordVideo.o
+
 $(OBJDIR_VIMBADEBUG)/plugins/RecordPixels.o: plugins/RecordPixels.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/RecordPixels.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/RecordPixels.o
 
@@ -77,9 +83,6 @@ $(OBJDIR_VIMBADEBUG)/plugins/GetBlobsAngles.o: plugins/GetBlobsAngles.cpp
 
 $(OBJDIR_VIMBADEBUG)/plugins/FrameDifference.o: plugins/FrameDifference.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/FrameDifference.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/FrameDifference.o
-
-$(OBJDIR_VIMBADEBUG)/plugins/ExtractSimpleTags.o: plugins/ExtractSimpleTags.cpp
-	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/ExtractSimpleTags.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/ExtractSimpleTags.o
 
 $(OBJDIR_VIMBADEBUG)/plugins/ExtractMotion.o: plugins/ExtractMotion.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/ExtractMotion.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/ExtractMotion.o
@@ -93,8 +96,11 @@ $(OBJDIR_VIMBADEBUG)/plugins/Erosion.o: plugins/Erosion.cpp
 $(OBJDIR_VIMBADEBUG)/plugins/Dilation.o: plugins/Dilation.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/Dilation.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/Dilation.o
 
-$(OBJDIR_VIMBADEBUG)/plugins/RecordVideo.o: plugins/RecordVideo.cpp
-	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/RecordVideo.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/RecordVideo.o
+$(OBJDIR_VIMBADEBUG)/plugins/SimpleTags.o: plugins/SimpleTags.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/SimpleTags.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/SimpleTags.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/Aruco.o: plugins/Aruco.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/Aruco.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/Aruco.o
 
 $(OBJDIR_VIMBADEBUG)/dialogs/DialogTracker.o: dialogs/DialogTracker.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogTracker.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogTracker.o
@@ -107,9 +113,6 @@ $(OBJDIR_VIMBADEBUG)/dialogs/DialogRecordVideo.o: dialogs/DialogRecordVideo.cpp
 
 $(OBJDIR_VIMBADEBUG)/dialogs/DialogRecordPixels.o: dialogs/DialogRecordPixels.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogRecordPixels.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogRecordPixels.o
-
-$(OBJDIR_VIMBADEBUG)/dialogs/DialogOpenCapture.o: dialogs/DialogOpenCapture.cpp
-	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogOpenCapture.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogOpenCapture.o
 
 $(OBJDIR_VIMBADEBUG)/vimba/FrameObserver.o: vimba/FrameObserver.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c vimba/FrameObserver.cpp -o $(OBJDIR_VIMBADEBUG)/vimba/FrameObserver.o
@@ -126,9 +129,6 @@ $(OBJDIR_VIMBADEBUG)/plugins/ZonesOfInterest.o: plugins/ZonesOfInterest.cpp
 $(OBJDIR_VIMBADEBUG)/plugins/Tracker.o: plugins/Tracker.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/Tracker.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/Tracker.o
 
-$(OBJDIR_VIMBADEBUG)/plugins/SafeErosion.o: plugins/SafeErosion.cpp
-	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/SafeErosion.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/SafeErosion.o
-
 $(OBJDIR_VIMBADEBUG)/Parameters.o: Parameters.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c Parameters.cpp -o $(OBJDIR_VIMBADEBUG)/Parameters.o
 
@@ -144,6 +144,9 @@ $(OBJDIR_VIMBADEBUG)/Utils.o: Utils.cpp
 $(OBJDIR_VIMBADEBUG)/Pipeline.o: Pipeline.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c Pipeline.cpp -o $(OBJDIR_VIMBADEBUG)/Pipeline.o
 
+$(OBJDIR_VIMBADEBUG)/capture/CaptureImage.o: capture/CaptureImage.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c capture/CaptureImage.cpp -o $(OBJDIR_VIMBADEBUG)/capture/CaptureImage.o
+
 $(OBJDIR_VIMBADEBUG)/MainFrame.o: MainFrame.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c MainFrame.cpp -o $(OBJDIR_VIMBADEBUG)/MainFrame.o
 
@@ -158,6 +161,9 @@ $(OBJDIR_VIMBADEBUG)/Background.o: Background.cpp
 
 $(OBJDIR_VIMBADEBUG)/dialogs/DialogDilation.o: dialogs/DialogDilation.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogDilation.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogDilation.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogOpenCapture.o: dialogs/DialogOpenCapture.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogOpenCapture.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogOpenCapture.o
 
 $(OBJDIR_VIMBADEBUG)/dialogs/DialogMovingAverage.o: dialogs/DialogMovingAverage.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogMovingAverage.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogMovingAverage.o
@@ -177,14 +183,14 @@ $(OBJDIR_VIMBADEBUG)/App.o: App.cpp
 $(OBJDIR_VIMBADEBUG)/dialogs/DialogColorSegmentation.o: dialogs/DialogColorSegmentation.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogColorSegmentation.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogColorSegmentation.o
 
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogAruco.o: dialogs/DialogAruco.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogAruco.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogAruco.o
+
 $(OBJDIR_VIMBADEBUG)/capture/CaptureVideo.o: capture/CaptureVideo.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c capture/CaptureVideo.cpp -o $(OBJDIR_VIMBADEBUG)/capture/CaptureVideo.o
 
 $(OBJDIR_VIMBADEBUG)/capture/CaptureUSBCamera.o: capture/CaptureUSBCamera.cpp
 	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c capture/CaptureUSBCamera.cpp -o $(OBJDIR_VIMBADEBUG)/capture/CaptureUSBCamera.o
-
-$(OBJDIR_VIMBADEBUG)/capture/CaptureImage.o: capture/CaptureImage.cpp
-	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c capture/CaptureImage.cpp -o $(OBJDIR_VIMBADEBUG)/capture/CaptureImage.o
 
 clean_vimbadebug: 
 	rm -f $(OBJ_VIMBADEBUG) $(OUT_VIMBADEBUG)
@@ -213,6 +219,12 @@ out_vimbarelease: before_vimbarelease $(OBJ_VIMBARELEASE) $(DEP_VIMBARELEASE)
 $(OBJDIR_VIMBARELEASE)/plugins/ColorSegmentation.o: plugins/ColorSegmentation.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/ColorSegmentation.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/ColorSegmentation.o
 
+$(OBJDIR_VIMBARELEASE)/plugins/SafeErosion.o: plugins/SafeErosion.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/SafeErosion.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/SafeErosion.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/RecordVideo.o: plugins/RecordVideo.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/RecordVideo.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/RecordVideo.o
+
 $(OBJDIR_VIMBARELEASE)/plugins/RecordPixels.o: plugins/RecordPixels.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/RecordPixels.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/RecordPixels.o
 
@@ -224,9 +236,6 @@ $(OBJDIR_VIMBARELEASE)/plugins/GetBlobsAngles.o: plugins/GetBlobsAngles.cpp
 
 $(OBJDIR_VIMBARELEASE)/plugins/FrameDifference.o: plugins/FrameDifference.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/FrameDifference.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/FrameDifference.o
-
-$(OBJDIR_VIMBARELEASE)/plugins/ExtractSimpleTags.o: plugins/ExtractSimpleTags.cpp
-	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/ExtractSimpleTags.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/ExtractSimpleTags.o
 
 $(OBJDIR_VIMBARELEASE)/plugins/ExtractMotion.o: plugins/ExtractMotion.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/ExtractMotion.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/ExtractMotion.o
@@ -240,8 +249,11 @@ $(OBJDIR_VIMBARELEASE)/plugins/Erosion.o: plugins/Erosion.cpp
 $(OBJDIR_VIMBARELEASE)/plugins/Dilation.o: plugins/Dilation.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/Dilation.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/Dilation.o
 
-$(OBJDIR_VIMBARELEASE)/plugins/RecordVideo.o: plugins/RecordVideo.cpp
-	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/RecordVideo.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/RecordVideo.o
+$(OBJDIR_VIMBARELEASE)/plugins/SimpleTags.o: plugins/SimpleTags.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/SimpleTags.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/SimpleTags.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/Aruco.o: plugins/Aruco.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/Aruco.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/Aruco.o
 
 $(OBJDIR_VIMBARELEASE)/dialogs/DialogTracker.o: dialogs/DialogTracker.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogTracker.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogTracker.o
@@ -254,9 +266,6 @@ $(OBJDIR_VIMBARELEASE)/dialogs/DialogRecordVideo.o: dialogs/DialogRecordVideo.cp
 
 $(OBJDIR_VIMBARELEASE)/dialogs/DialogRecordPixels.o: dialogs/DialogRecordPixels.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogRecordPixels.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogRecordPixels.o
-
-$(OBJDIR_VIMBARELEASE)/dialogs/DialogOpenCapture.o: dialogs/DialogOpenCapture.cpp
-	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogOpenCapture.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogOpenCapture.o
 
 $(OBJDIR_VIMBARELEASE)/vimba/FrameObserver.o: vimba/FrameObserver.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c vimba/FrameObserver.cpp -o $(OBJDIR_VIMBARELEASE)/vimba/FrameObserver.o
@@ -273,9 +282,6 @@ $(OBJDIR_VIMBARELEASE)/plugins/ZonesOfInterest.o: plugins/ZonesOfInterest.cpp
 $(OBJDIR_VIMBARELEASE)/plugins/Tracker.o: plugins/Tracker.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/Tracker.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/Tracker.o
 
-$(OBJDIR_VIMBARELEASE)/plugins/SafeErosion.o: plugins/SafeErosion.cpp
-	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/SafeErosion.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/SafeErosion.o
-
 $(OBJDIR_VIMBARELEASE)/Parameters.o: Parameters.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c Parameters.cpp -o $(OBJDIR_VIMBARELEASE)/Parameters.o
 
@@ -291,6 +297,9 @@ $(OBJDIR_VIMBARELEASE)/Utils.o: Utils.cpp
 $(OBJDIR_VIMBARELEASE)/Pipeline.o: Pipeline.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c Pipeline.cpp -o $(OBJDIR_VIMBARELEASE)/Pipeline.o
 
+$(OBJDIR_VIMBARELEASE)/capture/CaptureImage.o: capture/CaptureImage.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c capture/CaptureImage.cpp -o $(OBJDIR_VIMBARELEASE)/capture/CaptureImage.o
+
 $(OBJDIR_VIMBARELEASE)/MainFrame.o: MainFrame.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c MainFrame.cpp -o $(OBJDIR_VIMBARELEASE)/MainFrame.o
 
@@ -305,6 +314,9 @@ $(OBJDIR_VIMBARELEASE)/Background.o: Background.cpp
 
 $(OBJDIR_VIMBARELEASE)/dialogs/DialogDilation.o: dialogs/DialogDilation.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogDilation.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogDilation.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogOpenCapture.o: dialogs/DialogOpenCapture.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogOpenCapture.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogOpenCapture.o
 
 $(OBJDIR_VIMBARELEASE)/dialogs/DialogMovingAverage.o: dialogs/DialogMovingAverage.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogMovingAverage.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogMovingAverage.o
@@ -324,14 +336,14 @@ $(OBJDIR_VIMBARELEASE)/App.o: App.cpp
 $(OBJDIR_VIMBARELEASE)/dialogs/DialogColorSegmentation.o: dialogs/DialogColorSegmentation.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogColorSegmentation.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogColorSegmentation.o
 
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogAruco.o: dialogs/DialogAruco.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogAruco.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogAruco.o
+
 $(OBJDIR_VIMBARELEASE)/capture/CaptureVideo.o: capture/CaptureVideo.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c capture/CaptureVideo.cpp -o $(OBJDIR_VIMBARELEASE)/capture/CaptureVideo.o
 
 $(OBJDIR_VIMBARELEASE)/capture/CaptureUSBCamera.o: capture/CaptureUSBCamera.cpp
 	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c capture/CaptureUSBCamera.cpp -o $(OBJDIR_VIMBARELEASE)/capture/CaptureUSBCamera.o
-
-$(OBJDIR_VIMBARELEASE)/capture/CaptureImage.o: capture/CaptureImage.cpp
-	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c capture/CaptureImage.cpp -o $(OBJDIR_VIMBARELEASE)/capture/CaptureImage.o
 
 clean_vimbarelease: 
 	rm -f $(OBJ_VIMBARELEASE) $(OUT_VIMBARELEASE)

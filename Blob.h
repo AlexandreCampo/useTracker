@@ -4,12 +4,13 @@
 class Blob 
 {
 public:
-    unsigned int size;
-    bool available;
+    unsigned int size = 0;
+    bool available = true;
     unsigned int assignment;
     unsigned int zone;
     unsigned int tagId;
-    float angle;
+    float angle = 0.0;
+    float length = 0.0;
 
     int x = 0;
     int y = 0;
@@ -17,8 +18,6 @@ public:
 
     Blob ()
     {
-	size = 0;
-	available = true;
     }
 
     Blob (int x, int y, unsigned int index, unsigned int size = 0)

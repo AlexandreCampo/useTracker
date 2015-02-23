@@ -15,11 +15,13 @@ public:
 		cov = 0;
 		varx = 0;
 		vary = 0;
+		maxdist = 0;
 	    }
 
 	int cov;
 	int varx;
 	int vary;
+	int maxdist;
     };
 
     GetBlobsAngles();
