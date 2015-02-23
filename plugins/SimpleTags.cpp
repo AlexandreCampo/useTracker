@@ -15,6 +15,12 @@ SimpleTags::SimpleTags()
 
 void SimpleTags::Reset()
 {
+    if (pwidth == 0 || pheight == 0)
+    {
+	pwidth = 100;
+	pheight = 20;
+    }
+
     pattern = Mat(pheight, pwidth, CV_32S);
     p.resize(pwidth);
 }
