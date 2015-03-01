@@ -143,9 +143,9 @@ bool App::OnInit()
     wxXmlResource::Get()->InitAllHandlers();
     if ( wxsOK )
     {
-    	mainFrame = new MainFrame(0);
-    	mainFrame->Show();
-    	SetTopWindow(mainFrame);
+    	MainFrame* Frame = new MainFrame(0);
+    	Frame->Show();
+    	SetTopWindow(Frame);
     }
     //*)
     return wxsOK;

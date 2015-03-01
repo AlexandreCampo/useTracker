@@ -25,9 +25,9 @@ RCFLAGS_VIMBADEBUG = $(RCFLAGS)
 LIBDIR_VIMBADEBUG = $(LIBDIR) -L/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit -L/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit
 LIB_VIMBADEBUG = $(LIB)
 LDFLAGS_VIMBADEBUG =  -lVimbaCPP -lVimbaC -lAVTImageTransform -Wl,-rpath-link,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/ -Wl,-rpath,/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit/ -Wl,-rpath,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/ $(LDFLAGS)
-OBJDIR_VIMBADEBUG = obj/Debug
+OBJDIR_VIMBADEBUG = obj/VimbaDebug
 DEP_VIMBADEBUG = 
-OUT_VIMBADEBUG = bin/Debug/useTracker
+OUT_VIMBADEBUG = bin/VimbaDebug/useTracker
 
 INC_VIMBARELEASE = $(INC)
 CFLAGS_VIMBARELEASE = $(CFLAGS) -march=corei7-avx -fexpensive-optimizations -O3 -march=native -flto -I /home/alex/usr/Vimba_1_3/ -DVIMBA=1
@@ -36,9 +36,9 @@ RCFLAGS_VIMBARELEASE = $(RCFLAGS)
 LIBDIR_VIMBARELEASE = $(LIBDIR) -L/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit -L/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit
 LIB_VIMBARELEASE = $(LIB)
 LDFLAGS_VIMBARELEASE =  -s -flto -lVimbaCPP -lVimbaC -lAVTImageTransform -Wl,-rpath-link,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/ -Wl,-rpath,/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit/ -Wl,-rpath,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/ $(LDFLAGS)
-OBJDIR_VIMBARELEASE = obj/Release
+OBJDIR_VIMBARELEASE = obj/VimbaRelease
 DEP_VIMBARELEASE = 
-OUT_VIMBARELEASE = bin/Release/useTracker
+OUT_VIMBARELEASE = bin/VimbaRelease/useTracker
 
 OBJ_VIMBADEBUG = $(OBJDIR_VIMBADEBUG)/plugins/ColorSegmentation.o $(OBJDIR_VIMBADEBUG)/plugins/SafeErosion.o $(OBJDIR_VIMBADEBUG)/plugins/RecordVideo.o $(OBJDIR_VIMBADEBUG)/plugins/RecordPixels.o $(OBJDIR_VIMBADEBUG)/plugins/MovingAverage.o $(OBJDIR_VIMBADEBUG)/plugins/GetBlobsAngles.o $(OBJDIR_VIMBADEBUG)/plugins/FrameDifference.o $(OBJDIR_VIMBADEBUG)/plugins/ExtractMotion.o $(OBJDIR_VIMBADEBUG)/plugins/ExtractBlobs.o $(OBJDIR_VIMBADEBUG)/plugins/Erosion.o $(OBJDIR_VIMBADEBUG)/plugins/Dilation.o $(OBJDIR_VIMBADEBUG)/plugins/SimpleTags.o $(OBJDIR_VIMBADEBUG)/plugins/Aruco.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogTracker.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogSafeErosion.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogRecordVideo.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogRecordPixels.o $(OBJDIR_VIMBADEBUG)/vimba/FrameObserver.o $(OBJDIR_VIMBADEBUG)/vimba/CameraObserver.o $(OBJDIR_VIMBADEBUG)/vimba/ApiController.o $(OBJDIR_VIMBADEBUG)/plugins/ZonesOfInterest.o $(OBJDIR_VIMBADEBUG)/plugins/Tracker.o $(OBJDIR_VIMBADEBUG)/Parameters.o $(OBJDIR_VIMBADEBUG)/capture/CaptureDefault.o $(OBJDIR_VIMBADEBUG)/capture/CaptureAVTCamera.o $(OBJDIR_VIMBADEBUG)/Utils.o $(OBJDIR_VIMBADEBUG)/Pipeline.o $(OBJDIR_VIMBADEBUG)/capture/CaptureImage.o $(OBJDIR_VIMBADEBUG)/MainFrame.o $(OBJDIR_VIMBADEBUG)/ImageProcessingEngine.o $(OBJDIR_VIMBADEBUG)/Capture.o $(OBJDIR_VIMBADEBUG)/Background.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogDilation.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogOpenCapture.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogMovingAverage.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogExtractMotion.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogExtractBlobs.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogErosion.o $(OBJDIR_VIMBADEBUG)/App.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogColorSegmentation.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogAruco.o $(OBJDIR_VIMBADEBUG)/capture/CaptureVideo.o $(OBJDIR_VIMBADEBUG)/capture/CaptureUSBCamera.o
 
@@ -49,7 +49,7 @@ all: vimbadebug vimbarelease
 clean: clean_vimbadebug clean_vimbarelease
 
 before_vimbadebug: 
-	test -d bin/Debug || mkdir -p bin/Debug
+	test -d bin/VimbaDebug || mkdir -p bin/VimbaDebug
 	test -d $(OBJDIR_VIMBADEBUG)/plugins || mkdir -p $(OBJDIR_VIMBADEBUG)/plugins
 	test -d $(OBJDIR_VIMBADEBUG)/dialogs || mkdir -p $(OBJDIR_VIMBADEBUG)/dialogs
 	test -d $(OBJDIR_VIMBADEBUG)/vimba || mkdir -p $(OBJDIR_VIMBADEBUG)/vimba
@@ -194,7 +194,7 @@ $(OBJDIR_VIMBADEBUG)/capture/CaptureUSBCamera.o: capture/CaptureUSBCamera.cpp
 
 clean_vimbadebug: 
 	rm -f $(OBJ_VIMBADEBUG) $(OUT_VIMBADEBUG)
-	rm -rf bin/Debug
+	rm -rf bin/VimbaDebug
 	rm -rf $(OBJDIR_VIMBADEBUG)/plugins
 	rm -rf $(OBJDIR_VIMBADEBUG)/dialogs
 	rm -rf $(OBJDIR_VIMBADEBUG)/vimba
@@ -202,7 +202,7 @@ clean_vimbadebug:
 	rm -rf $(OBJDIR_VIMBADEBUG)/capture
 
 before_vimbarelease: 
-	test -d bin/Release || mkdir -p bin/Release
+	test -d bin/VimbaRelease || mkdir -p bin/VimbaRelease
 	test -d $(OBJDIR_VIMBARELEASE)/plugins || mkdir -p $(OBJDIR_VIMBARELEASE)/plugins
 	test -d $(OBJDIR_VIMBARELEASE)/dialogs || mkdir -p $(OBJDIR_VIMBARELEASE)/dialogs
 	test -d $(OBJDIR_VIMBARELEASE)/vimba || mkdir -p $(OBJDIR_VIMBARELEASE)/vimba
@@ -347,7 +347,7 @@ $(OBJDIR_VIMBARELEASE)/capture/CaptureUSBCamera.o: capture/CaptureUSBCamera.cpp
 
 clean_vimbarelease: 
 	rm -f $(OBJ_VIMBARELEASE) $(OUT_VIMBARELEASE)
-	rm -rf bin/Release
+	rm -rf bin/VimbaRelease
 	rm -rf $(OBJDIR_VIMBARELEASE)/plugins
 	rm -rf $(OBJDIR_VIMBARELEASE)/dialogs
 	rm -rf $(OBJDIR_VIMBARELEASE)/vimba
