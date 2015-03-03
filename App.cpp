@@ -29,6 +29,12 @@
 #include "Aruco.h"
 #include "SimpleTags.h"
 
+#include "CaptureVideo.h"
+#include "CaptureUSBCamera.h"
+#include "CaptureImage.h"
+#ifdef VIMBA
+#include "CaptureAVTCamera.h"
+#endif
 
 #include "Parameters.h"
 
@@ -70,10 +76,35 @@ int main(int argc, char **argv)
     if (parameters.nogui)
     {
         ImageProcessingEngine ipEngine;
-
+	
 	ipEngine.LoadXML (parameters.rootNode);
-	ipEngine.Reset(parameters);
 
+	// load capture source from command line params if possible
+	if (!parameters.inputFilename.empty())
+	{
+	    // try to load input as video
+	    ipEngine.capture = new CaptureVideo (parameters.inputFilename);
+	    
+	    // if video not loaded, try image
+	    if (ipEngine.capture->type == Capture::NONE)
+	    {
+		delete ipEngine.capture;
+		ipEngine.capture = new CaptureImage (parameters.inputFilename);
+	    }
+	}
+	else if (parameters.usbDevice >= 0)
+	{
+	    ipEngine.capture = new CaptureUSBCamera (parameters.usbDevice);
+	}
+	else if (parameters.avtDevice >= 0)
+	{
+#ifdef VIMBA
+	    ipEngine.capture = new CaptureAVTCamera (parameters.avtDevice);
+#endif //VIMBA
+	}
+	
+	ipEngine.Reset(parameters);
+	
 	// load pipeline's XML
 	FileNode fn = parameters.rootNode["Pipeline"];
 	if (!fn.empty())
@@ -83,7 +114,7 @@ int main(int argc, char **argv)
 	    {
 		FileNode fn2 = *((*it).begin()); // ugly hack to go around duplicate key bug
 		auto pfv = NewPipelinePluginVector[fn2.name()] (fn2, ipEngine.threadsCount);
-
+		
 		ipEngine.PushBack(pfv, true);
 	    }
 	}
