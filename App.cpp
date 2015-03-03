@@ -26,8 +26,8 @@
 #include "RecordVideo.h"
 #include "RecordPixels.h"
 #include "ZonesOfInterest.h"
-#include "Aruco.h"
 #include "SimpleTags.h"
+#include "Aruco.h"
 
 #include "CaptureVideo.h"
 #include "CaptureUSBCamera.h"
@@ -67,8 +67,11 @@ int main(int argc, char **argv)
     NewPipelinePluginVector["RecordVideo"] = &CreatePipelinePluginVector<RecordVideo>;
     NewPipelinePluginVector["RecordPixels"] = &CreatePipelinePluginVector<RecordPixels>;
     NewPipelinePluginVector["ZonesOfInterest"] = &CreatePipelinePluginVector<ZonesOfInterest>;
-    NewPipelinePluginVector["Aruco"] = &CreatePipelinePluginVector<Aruco>;
     NewPipelinePluginVector["SimpleTags"] = &CreatePipelinePluginVector<SimpleTags>;
+
+    #ifdef ARUCO
+    NewPipelinePluginVector["Aruco"] = &CreatePipelinePluginVector<Aruco>;
+    #endif
 
     // read command line, load parameters
     parameters.parseCommandLine (argc, argv);

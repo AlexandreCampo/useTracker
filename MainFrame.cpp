@@ -432,7 +432,10 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     ListBoxPipelinePlugins->Append("simple tags");
     ListBoxPipelinePlugins->Append("record video");
     ListBoxPipelinePlugins->Append("record pixels");
+
+    #ifdef ARUCO
     ListBoxPipelinePlugins->Append("aruco");
+    #endif
 
     // connect opengl view with current displayed tab
     activeTab = ProcessingTab;
@@ -1398,12 +1401,14 @@ bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool s
     {
 	dlg = nullptr;
     }
+    #ifdef ARUCO
     else if (str == "aruco")
     {
 	DialogAruco* dialog = new DialogAruco(this);
 	dialog->SetPlugin(pfv);
 	dlg = dialog;
     }
+    #endif
     else if (str == "simple tags")
     {
 	dlg = nullptr;

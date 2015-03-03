@@ -1,3 +1,5 @@
+#ifdef ARUCO
+
 #ifndef DIALOGARUCO_H
 #define DIALOGARUCO_H
 
@@ -76,4 +78,5 @@ class DialogAruco: public wxDialog
 		DECLARE_EVENT_TABLE()
 };
 
+#endif
 #endif

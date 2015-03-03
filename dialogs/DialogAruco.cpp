@@ -1,3 +1,5 @@
+#ifdef ARUCO
+
 #include "DialogAruco.h"
 
 //(*InternalHeaders(DialogAruco)
@@ -170,3 +172,5 @@ void DialogAruco::OnRadioBoxMethodSelect(wxCommandEvent& event)
     for (auto f : plugin)
 	f->SetThresholdMethod(RadioBoxMethod->GetSelection());
 }
+
+#endif

@@ -1,3 +1,4 @@
+#ifdef ARUCO
 
 #include "Aruco.h"
 
@@ -92,3 +93,5 @@ void Aruco::SaveXML (FileStorage& fs)
     fs << "Threshold1" << thresh1;
     fs << "Threshold2" << thresh2;
 }
+
+#endif

@@ -1,3 +1,5 @@
+#ifdef ARUCO
+
 #ifndef ARUCO_H
 #define ARUCO_H
 
@@ -40,5 +42,7 @@ void SetThresholdMethod (int m);
 };
 
 
+
+#endif
 
 #endif
