@@ -17,14 +17,14 @@ echo Please enter your password to proceed
 #sudo add-apt-repository ppa:kirillshkrogalev/ffmpeg-next
 # lubuntu 14.10 has problems with this... 
 sudo apt-add-repository ppa:jon-severinsson/ffmpeg
-sudo apt-get -q update
-sudo apt-get -q upgrade
-sudo apt-get -q remove ffmpeg x264 libx264-dev
+sudo apt-get -qq update
+sudo apt-get -qq upgrade
+sudo apt-get -qq remove ffmpeg x264 libx264-dev
 
 echo
 echo
 echo "Installing Dependencies"
-sudo apt-get -q install make g++ automake freeglut3-dev libboost-program-options-dev libopencv-dev build-essential checkinstall cmake pkg-config yasm libjpeg-dev libjasper-dev libavcodec-dev libavformat-dev libswscale-dev libdc1394-22-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libv4l-dev python-dev python-numpy libtbb-dev libqt4-dev libgtk2.0-dev libfaac-dev libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxine-dev libxvidcore-dev x264 libx264-dev v4l-utils ffmpeg || error "$LINENO: Aborted, could not install the required dependencies."
+sudo apt-get -qq install make g++ automake freeglut3-dev libboost-program-options-dev libopencv-dev build-essential checkinstall cmake pkg-config yasm libjpeg-dev libjasper-dev libavcodec-dev libavformat-dev libswscale-dev libdc1394-22-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libv4l-dev python-dev python-numpy libtbb-dev libqt4-dev libgtk2.0-dev libfaac-dev libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxine-dev libxvidcore-dev x264 libx264-dev v4l-utils ffmpeg || error "$LINENO: Aborted, could not install the required dependencies."
 
 # download and compile latest stable opencv
 echo
