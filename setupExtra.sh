@@ -13,7 +13,6 @@ rootpath=`pwd`
 
 # make sure the following dependencies have been installed 
 echo The setup program of the USE Tracker is about to update your system
-echo The following packages will be installed : make g++ automake freeglut3-dev libboost-program-options-dev.
 echo Please enter your password to proceed
 sudo add-apt-repository ppa:kirillshkrogalev/ffmpeg-next
 # sudo apt-add-repository ppa:jon-severinsson/ffmpeg # does not work in ubuntu 14.10... 
@@ -41,7 +40,7 @@ cd opencv-$version
 mkdir build
 cd build
 cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_TBB=ON -D BUILD_NEW_PYTHON_SUPPORT=ON -D WITH_V4L=ON -D INSTALL_C_EXAMPLES=ON -D INSTALL_PYTHON_EXAMPLES=ON -D BUILD_EXAMPLES=OFF -D WITH_QT=ON -D WITH_OPENGL=ON -D BUILD_opencv_gpu=ON -D BUILD_opencv_ocl=ON ..
-make -j2
+make
 
 echo
 echo
