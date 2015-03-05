@@ -15,7 +15,8 @@ rootpath=`pwd`
 echo The setup program of the USE Tracker is about to update your system
 echo The following packages will be installed : make g++ automake freeglut3-dev libboost-program-options-dev.
 echo Please enter your password to proceed
-sudo apt-add-repository ppa:jon-severinsson/ffmpeg
+sudo add-apt-repository ppa:kirillshkrogalev/ffmpeg-next
+# sudo apt-add-repository ppa:jon-severinsson/ffmpeg # does not work in ubuntu 14.10... 
 sudo apt-get -qq update
 sudo apt-get -qq upgrade
 sudo apt-get -qq remove ffmpeg x264 libx264-dev
