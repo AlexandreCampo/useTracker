@@ -12,7 +12,7 @@ LD = g++
 WINDRES = windres
 
 INC = 
-CFLAGS = -std=c++11 -Wall `wx-config --cflags all` `pkg-config --cflags opencv` -I ./ -I ./plugins -I./capture -I./dialogs -pipe
+CFLAGS = -std=c++11 -Wall `wx-config --cflags all` `pkg-config --cflags opencv` -I ./ -I ./plugins -I./capture -I./dialogs -pipe -DARUCO
 RESINC = 
 LIBDIR = 
 LIB = 

@@ -108,6 +108,7 @@
 			<Add option="-I./capture" />
 			<Add option="-I./dialogs" />
 			<Add option="-pipe" />
+			<Add option="-DARUCO" />
 		</Compiler>
 		<Linker>
 			<Add option="`wx-config --libs all --gl-libs` -lGL -lGLU -lglut" />
