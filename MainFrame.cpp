@@ -46,6 +46,7 @@
 #include "DialogRecordPixels.h"
 #include "DialogOpenCapture.h"
 #include "DialogAruco.h"
+#include "DialogStopwatch.h"
 
 #include "Utils.h"
 #include "Capture.h"
@@ -432,6 +433,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     ListBoxPipelinePlugins->Append("simple tags");
     ListBoxPipelinePlugins->Append("record video");
     ListBoxPipelinePlugins->Append("record pixels");
+    ListBoxPipelinePlugins->Append("stopwatch");
 
     #ifdef ARUCO
     ListBoxPipelinePlugins->Append("aruco");
@@ -1412,6 +1414,12 @@ bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool s
     else if (str == "simple tags")
     {
 	dlg = nullptr;
+    }
+    else if (str == "stopwatch")
+    {
+	DialogStopwatch* dialog = new DialogStopwatch(this);
+	dialog->SetPlugin(pfv);
+	dlg = dialog;
     }
     else return false;
 

@@ -28,6 +28,7 @@
 #include "ZonesOfInterest.h"
 #include "SimpleTags.h"
 #include "Aruco.h"
+#include "Stopwatch.h"
 
 #include "CaptureVideo.h"
 #include "CaptureUSBCamera.h"
@@ -68,6 +69,7 @@ int main(int argc, char **argv)
     NewPipelinePluginVector["RecordPixels"] = &CreatePipelinePluginVector<RecordPixels>;
     NewPipelinePluginVector["ZonesOfInterest"] = &CreatePipelinePluginVector<ZonesOfInterest>;
     NewPipelinePluginVector["SimpleTags"] = &CreatePipelinePluginVector<SimpleTags>;
+    NewPipelinePluginVector["Stopwatch"] = &CreatePipelinePluginVector<Stopwatch>;
 
     #ifdef ARUCO
     NewPipelinePluginVector["Aruco"] = &CreatePipelinePluginVector<Aruco>;

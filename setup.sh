@@ -19,7 +19,7 @@ sudo apt-get -qq upgrade
 echo
 echo
 echo "Installing Dependencies"
-sudo apt-get --yes install g++ libwxbase3.0-dev libopencv-dev libboost-program-options-dev libwxgtk3.0-dev libwxgtk-media3.0-dev freeglut3-dev libva-dev libbz2-dev libx264-dev || error "$LINENO: Aborted, could not install the required dependencies."
+sudo apt-get --yes install build-essential cmake libwxbase3.0-dev libopencv-dev libboost-program-options-dev libwxgtk3.0-dev libwxgtk-media3.0-dev freeglut3-dev libva-dev libbz2-dev libx264-dev || error "$LINENO: Aborted, could not install the required dependencies."
 
 # download and compile latest stable opencv
 echo
@@ -35,7 +35,6 @@ tar zxvf aruco-$version.tgz
 cd aruco-$version
 cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release .
 make
-sudo make install
 
 echo
 echo
