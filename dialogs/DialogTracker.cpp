@@ -86,7 +86,7 @@ DialogTracker::DialogTracker(wxWindow* parent,wxWindowID id,const wxPoint& pos,c
 	CheckBoxOutput = new wxCheckBox(this, ID_CHECKBOX1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX1"));
 	CheckBoxOutput->SetValue(false);
 	FlexGridSizer3->Add(CheckBoxOutput, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	FilePickerCtrl1 = new wxFilePickerCtrl(this, ID_FILEPICKERCTRL1, wxEmptyString, wxEmptyString, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxFLP_CHANGE_DIR|wxFLP_OVERWRITE_PROMPT|wxFLP_SAVE|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
+	FilePickerCtrl1 = new wxFilePickerCtrl(this, ID_FILEPICKERCTRL1, wxEmptyString, _("Choose an output file"), _T("*.csv"), wxDefaultPosition, wxDefaultSize, wxFLP_OVERWRITE_PROMPT|wxFLP_SAVE|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
 	FlexGridSizer3->Add(FilePickerCtrl1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticBoxSizer2->Add(FlexGridSizer3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer1->Add(StaticBoxSizer2, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
@@ -240,16 +240,24 @@ void DialogTracker::OnButtonOkClick(wxCommandEvent& event)
 
 void DialogTracker::OnFilePickerCtrl1FileChanged(wxFileDirPickerEvent& event)
 {
-    string path (FilePickerCtrl1->GetPath().ToStdString());
-    if (path != plugin[0]->outputFilename)
+    wxFileName filename (FilePickerCtrl1->GetFileName());
+    wxString path = filename.GetPath();
+
+    if (filename.DirExists() || path.IsEmpty())
     {
-	for (auto f : plugin)
+	if (filename.GetFullPath() != plugin[0]->outputFilename)
 	{
-	    f->CloseOutput();
-	    f->outputFilename = path;
-	    f->output = false;
+	    for (auto f : plugin)
+	    {
+		f->CloseOutput();
+		f->outputFilename = filename.GetFullPath();
+		f->output = false;
+	    }
+	    CheckBoxOutput->SetValue(false);
+
+	    if (!path.IsEmpty())
+		wxSetWorkingDirectory(path);
 	}
-	CheckBoxOutput->SetValue(false);
     }
 }
 

@@ -57,6 +57,7 @@ class DialogExtractBlobs: public wxDialog
 		void OnCheckBoxOutputClick(wxCommandEvent& event);
 		void OnCheckBoxRecordLabelsClick(wxCommandEvent& event);
 		void OnKeyDown(wxKeyEvent& event);
+		void OnTextCtrl1Text(wxCommandEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()
