@@ -57,6 +57,8 @@ public:
     bool OnPipelineAdd(wxCoord x, wxCoord y, const wxString& str);
     bool OnPipelineMove(wxCoord x, wxCoord y, const wxString& str);
     bool OnPipelineRemove(wxCoord x, wxCoord y, const wxString& str);
+    void ConnectCharEvent(wxWindow* pclComponent);
+    void DisconnectCharEvent(wxWindow* pclComponent);
 
 private:
 
@@ -106,7 +108,6 @@ private:
     void OnCheckBoxRecalculateClick(wxCommandEvent& event);
     void OnRadioBoxMethodSelect(wxCommandEvent& event);
     void OnMenuOpenCaptureSelected(wxCommandEvent& event);
-    void OnGLCanvas1Char(wxKeyEvent& event);
     void OnGLCanvas1MouseEnter(wxMouseEvent& event);
     void OnCheckBoxUseTimeBoundsClick(wxCommandEvent& event);
     //*)
@@ -216,6 +217,8 @@ private:
     wxSpinCtrlDouble* SpinCtrlTimestepDouble;
 
 // My methods
+
+    void OnChar(wxKeyEvent& event);
 
     void OnSpinCtrlDoubleTimestepChange(wxSpinDoubleEvent& event);
 

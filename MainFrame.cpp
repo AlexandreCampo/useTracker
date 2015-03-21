@@ -345,7 +345,6 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FlexGridSizer1->SetSizeHints(this);
 
     GLCanvas1->Connect(wxEVT_PAINT,(wxObjectEventFunction)&MainFrame::OnGLCanvas1Paint,0,this);
-    GLCanvas1->Connect(wxEVT_CHAR,(wxObjectEventFunction)&MainFrame::OnGLCanvas1Char,0,this);
     GLCanvas1->Connect(wxEVT_LEFT_DOWN,(wxObjectEventFunction)&MainFrame::OnGLCanvas1LeftDown,0,this);
     GLCanvas1->Connect(wxEVT_LEFT_UP,(wxObjectEventFunction)&MainFrame::OnGLCanvas1LeftUp,0,this);
     GLCanvas1->Connect(wxEVT_LEFT_DCLICK,(wxObjectEventFunction)&MainFrame::OnGLCanvas1LeftDClick,0,this);
@@ -438,6 +437,10 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     #ifdef ARUCO
     ListBoxPipelinePlugins->Append("aruco");
     #endif
+
+    // connect char events
+    ConnectCharEvent(this);
+    DisconnectCharEvent(Notebook1);
 
     // connect opengl view with current displayed tab
     activeTab = ProcessingTab;
@@ -1904,7 +1907,7 @@ void MainFrame::OnMenuOpenCaptureSelected(wxCommandEvent& event)
     }
 }
 
-void MainFrame::OnGLCanvas1Char(wxKeyEvent& event)
+void MainFrame::OnChar(wxKeyEvent& event)
 {
     wxCommandEvent e;
     switch (event.GetKeyCode())
@@ -1966,3 +1969,48 @@ void MainFrame::OnCheckBoxUseTimeBoundsClick(wxCommandEvent& event)
 {
     ipEngine.useTimeBoundaries = event.IsChecked();
 }
+
+void MainFrame::ConnectCharEvent(wxWindow* pclComponent)
+{
+  if(pclComponent)
+  {
+    pclComponent->Connect(wxID_ANY,
+                          wxEVT_CHAR,
+                          wxKeyEventHandler(MainFrame::OnChar),
+                          (wxObject*) NULL,
+                          this);
+ 
+    wxWindowListNode* pclNode = pclComponent->GetChildren().GetFirst();
+    while(pclNode)
+    {
+      wxWindow* pclChild = pclNode->GetData();
+      this->ConnectCharEvent(pclChild);
+ 
+      pclNode = pclNode->GetNext();
+    }
+  }
+}
+
+void MainFrame::DisconnectCharEvent(wxWindow* pclComponent)
+{
+  if(pclComponent)
+  {
+      bool res = pclComponent->Disconnect(wxID_ANY,
+					  wxEVT_CHAR,
+					  wxKeyEventHandler(MainFrame::OnChar),
+					  (wxObject*) NULL,
+					  this);
+
+      if (res) std::cout << "disconnected object " << pclComponent << std::endl;
+ 
+    wxWindowListNode* pclNode = pclComponent->GetChildren().GetFirst();
+    while(pclNode)
+    {
+      wxWindow* pclChild = pclNode->GetData();
+      this->DisconnectCharEvent(pclChild);
+ 
+      pclNode = pclNode->GetNext();
+    }
+  }
+}
+ 

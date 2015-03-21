@@ -26,7 +26,6 @@
 							<minsize>-1,-1</minsize>
 							<maxsize>-1,-1</maxsize>
 							<handler function="OnGLCanvas1Paint" entry="EVT_PAINT" />
-							<handler function="OnGLCanvas1Char" entry="EVT_CHAR" />
 							<handler function="OnGLCanvas1LeftDown" entry="EVT_LEFT_DOWN" />
 							<handler function="OnGLCanvas1LeftUp" entry="EVT_LEFT_UP" />
 							<handler function="OnGLCanvas1LeftDClick" entry="EVT_LEFT_DCLICK" />
