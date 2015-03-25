@@ -17,6 +17,7 @@ struct CaptureAVTCamera : Capture
     unsigned int frameNumber = 0;
     wxLongLong startTime = 0;
     wxLongLong pauseTime = 0;
+    wxLongLong lastFrameTime = 0;
     wxLongLong nextFrameTime = 0;
     wxLongLong playTimestep = 0;
 
@@ -34,6 +35,7 @@ struct CaptureAVTCamera : Capture
     bool GetNextFrame ();
     bool GetFrame (double time);
     wxLongLong GetNextFrameSystemTime();
+    wxLongLong InternalGetTime();
     double GetTime();
 
     long GetFrameNumber();

@@ -134,6 +134,7 @@ bool CaptureAVTCamera::GetNextFrame ()
     }
 
     frameNumber++;
+    lastFrameTime = InternalGetTime();
     nextFrameTime += playTimestep;
 
     return !frame.empty();
@@ -179,13 +180,14 @@ void CaptureAVTCamera::Play()
 
 bool CaptureAVTCamera::GetFrame (double time)
 {
-    while (GetTime() < time) this_thread::sleep_for(chrono::milliseconds(10));
+    while (InternalGetTime() < time) this_thread::sleep_for(chrono::milliseconds(10));
 
     if (vimbaApiController.FrameAvailable())
 	vimbaApiController.GetFrame(frame);
     else return false;
 
     frameNumber++;
+    lastFrameTime = InternalGetTime();
     nextFrameTime = wxGetUTCTimeUSec() + playTimestep;
 
     return !frame.empty();
@@ -201,12 +203,17 @@ long CaptureAVTCamera::GetFrameCount ()
     return 1;
 }
 
-
 double CaptureAVTCamera::GetTime()
 {
-    if (isPaused) return (pauseTime - startTime).ToDouble() / 1000000.0;
+    if (isStopped) return 0;
+    else return lastFrameTime.ToDouble() / 1000000.0;
+}
+
+wxLongLong CaptureAVTCamera::InternalGetTime()
+{
+    if (isPaused) return (pauseTime - startTime);
     else if (isStopped) return 0;
-    else return (wxGetUTCTimeUSec() - startTime).ToDouble() / 1000000.0;
+    else return (wxGetUTCTimeUSec() - startTime);
 }
 
 
