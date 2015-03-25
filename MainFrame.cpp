@@ -439,8 +439,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     #endif
 
     // connect char events
-    ConnectCharEvent(this);
-    DisconnectCharEvent(Notebook1);
+    ConnectCharEvent();
 
     // connect opengl view with current displayed tab
     activeTab = ProcessingTab;
@@ -1970,47 +1969,71 @@ void MainFrame::OnCheckBoxUseTimeBoundsClick(wxCommandEvent& event)
     ipEngine.useTimeBoundaries = event.IsChecked();
 }
 
-void MainFrame::ConnectCharEvent(wxWindow* pclComponent)
+void MainFrame::ConnectCharEvent()
 {
-  if(pclComponent)
-  {
-    pclComponent->Connect(wxID_ANY,
-                          wxEVT_CHAR,
-                          wxKeyEventHandler(MainFrame::OnChar),
-                          (wxObject*) NULL,
-                          this);
- 
-    wxWindowListNode* pclNode = pclComponent->GetChildren().GetFirst();
-    while(pclNode)
-    {
-      wxWindow* pclChild = pclNode->GetData();
-      this->ConnectCharEvent(pclChild);
- 
-      pclNode = pclNode->GetNext();
-    }
-  }
+    RecursiveConnectCharEvent(this);
+    RecursiveDisconnectCharEvent(Notebook1);
 }
 
-void MainFrame::DisconnectCharEvent(wxWindow* pclComponent)
+void MainFrame::DisconnectCharEvent()
 {
-  if(pclComponent)
-  {
-      bool res = pclComponent->Disconnect(wxID_ANY,
-					  wxEVT_CHAR,
-					  wxKeyEventHandler(MainFrame::OnChar),
-					  (wxObject*) NULL,
-					  this);
-
-      if (res) std::cout << "disconnected object " << pclComponent << std::endl;
- 
-    wxWindowListNode* pclNode = pclComponent->GetChildren().GetFirst();
-    while(pclNode)
-    {
-      wxWindow* pclChild = pclNode->GetData();
-      this->DisconnectCharEvent(pclChild);
- 
-      pclNode = pclNode->GetNext();
-    }
-  }
+    RecursiveDisconnectCharEvent(this);
 }
- 
+
+
+void MainFrame::RecursiveConnectCharEvent(wxWindow* pclComponent)
+{
+    if(pclComponent)
+    {
+	wxDialog* dlg = dynamic_cast<wxDialog*> (pclComponent);
+	
+	if (dlg == nullptr)
+	{
+	    pclComponent->Connect(wxID_ANY,
+				  wxEVT_CHAR,
+				  wxKeyEventHandler(MainFrame::OnChar),
+				  (wxObject*) NULL,
+				  this);
+	    
+	    wxWindowListNode* pclNode = pclComponent->GetChildren().GetFirst();
+	    while(pclNode)
+	    {
+		wxWindow* pclChild = pclNode->GetData();
+		this->RecursiveConnectCharEvent(pclChild);
+		
+		pclNode = pclNode->GetNext();
+	    }
+	}
+    }
+}
+
+void MainFrame::RecursiveDisconnectCharEvent(wxWindow* pclComponent)
+{
+    if(pclComponent)
+    {
+	wxDialog* dlg = dynamic_cast<wxDialog*> (pclComponent);
+	
+	if (dlg == nullptr)
+	{
+	    pclComponent->Disconnect(wxID_ANY,
+				     wxEVT_CHAR,
+				     wxKeyEventHandler(MainFrame::OnChar),
+				     (wxObject*) NULL,
+				     this);
+	    
+	    wxWindowListNode* pclNode = pclComponent->GetChildren().GetFirst();
+	    while(pclNode)
+	    {
+		wxWindow* pclChild = pclNode->GetData();
+		this->RecursiveDisconnectCharEvent(pclChild);
+		
+		pclNode = pclNode->GetNext();
+	    }
+	}
+    }
+}
+
+bool MainFrame::IsRecording()
+{
+    return output;
+}

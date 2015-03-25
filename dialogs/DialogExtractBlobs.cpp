@@ -135,7 +135,6 @@ void DialogExtractBlobs::OnFilePickerCtrl1FileChanged(wxFileDirPickerEvent& even
 		wxSetWorkingDirectory(path);
 	}
     }
-    else {std::cout << "did not register stuff... " << path << " " << filename.GetFullPath() << std::endl;}
 }
 
 void DialogExtractBlobs::OnCheckBoxOutputClick(wxCommandEvent& event)

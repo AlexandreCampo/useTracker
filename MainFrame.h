@@ -46,6 +46,7 @@ class MyTextDropTargetAdd;
 class MyTextDropTargetMove;
 class MyTextDropTargetRemove;
 
+// define function pointer type for char handlers
 
 class MainFrame: public wxFrame
 {
@@ -57,8 +58,12 @@ public:
     bool OnPipelineAdd(wxCoord x, wxCoord y, const wxString& str);
     bool OnPipelineMove(wxCoord x, wxCoord y, const wxString& str);
     bool OnPipelineRemove(wxCoord x, wxCoord y, const wxString& str);
-    void ConnectCharEvent(wxWindow* pclComponent);
-    void DisconnectCharEvent(wxWindow* pclComponent);
+    void ConnectCharEvent();
+    void DisconnectCharEvent();
+    void RecursiveConnectCharEvent(wxWindow* pclComponent);
+    void RecursiveDisconnectCharEvent(wxWindow* pclComponent);
+    void OnChar(wxKeyEvent& event);
+    bool IsRecording();
 
 private:
 
@@ -217,8 +222,6 @@ private:
     wxSpinCtrlDouble* SpinCtrlTimestepDouble;
 
 // My methods
-
-    void OnChar(wxKeyEvent& event);
 
     void OnSpinCtrlDoubleTimestepChange(wxSpinDoubleEvent& event);
 
