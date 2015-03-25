@@ -493,7 +493,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
 }
 
 MainFrame::~MainFrame()
-{    
+{
     // invalidate this ptr to avoid crash at event disconnection
     Notebook1 = nullptr;
 
@@ -671,6 +671,15 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 	    if (getNextFrame)
 	    {
 		bool gotFrame = ipEngine.GetNextFrame();
+
+		// TODO DEBUG miss a frame on purpose...
+		static int ccc = 0;
+		ccc++;
+		if (ccc % 100 == 0)
+		{
+		    cout << "Skipping a frame at capture time " << ipEngine.capture->GetTime() << endl;
+		    gotFrame = ipEngine.GetNextFrame();
+		}
 
 		// end of stream ?
 		if (!gotFrame)
@@ -1989,7 +1998,7 @@ void MainFrame::RecursiveConnectCharEvent(wxWindow* pclComponent)
     if(pclComponent)
     {
 	wxDialog* dlg = dynamic_cast<wxDialog*> (pclComponent);
-	
+
 	if (dlg == nullptr)
 	{
 	    pclComponent->Connect(wxID_ANY,
@@ -1997,13 +2006,13 @@ void MainFrame::RecursiveConnectCharEvent(wxWindow* pclComponent)
 				  wxKeyEventHandler(MainFrame::OnChar),
 				  (wxObject*) NULL,
 				  this);
-	    
+
 	    wxWindowListNode* pclNode = pclComponent->GetChildren().GetFirst();
 	    while(pclNode)
 	    {
 		wxWindow* pclChild = pclNode->GetData();
 		this->RecursiveConnectCharEvent(pclChild);
-		
+
 		pclNode = pclNode->GetNext();
 	    }
 	}
@@ -2015,7 +2024,7 @@ void MainFrame::RecursiveDisconnectCharEvent(wxWindow* pclComponent)
     if(pclComponent)
     {
 	wxDialog* dlg = dynamic_cast<wxDialog*> (pclComponent);
-	
+
 	if (dlg == nullptr)
 	{
 	    pclComponent->Disconnect(wxID_ANY,
@@ -2023,13 +2032,13 @@ void MainFrame::RecursiveDisconnectCharEvent(wxWindow* pclComponent)
 				     wxKeyEventHandler(MainFrame::OnChar),
 				     (wxObject*) NULL,
 				     this);
-	    
+
 	    wxWindowListNode* pclNode = pclComponent->GetChildren().GetFirst();
 	    while(pclNode)
 	    {
 		wxWindow* pclChild = pclNode->GetData();
 		this->RecursiveDisconnectCharEvent(pclChild);
-		
+
 		pclNode = pclNode->GetNext();
 	    }
 	}

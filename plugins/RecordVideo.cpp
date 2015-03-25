@@ -224,10 +224,18 @@ void RecordVideo::OutputStep ()
     packet.data = NULL;    // packet data will be allocated by the encoder
     packet.size = 0;
 
+    // PTS calculation
+    double pts = pipeline->parent->capture->GetTime() * pipeline->parent->capture->fps;
+    unsigned long lpts = round(pts);
+
+    if (lpts > frameCount) 
+    {
+	cout << "Skipping a frame, from/to : " << frameCount << " " << lpts << endl;
+	frameCount = lpts;
+    }
+
     frame->pts = frameCount;
     frameCount++;
-    // frame->pkt_pts = frame;
-    // frame->pkt_dts++;
 
     /* encode the image */
     int got_output;

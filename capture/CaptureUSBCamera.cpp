@@ -73,6 +73,7 @@ bool CaptureUSBCamera::Open (int device)
     isPaused = true;
 
     source >> frame;
+    lastFrameTime = InternalGetTime();
 
     return (!frame.empty());
 }
@@ -88,6 +89,7 @@ bool CaptureUSBCamera::GetNextFrame ()
     source >> frame;
 
     frameNumber++;
+    lastFrameTime = InternalGetTime();
     nextFrameTime += playTimestep;
 
     if (frame.empty())
@@ -138,7 +140,7 @@ void CaptureUSBCamera::Play()
 
 bool CaptureUSBCamera::GetFrame (double time)
 {
-    while (GetTime() < time) this_thread::sleep_for(chrono::milliseconds(10));
+    while (InternalGetTime() < time) this_thread::sleep_for(chrono::milliseconds(10));
     Mat previousFrame = frame;
 
     // take several frames otherwise we get an old buffered frame
@@ -146,6 +148,7 @@ bool CaptureUSBCamera::GetFrame (double time)
 	source >> frame;
 
     frameNumber++;
+    lastFrameTime = InternalGetTime();
     nextFrameTime = wxGetUTCTimeUSec() + playTimestep;
 
     if (frame.empty())
@@ -169,9 +172,15 @@ long CaptureUSBCamera::GetFrameCount ()
 
 double CaptureUSBCamera::GetTime()
 {
-    if (isPaused) return (pauseTime - startTime).ToDouble() / 1000000.0;
+    if (isStopped) return 0;
+    else return lastFrameTime.ToDouble() / 1000000.0;
+}
+
+wxLongLong CaptureUSBCamera::InternalGetTime()
+{
+    if (isPaused) return (pauseTime - startTime);
     else if (isStopped) return 0;
-    else return (wxGetUTCTimeUSec() - startTime).ToDouble() / 1000000.0;
+    else return (wxGetUTCTimeUSec() - startTime);
 }
 
 void CaptureUSBCamera::SaveXML(FileStorage& fs)

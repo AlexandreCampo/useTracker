@@ -12,6 +12,7 @@ struct CaptureUSBCamera : public Capture
     wxLongLong startTime = 0;
     wxLongLong pauseTime = 0;
     wxLongLong nextFrameTime = 0;
+    wxLongLong lastFrameTime = 0;
     wxLongLong playTimestep = 0;
 
     CaptureUSBCamera(int device);
@@ -29,6 +30,7 @@ struct CaptureUSBCamera : public Capture
     wxLongLong GetNextFrameSystemTime();
     bool GetFrame (double time);
     double GetTime();
+    wxLongLong InternalGetTime();
 
     long GetFrameNumber();
     long GetFrameCount();
