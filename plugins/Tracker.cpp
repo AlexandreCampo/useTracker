@@ -472,21 +472,24 @@ void Tracker::LoadHistory(string filename)
     unsigned int frameNumber;
     Entity e;
 
-    file >> str >> historyStartFrame >> e.lastFrameDetected >> e.lastFrameNotDetected >> str
-	 >> e.assigned >> e.zone >> e.size >> e.x >> e.y;
-
-    do
+    if (!file.eof())
     {
-	history.push_back(e);
-		
-	file >> str >> frameNumber >> e.lastFrameDetected >> e.lastFrameNotDetected >> str
+	file >> str >> historyStartFrame >> e.lastFrameDetected >> e.lastFrameNotDetected >> str
 	     >> e.assigned >> e.zone >> e.size >> e.x >> e.y;
 
-	if (count == 0)
-	    if (frameNumber != historyStartFrame)
-		count = history.size();
-	
-    } while (!file.eof()); // if eof is reached while parsing data, do not record the entity
+	do
+	{
+	    history.push_back(e);
+	    
+	    file >> str >> frameNumber >> e.lastFrameDetected >> e.lastFrameNotDetected >> str
+		 >> e.assigned >> e.zone >> e.size >> e.x >> e.y;
+	    
+	    if (count == 0)
+		if (frameNumber != historyStartFrame)
+		    count = history.size();
+	    
+	} while (!file.eof()); // if eof is reached while parsing data, do not record the entity
+    }
 
     SetMaxEntities (count);
 }

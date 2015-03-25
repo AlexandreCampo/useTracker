@@ -96,7 +96,7 @@ DialogTracker::DialogTracker(wxWindow* parent,wxWindowID id,const wxPoint& pos,c
 	CheckBoxReplay = new wxCheckBox(this, ID_CHECKBOX4, _("Replay data from history"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX4"));
 	CheckBoxReplay->SetValue(false);
 	FlexGridSizer6->Add(CheckBoxReplay, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	ButtonLoadHistory = new wxButton(this, ID_BUTTON1, _("Load data to history"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
+	ButtonLoadHistory = new wxButton(this, ID_BUTTON1, _("Load history from file"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
 	FlexGridSizer6->Add(ButtonLoadHistory, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer7 = new wxFlexGridSizer(0, 2, 0, 0);
 	FlexGridSizer7->AddGrowableCol(1);
@@ -351,8 +351,8 @@ void DialogTracker::OnCheckBoxUseVEClick(wxCommandEvent& event)
 void DialogTracker::OnButtonLoadHistoryClick(wxCommandEvent& event)
 {
     wxString caption = wxT("Choose a data file to replay");
-    wxString wildcard = wxT("Text file (*.txt)|*.txt");
-    wxFileDialog dialog(this, caption, "", "", wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+    wxString wildcard = wxT("CSV file (*.csv)|*.csv");
+    wxFileDialog dialog(this, caption, "", "", wildcard, wxFD_CHANGE_DIR | wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
     if (dialog.ShowModal() == wxID_OK)
     {

@@ -493,7 +493,10 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
 }
 
 MainFrame::~MainFrame()
-{
+{    
+    // invalidate this ptr to avoid crash at event disconnection
+    Notebook1 = nullptr;
+
     //(*Destroy(MainFrame)
     //*)
 }
