@@ -22,10 +22,10 @@ public:
     double minSize = 0.001;
     double maxSize = 0.1;
 
-    int thresh1 = 10;
-    int thresh2 = 255;
+    int thresh1 = 19;
+    int thresh2 = 7;
 
-    aruco::MarkerDetector::ThresholdMethods thresholdMethod = aruco::MarkerDetector::FIXED_THRES;
+    aruco::MarkerDetector::ThresholdMethods thresholdMethod = aruco::MarkerDetector::ADPT_THRES;
 
     std::string outputFilename;
     std::fstream outputStream;

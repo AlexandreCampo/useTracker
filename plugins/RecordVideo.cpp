@@ -226,9 +226,9 @@ void RecordVideo::OutputStep ()
 
     // PTS calculation
     double pts = pipeline->parent->capture->GetTime() * pipeline->parent->capture->fps;
-    unsigned long lpts = round(pts);
+    int lpts = round(pts);
 
-    if (lpts > frameCount) 
+    if (lpts > frameCount)
     {
 //	cout << "Skipping a frame, from/to : " << frameCount << " " << lpts << endl;
 	frameCount = lpts;

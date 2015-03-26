@@ -55,19 +55,19 @@ DialogAruco::DialogAruco(wxWindow* parent,wxWindowID id,const wxPoint& pos,const
 		_("Canny edge detector")
 	};
 	RadioBoxMethod = new wxRadioBox(this, ID_RADIOBOX1, _("Thresholding method"), wxDefaultPosition, wxDefaultSize, 3, __wxRadioBoxChoices_1, 3, 0, wxDefaultValidator, _T("ID_RADIOBOX1"));
-	RadioBoxMethod->SetSelection(0);
+	RadioBoxMethod->SetSelection(1);
 	FlexGridSizer1->Add(RadioBoxMethod, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticBoxSizer1 = new wxStaticBoxSizer(wxHORIZONTAL, this, _("Thresholds"));
 	FlexGridSizer2 = new wxFlexGridSizer(0, 2, 0, 0);
 	StaticText1 = new wxStaticText(this, ID_STATICTEXT1, _("Threshold 1"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT1"));
 	FlexGridSizer2->Add(StaticText1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	SpinCtrlThreshold1 = new wxSpinCtrl(this, ID_SPINCTRL1, _T("10"), wxDefaultPosition, wxDefaultSize, 0, 0, 255, 10, _T("ID_SPINCTRL1"));
-	SpinCtrlThreshold1->SetValue(_T("10"));
+	SpinCtrlThreshold1 = new wxSpinCtrl(this, ID_SPINCTRL1, _T("19"), wxDefaultPosition, wxDefaultSize, 0, 0, 255, 19, _T("ID_SPINCTRL1"));
+	SpinCtrlThreshold1->SetValue(_T("19"));
 	FlexGridSizer2->Add(SpinCtrlThreshold1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticText2 = new wxStaticText(this, ID_STATICTEXT2, _("Threshold2"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT2"));
 	FlexGridSizer2->Add(StaticText2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	SpinCtrlThreshold2 = new wxSpinCtrl(this, ID_SPINCTRL2, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 255, 0, _T("ID_SPINCTRL2"));
-	SpinCtrlThreshold2->SetValue(_T("0"));
+	SpinCtrlThreshold2 = new wxSpinCtrl(this, ID_SPINCTRL2, _T("7"), wxDefaultPosition, wxDefaultSize, 0, 0, 255, 7, _T("ID_SPINCTRL2"));
+	SpinCtrlThreshold2->SetValue(_T("7"));
 	FlexGridSizer2->Add(SpinCtrlThreshold2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticBoxSizer1->Add(FlexGridSizer2, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer1->Add(StaticBoxSizer1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
@@ -91,7 +91,7 @@ DialogAruco::DialogAruco(wxWindow* parent,wxWindowID id,const wxPoint& pos,const
 	CheckBoxOutput = new wxCheckBox(this, ID_CHECKBOX1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX1"));
 	CheckBoxOutput->SetValue(false);
 	FlexGridSizer5->Add(CheckBoxOutput, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	FilePickerCtrl1 = new wxFilePickerCtrl(this, ID_FILEPICKERCTRL1, wxEmptyString, _("Select a file"), _T("*"), wxDefaultPosition, wxDefaultSize, wxFLP_OVERWRITE_PROMPT|wxFLP_SAVE|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
+	FilePickerCtrl1 = new wxFilePickerCtrl(this, ID_FILEPICKERCTRL1, wxEmptyString, wxEmptyString, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxFLP_OVERWRITE_PROMPT|wxFLP_SAVE|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
 	FlexGridSizer5->Add(FilePickerCtrl1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticBoxSizer3->Add(FlexGridSizer5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer1->Add(StaticBoxSizer3, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
@@ -109,6 +109,8 @@ DialogAruco::DialogAruco(wxWindow* parent,wxWindowID id,const wxPoint& pos,const
 	Connect(ID_SPINCTRL2,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogAruco::OnSpinCtrlThreshold2Change);
 	Connect(ID_SPINCTRL3,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogAruco::OnSpinCtrlMinSizeChange);
 	Connect(ID_SPINCTRL4,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogAruco::OnSpinCtrlMaxSizeChange);
+	Connect(ID_CHECKBOX1,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogAruco::OnCheckBoxOutputClick);
+	Connect(ID_FILEPICKERCTRL1,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&DialogAruco::OnFilePickerCtrl1FileChanged);
 	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogAruco::OnButtonOkClick);
 	//*)
 
@@ -149,6 +151,10 @@ void DialogAruco::SetPlugin (vector<PipelinePlugin*> pfv)
     SpinCtrlThreshold2->SetValue(plugin[0]->thresh2);
 
     RadioBoxMethod->SetSelection(plugin[0]->thresholdMethod);
+
+    FilePickerCtrl1->SetPath(plugin[0]->outputFilename);
+    CheckBoxOutput->SetValue(plugin[0]->output);
+
 }
 
 
@@ -188,3 +194,39 @@ void DialogAruco::OnRadioBoxMethodSelect(wxCommandEvent& event)
 }
 
 #endif
+
+void DialogAruco::OnCheckBoxOutputClick(wxCommandEvent& event)
+{
+    for (auto f : plugin)
+    {
+	f->output = CheckBoxOutput->IsChecked();
+
+	if (f->output)
+	    f->OpenOutput();
+	else
+	    f->CloseOutput();
+    }
+}
+
+void DialogAruco::OnFilePickerCtrl1FileChanged(wxFileDirPickerEvent& event)
+{
+    wxFileName filename (FilePickerCtrl1->GetFileName());
+    wxString path = filename.GetPath();
+
+    if (filename.DirExists() || path.IsEmpty())
+    {
+	if (filename.GetFullPath() != plugin[0]->outputFilename)
+	{
+	    for (auto f : plugin)
+	    {
+		f->CloseOutput();
+		f->outputFilename = filename.GetFullPath();
+		f->output = false;
+	    }
+	    CheckBoxOutput->SetValue(false);
+
+	    if (!path.IsEmpty())
+		wxSetWorkingDirectory(path);
+	}
+    }
+}

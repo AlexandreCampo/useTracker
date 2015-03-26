@@ -14,6 +14,7 @@
 						<item>Adaptive threshold</item>
 						<item>Canny edge detector</item>
 					</content>
+					<default>1</default>
 					<dimension>3</dimension>
 					<handler function="OnRadioBoxMethodSelect" entry="EVT_RADIOBOX" />
 				</object>
@@ -37,7 +38,7 @@
 							</object>
 							<object class="sizeritem">
 								<object class="wxSpinCtrl" name="ID_SPINCTRL1" variable="SpinCtrlThreshold1" member="yes">
-									<value>10</value>
+									<value>19</value>
 									<max>255</max>
 									<handler function="OnSpinCtrlThreshold1Change" entry="EVT_SPINCTRL" />
 								</object>
@@ -55,7 +56,7 @@
 							</object>
 							<object class="sizeritem">
 								<object class="wxSpinCtrl" name="ID_SPINCTRL2" variable="SpinCtrlThreshold2" member="yes">
-									<value>0</value>
+									<value>7</value>
 									<max>255</max>
 									<handler function="OnSpinCtrlThreshold2Change" entry="EVT_SPINCTRL" />
 								</object>
@@ -135,14 +136,19 @@
 							<cols>2</cols>
 							<growablecols>1</growablecols>
 							<object class="sizeritem">
-								<object class="wxCheckBox" name="ID_CHECKBOX1" variable="CheckBoxOutput" member="yes" />
+								<object class="wxCheckBox" name="ID_CHECKBOX1" variable="CheckBoxOutput" member="yes">
+									<handler function="OnCheckBoxOutputClick" entry="EVT_CHECKBOX" />
+								</object>
 								<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 								<border>5</border>
 								<option>1</option>
 							</object>
 							<object class="sizeritem">
 								<object class="wxFilePickerCtrl" name="ID_FILEPICKERCTRL1" variable="FilePickerCtrl1" member="yes">
+									<message></message>
+									<wildcard></wildcard>
 									<style>wxFLP_OVERWRITE_PROMPT|wxFLP_SAVE|wxFLP_USE_TEXTCTRL</style>
+									<handler function="OnFilePickerCtrl1FileChanged" entry="EVT_FILEPICKER_CHANGED" />
 								</object>
 								<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 								<border>5</border>

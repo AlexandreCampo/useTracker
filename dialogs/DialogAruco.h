@@ -79,6 +79,8 @@ class DialogAruco: public wxDialog
 		void OnButtonOkClick(wxCommandEvent& event);
 		void OnSpinCtrlThreshold2Change(wxSpinEvent& event);
 		void OnRadioBoxMethodSelect(wxCommandEvent& event);
+		void OnCheckBoxOutputClick(wxCommandEvent& event);
+		void OnFilePickerCtrl1FileChanged(wxFileDirPickerEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()
