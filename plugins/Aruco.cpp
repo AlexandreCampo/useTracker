@@ -2,6 +2,9 @@
 
 #include "Aruco.h"
 
+#include "Blob.h"
+#include "ImageProcessingEngine.h"
+
 using namespace cv;
 using namespace std;
 using namespace aruco;
@@ -11,12 +14,13 @@ Aruco::Aruco () : PipelinePlugin()
 {
 }
 
+Aruco::~Aruco()
+{
+    CloseOutput();
+}
+
 void Aruco::Reset()
 {
-//    multithreaded = true;
-//    SetSize(size);
-//    result = Mat::zeros (pipeline->height, pipeline->width, CV_8U);
-
     detector.setThresholdParams (thresh1, thresh2);
     detector.setCornerRefinementMethod (MarkerDetector::SUBPIX);
 //    detector.setCornerRefinementMethod (MarkerDetector::HARRIS);
@@ -27,20 +31,38 @@ void Aruco::Reset()
 void Aruco::Apply()
 {
     detector.detect(pipeline->frame, markers, cameraParameters, -1);
-
     detector.getThresholdedImage().copyTo(pipeline->marked);
+
+    // clean blobs list
+    vector<Blob>& blobs = pipeline->parent->blobs;
+    blobs.clear();
+
+    // and fill the list with new data
+    for (auto m : markers)
+    {
+	// create a blob
+	Blob b (0, 0, 0);
+	Point2f pos = m.getCenter();
+	b.tagId = m.id;
+	b.x = pos.x;
+	b.y = pos.y;
+	b.size = m.getArea();
+    Point2f dir = m[1] - m[0];
+	b.angle = atan2(dir.y, dir.x);
+
+	// TODO this is dangerous if aruco uses cam model to produce transformed coordinates
+	unsigned int idx = b.x + b.y * pipeline->width;
+	b.zone = pipeline->zoneMap.data[idx];
+
+	blobs.push_back(b);
+    }
 }
 
 void Aruco::OutputHud (Mat& hud)
 {
     for (unsigned int i = 0; i < markers.size(); i++)
     {
-        // cv::line ( hud,markers[i][0],markers[i][1],cvScalar ( 0,0,255 ),2 ,CV_AA );
-        // cv::line ( hud,markers[i][1],markers[i][2],cvScalar ( 0,0,255 ),2 ,CV_AA );
-        // cv::line ( hud,markers[i][2],markers[i][3],cvScalar ( 0,0,255 ),2 ,CV_AA );
-        // cv::line ( hud,markers[i][3],markers[i][0],cvScalar ( 0,0,255 ),2 ,CV_AA );
-
-	markers[i].draw(hud, Scalar(0,255,0), 1);
+	markers[i].draw(hud, Scalar(0,255,0), 2);
     }
 }
 
@@ -83,6 +105,9 @@ void Aruco::LoadXML (FileNode& fn)
 
 	thresh1 = (float)fn["Threshold1"];
 	thresh2 = (float)fn["Threshold2"];
+
+	output = (int)fn["Output"];
+	outputFilename = (string)fn["OutputFilename"];
     }
 }
 
@@ -92,6 +117,50 @@ void Aruco::SaveXML (FileStorage& fs)
     fs << "MaxSize" << maxSize;
     fs << "Threshold1" << thresh1;
     fs << "Threshold2" << thresh2;
+
+    fs << "Output" << output;
+    fs << "OutputFilename" << outputFilename;
+}
+
+void Aruco::OutputStep()
+{
+    // in any case, also output blob list with characs...
+    if (outputStream.is_open())
+    {
+	for (unsigned int b = 0; b < pipeline->parent->blobs.size(); b++)
+	{
+	    outputStream
+		<< pipeline->parent->capture->GetTime() << "\t"
+		<< pipeline->parent->capture->GetFrameNumber() << "\t"
+		<< pipeline->parent->blobs[b].tagId << "\t"
+		<< pipeline->parent->blobs[b].x << "\t"
+		<< pipeline->parent->blobs[b].y << "\t"
+		<< pipeline->parent->blobs[b].angle << "\t"
+		<< pipeline->parent->blobs[b].size << "\t"
+		<< pipeline->parent->blobs[b].zone
+		<< std::endl;
+	}
+    }
+}
+
+void Aruco::CloseOutput()
+{
+    if (outputStream.is_open()) outputStream.close();
+}
+
+void Aruco::OpenOutput()
+{
+    // open normal output
+    if (outputStream.is_open()) outputStream.close();
+
+    if (!outputFilename.empty())
+    {
+	outputStream.open(outputFilename.c_str(), std::ios::out);
+	if (outputStream.is_open())
+	{
+	    outputStream << "time \t frame \t id \t x \t y \t angle \t size \t zone" << std::endl;
+	}
+    }
 }
 
 #endif

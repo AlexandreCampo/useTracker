@@ -5,6 +5,9 @@
 
 #include "PipelinePlugin.h"
 
+#include <iostream>
+#include <fstream>
+
 #include <aruco/aruco.h>
 #include <opencv2/imgproc/imgproc.hpp>
 
@@ -12,25 +15,33 @@ class Aruco : public PipelinePlugin
 {
 public:
 
-aruco::MarkerDetector detector;
-std::vector<aruco::Marker> markers;
-aruco::CameraParameters cameraParameters;
+    aruco::MarkerDetector detector;
+    std::vector<aruco::Marker> markers;
+    aruco::CameraParameters cameraParameters;
 
-double minSize = 0.001;
-double maxSize = 0.1;
+    double minSize = 0.001;
+    double maxSize = 0.1;
 
-int thresh1 = 10;
-int thresh2 = 255;
+    int thresh1 = 10;
+    int thresh2 = 255;
 
-aruco::MarkerDetector::ThresholdMethods thresholdMethod = aruco::MarkerDetector::FIXED_THRES;
+    aruco::MarkerDetector::ThresholdMethods thresholdMethod = aruco::MarkerDetector::FIXED_THRES;
+
+    std::string outputFilename;
+    std::fstream outputStream;
 
     Aruco();
+    ~Aruco();
 
     void Reset();
     void Apply();
-void OutputHud (cv::Mat& hud);
+    void OutputHud (cv::Mat& hud);
     void LoadXML (cv::FileNode& fn);
     void SaveXML (cv::FileStorage& fs);
+
+    void OutputStep();
+    void OpenOutput();
+    void CloseOutput();
 
 void SetMinSize(double minSize);
 void SetMaxSize(double maxSize);

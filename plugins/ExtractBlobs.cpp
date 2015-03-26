@@ -214,7 +214,6 @@ void ExtractBlobs::Apply()
 		b->x /= b->size;
 		b->y /= b->size;
 		b->zone = pipeline->zoneMap.at<unsigned char>(b->y, b->x);
-
 	    }
 	    else
 	    {
@@ -257,7 +256,15 @@ void ExtractBlobs::OutputStep()
     {
 	for (unsigned int b = 0; b < pipeline->parent->blobs.size(); b++)
 	{
-	    outputStream << pipeline->parent->capture->GetTime() << "\t" << pipeline->parent->capture->GetFrameNumber() << "\t" << pipeline->parent->blobs[b].x << "\t" << pipeline->parent->blobs[b].y << "\t" << pipeline->parent->blobs[b].angle << "\t" << pipeline->parent->blobs[b].size << std::endl;
+	    outputStream 
+		<< pipeline->parent->capture->GetTime() << "\t" 
+		<< pipeline->parent->capture->GetFrameNumber() << "\t" 
+		<< pipeline->parent->blobs[b].x << "\t" 
+		<< pipeline->parent->blobs[b].y << "\t" 
+		<< pipeline->parent->blobs[b].angle << "\t" 
+		<< pipeline->parent->blobs[b].size << "\t" 
+		<< pipeline->parent->blobs[b].zone 
+		<< std::endl;
 	}
     }
 }
@@ -277,7 +284,7 @@ void ExtractBlobs::OpenOutput()
 	outputStream.open(outputFilename.c_str(), std::ios::out);
 	if (outputStream.is_open())
 	{
-	    outputStream << "time \t frame \t blob_x \t blob_y \t blob_angle \t blob_size" << std::endl;
+	    outputStream << "time \t frame \t blob_x \t blob_y \t blob_angle \t blob_size \t blob_zone" << std::endl;
 	}
     }
 }

@@ -5,9 +5,11 @@
 
 //(*Headers(DialogAruco)
 #include <wx/spinctrl.h>
+#include <wx/checkbox.h>
 #include <wx/dialog.h>
 #include <wx/sizer.h>
 #include <wx/button.h>
+#include <wx/filepicker.h>
 #include <wx/stattext.h>
 #include <wx/radiobox.h>
 //*)
@@ -26,6 +28,7 @@ class DialogAruco: public wxDialog
 		virtual ~DialogAruco();
 
 		//(*Declarations(DialogAruco)
+		wxCheckBox* CheckBoxOutput;
 		wxStaticText* StaticText1;
 		wxStaticText* StaticText3;
 		wxSpinCtrl* SpinCtrlMaxSize;
@@ -35,6 +38,7 @@ class DialogAruco: public wxDialog
 		wxStaticText* StaticText4;
 		wxStaticText* StaticText2;
 		wxSpinCtrl* SpinCtrlThreshold1;
+		wxFilePickerCtrl* FilePickerCtrl1;
 		wxSpinCtrl* SpinCtrlThreshold2;
 		//*)
 
@@ -56,6 +60,8 @@ class DialogAruco: public wxDialog
 		static const long ID_SPINCTRL3;
 		static const long ID_STATICTEXT4;
 		static const long ID_SPINCTRL4;
+		static const long ID_CHECKBOX1;
+		static const long ID_FILEPICKERCTRL1;
 		static const long ID_BUTTON1;
 		//*)
 

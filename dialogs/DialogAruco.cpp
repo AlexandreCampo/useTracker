@@ -17,6 +17,8 @@ const long DialogAruco::ID_STATICTEXT3 = wxNewId();
 const long DialogAruco::ID_SPINCTRL3 = wxNewId();
 const long DialogAruco::ID_STATICTEXT4 = wxNewId();
 const long DialogAruco::ID_SPINCTRL4 = wxNewId();
+const long DialogAruco::ID_CHECKBOX1 = wxNewId();
+const long DialogAruco::ID_FILEPICKERCTRL1 = wxNewId();
 const long DialogAruco::ID_BUTTON1 = wxNewId();
 //*)
 
@@ -38,7 +40,9 @@ DialogAruco::DialogAruco(wxWindow* parent,wxWindowID id,const wxPoint& pos,const
 	wxFlexGridSizer* FlexGridSizer1;
 	wxFlexGridSizer* FlexGridSizer2;
 	wxFlexGridSizer* FlexGridSizer4;
+	wxStaticBoxSizer* StaticBoxSizer3;
 	wxFlexGridSizer* FlexGridSizer3;
+	wxFlexGridSizer* FlexGridSizer5;
 	wxStaticBoxSizer* StaticBoxSizer1;
 
 	Create(parent, wxID_ANY, _("Aruco markers detector"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE, _T("wxID_ANY"));
@@ -52,7 +56,7 @@ DialogAruco::DialogAruco(wxWindow* parent,wxWindowID id,const wxPoint& pos,const
 	};
 	RadioBoxMethod = new wxRadioBox(this, ID_RADIOBOX1, _("Thresholding method"), wxDefaultPosition, wxDefaultSize, 3, __wxRadioBoxChoices_1, 3, 0, wxDefaultValidator, _T("ID_RADIOBOX1"));
 	RadioBoxMethod->SetSelection(0);
-	FlexGridSizer1->Add(RadioBoxMethod, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer1->Add(RadioBoxMethod, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticBoxSizer1 = new wxStaticBoxSizer(wxHORIZONTAL, this, _("Thresholds"));
 	FlexGridSizer2 = new wxFlexGridSizer(0, 2, 0, 0);
 	StaticText1 = new wxStaticText(this, ID_STATICTEXT1, _("Threshold 1"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT1"));
@@ -81,6 +85,16 @@ DialogAruco::DialogAruco(wxWindow* parent,wxWindowID id,const wxPoint& pos,const
 	FlexGridSizer3->Add(SpinCtrlMaxSize, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticBoxSizer2->Add(FlexGridSizer3, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer1->Add(StaticBoxSizer2, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	StaticBoxSizer3 = new wxStaticBoxSizer(wxHORIZONTAL, this, _("Output to file"));
+	FlexGridSizer5 = new wxFlexGridSizer(0, 2, 0, 0);
+	FlexGridSizer5->AddGrowableCol(1);
+	CheckBoxOutput = new wxCheckBox(this, ID_CHECKBOX1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX1"));
+	CheckBoxOutput->SetValue(false);
+	FlexGridSizer5->Add(CheckBoxOutput, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FilePickerCtrl1 = new wxFilePickerCtrl(this, ID_FILEPICKERCTRL1, wxEmptyString, _("Select a file"), _T("*"), wxDefaultPosition, wxDefaultSize, wxFLP_OVERWRITE_PROMPT|wxFLP_SAVE|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
+	FlexGridSizer5->Add(FilePickerCtrl1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	StaticBoxSizer3->Add(FlexGridSizer5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer1->Add(StaticBoxSizer3, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer4 = new wxFlexGridSizer(0, 3, 0, 0);
 	ButtonOk = new wxButton(this, ID_BUTTON1, _("Ok"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
 	ButtonOk->SetFocus();
