@@ -100,11 +100,21 @@ void Aruco::LoadXML (FileNode& fn)
 {
     if (!fn.empty())
     {
+	active = (int)fn["Active"];
+
 	minSize = (float)fn["MinSize"];
 	maxSize = (float)fn["MaxSize"];
 
 	thresh1 = (float)fn["Threshold1"];
 	thresh2 = (float)fn["Threshold2"];
+
+	string tm = (string)fn["ThresholdMethod"];	
+	if (tm == "Fixed")
+	    thresholdMethod = aruco::MarkerDetector::FIXED_THRES;
+	else if (tm == "Adaptive")
+	    thresholdMethod = aruco::MarkerDetector::ADPT_THRES;
+	else if (tm == "Canny")
+	    thresholdMethod = aruco::MarkerDetector::CANNY;
 
 	output = (int)fn["Output"];
 	outputFilename = (string)fn["OutputFilename"];
@@ -113,8 +123,17 @@ void Aruco::LoadXML (FileNode& fn)
 
 void Aruco::SaveXML (FileStorage& fs)
 {
+    fs << "Active" << active;
     fs << "MinSize" << minSize;
     fs << "MaxSize" << maxSize;
+
+    if (thresholdMethod == aruco::MarkerDetector::FIXED_THRES)
+	fs << "ThresholdMethod" << "Fixed";
+    else if (thresholdMethod == aruco::MarkerDetector::ADPT_THRES)
+	fs << "ThresholdMethod" << "Adaptive";
+    else if (thresholdMethod == aruco::MarkerDetector::CANNY)
+	fs << "ThresholdMethod" << "Canny";
+	
     fs << "Threshold1" << thresh1;
     fs << "Threshold2" << thresh2;
 
