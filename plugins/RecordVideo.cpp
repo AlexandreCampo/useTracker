@@ -230,7 +230,7 @@ void RecordVideo::OutputStep ()
 
     if (lpts > frameCount) 
     {
-	cout << "Skipping a frame, from/to : " << frameCount << " " << lpts << endl;
+//	cout << "Skipping a frame, from/to : " << frameCount << " " << lpts << endl;
 	frameCount = lpts;
     }
 

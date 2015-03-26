@@ -672,15 +672,6 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 	    {
 		bool gotFrame = ipEngine.GetNextFrame();
 
-		// TODO DEBUG miss a frame on purpose...
-		static int ccc = 0;
-		ccc++;
-		if (ccc % 100 == 0)
-		{
-		    cout << "Skipping a frame at capture time " << ipEngine.capture->GetTime() << endl;
-		    gotFrame = ipEngine.GetNextFrame();
-		}
-
 		// end of stream ?
 		if (!gotFrame)
 		{
