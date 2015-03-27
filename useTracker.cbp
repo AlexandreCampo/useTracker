@@ -178,6 +178,8 @@
 		<Unit filename="dialogs/DialogTracker.h" />
 		<Unit filename="dialogs/DialogStopwatch.cpp" />
 		<Unit filename="dialogs/DialogStopwatch.h" />
+		<Unit filename="dialogs/DialogSimpleTags.cpp" />
+		<Unit filename="dialogs/DialogSimpleTags.h" />
 		<Unit filename="plugins/Aruco.cpp" />
 		<Unit filename="plugins/Aruco.h" />
 		<Unit filename="plugins/ColorSegmentation.cpp" />
@@ -210,6 +212,7 @@
 			<Option target="VimbaDebug" />
 			<Option target="VimbaRelease" />
 		</Unit>
+		<Unit filename="wxsmith/DialogSimpleTags.wxs" />
 		<Unit filename="wxsmith/DialogStopwatch.wxs" />
 		<Unit filename="wxsmith/DialogAruco.wxs" />
 		<Unit filename="wxsmith/DialogColorSegmentation.wxs" />
@@ -245,6 +248,7 @@
 					<wxDialog wxs="wxsmith/DialogOpenCapture.wxs" src="dialogs/DialogOpenCapture.cpp" hdr="dialogs/DialogOpenCapture.h" fwddecl="0" i18n="1" name="DialogOpenCapture" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogAruco.wxs" src="dialogs/DialogAruco.cpp" hdr="dialogs/DialogAruco.h" fwddecl="0" i18n="1" name="DialogAruco" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogStopwatch.wxs" src="dialogs/DialogStopwatch.cpp" hdr="dialogs/DialogStopwatch.h" fwddecl="0" i18n="1" name="DialogStopwatch" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogSimpleTags.wxs" src="dialogs/DialogSimpleTags.cpp" hdr="dialogs/DialogSimpleTags.h" fwddecl="0" i18n="1" name="DialogSimpleTags" language="CPP" />
 				</resources>
 			</wxsmith>
 			<debugger />

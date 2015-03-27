@@ -13,6 +13,11 @@ SimpleTags::SimpleTags()
 
 }
 
+SimpleTags::~SimpleTags()
+{
+    CloseOutput();
+}
+
 void SimpleTags::Reset()
 {
     if (pwidth == 0 || pheight == 0)
@@ -187,14 +192,63 @@ void SimpleTags::LoadXML (cv::FileNode& fn)
     if (!fn.empty())
     {
 	active = (int)fn["Active"];
-	pwidth = (int)fn["PatternWidth"];
-	pheight = (int)fn["PatternHeight"];
+	pwidth = (int)fn["TagWidth"];
+	pheight = (int)fn["TagHeight"];
     }
 }
 
 void SimpleTags::SaveXML (cv::FileStorage& fs)
 {
     fs << "Active" << active;
-    fs << "PatternWidth" << pwidth;
-    fs << "PatternHeight" << pheight;
+    fs << "TagWidth" << pwidth;
+    fs << "TagHeight" << pheight;
+}
+
+void SimpleTags::OutputStep()
+{
+    // in any case, also output blob list with characs...
+    if (outputStream.is_open())
+    {
+	for (unsigned int b = 0; b < pipeline->parent->blobs.size(); b++)
+	{
+	    outputStream
+		<< pipeline->parent->capture->GetTime() << "\t"
+		<< pipeline->parent->capture->GetFrameNumber() << "\t"
+		<< pipeline->parent->blobs[b].tagId << "\t"
+		<< pipeline->parent->blobs[b].x << "\t"
+		<< pipeline->parent->blobs[b].y << "\t"
+		<< pipeline->parent->blobs[b].angle << "\t"
+		<< pipeline->parent->blobs[b].size << "\t"
+		<< pipeline->parent->blobs[b].zone
+		<< std::endl;
+	}
+    }
+}
+
+void SimpleTags::CloseOutput()
+{
+    if (outputStream.is_open()) outputStream.close();
+}
+
+void SimpleTags::OpenOutput()
+{
+    // open normal output
+    if (outputStream.is_open()) outputStream.close();
+
+    if (!outputFilename.empty())
+    {
+	outputStream.open(outputFilename.c_str(), std::ios::out);
+	if (outputStream.is_open())
+	{
+	    outputStream << "time \t frame \t id \t x \t y \t angle \t size \t zone" << std::endl;
+	}
+    }
+}
+
+void SimpleTags::SetTagDimensions (int width, int height)
+{
+    pwidth = width;
+    pheight = height;
+
+    Reset();
 }

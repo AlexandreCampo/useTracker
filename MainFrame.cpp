@@ -47,6 +47,7 @@
 #include "DialogOpenCapture.h"
 #include "DialogAruco.h"
 #include "DialogStopwatch.h"
+#include "DialogSimpleTags.h"
 
 #include "Utils.h"
 #include "Capture.h"
@@ -1418,7 +1419,9 @@ bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool s
     #endif
     else if (str == "simple tags")
     {
-	dlg = nullptr;
+	DialogSimpleTags* dialog = new DialogSimpleTags(this);
+	dialog->SetPlugin(pfv);
+	dlg = dialog;
     }
     else if (str == "stopwatch")
     {

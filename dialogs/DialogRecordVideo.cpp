@@ -142,16 +142,24 @@ void DialogRecordVideo::OnButtonOkClick(wxCommandEvent& event)
 
 void DialogRecordVideo::OnFilePickerCtrl1FileChanged(wxFileDirPickerEvent& event)
 {
-    std::string path (FilePickerCtrl1->GetPath().ToStdString());
-    if (path != plugin[0]->outputFilename)
+    wxFileName filename (FilePickerCtrl1->GetFileName());
+    wxString path = filename.GetPath();
+
+    if (filename.DirExists() || path.IsEmpty())
     {
-	for (auto f : plugin)
+	if (filename.GetFullPath() != plugin[0]->outputFilename)
 	{
-	    f->CloseOutput();
-	    f->outputFilename = path;
-	    f->output = false;
+	    for (auto f : plugin)
+	    {
+		f->CloseOutput();
+		f->outputFilename = filename.GetFullPath();
+		f->output = false;
+	    }
+	    CheckBoxOutput->SetValue(false);
+
+	    if (!path.IsEmpty())
+		wxSetWorkingDirectory(path);
 	}
-	CheckBoxOutput->SetValue(false);
     }
 }
 
