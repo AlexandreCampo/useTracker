@@ -10,6 +10,8 @@
 //(*IdInit(DialogExtractBlobs)
 const long DialogExtractBlobs::ID_STATICTEXT1 = wxNewId();
 const long DialogExtractBlobs::ID_SPINCTRL1 = wxNewId();
+const long DialogExtractBlobs::ID_STATICTEXT3 = wxNewId();
+const long DialogExtractBlobs::ID_SPINCTRL2 = wxNewId();
 const long DialogExtractBlobs::ID_STATICTEXT2 = wxNewId();
 const long DialogExtractBlobs::ID_CHECKBOX2 = wxNewId();
 const long DialogExtractBlobs::ID_CHECKBOX1 = wxNewId();
@@ -38,9 +40,14 @@ DialogExtractBlobs::DialogExtractBlobs(wxWindow* parent,wxWindowID id,const wxPo
 	FlexGridSizer3 = new wxFlexGridSizer(0, 2, 0, 0);
 	StaticText1 = new wxStaticText(this, ID_STATICTEXT1, _("Minimum blob size (pixels)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT1"));
 	FlexGridSizer3->Add(StaticText1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	SpinCtrlExtractBlobsSize = new wxSpinCtrl(this, ID_SPINCTRL1, _T("1"), wxDefaultPosition, wxDefaultSize, 0, 1, 1000000, 1, _T("ID_SPINCTRL1"));
+	SpinCtrlExtractBlobsSize = new wxSpinCtrl(this, ID_SPINCTRL1, _T("1"), wxDefaultPosition, wxDefaultSize, 0, 1, 10000000, 1, _T("ID_SPINCTRL1"));
 	SpinCtrlExtractBlobsSize->SetValue(_T("1"));
 	FlexGridSizer3->Add(SpinCtrlExtractBlobsSize, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	StaticText3 = new wxStaticText(this, ID_STATICTEXT3, _("Maximum blob size (pixels)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT3"));
+	FlexGridSizer3->Add(StaticText3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	SpinCtrlMaxSize = new wxSpinCtrl(this, ID_SPINCTRL2, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 10000000, 0, _T("ID_SPINCTRL2"));
+	SpinCtrlMaxSize->SetValue(_T("0"));
+	FlexGridSizer3->Add(SpinCtrlMaxSize, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticText2 = new wxStaticText(this, ID_STATICTEXT2, _("Record labels (required to get angles)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT2"));
 	FlexGridSizer3->Add(StaticText2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
 	CheckBoxRecordLabels = new wxCheckBox(this, ID_CHECKBOX2, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX2"));
@@ -68,6 +75,7 @@ DialogExtractBlobs::DialogExtractBlobs(wxWindow* parent,wxWindowID id,const wxPo
 	FlexGridSizer1->SetSizeHints(this);
 
 	Connect(ID_SPINCTRL1,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogExtractBlobs::OnSpinCtrlExtractBlobsSizeChange);
+	Connect(ID_SPINCTRL2,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogExtractBlobs::OnSpinCtrlMaxSizeChange);
 	Connect(ID_CHECKBOX2,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogExtractBlobs::OnCheckBoxRecordLabelsClick);
 	Connect(ID_CHECKBOX1,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogExtractBlobs::OnCheckBoxOutputClick);
 	Connect(ID_FILEPICKERCTRL1,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&DialogExtractBlobs::OnFilePickerCtrl1FileChanged);
@@ -154,4 +162,8 @@ void DialogExtractBlobs::OnCheckBoxRecordLabelsClick(wxCommandEvent& event)
 {
     for (auto f : plugin)
 	f->recordLabels = CheckBoxRecordLabels->IsChecked();
+}
+
+void DialogExtractBlobs::OnSpinCtrlMaxSizeChange(wxSpinEvent& event)
+{
 }

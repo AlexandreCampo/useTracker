@@ -17,13 +17,14 @@ sudo apt-get -qq update
 sudo apt-get -qq upgrade
 
 # find latest version of libwxgtk
-wxversion=$(apt-cache search libwxgtk | egrep -o '[0-9](\.[0-9]+)+' | sort | tail -1)
-#wxgtkpackages=$(apt-cache search libwxgtk | grep dev | grep $wxversion)
+# wxversion=$(apt-cache search libwxgtk | egrep -o '[0-9](\.[0-9]+)+' | sort | tail -1)
+# wxgtkpackages=$(apt-cache search libwxgtk | grep dev | grep $wxversion)
+wxversion=3.0
 
 echo
 echo
 echo "Installing Dependencies"
-sudo apt-get --yes install build-essential cmake libwxbase$wxversion-dev libopencv-dev libboost-program-options-dev libwxgtk$wxversion-dev freeglut3-dev libva-dev libbz2-dev libx264-dev || error "$LINENO: Aborted, could not install the required dependencies."
+sudo apt-get --yes install build-essential cmake libwxbase$wxversion-dev libopencv-dev libboost-program-options-dev libwxgtk$wxversion-dev libwxgtk-media$wxversion-dev freeglut3-dev libva-dev libbz2-dev libx264-dev || error "$LINENO: Aborted, could not install the required dependencies."
 
 # download and compile latest stable opencv
 echo

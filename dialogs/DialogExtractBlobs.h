@@ -28,6 +28,8 @@ class DialogExtractBlobs: public wxDialog
 		wxButton* buttonOk;
 		wxCheckBox* CheckBoxOutput;
 		wxStaticText* StaticText1;
+		wxStaticText* StaticText3;
+		wxSpinCtrl* SpinCtrlMaxSize;
 		wxSpinCtrl* SpinCtrlExtractBlobsSize;
 		wxCheckBox* CheckBoxRecordLabels;
 		wxStaticText* StaticText2;
@@ -39,6 +41,8 @@ class DialogExtractBlobs: public wxDialog
 		//(*Identifiers(DialogExtractBlobs)
 		static const long ID_STATICTEXT1;
 		static const long ID_SPINCTRL1;
+		static const long ID_STATICTEXT3;
+		static const long ID_SPINCTRL2;
 		static const long ID_STATICTEXT2;
 		static const long ID_CHECKBOX2;
 		static const long ID_CHECKBOX1;
@@ -58,6 +62,7 @@ class DialogExtractBlobs: public wxDialog
 		void OnCheckBoxRecordLabelsClick(wxCommandEvent& event);
 		void OnKeyDown(wxKeyEvent& event);
 		void OnTextCtrl1Text(wxCommandEvent& event);
+		void OnSpinCtrlMaxSizeChange(wxSpinEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()
