@@ -21,6 +21,7 @@ public:
     };
 
     unsigned int minSize = 10;
+    unsigned int maxSize = 0;
 
     std::string outputFilename;
     std::fstream outputStream;

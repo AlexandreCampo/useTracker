@@ -209,7 +209,7 @@ void ExtractBlobs::Apply()
     {
 	if (b->available)
 	{
-	    if (b->size >= minSize)
+	    if (b->size >= minSize && (b->size <= maxSize || maxSize == 0))
 	    {
 		b->x /= b->size;
 		b->y /= b->size;
@@ -296,6 +296,7 @@ void ExtractBlobs::LoadXML (FileNode& fn)
 	active = (int)fn["Active"];
 	output = (int)fn["Output"];
 	minSize = (int)fn["MinSize"];
+	maxSize = (int)fn["MaxSize"];
 	recordLabels = (int)fn["RecordLabels"];
 	outputFilename = (string)fn["OutputFilename"];
    }
@@ -306,6 +307,7 @@ void ExtractBlobs::SaveXML (FileStorage& fs)
     fs << "Active" << active;
     fs << "Output" << output;
     fs << "MinSize" << (int)minSize;
+    fs << "MaxSize" << (int)maxSize;
     fs << "OutputFilename" << outputFilename;
     fs << "RecordLabels" << recordLabels;
 }

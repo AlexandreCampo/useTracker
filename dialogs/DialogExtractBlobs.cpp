@@ -97,6 +97,7 @@ void DialogExtractBlobs::SetPlugin (std::vector<PipelinePlugin*> pfv)
     for (auto func : pfv)
 	plugin.push_back(dynamic_cast<ExtractBlobs*> (func));
     SpinCtrlExtractBlobsSize->SetValue(plugin[0]->minSize);
+    SpinCtrlMaxSize->SetValue(plugin[0]->maxSize);
     FilePickerCtrl1->SetPath(plugin[0]->outputFilename);
     CheckBoxOutput->SetValue(plugin[0]->output);
 }
@@ -166,4 +167,6 @@ void DialogExtractBlobs::OnCheckBoxRecordLabelsClick(wxCommandEvent& event)
 
 void DialogExtractBlobs::OnSpinCtrlMaxSizeChange(wxSpinEvent& event)
 {
+    for (auto f : plugin)
+    	f->maxSize = SpinCtrlMaxSize->GetValue();
 }
