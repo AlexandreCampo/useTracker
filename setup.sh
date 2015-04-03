@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# this script aims at configuring a computer to run the FaMouS simulator
+# this script aims at configuring a computer to run USE Tracker
 
 function error
 {

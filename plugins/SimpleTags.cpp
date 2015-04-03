@@ -99,6 +99,21 @@ void SimpleTags::Apply()
 	}
 	meanp = (minp + maxp) / 2;
 
+	// check that detected pattern is symmetrical
+	float diff = 0;
+	for (int x = minx; x <= maxx; x++)
+	{
+	    for (int y = 0; y < pheight / 2; y++)
+	    {
+		int v1 = pattern.at<int>(y, x);
+		int v2 = pattern.at<int>(pheight - y, x);
+		diff += abs (v2 - v1);
+	    }
+	}
+	diff /= float (pheight / 2) * float (maxx - minx + 1);
+
+	std::cout << "Symmetry estimator " << diff << std::endl;
+
 	// now stack vertical pixels
 	for (int x = 0; x < pwidth; x++) p[x] = 0;
 	
@@ -185,6 +200,36 @@ void SimpleTags::OutputHud(Mat& hud)
 	    putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,255,200,255), 2, CV_AA);
 	}
     }
+
+    // DEBUG stuff
+    // display last detected pattern
+    double minv, maxv;
+    minMaxIdx(pattern, &minv, &maxv);
+    Mat pattern2;
+    pattern.convertTo (pattern2, CV_8U, 255.0 / maxv);
+
+
+    for (int y = 0; y < pheight; y++)
+    {
+	for (int x = 0; x <= pwidth; x++)
+	{
+	    int v = pattern.at<int>(y, x);
+	    Vec3b rgb;
+	    rgb[0] = v;
+	    rgb[1] = v;
+	    rgb[2] = v;
+
+	    hud.at<Vec3b>(y + 50, x + 50) = rgb;
+	}
+    }
+
+
+    // Mat pattern3;
+    // cvtColor (pattern2, pattern3, CV_GRAY2BGR);
+    // pattern3.copyTo(hud(Rect(50, 50, pattern3.cols, pattern3.rows)));
+
+
+
 }
 
 void SimpleTags::LoadXML (cv::FileNode& fn)

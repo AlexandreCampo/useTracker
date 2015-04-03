@@ -100,6 +100,7 @@ void DialogExtractBlobs::SetPlugin (std::vector<PipelinePlugin*> pfv)
     SpinCtrlMaxSize->SetValue(plugin[0]->maxSize);
     FilePickerCtrl1->SetPath(plugin[0]->outputFilename);
     CheckBoxOutput->SetValue(plugin[0]->output);
+    CheckBoxRecordLabels->SetValue(plugin[0]->recordLabels);
 }
 
 void DialogExtractBlobs::OnButtonCancelClick(wxCommandEvent& event)

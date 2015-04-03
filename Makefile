@@ -40,9 +40,9 @@ OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = bin/Release/useTracker
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/plugins/Dilation.o $(OBJDIR_DEBUG)/plugins/SimpleTags.o $(OBJDIR_DEBUG)/plugins/SafeErosion.o $(OBJDIR_DEBUG)/plugins/RecordVideo.o $(OBJDIR_DEBUG)/plugins/RecordPixels.o $(OBJDIR_DEBUG)/plugins/MovingAverage.o $(OBJDIR_DEBUG)/plugins/GetBlobsAngles.o $(OBJDIR_DEBUG)/plugins/FrameDifference.o $(OBJDIR_DEBUG)/plugins/ExtractMotion.o $(OBJDIR_DEBUG)/plugins/ExtractBlobs.o $(OBJDIR_DEBUG)/plugins/Erosion.o $(OBJDIR_DEBUG)/plugins/Tracker.o $(OBJDIR_DEBUG)/plugins/ColorSegmentation.o $(OBJDIR_DEBUG)/plugins/Aruco.o $(OBJDIR_DEBUG)/dialogs/DialogStopwatch.o $(OBJDIR_DEBUG)/dialogs/DialogTracker.o $(OBJDIR_DEBUG)/dialogs/DialogSafeErosion.o $(OBJDIR_DEBUG)/dialogs/DialogRecordVideo.o $(OBJDIR_DEBUG)/plugins/Stopwatch.o $(OBJDIR_DEBUG)/plugins/ZonesOfInterest.o $(OBJDIR_DEBUG)/capture/CaptureImage.o $(OBJDIR_DEBUG)/capture/CaptureDefault.o $(OBJDIR_DEBUG)/capture/CaptureAVTCamera.o $(OBJDIR_DEBUG)/Utils.o $(OBJDIR_DEBUG)/Pipeline.o $(OBJDIR_DEBUG)/capture/CaptureUSBCamera.o $(OBJDIR_DEBUG)/Parameters.o $(OBJDIR_DEBUG)/MainFrame.o $(OBJDIR_DEBUG)/ImageProcessingEngine.o $(OBJDIR_DEBUG)/Capture.o $(OBJDIR_DEBUG)/Background.o $(OBJDIR_DEBUG)/dialogs/DialogRecordPixels.o $(OBJDIR_DEBUG)/dialogs/DialogOpenCapture.o $(OBJDIR_DEBUG)/dialogs/DialogMovingAverage.o $(OBJDIR_DEBUG)/dialogs/DialogExtractMotion.o $(OBJDIR_DEBUG)/dialogs/DialogExtractBlobs.o $(OBJDIR_DEBUG)/App.o $(OBJDIR_DEBUG)/dialogs/DialogErosion.o $(OBJDIR_DEBUG)/dialogs/DialogDilation.o $(OBJDIR_DEBUG)/dialogs/DialogColorSegmentation.o $(OBJDIR_DEBUG)/dialogs/DialogAruco.o $(OBJDIR_DEBUG)/capture/CaptureVideo.o
+OBJ_DEBUG = $(OBJDIR_DEBUG)/plugins/Dilation.o $(OBJDIR_DEBUG)/plugins/SimpleTags.o $(OBJDIR_DEBUG)/plugins/SafeErosion.o $(OBJDIR_DEBUG)/plugins/RecordVideo.o $(OBJDIR_DEBUG)/plugins/RecordPixels.o $(OBJDIR_DEBUG)/plugins/MovingAverage.o $(OBJDIR_DEBUG)/plugins/GetBlobsAngles.o $(OBJDIR_DEBUG)/plugins/FrameDifference.o $(OBJDIR_DEBUG)/plugins/ExtractMotion.o $(OBJDIR_DEBUG)/plugins/ExtractBlobs.o $(OBJDIR_DEBUG)/plugins/Erosion.o $(OBJDIR_DEBUG)/plugins/Tracker.o $(OBJDIR_DEBUG)/plugins/ColorSegmentation.o $(OBJDIR_DEBUG)/plugins/Aruco.o $(OBJDIR_DEBUG)/dialogs/DialogSimpleTags.o $(OBJDIR_DEBUG)/dialogs/DialogStopwatch.o $(OBJDIR_DEBUG)/dialogs/DialogTracker.o $(OBJDIR_DEBUG)/dialogs/DialogSafeErosion.o $(OBJDIR_DEBUG)/plugins/Stopwatch.o $(OBJDIR_DEBUG)/plugins/ZonesOfInterest.o $(OBJDIR_DEBUG)/capture/CaptureImage.o $(OBJDIR_DEBUG)/capture/CaptureDefault.o $(OBJDIR_DEBUG)/capture/CaptureAVTCamera.o $(OBJDIR_DEBUG)/Utils.o $(OBJDIR_DEBUG)/Pipeline.o $(OBJDIR_DEBUG)/capture/CaptureUSBCamera.o $(OBJDIR_DEBUG)/Parameters.o $(OBJDIR_DEBUG)/MainFrame.o $(OBJDIR_DEBUG)/ImageProcessingEngine.o $(OBJDIR_DEBUG)/Capture.o $(OBJDIR_DEBUG)/Background.o $(OBJDIR_DEBUG)/dialogs/DialogRecordVideo.o $(OBJDIR_DEBUG)/dialogs/DialogRecordPixels.o $(OBJDIR_DEBUG)/dialogs/DialogOpenCapture.o $(OBJDIR_DEBUG)/dialogs/DialogMovingAverage.o $(OBJDIR_DEBUG)/dialogs/DialogExtractMotion.o $(OBJDIR_DEBUG)/dialogs/DialogExtractBlobs.o $(OBJDIR_DEBUG)/App.o $(OBJDIR_DEBUG)/dialogs/DialogErosion.o $(OBJDIR_DEBUG)/dialogs/DialogDilation.o $(OBJDIR_DEBUG)/dialogs/DialogColorSegmentation.o $(OBJDIR_DEBUG)/dialogs/DialogAruco.o $(OBJDIR_DEBUG)/capture/CaptureVideo.o
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/plugins/Dilation.o $(OBJDIR_RELEASE)/plugins/SimpleTags.o $(OBJDIR_RELEASE)/plugins/SafeErosion.o $(OBJDIR_RELEASE)/plugins/RecordVideo.o $(OBJDIR_RELEASE)/plugins/RecordPixels.o $(OBJDIR_RELEASE)/plugins/MovingAverage.o $(OBJDIR_RELEASE)/plugins/GetBlobsAngles.o $(OBJDIR_RELEASE)/plugins/FrameDifference.o $(OBJDIR_RELEASE)/plugins/ExtractMotion.o $(OBJDIR_RELEASE)/plugins/ExtractBlobs.o $(OBJDIR_RELEASE)/plugins/Erosion.o $(OBJDIR_RELEASE)/plugins/Tracker.o $(OBJDIR_RELEASE)/plugins/ColorSegmentation.o $(OBJDIR_RELEASE)/plugins/Aruco.o $(OBJDIR_RELEASE)/dialogs/DialogStopwatch.o $(OBJDIR_RELEASE)/dialogs/DialogTracker.o $(OBJDIR_RELEASE)/dialogs/DialogSafeErosion.o $(OBJDIR_RELEASE)/dialogs/DialogRecordVideo.o $(OBJDIR_RELEASE)/plugins/Stopwatch.o $(OBJDIR_RELEASE)/plugins/ZonesOfInterest.o $(OBJDIR_RELEASE)/capture/CaptureImage.o $(OBJDIR_RELEASE)/capture/CaptureDefault.o $(OBJDIR_RELEASE)/capture/CaptureAVTCamera.o $(OBJDIR_RELEASE)/Utils.o $(OBJDIR_RELEASE)/Pipeline.o $(OBJDIR_RELEASE)/capture/CaptureUSBCamera.o $(OBJDIR_RELEASE)/Parameters.o $(OBJDIR_RELEASE)/MainFrame.o $(OBJDIR_RELEASE)/ImageProcessingEngine.o $(OBJDIR_RELEASE)/Capture.o $(OBJDIR_RELEASE)/Background.o $(OBJDIR_RELEASE)/dialogs/DialogRecordPixels.o $(OBJDIR_RELEASE)/dialogs/DialogOpenCapture.o $(OBJDIR_RELEASE)/dialogs/DialogMovingAverage.o $(OBJDIR_RELEASE)/dialogs/DialogExtractMotion.o $(OBJDIR_RELEASE)/dialogs/DialogExtractBlobs.o $(OBJDIR_RELEASE)/App.o $(OBJDIR_RELEASE)/dialogs/DialogErosion.o $(OBJDIR_RELEASE)/dialogs/DialogDilation.o $(OBJDIR_RELEASE)/dialogs/DialogColorSegmentation.o $(OBJDIR_RELEASE)/dialogs/DialogAruco.o $(OBJDIR_RELEASE)/capture/CaptureVideo.o
+OBJ_RELEASE = $(OBJDIR_RELEASE)/plugins/Dilation.o $(OBJDIR_RELEASE)/plugins/SimpleTags.o $(OBJDIR_RELEASE)/plugins/SafeErosion.o $(OBJDIR_RELEASE)/plugins/RecordVideo.o $(OBJDIR_RELEASE)/plugins/RecordPixels.o $(OBJDIR_RELEASE)/plugins/MovingAverage.o $(OBJDIR_RELEASE)/plugins/GetBlobsAngles.o $(OBJDIR_RELEASE)/plugins/FrameDifference.o $(OBJDIR_RELEASE)/plugins/ExtractMotion.o $(OBJDIR_RELEASE)/plugins/ExtractBlobs.o $(OBJDIR_RELEASE)/plugins/Erosion.o $(OBJDIR_RELEASE)/plugins/Tracker.o $(OBJDIR_RELEASE)/plugins/ColorSegmentation.o $(OBJDIR_RELEASE)/plugins/Aruco.o $(OBJDIR_RELEASE)/dialogs/DialogSimpleTags.o $(OBJDIR_RELEASE)/dialogs/DialogStopwatch.o $(OBJDIR_RELEASE)/dialogs/DialogTracker.o $(OBJDIR_RELEASE)/dialogs/DialogSafeErosion.o $(OBJDIR_RELEASE)/plugins/Stopwatch.o $(OBJDIR_RELEASE)/plugins/ZonesOfInterest.o $(OBJDIR_RELEASE)/capture/CaptureImage.o $(OBJDIR_RELEASE)/capture/CaptureDefault.o $(OBJDIR_RELEASE)/capture/CaptureAVTCamera.o $(OBJDIR_RELEASE)/Utils.o $(OBJDIR_RELEASE)/Pipeline.o $(OBJDIR_RELEASE)/capture/CaptureUSBCamera.o $(OBJDIR_RELEASE)/Parameters.o $(OBJDIR_RELEASE)/MainFrame.o $(OBJDIR_RELEASE)/ImageProcessingEngine.o $(OBJDIR_RELEASE)/Capture.o $(OBJDIR_RELEASE)/Background.o $(OBJDIR_RELEASE)/dialogs/DialogRecordVideo.o $(OBJDIR_RELEASE)/dialogs/DialogRecordPixels.o $(OBJDIR_RELEASE)/dialogs/DialogOpenCapture.o $(OBJDIR_RELEASE)/dialogs/DialogMovingAverage.o $(OBJDIR_RELEASE)/dialogs/DialogExtractMotion.o $(OBJDIR_RELEASE)/dialogs/DialogExtractBlobs.o $(OBJDIR_RELEASE)/App.o $(OBJDIR_RELEASE)/dialogs/DialogErosion.o $(OBJDIR_RELEASE)/dialogs/DialogDilation.o $(OBJDIR_RELEASE)/dialogs/DialogColorSegmentation.o $(OBJDIR_RELEASE)/dialogs/DialogAruco.o $(OBJDIR_RELEASE)/capture/CaptureVideo.o
 
 all: debug release
 
@@ -104,6 +104,9 @@ $(OBJDIR_DEBUG)/plugins/ColorSegmentation.o: plugins/ColorSegmentation.cpp
 $(OBJDIR_DEBUG)/plugins/Aruco.o: plugins/Aruco.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c plugins/Aruco.cpp -o $(OBJDIR_DEBUG)/plugins/Aruco.o
 
+$(OBJDIR_DEBUG)/dialogs/DialogSimpleTags.o: dialogs/DialogSimpleTags.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogSimpleTags.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogSimpleTags.o
+
 $(OBJDIR_DEBUG)/dialogs/DialogStopwatch.o: dialogs/DialogStopwatch.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogStopwatch.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogStopwatch.o
 
@@ -112,9 +115,6 @@ $(OBJDIR_DEBUG)/dialogs/DialogTracker.o: dialogs/DialogTracker.cpp
 
 $(OBJDIR_DEBUG)/dialogs/DialogSafeErosion.o: dialogs/DialogSafeErosion.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogSafeErosion.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogSafeErosion.o
-
-$(OBJDIR_DEBUG)/dialogs/DialogRecordVideo.o: dialogs/DialogRecordVideo.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogRecordVideo.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogRecordVideo.o
 
 $(OBJDIR_DEBUG)/plugins/Stopwatch.o: plugins/Stopwatch.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c plugins/Stopwatch.cpp -o $(OBJDIR_DEBUG)/plugins/Stopwatch.o
@@ -154,6 +154,9 @@ $(OBJDIR_DEBUG)/Capture.o: Capture.cpp
 
 $(OBJDIR_DEBUG)/Background.o: Background.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c Background.cpp -o $(OBJDIR_DEBUG)/Background.o
+
+$(OBJDIR_DEBUG)/dialogs/DialogRecordVideo.o: dialogs/DialogRecordVideo.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogRecordVideo.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogRecordVideo.o
 
 $(OBJDIR_DEBUG)/dialogs/DialogRecordPixels.o: dialogs/DialogRecordPixels.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogRecordPixels.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogRecordPixels.o
@@ -252,6 +255,9 @@ $(OBJDIR_RELEASE)/plugins/ColorSegmentation.o: plugins/ColorSegmentation.cpp
 $(OBJDIR_RELEASE)/plugins/Aruco.o: plugins/Aruco.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c plugins/Aruco.cpp -o $(OBJDIR_RELEASE)/plugins/Aruco.o
 
+$(OBJDIR_RELEASE)/dialogs/DialogSimpleTags.o: dialogs/DialogSimpleTags.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogSimpleTags.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogSimpleTags.o
+
 $(OBJDIR_RELEASE)/dialogs/DialogStopwatch.o: dialogs/DialogStopwatch.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogStopwatch.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogStopwatch.o
 
@@ -260,9 +266,6 @@ $(OBJDIR_RELEASE)/dialogs/DialogTracker.o: dialogs/DialogTracker.cpp
 
 $(OBJDIR_RELEASE)/dialogs/DialogSafeErosion.o: dialogs/DialogSafeErosion.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogSafeErosion.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogSafeErosion.o
-
-$(OBJDIR_RELEASE)/dialogs/DialogRecordVideo.o: dialogs/DialogRecordVideo.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogRecordVideo.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogRecordVideo.o
 
 $(OBJDIR_RELEASE)/plugins/Stopwatch.o: plugins/Stopwatch.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c plugins/Stopwatch.cpp -o $(OBJDIR_RELEASE)/plugins/Stopwatch.o
@@ -302,6 +305,9 @@ $(OBJDIR_RELEASE)/Capture.o: Capture.cpp
 
 $(OBJDIR_RELEASE)/Background.o: Background.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c Background.cpp -o $(OBJDIR_RELEASE)/Background.o
+
+$(OBJDIR_RELEASE)/dialogs/DialogRecordVideo.o: dialogs/DialogRecordVideo.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogRecordVideo.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogRecordVideo.o
 
 $(OBJDIR_RELEASE)/dialogs/DialogRecordPixels.o: dialogs/DialogRecordPixels.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogRecordPixels.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogRecordPixels.o
