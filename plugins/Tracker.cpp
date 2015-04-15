@@ -341,9 +341,9 @@ void Tracker::OutputHud (Mat& hud)
 
 void Tracker::OutputStep ()
 {
-    if (outputStream.is_open())
+    if (outputStream.is_open() && !replay)
     {
-	for (unsigned int e = 0; e < entities.size(); e++)
+	for (unsigned int e = 0; e < entitiesCount; e++)
 	{
 	    outputStream
 		<< pipeline->parent->capture->GetTime() << "\t"

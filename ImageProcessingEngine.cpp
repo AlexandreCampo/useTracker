@@ -642,6 +642,14 @@ void ImageProcessingEngine::Step(bool drawHud)
 
 bool ImageProcessingEngine::GetNextFrame()
 {
-    return capture->GetNextFrame();
+    bool capres = capture->GetNextFrame();
+    double ctime = capture->GetTime();
+
+    // respect time bounds (not implementing forward jump...)
+    if (useTimeBoundaries)
+	if (ctime > (startTime + durationTime))
+	    return false;
+
+    return capres;
 }
 

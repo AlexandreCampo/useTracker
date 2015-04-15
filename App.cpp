@@ -127,9 +127,14 @@ int main(int argc, char **argv)
 	// run the engine
 	ipEngine.OpenOutput();
 	ipEngine.capture->Play();
-
+	
 	long totalFrames = ipEngine.capture->GetFrameCount();
-
+	if (ipEngine.useTimeBoundaries)
+	{
+	    // this maybe an approximation if fps is not accurate
+	    totalFrames = (ipEngine.startTime + ipEngine.durationTime) * ipEngine.capture->fps;
+	}
+	
 	long progress = 0;
 	while (ipEngine.GetNextFrame())
 	{
@@ -139,7 +144,9 @@ int main(int argc, char **argv)
 	    if (newProgress > progress)
 	    {
 		progress = newProgress;
-		std::cout << "Progress : " << newProgress  << "% | frame " << frameNumber << "/" << totalFrames << " | time " << ipEngine.capture->GetTime() << "s" <<  std::endl;
+		if (progress > 100) progress = 100;
+		
+		std::cout << "Progress : " << progress  << "% | frame " << frameNumber << "/" << totalFrames << " | time " << ipEngine.capture->GetTime() << "s" <<  std::endl;
 	    }
 	}
 

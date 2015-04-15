@@ -209,16 +209,16 @@ void ExtractBlobs::Apply()
     {
 	if (b->available)
 	{
-	    if (b->size >= minSize && (b->size <= maxSize || maxSize == 0))
+	    if ((b->size >= minSize) && (b->size <= maxSize || maxSize == 0))
 	    {
 		b->x /= b->size;
 		b->y /= b->size;
 		b->zone = pipeline->zoneMap.at<unsigned char>(b->y, b->x);
 	    }
-	    else
-	    {
-		b->available = false;
-	    }
+	    // else
+	    // {
+	    // 	b->available = false;
+	    // }
 	}
 //	cout << "Blob " << debug << " " << b->x << " " << b->y << " " << b->size << " " << b->available << " " << b->assignment << endl;
 //	debug++;
@@ -254,17 +254,21 @@ void ExtractBlobs::OutputStep()
     // in any case, also output blob list with characs...
     if (outputStream.is_open())
     {
-	for (unsigned int b = 0; b < pipeline->parent->blobs.size(); b++)
+	vector<Blob>& blobs = pipeline->parent->blobs;
+	for (auto b : blobs)
 	{
-	    outputStream 
-		<< pipeline->parent->capture->GetTime() << "\t" 
-		<< pipeline->parent->capture->GetFrameNumber() << "\t" 
-		<< pipeline->parent->blobs[b].x << "\t" 
-		<< pipeline->parent->blobs[b].y << "\t" 
-		<< pipeline->parent->blobs[b].angle << "\t" 
-		<< pipeline->parent->blobs[b].size << "\t" 
-		<< pipeline->parent->blobs[b].zone 
-		<< std::endl;
+	    if (b.available)
+	    {
+		outputStream 
+		    << pipeline->parent->capture->GetTime() << "\t" 
+		    << pipeline->parent->capture->GetFrameNumber() << "\t" 
+		    << b.x << "\t" 
+		    << b.y << "\t" 
+		    << b.angle << "\t" 
+		    << b.size << "\t" 
+		    << b.zone 
+		    << std::endl;
+	    }
 	}
     }
 }
