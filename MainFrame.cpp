@@ -1815,6 +1815,8 @@ void MainFrame::UpdateUI ()
     SpinCtrlDuration->SetValue(ipEngine.durationTime);
     SpinCtrlTimestepDouble->SetValue(ipEngine.timestep);
 
+    CheckBoxUseTimeBounds->SetValue(ipEngine.useTimeBoundaries);
+
     if (!parameters.zonesFilename.empty())
 	FilePickerCtrlZones->SetPath(parameters.zonesFilename);
     else

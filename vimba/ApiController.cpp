@@ -209,7 +209,7 @@ bool ApiController::GetFrame(cv::Mat& m)
     frame->GetReceiveStatus( status );
 
     // See if it is not corrupt
-    if( VmbFrameStatusComplete == status )
+//    if( VmbFrameStatusComplete == status )
     {
 	unsigned char* buffer;
 	VmbErrorType err = SP_ACCESS( frame )->GetImage( buffer );

@@ -46,6 +46,8 @@ bool CaptureVideo::Open (string filename)
     height = source.get(CV_CAP_PROP_FRAME_HEIGHT);
     fps = source.get(CV_CAP_PROP_FPS);
 
+    fps = 25.0;
+
     // fps incorrectly detected
     if (fps <= 0.000001) fps = 1;
 

@@ -646,9 +646,9 @@ bool ImageProcessingEngine::GetNextFrame()
     double ctime = capture->GetTime();
 
     // respect time bounds (not implementing forward jump...)
-    if (useTimeBoundaries)
-	if (ctime > (startTime + durationTime))
-	    return false;
+    if (useTimeBoundaries && durationTime > 0.0000001)
+    	if (ctime > (startTime + durationTime))
+    	    return false;
 
     return capres;
 }

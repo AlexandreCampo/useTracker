@@ -127,10 +127,14 @@ bool CaptureAVTCamera::GetNextFrame ()
 	}
 
 	if (gotFrame) break;
-	else if (wxGetUTCTimeUSec() - startTime > 100000) return false;
+	else if (wxGetUTCTimeUSec() - startTime > 100000)
+	{
+	    return false;
+	}
 
 	// did not get a frame, wait a bit before retrying
 	wxMicroSleep (100);
+//	std::cout << "Waiting for a frame... " << startTime << "\t" << wxGetUTCTimeUSec() << std::endl;
     }
 
     frameNumber++;
