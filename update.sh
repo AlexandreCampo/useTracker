@@ -35,7 +35,7 @@ if [ $error != 0 ] ; then
 exit -1
 fi
  
-error=$(ls /home/user/useTracker/bin/Release/useTracker | wc -l)
+error=$(ls ./bin/Release/useTracker | wc -l)
 if [ $error -eq 0 ]; then
         zenity --error \
           --text="Could not compile USE Tracker.\nUpdate canceled."
@@ -51,7 +51,7 @@ zenity --progress \
   --auto-close\
   --pulsate
  
-m1=$(md5sum /home/user/useTracker/bin/Release/useTracker | cut -f 1 -d ' ')
+m1=$(md5sum ./bin/Release/useTracker | cut -f 1 -d ' ')
 m2=$(md5sum /usr/bin/useTracker | cut -f 1 -d ' ')
 if [ $m1 != $m2 ]; then
         zenity --error \
