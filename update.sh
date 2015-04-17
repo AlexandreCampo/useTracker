@@ -43,7 +43,7 @@ exit -1
 fi
  
 zenity --info --text "About to install USE Tracker to system directory"
-(echo "# Installing"; gksudo -S -m "Installing USE Tracker to system directories" "cp /home/user/useTracker/bin/Release/useTracker /usr/bin/"
+(echo "# Installing"; gksudo -S -m "Installing USE Tracker to system directories" "cp ./bin/Release/useTracker /usr/bin/"
 ) |
 zenity --progress \
   --title="Updating USE Tracker" \
