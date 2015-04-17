@@ -129,7 +129,7 @@ int main(int argc, char **argv)
 	ipEngine.capture->Play();
 	
 	long totalFrames = ipEngine.capture->GetFrameCount();
-	if (ipEngine.useTimeBoundaries)
+	if (ipEngine.useTimeBoundaries && ipEngine.durationTime > 0.0000001)
 	{
 	    // this maybe an approximation if fps is not accurate
 	    totalFrames = (ipEngine.startTime + ipEngine.durationTime) * ipEngine.capture->fps;
