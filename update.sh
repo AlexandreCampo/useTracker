@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# if oyur local is modified and you want to ensure it is the same as the master, you can erase all the changes by running
+# git reset --hard origin/master
+
 # find location of the script, which should be root of useTracker
 # from http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
 SOURCE="${BASH_SOURCE[0]}"
@@ -15,7 +18,7 @@ cd $DIR
 echo Updating > update_status.txt
  
 (
-echo "# Pulling update from github repository" ;  git pull &> update_status.txt
+echo "# Pulling update from github repository" ; git pull &> update_status.txt
 error=$(cat update_status.txt | grep Aborting | wc -l)
 if [ $error -eq 0 ]; then
 echo "# Cleaning sources"; make clean &> update_status.txt
