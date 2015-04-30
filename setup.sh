@@ -66,5 +66,5 @@ make release
 
 # install images & program
 # $SU installmkdir -p /usr/share/useTracker
-$SU "install -d -D -m 644 images /usr/share/useTracker/; install ./bin/Release/useTracker /usr/bin/"
+$SU "mkdir -p /usr/share/useTracker/images; install images/* /usr/share/useTracker/images/; install ./bin/Release/useTracker /usr/bin/"
 

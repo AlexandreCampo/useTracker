@@ -44,7 +44,7 @@
 				<Option projectLinkerOptionsRelation="2" />
 				<Compiler>
 					<Add option="-g" />
-					<Add option="-I /home/alex/usr/Vimba_1_3/" />
+					<Add option="-I $VIMBAPATH/" />
 					<Add option="-DVIMBA=1" />
 				</Compiler>
 				<Linker>
@@ -70,7 +70,7 @@
 					<Add option="-O3" />
 					<Add option="-march=native" />
 					<Add option="-flto" />
-					<Add option="-I /home/alex/usr/Vimba_1_3/" />
+					<Add option="-I $VIMBAPATH/" />
 					<Add option="-DVIMBA=1" />
 				</Compiler>
 				<Linker>

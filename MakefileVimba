@@ -19,7 +19,7 @@ LIB =
 LDFLAGS = `wx-config --libs --gl-libs` -lGL -lGLU -lglut -lpthread `pkg-config --libs opencv` `pkg-config --libs libavcodec libavformat libswscale libavutil` -ldl -lva -lbz2 -lz -lm -lpng -lx264 -lboost_program_options -laruco
 
 INC_VIMBADEBUG = $(INC)
-CFLAGS_VIMBADEBUG = $(CFLAGS) -g -I /home/alex/usr/Vimba_1_3/ -DVIMBA=1
+CFLAGS_VIMBADEBUG = $(CFLAGS) -g -I $VIMBAPATH/ -DVIMBA=1
 RESINC_VIMBADEBUG = $(RESINC)
 RCFLAGS_VIMBADEBUG = $(RCFLAGS)
 LIBDIR_VIMBADEBUG = $(LIBDIR) -L$VIMBAPATH/AVTImageTransform/DynamicLib/x86_64bit -L$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit
@@ -30,7 +30,7 @@ DEP_VIMBADEBUG =
 OUT_VIMBADEBUG = bin/VimbaDebug/useTracker
 
 INC_VIMBARELEASE = $(INC)
-CFLAGS_VIMBARELEASE = $(CFLAGS) -march=corei7-avx -fexpensive-optimizations -O3 -march=native -flto -I /home/alex/usr/Vimba_1_3/ -DVIMBA=1
+CFLAGS_VIMBARELEASE = $(CFLAGS) -march=corei7-avx -fexpensive-optimizations -O3 -march=native -flto -I $VIMBAPATH/ -DVIMBA=1
 RESINC_VIMBARELEASE = $(RESINC)
 RCFLAGS_VIMBARELEASE = $(RCFLAGS)
 LIBDIR_VIMBARELEASE = $(LIBDIR) -L$VIMBAPATH/AVTImageTransform/DynamicLib/x86_64bit -L$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit
