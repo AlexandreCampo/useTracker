@@ -31,8 +31,8 @@ echo
 echo
 #$SU "echo Updating, please wait..."
 $SU "echo Updating, please wait...;\
-apt-get -q update;\
-apt-get -q upgrade; \
+apt-get -q -y update;\
+apt-get -q -y upgrade; \
 echo Installing Dependencies; \
 apt-get --yes install build-essential cmake libwxbase$wxversion-dev libopencv-dev libboost-program-options-dev libwxgtk$wxversion-dev libwxgtk-media$wxversion-dev freeglut3-dev libva-dev libbz2-dev libx264-dev || error '$LINENO: Aborted, could not install the required dependencies.' "
 
