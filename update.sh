@@ -49,7 +49,7 @@ fi
 #(echo "# Installing"; gksudo -S -m "Installing USE Tracker to system directories" "cp ./bin/Release/useTracker /usr/bin/"
 #) |
 zenity --info --text "About to install USE Tracker to system directory"
-(echo "# Installing"; pkexec "install ./bin/Release/useTracker /usr/bin/"
+(echo "# Installing"; pkexec install ./bin/Release/useTracker /usr/bin/
 ) |
 zenity --progress \
   --title="Updating USE Tracker" \
