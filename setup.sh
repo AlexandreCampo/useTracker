@@ -10,15 +10,6 @@ function error
 
 # find out if sudo is available, otherwise use su
 SUDOAVAILABLE=$(which sudo | wc -l)
-if (( "$SUDOAVAILABLE" >= "1" ))
-then 
-    SU="sudo"
-else
-    SU="su -p -c"
-fi
-
-echo sudoavail=$SUDOAVAILABLE
-echo mysu=$SU
 
 # find latest version of libwxgtk
 # wxversion=$(apt-cache search libwxgtk | egrep -o '[0-9](\.[0-9]+)+' | sort | tail -1)
@@ -29,12 +20,26 @@ wxversion=3.0
 echo The setup program of the USE Tracker is about to update your system
 echo
 echo
-#$SU "echo Updating, please wait..."
-$SU "echo Updating, please wait...;\
+
+if (( "$SUDOAVAILABLE" >= "1" ))
+then 
+
+sudo echo Updating, please wait...
+sudo apt-get -q -y update
+sudo apt-get -q -y upgrade
+echo Installing Dependencies
+sudo apt-get --yes install build-essential cmake libwxbase$wxversion-dev libopencv-dev libboost-program-options-dev libwxgtk$wxversion-dev libwxgtk-media$wxversion-dev freeglut3-dev libva-dev libbz2-dev libx264-dev || error '$LINENO: Aborted, could not install the required dependencies.'
+
+else
+
+su -c "echo Updating, please wait...;\
 apt-get -q -y update;\
 apt-get -q -y upgrade; \
 echo Installing Dependencies; \
 apt-get --yes install build-essential cmake libwxbase$wxversion-dev libopencv-dev libboost-program-options-dev libwxgtk$wxversion-dev libwxgtk-media$wxversion-dev freeglut3-dev libva-dev libbz2-dev libx264-dev || error '$LINENO: Aborted, could not install the required dependencies.' "
+
+fi
+
 
 # download and compile latest stable opencv
 echo
@@ -54,7 +59,15 @@ make
 echo
 echo
 echo "Installing ArUco" $version
-$SU "make install; ldconfig"
+
+if (( "$SUDOAVAILABLE" >= "1" ))
+then 
+sudo make install
+sudo ldconfig
+else
+su -c "make install; ldconfig"
+fi
+
 echo "ArUco" $version "ready to be used"
 cd ..
 
@@ -66,5 +79,11 @@ make release
 
 # install images & program
 # $SU installmkdir -p /usr/share/useTracker
-$SU "mkdir -p /usr/share/useTracker/images; install images/* /usr/share/useTracker/images/; install ./bin/Release/useTracker /usr/bin/"
-
+if (( "$SUDOAVAILABLE" >= "1" ))
+then 
+sudo mkdir -p /usr/share/useTracker/images
+sudo install images/* /usr/share/useTracker/images/
+sudo install ./bin/Release/useTracker /usr/bin/
+else
+su -c "mkdir -p /usr/share/useTracker/images; install images/* /usr/share/useTracker/images/; install ./bin/Release/useTracker /usr/bin/"
+fi
