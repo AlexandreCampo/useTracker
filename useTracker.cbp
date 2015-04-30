@@ -51,11 +51,11 @@
 					<Add option="-lVimbaCPP" />
 					<Add option="-lVimbaC" />
 					<Add option="-lAVTImageTransform" />
-					<Add option="-Wl,-rpath-link,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/" />
-					<Add option="-Wl,-rpath,/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit/" />
-					<Add option="-Wl,-rpath,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/" />
-					<Add directory="/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit" />
-					<Add directory="/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit" />
+					<Add option="-Wl,-rpath-link,$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit/" />
+					<Add option="-Wl,-rpath,$VIMBAPATH/AVTImageTransform/DynamicLib/x86_64bit/" />
+					<Add option="-Wl,-rpath,$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit/" />
+					<Add directory="$VIMBAPATH/AVTImageTransform/DynamicLib/x86_64bit" />
+					<Add directory="$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit" />
 				</Linker>
 			</Target>
 			<Target title="VimbaRelease">
@@ -79,11 +79,11 @@
 					<Add option="-lVimbaCPP" />
 					<Add option="-lVimbaC" />
 					<Add option="-lAVTImageTransform" />
-					<Add option="-Wl,-rpath-link,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/" />
-					<Add option="-Wl,-rpath,/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit/" />
-					<Add option="-Wl,-rpath,/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit/" />
-					<Add directory="/home/alex/usr/Vimba_1_3/AVTImageTransform/DynamicLib/x86_64bit" />
-					<Add directory="/home/alex/usr/Vimba_1_3/VimbaCPP/DynamicLib/x86_64bit" />
+					<Add option="-Wl,-rpath-link,$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit/" />
+					<Add option="-Wl,-rpath,$VIMBAPATH/AVTImageTransform/DynamicLib/x86_64bit/" />
+					<Add option="-Wl,-rpath,$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit/" />
+					<Add directory="$VIMBAPATH/AVTImageTransform/DynamicLib/x86_64bit" />
+					<Add directory="$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit" />
 				</Linker>
 			</Target>
 			<Target title="MacPortsDebug">
@@ -111,7 +111,7 @@
 			<Add option="-DARUCO" />
 		</Compiler>
 		<Linker>
-			<Add option="`wx-config --libs all --gl-libs` -lGL -lGLU -lglut" />
+			<Add option="`wx-config --libs --gl-libs` -lGL -lGLU -lglut" />
 			<Add option="-lpthread" />
 			<Add option="`pkg-config --libs opencv`" />
 			<Add option="`pkg-config --libs libavcodec libavformat libswscale libavutil`" />
@@ -174,12 +174,12 @@
 		<Unit filename="dialogs/DialogRecordVideo.h" />
 		<Unit filename="dialogs/DialogSafeErosion.cpp" />
 		<Unit filename="dialogs/DialogSafeErosion.h" />
-		<Unit filename="dialogs/DialogTracker.cpp" />
-		<Unit filename="dialogs/DialogTracker.h" />
-		<Unit filename="dialogs/DialogStopwatch.cpp" />
-		<Unit filename="dialogs/DialogStopwatch.h" />
 		<Unit filename="dialogs/DialogSimpleTags.cpp" />
 		<Unit filename="dialogs/DialogSimpleTags.h" />
+		<Unit filename="dialogs/DialogStopwatch.cpp" />
+		<Unit filename="dialogs/DialogStopwatch.h" />
+		<Unit filename="dialogs/DialogTracker.cpp" />
+		<Unit filename="dialogs/DialogTracker.h" />
 		<Unit filename="plugins/Aruco.cpp" />
 		<Unit filename="plugins/Aruco.h" />
 		<Unit filename="plugins/ColorSegmentation.cpp" />
@@ -195,11 +195,11 @@
 		<Unit filename="plugins/SafeErosion.cpp" />
 		<Unit filename="plugins/SimpleTags.cpp" />
 		<Unit filename="plugins/SimpleTags.h" />
+		<Unit filename="plugins/Stopwatch.cpp" />
+		<Unit filename="plugins/Stopwatch.h" />
 		<Unit filename="plugins/Tracker.cpp" />
 		<Unit filename="plugins/ZonesOfInterest.cpp" />
 		<Unit filename="plugins/ZonesOfInterest.h" />
-		<Unit filename="plugins/Stopwatch.cpp" />
-		<Unit filename="plugins/Stopwatch.h" />
 		<Unit filename="vimba/ApiController.cpp">
 			<Option target="VimbaDebug" />
 			<Option target="VimbaRelease" />
@@ -212,8 +212,6 @@
 			<Option target="VimbaDebug" />
 			<Option target="VimbaRelease" />
 		</Unit>
-		<Unit filename="wxsmith/DialogSimpleTags.wxs" />
-		<Unit filename="wxsmith/DialogStopwatch.wxs" />
 		<Unit filename="wxsmith/DialogAruco.wxs" />
 		<Unit filename="wxsmith/DialogColorSegmentation.wxs" />
 		<Unit filename="wxsmith/DialogDilation.wxs" />
@@ -225,6 +223,8 @@
 		<Unit filename="wxsmith/DialogRecordPixels.wxs" />
 		<Unit filename="wxsmith/DialogRecordVideo.wxs" />
 		<Unit filename="wxsmith/DialogSafeErosion.wxs" />
+		<Unit filename="wxsmith/DialogSimpleTags.wxs" />
+		<Unit filename="wxsmith/DialogStopwatch.wxs" />
 		<Unit filename="wxsmith/DialogTracker.wxs" />
 		<Unit filename="wxsmith/Mainframe.wxs" />
 		<Extensions>
