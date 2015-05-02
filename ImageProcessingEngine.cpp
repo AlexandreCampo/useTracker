@@ -276,6 +276,7 @@ void ImageProcessingEngine::SaveXML(FileStorage& fs)
     fs << "BackgroundFilename" << bgFilename;
     fs << "BackgroundRecalculate" << bgRecalculate;
     fs << "BackgroundFrames" << bgFrames;
+    fs << "BackgroundStartTime" << bgStartTime;
     fs << "BackgroundEndTime" << bgEndTime;
     if (bgCalcType == BG_MEDIAN)
 	fs << "BackgroundCalcType" << "median";

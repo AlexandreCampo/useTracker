@@ -133,7 +133,7 @@ DialogTracker::DialogTracker(wxWindow* parent,wxWindowID id,const wxPoint& pos,c
 	SpinCtrlEntitiesCount = new wxSpinCtrl(this, ID_SPINCTRL1, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 1, 100000, 1, _T("ID_SPINCTRL1"));
 	SpinCtrlEntitiesCount->SetValue(_T("1"));
 	FlexGridSizer4->Add(SpinCtrlEntitiesCount, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-	StaticText2 = new wxStaticText(this, ID_STATICTEXT2, _("Min interdistance"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT2"));
+	StaticText2 = new wxStaticText(this, ID_STATICTEXT2, _("Min interdistance (pixels)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT2"));
 	FlexGridSizer4->Add(StaticText2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
 	SpinCtrlMinInterdistance = new wxSpinCtrlDouble(this, ID_SPINCTRL2, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 100000000, 0, 0.1, _T("ID_SPINCTRL2"));
 	SpinCtrlMinInterdistance->SetValue(_T("0"));
@@ -153,23 +153,23 @@ DialogTracker::DialogTracker(wxWindow* parent,wxWindowID id,const wxPoint& pos,c
 	SpinCtrlExtrapolationHistorySize = new wxSpinCtrl(this, ID_SPINCTRL5, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 1000, 0, _T("ID_SPINCTRL5"));
 	SpinCtrlExtrapolationHistorySize->SetValue(_T("0"));
 	FlexGridSizer4->Add(SpinCtrlExtrapolationHistorySize, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-	StaticText6 = new wxStaticText(this, ID_STATICTEXT6, _("Extrapolation timeout"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT6"));
+	StaticText6 = new wxStaticText(this, ID_STATICTEXT6, _("Extrapolation timeout (s)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT6"));
 	FlexGridSizer4->Add(StaticText6, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	SpinCtrlExtrapolationTimeout = new wxSpinCtrlDouble(this, ID_SPINCTRL6, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 1000, 0, 0.01, _T("ID_SPINCTRL6"));
 	SpinCtrlExtrapolationTimeout->SetValue(_T("0"));
 	FlexGridSizer4->Add(SpinCtrlExtrapolationTimeout, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
 
-	StaticText10 = new wxStaticText(this, ID_STATICTEXT10, _("Create when last position dist >"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT10"));
+	StaticText10 = new wxStaticText(this, ID_STATICTEXT10, _("Create when last position dist > (pixels)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT10"));
 	FlexGridSizer5->Add(StaticText10, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	SpinCtrlVEDistance = new wxSpinCtrlDouble(this, ID_SPINCTRL8, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 100000, 0, 0.1, _T("ID_SPINCTRL8"));
 	SpinCtrlVEDistance->SetValue(_T("0"));
 	FlexGridSizer5->Add(SpinCtrlVEDistance, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-	StaticText11 = new wxStaticText(this, ID_STATICTEXT11, _("Time to promotion"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT11"));
+	StaticText11 = new wxStaticText(this, ID_STATICTEXT11, _("Delay to creation (s)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT11"));
 	FlexGridSizer5->Add(StaticText11, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	SpinCtrlVEDelay = new wxSpinCtrlDouble(this, ID_SPINCTRL9, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 1000, 0, 0.01, _T("ID_SPINCTRL9"));
 	SpinCtrlVEDelay->SetValue(_T("0"));
 	FlexGridSizer5->Add(SpinCtrlVEDelay, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-	StaticText12 = new wxStaticText(this, ID_STATICTEXT12, _("Max lifetime"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT12"));
+	StaticText12 = new wxStaticText(this, ID_STATICTEXT12, _("Time to promotion (s)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT12"));
 	FlexGridSizer5->Add(StaticText12, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	SpinCtrlVELifetime = new wxSpinCtrlDouble(this, ID_SPINCTRL10, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 1000, 0, 0.01, _T("ID_SPINCTRL10"));
 	SpinCtrlVELifetime->SetValue(_T("0"));
@@ -216,6 +216,8 @@ void DialogTracker::SetPlugin (vector<PipelinePlugin*> pfv)
     SpinCtrlVEDelay->SetValue(plugin[0]->virtualEntitiesDelay);
     SpinCtrlVEDistance->SetValue(sqrt(plugin[0]->virtualEntitiesDistsq));
     SpinCtrlVELifetime->SetValue(plugin[0]->virtualEntitiesLifetime);
+
+    SpinCtrlTrailLength->SetValue(plugin[0]->trailLength);
 
     // show/hide VE sizer
     StaticBoxSizerVE->Show(plugin[0]->useVirtualEntities);

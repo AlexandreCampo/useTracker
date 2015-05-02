@@ -202,7 +202,7 @@ void Tracker::Track()
 	else if (!previousEntities[e].assigned)
 	{
 	    if (virtualEntitiesZone && entities[e].zone != ZONE_VISIBLE) createVirtualEntity = true;
-	    else if (interdistances[d].distsq > virtualEntitiesDistsq) createVirtualEntity = true;
+	    else if (virtualEntitiesDistsq >= 1 && interdistances[d].distsq > virtualEntitiesDistsq) createVirtualEntity = true;
 	    else if (pipeline->parent->capture->GetFrameNumber() - entities[e].lastFrameDetected > virtualEntitiesDelay * pipeline->parent->capture->fps) createVirtualEntity = true;
 	}
 
@@ -397,16 +397,18 @@ void Tracker::LoadXML (FileNode& fn)
 
 	entitiesCount = (int)fn["EntitiesCount"];
 
+	trailLength = (int)fn["HistoryTrailLength"];
+
 	FileNode fn2 = fn["VirtualEntities"];
 
 	if (!fn2.empty())
 	{
 	    useVirtualEntities = (int)fn2["Active"];
-	    virtualEntitiesDelay = (float)fn2["Delay"];
+	    virtualEntitiesDelay = (float)fn2["DelayToCreation"];
 	    virtualEntitiesZone = (int)fn2["Zone"];
 	    float v = (float)fn2["Distance"];
 	    virtualEntitiesDistsq = v * v;
-	    virtualEntitiesLifetime = (float)fn2["Lifetime"];
+	    virtualEntitiesLifetime = (float)fn2["PromotionTime"];
 	}
    }
 }
@@ -424,15 +426,17 @@ void Tracker::SaveXML (FileStorage& fs)
     fs << "ExtrapolationHistorySize" << (int)motionEstimatorLength;
     fs << "ExtrapolationTimeout" << motionEstimatorTimeout;
 
+    fs << "HistoryTrailLength" << (int)trailLength;
+
     // we don't save that if we don't use it...
     if (useVirtualEntities)
     {
 	fs << "VirtualEntities" << "{";
 
-	fs << "Active" << 1;
-	fs << "Delay" << virtualEntitiesDelay;
+	fs << "Active" << useVirtualEntities;
+	fs << "DelayToCreation" << virtualEntitiesDelay;
 	fs << "Zone" << virtualEntitiesZone;
-	fs << "Lifetime" << virtualEntitiesLifetime;
+	fs << "PromotionTime" << virtualEntitiesLifetime;
 	fs << "Distance" << sqrt(virtualEntitiesDistsq);
 
 	fs << "}";
