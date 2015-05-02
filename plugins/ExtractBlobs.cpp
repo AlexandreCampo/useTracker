@@ -230,7 +230,7 @@ void ExtractBlobs::Apply()
 
 void ExtractBlobs::OutputHud (Mat& hud)
 {
-    cout << "new output iteration " << endl;
+//    cout << "new output iteration " << endl;
 
     char str[32];
     Point pos;
@@ -243,7 +243,7 @@ void ExtractBlobs::OutputHud (Mat& hud)
 	    pos.x = b.x;
 	    pos.y = b.y;
 	    int sqlen = sqrt(b.size) / 2;
-	    cout << "Display bob " << " " << b.x << " " << b.y << " " << b.size << endl;
+//	    cout << "Display bob " << " " << b.x << " " << b.y << " " << b.size << endl;
 	    rectangle(hud, pos-Point(sqlen,sqlen), pos+Point(sqlen,sqlen), cvScalar(127, 127, 127, 255), CV_FILLED);
 	    putText(hud, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,0,0, 255), 2, CV_AA);
 	    putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,255,200, 255), 2, CV_AA);
