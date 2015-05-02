@@ -1,11 +1,21 @@
-/***************************************************************
- * Name:      MainFrame.cpp
- * Purpose:   Code for Application Frame
- * Author:     ()
- * Created:   2014-08-16
- * Copyright:  ()
- * License:
- **************************************************************/
+/*----------------------------------------------------------------------------*/
+/*    Copyright (C) 2015 Alexandre Campo                                      */
+/*                                                                            */
+/*    This file is part of USE Tracker.                                       */
+/*                                                                            */
+/*    USE Tracker is free software: you can redistribute it and/or modify     */
+/*    it under the terms of the GNU General Public License as published by    */
+/*    the Free Software Foundation, either version 3 of the License, or       */
+/*    (at your option) any later version.                                     */
+/*                                                                            */
+/*    USE Tracker is distributed in the hope that it will be useful,          */
+/*    but WITHOUT ANY WARRANTY; without even the implied warranty of          */
+/*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           */
+/*    GNU General Public License for more details.                            */
+/*                                                                            */
+/*    You should have received a copy of the GNU General Public License       */
+/*    along with USE Tracker.  If not, see <http://www.gnu.org/licenses/>.    */
+/*----------------------------------------------------------------------------*/
 
 #include "MainFrame.h"
 #include "App.h"
@@ -337,7 +347,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     Menu1->Append(MenuItem1);
     MenuBar1->Append(Menu1, _("&File"));
     Menu2 = new wxMenu();
-    MenuItem2 = new wxMenuItem(Menu2, idMenuAbout, _("About\tF1"), _("Show info about this application"), wxITEM_NORMAL);
+    MenuItem2 = new wxMenuItem(Menu2, idMenuAbout, _("About\tF1"), _("Show info about USE Tracker"), wxITEM_NORMAL);
     Menu2->Append(MenuItem2);
     MenuBar1->Append(Menu2, _("Help"));
     SetMenuBar(MenuBar1);
@@ -509,8 +519,8 @@ void MainFrame::OnQuit(wxCommandEvent& event)
 
 void MainFrame::OnAbout(wxCommandEvent& event)
 {
-    wxString msg = wxbuildinfo(long_f);
-    wxMessageBox(msg, _("Welcome to..."));
+    wxString msg = _("Find updates, documentation, and contact info at :\n http://usetracker.org\n\n USE Tracker is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. \n\n USE Tracker is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details. \n\n You should have received a copy of the GNU General Public License along with USE Tracker.  If not, see <http://www.gnu.org/licenses/>. ");
+	wxMessageBox(msg, _("About USE Tracker"));
 }
 
 void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
