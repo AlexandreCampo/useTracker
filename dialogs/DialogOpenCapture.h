@@ -32,9 +32,11 @@
 //*)
 
 #include "Capture.h"
+#include "CaptureDefault.h"
 #include "CaptureVideo.h"
 #include "CaptureImage.h"
 #include "CaptureUSBCamera.h"
+#include "CaptureMultiUSBCamera.h"
 #ifdef VIMBA
 #include "CaptureAVTCamera.h"
 #endif
@@ -47,17 +49,19 @@ class DialogOpenCapture: public wxDialog
 		virtual ~DialogOpenCapture();
 
 		Capture* capture = nullptr;
-		
-		
+		Capture* previousCapture = nullptr;
+				
 
 		//(*Declarations(DialogOpenCapture)
 		wxButton* ButtonUSBOk;
 		wxButton* ButtonImageOk;
 		wxPanel* PanelVideo;
 		wxPanel* PanelImage;
+		wxPanel* PanelConfigFile;
 		wxButton* ButtonVideoCancel;
 		wxButton* ButtonVideoOk;
 		wxStaticText* StaticText1;
+		wxFilePickerCtrl* FilePickerCtrlSourceConfigFile;
 		wxStaticText* StaticText3;
 		wxButton* ButtonUSBCancel;
 		wxButton* ButtonAVTOk;
@@ -71,7 +75,10 @@ class DialogOpenCapture: public wxDialog
 		wxStaticText* StaticText2;
 		wxNotebook* Notebook1;
 		wxSpinCtrl* SpinCtrlAVTDevice;
+		wxButton* ButtonConfigFileCancel;
 		wxButton* ButtonImageCancel;
+		wxButton* ButtonConfigFileOk;
+		wxPanel* PanelMultiUSB;
 		//*)
 
 	protected:
@@ -97,6 +104,11 @@ class DialogOpenCapture: public wxDialog
 		static const long ID_BUTTON7;
 		static const long ID_BUTTON8;
 		static const long ID_PANEL4;
+		static const long ID_PANEL6;
+		static const long ID_FILEPICKERCTRL3;
+		static const long ID_BUTTON9;
+		static const long ID_BUTTON10;
+		static const long ID_PANEL5;
 		static const long ID_NOTEBOOK1;
 		//*)
 
@@ -118,6 +130,8 @@ class DialogOpenCapture: public wxDialog
 		void OnFilePickerCtrlImageFileChanged(wxFileDirPickerEvent& event);
 		void OnSpinCtrlAVTDeviceChange(wxSpinEvent& event);
 		void OnSpinCtrlUSBDeviceChange(wxSpinEvent& event);
+		void OnButtonConfigFileCancelClick(wxCommandEvent& event);
+		void OnButtonConfigFileOkClick(wxCommandEvent& event);
 		//*)
 
 		void ConnectCharEvent(wxWindow* pclComponent);

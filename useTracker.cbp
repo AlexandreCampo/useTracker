@@ -14,8 +14,12 @@
 				<Option parameters="-i ../movie.avi -b ../f_bg.png -m ../mask2.png -p ../params.xml" />
 				<Option projectLinkerOptionsRelation="2" />
 				<Compiler>
+					<Add option="-pg" />
 					<Add option="-g" />
 				</Compiler>
+				<Linker>
+					<Add option="-pg" />
+				</Linker>
 			</Target>
 			<Target title="Release">
 				<Option output="bin/Release/useTracker" prefix_auto="1" extension_auto="1" />
@@ -124,6 +128,7 @@
 			<Add option="-lx264" />
 			<Add option="-lboost_program_options" />
 			<Add option="-laruco" />
+			<Add option="-lbluetooth" />
 		</Linker>
 		<Unit filename="App.cpp" />
 		<Unit filename="App.h" />
@@ -131,6 +136,8 @@
 		<Unit filename="Background.h" />
 		<Unit filename="Capture.cpp" />
 		<Unit filename="Capture.h" />
+		<Unit filename="CaptureCalibration.cpp" />
+		<Unit filename="CaptureCalibration.h" />
 		<Unit filename="ImageProcessingEngine.cpp" />
 		<Unit filename="ImageProcessingEngine.h" />
 		<Unit filename="MainFrame.cpp" />
@@ -148,6 +155,10 @@
 		<Unit filename="capture/CaptureDefault.h" />
 		<Unit filename="capture/CaptureImage.cpp" />
 		<Unit filename="capture/CaptureImage.h" />
+		<Unit filename="capture/CaptureMultiUSBCamera.cpp" />
+		<Unit filename="capture/CaptureMultiUSBCamera.h" />
+		<Unit filename="capture/CaptureMultiVideo.cpp" />
+		<Unit filename="capture/CaptureMultiVideo.h" />
 		<Unit filename="capture/CaptureUSBCamera.cpp" />
 		<Unit filename="capture/CaptureUSBCamera.h" />
 		<Unit filename="capture/CaptureVideo.cpp" />
@@ -192,6 +203,8 @@
 		<Unit filename="plugins/MovingAverage.cpp" />
 		<Unit filename="plugins/RecordPixels.cpp" />
 		<Unit filename="plugins/RecordVideo.cpp" />
+		<Unit filename="plugins/RemoteControl.cpp" />
+		<Unit filename="plugins/RemoteControl.h" />
 		<Unit filename="plugins/SafeErosion.cpp" />
 		<Unit filename="plugins/SimpleTags.cpp" />
 		<Unit filename="plugins/SimpleTags.h" />

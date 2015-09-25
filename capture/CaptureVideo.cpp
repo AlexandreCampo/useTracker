@@ -21,6 +21,7 @@
 
 #include <iostream>
 #include <wx/time.h>
+#include <cmath>
 
 using namespace std;
 using namespace cv;
@@ -65,6 +66,7 @@ bool CaptureVideo::Open (string filename)
     fps = source.get(CV_CAP_PROP_FPS);
 
     // fps incorrectly detected
+//    if (fps <= 0.000001 || std::isnan(fps)) fps = 1;
     if (fps <= 0.000001) fps = 1;
 
     playSpeed = 0;
@@ -230,9 +232,17 @@ double CaptureVideo::GetTime()
 
 void CaptureVideo::SaveXML(FileStorage& fs)
 {
-    fs << "Source" << "{" << "Type";
-    fs << "video" << "Filename" << filename;
-    fs << "}";
+    fs << "Type" << "video";
+    fs << "Filename" << filename;
+
+    if (calibration.calibrated)
+    {
+	fs << "Calibration" << "{";
+
+	calibration.SaveXML(fs);
+
+	fs << "}";
+    }
 }
 
 void CaptureVideo::LoadXML(FileNode& fn)
@@ -240,5 +250,11 @@ void CaptureVideo::LoadXML(FileNode& fn)
     if (!fn.empty())
     {
 	filename = (string)fn["Filename"];
+
+	FileNode calibNode = fn ["Calibration"];
+	if (!calibNode.empty())
+	{
+	    calibration.LoadXML (calibNode);
+	}
     }
 }

@@ -105,6 +105,7 @@ bool CaptureUSBCamera::GetNextFrame ()
 {
     Mat previousFrame = frame;
     source >> frame;
+    calibration.Undistort(frame);
 
     frameNumber++;
     lastFrameTime = InternalGetTime();
@@ -203,9 +204,17 @@ wxLongLong CaptureUSBCamera::InternalGetTime()
 
 void CaptureUSBCamera::SaveXML(FileStorage& fs)
 {
-    fs << "Source" << "{" << "Type";
-    fs << "USBcamera" << "Device" << device;
-    fs << "}";
+    fs << "Type" << "USBcamera";
+    fs << "Device" << device;
+
+    if (calibration.calibrated)
+    {
+	fs << "Calibration" << "{";
+
+	calibration.SaveXML(fs);
+
+	fs << "}";
+    }
 }
 
 void CaptureUSBCamera::LoadXML(FileNode& fn)
@@ -213,5 +222,12 @@ void CaptureUSBCamera::LoadXML(FileNode& fn)
     if (!fn.empty())
     {
 	device = (int)fn["Device"];
+
+	FileNode calibNode = fn ["Calibration"];
+	if (!calibNode.empty())
+	{
+	    calibration.LoadXML (calibNode);
+	}
     }
 }
+

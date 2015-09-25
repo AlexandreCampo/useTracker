@@ -25,6 +25,10 @@
 //*)
 
 #include <iostream>
+#include <opencv2/imgproc/imgproc.hpp>
+
+using namespace std;
+using namespace cv;
 
 //(*IdInit(DialogOpenCapture)
 const long DialogOpenCapture::ID_FILEPICKERCTRL1 = wxNewId();
@@ -47,6 +51,11 @@ const long DialogOpenCapture::ID_FILEPICKERCTRL2 = wxNewId();
 const long DialogOpenCapture::ID_BUTTON7 = wxNewId();
 const long DialogOpenCapture::ID_BUTTON8 = wxNewId();
 const long DialogOpenCapture::ID_PANEL4 = wxNewId();
+const long DialogOpenCapture::ID_PANEL6 = wxNewId();
+const long DialogOpenCapture::ID_FILEPICKERCTRL3 = wxNewId();
+const long DialogOpenCapture::ID_BUTTON9 = wxNewId();
+const long DialogOpenCapture::ID_BUTTON10 = wxNewId();
+const long DialogOpenCapture::ID_PANEL5 = wxNewId();
 const long DialogOpenCapture::ID_NOTEBOOK1 = wxNewId();
 //*)
 
@@ -62,12 +71,16 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	wxFlexGridSizer* FlexGridSizer8;
 	wxFlexGridSizer* FlexGridSizer1;
 	wxFlexGridSizer* FlexGridSizer2;
+	wxStaticBoxSizer* StaticBoxSizer5;
+	wxFlexGridSizer* FlexGridSizer11;
 	wxFlexGridSizer* FlexGridSizer7;
 	wxFlexGridSizer* FlexGridSizer4;
+	wxFlexGridSizer* FlexGridSizer9;
 	wxStaticBoxSizer* StaticBoxSizer3;
 	wxFlexGridSizer* FlexGridSizer6;
 	wxFlexGridSizer* FlexGridSizer3;
 	wxStaticBoxSizer* StaticBoxSizer4;
+	wxFlexGridSizer* FlexGridSizer10;
 	wxBoxSizer* BoxSizer1;
 	wxFlexGridSizer* FlexGridSizer5;
 	wxStaticBoxSizer* StaticBoxSizer1;
@@ -166,10 +179,33 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	PanelImage->SetSizer(FlexGridSizer7);
 	FlexGridSizer7->Fit(PanelImage);
 	FlexGridSizer7->SetSizeHints(PanelImage);
+	PanelMultiUSB = new wxPanel(Notebook1, ID_PANEL6, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _T("ID_PANEL6"));
+	FlexGridSizer11 = new wxFlexGridSizer(0, 1, 0, 0);
+	PanelMultiUSB->SetSizer(FlexGridSizer11);
+	FlexGridSizer11->Fit(PanelMultiUSB);
+	FlexGridSizer11->SetSizeHints(PanelMultiUSB);
+	PanelConfigFile = new wxPanel(Notebook1, ID_PANEL5, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _T("ID_PANEL5"));
+	FlexGridSizer9 = new wxFlexGridSizer(0, 1, 0, 0);
+	FlexGridSizer9->AddGrowableCol(0);
+	StaticBoxSizer5 = new wxStaticBoxSizer(wxHORIZONTAL, PanelConfigFile, _("Select file to load"));
+	FilePickerCtrlSourceConfigFile = new wxFilePickerCtrl(PanelConfigFile, ID_FILEPICKERCTRL3, wxEmptyString, wxEmptyString, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL3"));
+	StaticBoxSizer5->Add(FilePickerCtrlSourceConfigFile, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer9->Add(StaticBoxSizer5, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer10 = new wxFlexGridSizer(0, 3, 0, 0);
+	ButtonConfigFileCancel = new wxButton(PanelConfigFile, ID_BUTTON9, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON9"));
+	FlexGridSizer10->Add(ButtonConfigFileCancel, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	ButtonConfigFileOk = new wxButton(PanelConfigFile, ID_BUTTON10, _("Ok"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON10"));
+	FlexGridSizer10->Add(ButtonConfigFileOk, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer9->Add(FlexGridSizer10, 1, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
+	PanelConfigFile->SetSizer(FlexGridSizer9);
+	FlexGridSizer9->Fit(PanelConfigFile);
+	FlexGridSizer9->SetSizeHints(PanelConfigFile);
 	Notebook1->AddPage(PanelVideo, _("Video file"), false);
 	Notebook1->AddPage(PanelUSB, _("USB camera"), false);
-	Notebook1->AddPage(PanelAVT, _("AVT Camera"), false);
+	Notebook1->AddPage(PanelAVT, _("AVT camera"), false);
 	Notebook1->AddPage(PanelImage, _("Image"), false);
+	Notebook1->AddPage(PanelMultiUSB, _("Multi USB"), false);
+	Notebook1->AddPage(PanelConfigFile, _("Config file"), false);
 
 	Connect(ID_FILEPICKERCTRL1,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&DialogOpenCapture::OnFilePickerCtrlVideoFileChanged);
 	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonVideoCancelClick);
@@ -181,6 +217,8 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	Connect(ID_FILEPICKERCTRL2,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&DialogOpenCapture::OnFilePickerCtrlImageFileChanged);
 	Connect(ID_BUTTON7,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonImageCancelClick);
 	Connect(ID_BUTTON8,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonImageOkClick);
+	Connect(ID_BUTTON9,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonConfigFileCancelClick);
+	Connect(ID_BUTTON10,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonConfigFileOkClick);
 	Connect(wxEVT_CHAR,(wxObjectEventFunction)&DialogOpenCapture::OnChar);
 	//*)
 
@@ -218,12 +256,14 @@ void DialogOpenCapture::OnButtonVideoCancelClick(wxCommandEvent& event)
 
 void DialogOpenCapture::OnButtonVideoOkClick(wxCommandEvent& event)
 {
+    delete previousCapture;
     capture = new CaptureVideo(FilePickerCtrlVideo->GetPath().ToStdString());
     EndModal(wxID_OK);
 }
 
 void DialogOpenCapture::OnButtonUSBOkClick(wxCommandEvent& event)
 {
+    delete previousCapture;
     capture = new CaptureUSBCamera(SpinCtrlUSBDevice->GetValue());
     EndModal(wxID_OK);
 }
@@ -236,7 +276,8 @@ void DialogOpenCapture::OnButtonUSBCancelClick(wxCommandEvent& event)
 void DialogOpenCapture::OnButtonAVTOkClick(wxCommandEvent& event)
 {
 #ifdef VIMBA
-capture = new CaptureAVTCamera(SpinCtrlAVTDevice->GetValue());
+    delete previousCapture;
+    capture = new CaptureAVTCamera(SpinCtrlAVTDevice->GetValue());
 #endif // VIMBA
     EndModal(wxID_OK);
 }
@@ -248,6 +289,7 @@ void DialogOpenCapture::OnButtonImageCancelClick(wxCommandEvent& event)
 
 void DialogOpenCapture::OnButtonImageOkClick(wxCommandEvent& event)
 {
+    delete previousCapture;
     capture = new CaptureImage(FilePickerCtrlImage->GetPath().ToStdString());
     EndModal(wxID_OK);
 }
@@ -272,7 +314,7 @@ void DialogOpenCapture::OnChar (wxKeyEvent& event)
 	event.Skip();
 }
 
- 
+
 void DialogOpenCapture::ConnectCharEvent(wxWindow* pclComponent)
 {
   if(pclComponent)
@@ -282,15 +324,73 @@ void DialogOpenCapture::ConnectCharEvent(wxWindow* pclComponent)
                           wxKeyEventHandler(DialogOpenCapture::OnChar),
                           (wxObject*) NULL,
                           this);
- 
+
     wxWindowListNode* pclNode = pclComponent->GetChildren().GetFirst();
     while(pclNode)
     {
       wxWindow* pclChild = pclNode->GetData();
       this->ConnectCharEvent(pclChild);
- 
+
       pclNode = pclNode->GetNext();
     }
   }
 }
- 
+
+
+void DialogOpenCapture::OnButtonConfigFileCancelClick(wxCommandEvent& event)
+{
+    EndModal(wxID_CANCEL);
+}
+
+void DialogOpenCapture::OnButtonConfigFileOkClick(wxCommandEvent& event)
+{
+    std::string filename = FilePickerCtrlSourceConfigFile->GetPath().ToStdString();
+
+    cv::FileStorage file;
+    cv::FileNode rootNode;
+
+    file.open(filename, cv::FileStorage::READ);
+    if (file.isOpened())
+    {
+	rootNode = file["Source"];
+
+	if (!rootNode.empty())
+	{
+	    delete previousCapture;
+	    string type = (string)rootNode["Type"];
+	    if (type == "video")
+	    {
+		capture = new CaptureVideo(rootNode);
+	    }
+	    else if (type == "USBcamera")
+	    {
+		capture = new CaptureUSBCamera(rootNode);
+	    }
+	    else if (type == "image")
+	    {
+		capture = new CaptureImage(rootNode);
+	    }
+#ifdef VIMBA
+	    else if (type == "AVTcamera")
+	    {
+		capture = new CaptureAVTCamera(rootNode);
+	    }
+#endif // VIMBA
+	    else if (type == "multiUSBcamera")
+	    {
+		capture = new CaptureMultiUSBCamera(rootNode);
+	    }
+	    else
+	    {
+		capture = new CaptureDefault();
+	    }
+	}
+	else
+	{
+	    capture = new CaptureDefault();
+	}
+    }
+
+//    capture = new CaptureVideo(FilePickerCtrlVideo->GetPath().ToStdString());
+    EndModal(wxID_OK);
+}

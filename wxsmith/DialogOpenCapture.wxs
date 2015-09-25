@@ -217,7 +217,7 @@
 						</object>
 					</object>
 				</object>
-				<label>AVT Camera</label>
+				<label>AVT camera</label>
 			</object>
 			<object class="notebookpage">
 				<object class="wxPanel" name="ID_PANEL4" variable="PanelImage" member="yes">
@@ -276,6 +276,65 @@
 					</object>
 				</object>
 				<label>Image</label>
+			</object>
+			<object class="notebookpage">
+				<object class="wxPanel" name="ID_PANEL6" variable="PanelMultiUSB" member="yes">
+					<object class="wxFlexGridSizer" variable="FlexGridSizer11" member="no">
+						<cols>1</cols>
+					</object>
+				</object>
+				<label>Multi USB</label>
+			</object>
+			<object class="notebookpage">
+				<object class="wxPanel" name="ID_PANEL5" variable="PanelConfigFile" member="yes">
+					<object class="wxFlexGridSizer" variable="FlexGridSizer9" member="no">
+						<cols>1</cols>
+						<growablecols>0</growablecols>
+						<object class="sizeritem">
+							<object class="wxStaticBoxSizer" variable="StaticBoxSizer5" member="no">
+								<label>Select file to load</label>
+								<object class="sizeritem">
+									<object class="wxFilePickerCtrl" name="ID_FILEPICKERCTRL3" variable="FilePickerCtrlSourceConfigFile" member="yes">
+										<style>wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL</style>
+									</object>
+									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+									<border>5</border>
+									<option>1</option>
+								</object>
+							</object>
+							<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+							<border>5</border>
+							<option>1</option>
+						</object>
+						<object class="sizeritem">
+							<object class="wxFlexGridSizer" variable="FlexGridSizer10" member="no">
+								<cols>3</cols>
+								<object class="sizeritem">
+									<object class="wxButton" name="ID_BUTTON9" variable="ButtonConfigFileCancel" member="yes">
+										<label>Cancel</label>
+										<handler function="OnButtonConfigFileCancelClick" entry="EVT_BUTTON" />
+									</object>
+									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+									<border>5</border>
+									<option>1</option>
+								</object>
+								<object class="sizeritem">
+									<object class="wxButton" name="ID_BUTTON10" variable="ButtonConfigFileOk" member="yes">
+										<label>Ok</label>
+										<handler function="OnButtonConfigFileOkClick" entry="EVT_BUTTON" />
+									</object>
+									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+									<border>5</border>
+									<option>1</option>
+								</object>
+							</object>
+							<flag>wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL</flag>
+							<border>5</border>
+							<option>1</option>
+						</object>
+					</object>
+				</object>
+				<label>Config file</label>
 			</object>
 		</object>
 	</object>

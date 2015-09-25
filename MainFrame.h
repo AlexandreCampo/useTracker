@@ -28,6 +28,7 @@
 #include <wx/tglbtn.h>
 #include <wx/gbsizer.h>
 #include <wx/stattext.h>
+#include <wx/choice.h>
 #include <wx/radiobox.h>
 #include <wx/statbmp.h>
 //*)
@@ -115,6 +116,29 @@ private:
     void OnMenuOpenCaptureSelected(wxCommandEvent& event);
     void OnGLCanvas1MouseEnter(wxMouseEvent& event);
     void OnCheckBoxUseTimeBoundsClick(wxCommandEvent& event);
+    void OnMenuCalibrateSourceSelected(wxCommandEvent& event);
+    void OnMenuLoadCalibrationDataSelected(wxCommandEvent& event);
+    void OnMenuSaveCalibrationDataSelected(wxCommandEvent& event);
+    void OnButtonCalibCalculateClick(wxCommandEvent& event);
+    void OnButtonCalibResetClick(wxCommandEvent& event);
+    void OnButtonCalibSaveClick(wxCommandEvent& event);
+    void OnButtonCalibLoadClick(wxCommandEvent& event);
+    void OnRadioBoxCalibBoardTypeSelect(wxCommandEvent& event);
+    void OnSpinCtrlCalibWidthChange(wxSpinEvent& event);
+    void OnSpinCtrlCalibHeightChange(wxSpinEvent& event);
+    void OnSpinCtrlCalibSquareSizeChange(wxSpinEvent& event);
+    void OnSpinCtrlCalibFramesCountChange(wxSpinEvent& event);
+    void OnSpinCtrlCalibAspectNumChange(wxSpinEvent& event);
+    void OnSpinCtrlCalibAspectDenChange(wxSpinEvent& event);
+    void OnCheckBoxCalibZeroTangentDistClick(wxCommandEvent& event);
+    void OnCheckBoxCalibFixPrincipalPointClick(wxCommandEvent& event);
+    void OnCheckBoxCalibFlipVerticalClick(wxCommandEvent& event);
+    void OnButtonCalibStitchClick(wxCommandEvent& event);
+    void OnSpinCtrlCalibFrameDelayChange(wxSpinEvent& event);
+    void OnChoiceCalibSubdevicesSelect(wxCommandEvent& event);
+    void OnButtonConfigStitchClick(wxCommandEvent& event);
+    void OnButtonConfigResetStitchingClick(wxCommandEvent& event);
+    void OnMenuSaveCaptureSelected(wxCommandEvent& event);
     //*)
 
     //(*Identifiers(MainFrame)
@@ -158,10 +182,43 @@ private:
     static const long ID_STATICTEXT9;
     static const long ID_CHECKBOX2;
     static const long ID_FILEPICKERCTRL1;
+    static const long ID_STATICBITMAP4;
+    static const long ID_BUTTON9;
+    static const long ID_STATICBITMAP5;
+    static const long ID_BUTTON10;
     static const long ID_SCROLLEDWINDOW4;
+    static const long ID_CHOICE1;
+    static const long ID_RADIOBOX2;
+    static const long ID_STATICTEXT10;
+    static const long ID_SPINCTRL4;
+    static const long ID_STATICTEXT11;
+    static const long ID_SPINCTRL5;
+    static const long ID_STATICTEXT12;
+    static const long ID_SPINCTRL9;
+    static const long ID_STATICTEXT13;
+    static const long ID_SPINCTRL10;
+    static const long ID_STATICTEXT16;
+    static const long ID_SPINCTRL13;
+    static const long ID_STATICTEXT14;
+    static const long ID_SPINCTRL11;
+    static const long ID_STATICTEXT15;
+    static const long ID_SPINCTRL12;
+    static const long ID_CHECKBOX3;
+    static const long ID_CHECKBOX4;
+    static const long ID_CHECKBOX5;
+    static const long ID_BITMAPBUTTON5;
+    static const long ID_BUTTON2;
+    static const long ID_BITMAPBUTTON12;
+    static const long ID_BUTTON7;
+    static const long ID_BITMAPBUTTON6;
+    static const long ID_BUTTON5;
+    static const long ID_BITMAPBUTTON7;
+    static const long ID_BUTTON6;
+    static const long ID_SCROLLEDWINDOW3;
     static const long ID_NOTEBOOK1;
-    static const long ID_MENUITEM1;
-    static const long idMeuLoadSettings;
+    static const long idMenuOpenSource;
+    static const long idMenuSaveSource;
+    static const long idMenuLoadSettings;
     static const long idMenuSaveSettings;
     static const long idMenuQuit;
     static const long idMenuAbout;
@@ -169,34 +226,57 @@ private:
     /* static const long ID_SPINCTRL6x; */
     /* static const long ID_SPINCTRL7x; */
     static const long ID_SPINCTRL8x;
+    static const long ID_SPINCTRL13x;
 
     //(*Declarations(MainFrame)
+    wxBitmapButton* BitmapButton2;
     wxButton* ButtonBgSave;
+    wxSpinCtrl* SpinCtrlCalibSquareSize;
     wxBitmapButton* buttonStop;
     wxSpinCtrl* SpinCtrlStartTime;
+    wxBitmapButton* BitmapButton3;
+    wxStaticText* StaticText13;
     wxToggleButton* ToggleButtonProcessing;
+    wxStaticText* StaticText14;
+    wxStaticText* StaticText15;
     wxScrolledWindow* ConfigTab;
     wxSpinCtrl* SpinCtrlDuration;
     wxBitmapButton* buttonPlay;
+    wxSpinCtrl* SpinCtrlCalibAspectDen;
+    wxButton* ButtonCalibCalculate;
     wxBitmapButton* buttonForward;
     wxButton* ButtonBgRecalculate;
+    wxStaticBitmap* StaticBitmap5;
+    wxSpinCtrl* SpinCtrlCalibFramesCount;
     wxMenuItem* MenuSaveSettings;
     wxBitmapButton* buttonStepBackwards;
+    wxCheckBox* CheckBoxCalibZeroTangentDist;
     wxScrolledWindow* BackgroundTab;
     wxStaticText* StaticText1;
+    wxScrolledWindow* CalibrationTab;
+    wxStaticText* StaticText10;
+    wxStaticText* StaticText16;
     wxSlider* videoSlider;
     wxStaticBox* StaticBox2;
+    wxCheckBox* CheckBoxCalibFixPrincipalPoint;
     wxSpinCtrl* SpinCtrlTimestep;
     wxStaticText* StaticText3;
     wxButton* ButtonBgLoad;
+    wxChoice* ChoiceCalibSubdevices;
+    wxButton* ButtonConfigStitch;
+    wxButton* ButtonCalibSave;
     wxRadioBox* RadioBoxMethod;
     wxCheckBox* CheckBoxUseTimeBounds;
     wxGLCanvas* GLCanvas1;
+    wxButton* ButtonConfigResetStitching;
     wxBitmapButton* buttonStepForward;
     wxStaticText* StaticText8;
+    wxStaticText* StaticText12;
+    wxBitmapButton* BitmapButton4;
     wxFileDialog* FileDialog1;
     wxStaticBox* StaticBox1;
     wxBitmapButton* buttonBackwards;
+    wxSpinCtrl* SpinCtrlCalibAspectNum;
     wxStaticText* StaticText7;
     wxSpinCtrl* SpinCtrlBgEnd;
     wxScrolledWindow* ProcessingTab;
@@ -208,22 +288,40 @@ private:
     wxNotebook* Notebook1;
     wxStaticBitmap* StaticBitmap3;
     wxStaticBitmap* StaticBitmap1;
+    wxSpinCtrl* SpinCtrlCalibFrameDelay;
+    wxStaticBitmap* StaticBitmap4;
     wxStaticText* StaticText6;
     wxMenuItem* MenuOpenCapture;
     wxMenuItem* MenuLoadSettings;
+    wxCheckBox* CheckBoxCalibFlipVertical;
+    wxSpinCtrl* SpinCtrlCalibWidth;
     wxFilePickerCtrl* FilePickerCtrlZones;
+    wxButton* ButtonCalibReset;
+    wxBitmapButton* BitmapButton1;
+    wxSpinCtrl* SpinCtrlCalibHeight;
+    wxRadioBox* RadioBoxCalibBoardType;
     wxBitmapButton* buttonOutput;
     wxStaticText* StaticText9;
     wxCheckBox* CheckBoxRecalculate;
     wxBitmapButton* buttonHud;
+    wxStaticText* StaticText11;
+    wxMenuItem* MenuSaveCapture;
+    wxButton* ButtonCalibLoad;
     wxStaticBitmap* StaticBitmap2;
     //*)
 
     wxSpinCtrlDouble* SpinCtrlTimestepDouble;
+    wxSpinCtrlDouble* SpinCtrlCalibFrameDelayDouble;
+    wxStaticBoxSizer* StaticBoxSizerCalibSubdevices2;
+    wxStaticBoxSizer* StaticBoxSizerConfigMultiSource2;
+    wxFlexGridSizer* FlexGridSizerCalibStitch2;
+    wxFlexGridSizer* FlexGridSizerCalibMain2;
+
 
 // My methods
 
     void OnSpinCtrlDoubleTimestepChange(wxSpinDoubleEvent& event);
+    void OnSpinCtrlDoubleCalibFrameDelayChange(wxSpinDoubleEvent& event);
 
     void OnUpdateInternalParameters (wxCommandEvent& event);
 
@@ -243,6 +341,7 @@ private:
     void AdjustMarqueeAspectRatio();
     void AdjustOrthoAspectRatio(int w, int h);
     void UpdateUI();
+    void UpdateCalibrationTab();
 
     void ResetImageProcessingEngine(Parameters& parameters);
     void ResetImageProcessingEngine();

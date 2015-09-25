@@ -242,9 +242,17 @@ wxLongLong CaptureAVTCamera::InternalGetTime()
 
 void CaptureAVTCamera::SaveXML(FileStorage& fs)
 {
-    fs << "Source" << "{" << "Type";
-    fs << "AVTcamera" << "Device" << device;
-    fs << "}";
+    fs << << "Type" << "AVTcamera";
+    fs << "Device" << device;
+
+    if (calibration.calibrated)
+    {
+	fs << "Calibration" << "{";
+
+	calibration.SaveXML(fs);
+
+	fs << "}";
+    }
 }
 
 void CaptureAVTCamera::LoadXML(FileNode& fn)
@@ -252,6 +260,12 @@ void CaptureAVTCamera::LoadXML(FileNode& fn)
     if (!fn.empty())
     {
 	device = (int)fn["Device"];
+
+	FileNode calibNode = fn ["Calibration"];
+	if (!calibNode.empty())
+	{
+	    calibration.LoadXML (calibNode);
+	}
     }
 }
 

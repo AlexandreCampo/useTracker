@@ -27,7 +27,6 @@ struct CaptureVideo : Capture
     std::string filename;
     cv::VideoCapture source;
 
-
     unsigned int frameNumber = 0;
     wxLongLong startTime = 0;
     wxLongLong nextFrameTime = 0;
@@ -49,7 +48,7 @@ struct CaptureVideo : Capture
 
     bool GetFrame (double time);
 
-    void Start();
+//    void Start();
     void Stop();
 
     void Play();

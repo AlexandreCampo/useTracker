@@ -27,6 +27,8 @@ public:
     int startTime = -1;
     int durationTime = -1;
 
+    bool multiCapture = false;
+
     void loadXML (std::string filename);
     void parseCommandLine (int argc, char** argv);
 };

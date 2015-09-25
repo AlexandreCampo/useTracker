@@ -14,5 +14,8 @@ void SeedFill (Mat& marked, Mat& map, Mat& mask, int x, int y, unsigned char tar
 void EqualizeToRGB (Mat& src, Mat& dst);
 void EqualizeBW (Mat& src, Mat& dst);
 
+void Thinning(const cv::Mat& src, cv::Mat& dst);
+void ThinningIteration(cv::Mat& img, int iter);
+
 
 #endif

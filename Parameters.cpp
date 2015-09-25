@@ -44,6 +44,7 @@ void Parameters::parseCommandLine (int argc, char** argv)
 	("mask,m", po::value<string>(), "mask image for zones of interest filename")
 	("start,s", po::value<float>(), "start time of tracking")
 	("length,l", po::value<float>(), "length (duration) of tracking")
+	("multi,x", "Activate multi usb capture (debug)")
 	("background,b", po::value<string>(), "specify the background image for motion detection")
 	;
 
@@ -91,6 +92,12 @@ void Parameters::parseCommandLine (int argc, char** argv)
     {
 	usbDevice = vm["usb"].as<int>();
 	std::cout << "Using USB camera, device=" << usbDevice << " as data source" << std::endl;
+    }
+
+    if (vm.count("multi"))
+    {
+	multiCapture = true;
+	std::cout << "Debug : multi capture as data source" << std::endl;
     }
 
     if (vm.count("avt"))

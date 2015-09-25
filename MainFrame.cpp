@@ -65,6 +65,8 @@
 #include "CaptureUSBCamera.h"
 #include "CaptureImage.h"
 #include "CaptureAVTCamera.h"
+#include "CaptureMultiUSBCamera.h"
+#include "CaptureMultiVideo.h"
 #include "CaptureDefault.h"
 #include "Tracker.h"
 
@@ -140,10 +142,43 @@ const long MainFrame::ID_SPINCTRL8 = wxNewId();
 const long MainFrame::ID_STATICTEXT9 = wxNewId();
 const long MainFrame::ID_CHECKBOX2 = wxNewId();
 const long MainFrame::ID_FILEPICKERCTRL1 = wxNewId();
+const long MainFrame::ID_STATICBITMAP4 = wxNewId();
+const long MainFrame::ID_BUTTON9 = wxNewId();
+const long MainFrame::ID_STATICBITMAP5 = wxNewId();
+const long MainFrame::ID_BUTTON10 = wxNewId();
 const long MainFrame::ID_SCROLLEDWINDOW4 = wxNewId();
+const long MainFrame::ID_CHOICE1 = wxNewId();
+const long MainFrame::ID_RADIOBOX2 = wxNewId();
+const long MainFrame::ID_STATICTEXT10 = wxNewId();
+const long MainFrame::ID_SPINCTRL4 = wxNewId();
+const long MainFrame::ID_STATICTEXT11 = wxNewId();
+const long MainFrame::ID_SPINCTRL5 = wxNewId();
+const long MainFrame::ID_STATICTEXT12 = wxNewId();
+const long MainFrame::ID_SPINCTRL9 = wxNewId();
+const long MainFrame::ID_STATICTEXT13 = wxNewId();
+const long MainFrame::ID_SPINCTRL10 = wxNewId();
+const long MainFrame::ID_STATICTEXT16 = wxNewId();
+const long MainFrame::ID_SPINCTRL13 = wxNewId();
+const long MainFrame::ID_STATICTEXT14 = wxNewId();
+const long MainFrame::ID_SPINCTRL11 = wxNewId();
+const long MainFrame::ID_STATICTEXT15 = wxNewId();
+const long MainFrame::ID_SPINCTRL12 = wxNewId();
+const long MainFrame::ID_CHECKBOX3 = wxNewId();
+const long MainFrame::ID_CHECKBOX4 = wxNewId();
+const long MainFrame::ID_CHECKBOX5 = wxNewId();
+const long MainFrame::ID_BITMAPBUTTON5 = wxNewId();
+const long MainFrame::ID_BUTTON2 = wxNewId();
+const long MainFrame::ID_BITMAPBUTTON12 = wxNewId();
+const long MainFrame::ID_BUTTON7 = wxNewId();
+const long MainFrame::ID_BITMAPBUTTON6 = wxNewId();
+const long MainFrame::ID_BUTTON5 = wxNewId();
+const long MainFrame::ID_BITMAPBUTTON7 = wxNewId();
+const long MainFrame::ID_BUTTON6 = wxNewId();
+const long MainFrame::ID_SCROLLEDWINDOW3 = wxNewId();
 const long MainFrame::ID_NOTEBOOK1 = wxNewId();
-const long MainFrame::ID_MENUITEM1 = wxNewId();
-const long MainFrame::idMeuLoadSettings = wxNewId();
+const long MainFrame::idMenuOpenSource = wxNewId();
+const long MainFrame::idMenuSaveSource = wxNewId();
+const long MainFrame::idMenuLoadSettings = wxNewId();
 const long MainFrame::idMenuSaveSettings = wxNewId();
 const long MainFrame::idMenuQuit = wxNewId();
 const long MainFrame::idMenuAbout = wxNewId();
@@ -152,6 +187,7 @@ const long MainFrame::idMenuAbout = wxNewId();
 // const long MainFrame::ID_SPINCTRL6x = wxNewId();
 // const long MainFrame::ID_SPINCTRL7x = wxNewId();
 const long MainFrame::ID_SPINCTRL8x = wxNewId();
+const long MainFrame::ID_SPINCTRL13x = wxNewId();
 
 
 BEGIN_EVENT_TABLE(MainFrame,wxFrame)
@@ -166,17 +202,27 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     wxMenuItem* MenuItem2;
     wxStaticBoxSizer* StaticBoxSizer2;
     wxMenuItem* MenuItem1;
+    wxFlexGridSizer* FlexGridSizer8;
     wxFlexGridSizer* FlexGridSizer1;
     wxFlexGridSizer* FlexGridSizer2;
     wxMenu* Menu1;
     wxFlexGridSizer* FlexGridSizer11;
+    wxFlexGridSizer* FlexGridSizer7;
+    wxStaticBoxSizer* StaticBoxSizerConfigMultiSource;
     wxFlexGridSizer* FlexGridSizer4;
+    wxFlexGridSizer* FlexGridSizer9;
+    wxStaticBoxSizer* StaticBoxSizer3;
+    wxFlexGridSizer* FlexGridSizer14;
     wxFlexGridSizer* FlexGridSizer6;
     wxFlexGridSizer* FlexGridSizer3;
+    wxFlexGridSizer* FlexGridSizerCalibMain;
     wxStaticBoxSizer* StaticBoxSizer4;
+    wxStaticBoxSizer* StaticBoxSizerCalibSubdevices;
     wxFlexGridSizer* FlexGridSizer10;
+    wxFlexGridSizer* FlexGridSizer13;
     wxMenuBar* MenuBar1;
     wxGridBagSizer* GridBagSizer1;
+    wxFlexGridSizer* FlexGridSizer12;
     wxMenu* Menu2;
     wxFlexGridSizer* FlexGridSizer5;
     wxStaticBoxSizer* StaticBoxSizer1;
@@ -314,7 +360,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     SpinCtrlTimestep = new wxSpinCtrl(ConfigTab, ID_SPINCTRL8, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 100, 0, _T("ID_SPINCTRL8"));
     SpinCtrlTimestep->SetValue(_T("0"));
     GridBagSizer1->Add(SpinCtrlTimestep, wxGBPosition(3, 1), wxDefaultSpan, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 1);
-    StaticText9 = new wxStaticText(ConfigTab, ID_STATICTEXT9, _("Use time bounds"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT9"));
+    StaticText9 = new wxStaticText(ConfigTab, ID_STATICTEXT9, _("Apply limits"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT9"));
     GridBagSizer1->Add(StaticText9, wxGBPosition(4, 0), wxDefaultSpan, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     CheckBoxUseTimeBounds = new wxCheckBox(ConfigTab, ID_CHECKBOX2, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX2"));
     CheckBoxUseTimeBounds->SetValue(false);
@@ -325,20 +371,130 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FilePickerCtrlZones = new wxFilePickerCtrl(ConfigTab, ID_FILEPICKERCTRL1, wxEmptyString, _("Choose an image to use for zones"), _T("*.png"), wxDefaultPosition, wxDefaultSize, wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
     StaticBoxSizer4->Add(FilePickerCtrlZones, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer3->Add(StaticBoxSizer4, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    StaticBoxSizerConfigMultiSource = new wxStaticBoxSizer(wxHORIZONTAL, ConfigTab, _("Multi source"));
+    FlexGridSizer13 = new wxFlexGridSizer(0, 2, 0, 0);
+    StaticBitmap4 = new wxStaticBitmap(ConfigTab, ID_STATICBITMAP4, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Apps-plasmagik-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP4"));
+    FlexGridSizer13->Add(StaticBitmap4, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    ButtonConfigStitch = new wxButton(ConfigTab, ID_BUTTON9, _("Stitch images"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON9"));
+    FlexGridSizer13->Add(ButtonConfigStitch, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    StaticBitmap5 = new wxStaticBitmap(ConfigTab, ID_STATICBITMAP5, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-edit-delete-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP5"));
+    FlexGridSizer13->Add(StaticBitmap5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    ButtonConfigResetStitching = new wxButton(ConfigTab, ID_BUTTON10, _("Reset stitching"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON10"));
+    FlexGridSizer13->Add(ButtonConfigResetStitching, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    StaticBoxSizerConfigMultiSource->Add(FlexGridSizer13, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer3->Add(StaticBoxSizerConfigMultiSource, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ConfigTab->SetSizer(FlexGridSizer3);
     FlexGridSizer3->Fit(ConfigTab);
     FlexGridSizer3->SetSizeHints(ConfigTab);
+    CalibrationTab = new wxScrolledWindow(Notebook1, ID_SCROLLEDWINDOW3, wxDefaultPosition, wxDefaultSize, wxVSCROLL|wxHSCROLL, _T("ID_SCROLLEDWINDOW3"));
+    FlexGridSizer7 = new wxFlexGridSizer(0, 1, 0, 0);
+    FlexGridSizer7->AddGrowableCol(0);
+    StaticBoxSizer3 = new wxStaticBoxSizer(wxVERTICAL, CalibrationTab, _("Calibration of the source"));
+    FlexGridSizerCalibMain = new wxFlexGridSizer(0, 1, 0, 0);
+    FlexGridSizerCalibMain->AddGrowableCol(0);
+    StaticBoxSizerCalibSubdevices = new wxStaticBoxSizer(wxHORIZONTAL, CalibrationTab, _("Select subdevice"));
+    ChoiceCalibSubdevices = new wxChoice(CalibrationTab, ID_CHOICE1, wxDefaultPosition, wxDefaultSize, 0, 0, 0, wxDefaultValidator, _T("ID_CHOICE1"));
+    StaticBoxSizerCalibSubdevices->Add(ChoiceCalibSubdevices, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizerCalibMain->Add(StaticBoxSizerCalibSubdevices, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 1);
+    wxString __wxRadioBoxChoices_2[3] =
+    {
+    	_("Chessboard"),
+    	_("Circles grid"),
+    	_("Asymmetric circles grid")
+    };
+    RadioBoxCalibBoardType = new wxRadioBox(CalibrationTab, ID_RADIOBOX2, _("Board type"), wxDefaultPosition, wxDefaultSize, 3, __wxRadioBoxChoices_2, 3, 0, wxDefaultValidator, _T("ID_RADIOBOX2"));
+    RadioBoxCalibBoardType->SetSelection(0);
+    FlexGridSizerCalibMain->Add(RadioBoxCalibBoardType, 0, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 1);
+    FlexGridSizer8 = new wxFlexGridSizer(0, 2, 0, 0);
+    StaticText10 = new wxStaticText(CalibrationTab, ID_STATICTEXT10, _("Columns"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT10"));
+    FlexGridSizer8->Add(StaticText10, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    SpinCtrlCalibWidth = new wxSpinCtrl(CalibrationTab, ID_SPINCTRL4, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 3, 100, 0, _T("ID_SPINCTRL4"));
+    SpinCtrlCalibWidth->SetValue(_T("0"));
+    FlexGridSizer8->Add(SpinCtrlCalibWidth, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    StaticText11 = new wxStaticText(CalibrationTab, ID_STATICTEXT11, _("Rows"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT11"));
+    FlexGridSizer8->Add(StaticText11, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    SpinCtrlCalibHeight = new wxSpinCtrl(CalibrationTab, ID_SPINCTRL5, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 3, 100, 0, _T("ID_SPINCTRL5"));
+    SpinCtrlCalibHeight->SetValue(_T("0"));
+    FlexGridSizer8->Add(SpinCtrlCalibHeight, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    StaticText12 = new wxStaticText(CalibrationTab, ID_STATICTEXT12, _("Sidelen (mm)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT12"));
+    FlexGridSizer8->Add(StaticText12, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    SpinCtrlCalibSquareSize = new wxSpinCtrl(CalibrationTab, ID_SPINCTRL9, _T("10"), wxDefaultPosition, wxDefaultSize, 0, 1, 1000, 10, _T("ID_SPINCTRL9"));
+    SpinCtrlCalibSquareSize->SetValue(_T("10"));
+    FlexGridSizer8->Add(SpinCtrlCalibSquareSize, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    StaticText13 = new wxStaticText(CalibrationTab, ID_STATICTEXT13, _("# of frames"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT13"));
+    FlexGridSizer8->Add(StaticText13, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    SpinCtrlCalibFramesCount = new wxSpinCtrl(CalibrationTab, ID_SPINCTRL10, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 100, 0, _T("ID_SPINCTRL10"));
+    SpinCtrlCalibFramesCount->SetValue(_T("0"));
+    FlexGridSizer8->Add(SpinCtrlCalibFramesCount, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    StaticText16 = new wxStaticText(CalibrationTab, ID_STATICTEXT16, _("Frame delay (s)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT16"));
+    FlexGridSizer8->Add(StaticText16, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    SpinCtrlCalibFrameDelay = new wxSpinCtrl(CalibrationTab, ID_SPINCTRL13, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 100, 0, _T("ID_SPINCTRL13"));
+    SpinCtrlCalibFrameDelay->SetValue(_T("0"));
+    FlexGridSizer8->Add(SpinCtrlCalibFrameDelay, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    StaticText14 = new wxStaticText(CalibrationTab, ID_STATICTEXT14, _("Aspect"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT14"));
+    FlexGridSizer8->Add(StaticText14, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer9 = new wxFlexGridSizer(0, 3, 0, 0);
+    SpinCtrlCalibAspectNum = new wxSpinCtrl(CalibrationTab, ID_SPINCTRL11, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 100, 0, _T("ID_SPINCTRL11"));
+    SpinCtrlCalibAspectNum->SetValue(_T("0"));
+    SpinCtrlCalibAspectNum->SetMinSize(wxDLG_UNIT(CalibrationTab,wxSize(25,-1)));
+    FlexGridSizer9->Add(SpinCtrlCalibAspectNum, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    StaticText15 = new wxStaticText(CalibrationTab, ID_STATICTEXT15, _(":"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT15"));
+    FlexGridSizer9->Add(StaticText15, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    SpinCtrlCalibAspectDen = new wxSpinCtrl(CalibrationTab, ID_SPINCTRL12, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 100, 0, _T("ID_SPINCTRL12"));
+    SpinCtrlCalibAspectDen->SetValue(_T("0"));
+    SpinCtrlCalibAspectDen->SetMinSize(wxDLG_UNIT(CalibrationTab,wxSize(25,-1)));
+    FlexGridSizer9->Add(SpinCtrlCalibAspectDen, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    FlexGridSizer8->Add(FlexGridSizer9, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    FlexGridSizerCalibMain->Add(FlexGridSizer8, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 1);
+    FlexGridSizer14 = new wxFlexGridSizer(0, 1, 0, 0);
+    FlexGridSizer14->AddGrowableCol(0);
+    CheckBoxCalibZeroTangentDist = new wxCheckBox(CalibrationTab, ID_CHECKBOX3, _("Assume no tangential disto"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX3"));
+    CheckBoxCalibZeroTangentDist->SetValue(false);
+    FlexGridSizer14->Add(CheckBoxCalibZeroTangentDist, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 0);
+    CheckBoxCalibFixPrincipalPoint = new wxCheckBox(CalibrationTab, ID_CHECKBOX4, _("Fix principal pt at center"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX4"));
+    CheckBoxCalibFixPrincipalPoint->SetValue(false);
+    FlexGridSizer14->Add(CheckBoxCalibFixPrincipalPoint, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 0);
+    CheckBoxCalibFlipVertical = new wxCheckBox(CalibrationTab, ID_CHECKBOX5, _("Vertical flip"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX5"));
+    CheckBoxCalibFlipVertical->SetValue(false);
+    FlexGridSizer14->Add(CheckBoxCalibFlipVertical, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 0);
+    FlexGridSizerCalibMain->Add(FlexGridSizer14, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 1);
+    FlexGridSizer12 = new wxFlexGridSizer(0, 2, 0, 0);
+    BitmapButton1 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON5, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Categories-applications-system-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON5"));
+    FlexGridSizer12->Add(BitmapButton1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    ButtonCalibCalculate = new wxButton(CalibrationTab, ID_BUTTON2, _("Calibrate"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON2"));
+    FlexGridSizer12->Add(ButtonCalibCalculate, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    BitmapButton4 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON12, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-edit-delete-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON12"));
+    FlexGridSizer12->Add(BitmapButton4, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    ButtonCalibReset = new wxButton(CalibrationTab, ID_BUTTON7, _("Reset"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON7"));
+    FlexGridSizer12->Add(ButtonCalibReset, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    BitmapButton2 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON6, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-open-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON6"));
+    FlexGridSizer12->Add(BitmapButton2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    ButtonCalibLoad = new wxButton(CalibrationTab, ID_BUTTON5, _("Load calibration"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON5"));
+    FlexGridSizer12->Add(ButtonCalibLoad, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    BitmapButton3 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON7, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-save-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON7"));
+    FlexGridSizer12->Add(BitmapButton3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    ButtonCalibSave = new wxButton(CalibrationTab, ID_BUTTON6, _("Save calibration"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON6"));
+    FlexGridSizer12->Add(ButtonCalibSave, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    FlexGridSizerCalibMain->Add(FlexGridSizer12, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    StaticBoxSizer3->Add(FlexGridSizerCalibMain, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer7->Add(StaticBoxSizer3, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    CalibrationTab->SetSizer(FlexGridSizer7);
+    FlexGridSizer7->Fit(CalibrationTab);
+    FlexGridSizer7->SetSizeHints(CalibrationTab);
     Notebook1->AddPage(ProcessingTab, _("Main"), false);
     Notebook1->AddPage(BackgroundTab, _("Bg"), false);
     Notebook1->AddPage(ConfigTab, _("Config"), false);
+    Notebook1->AddPage(CalibrationTab, _("Calib"), false);
     FlexGridSizer1->Add(Notebook1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     SetSizer(FlexGridSizer1);
     MenuBar1 = new wxMenuBar();
     Menu1 = new wxMenu();
-    MenuOpenCapture = new wxMenuItem(Menu1, ID_MENUITEM1, _("Open source\tCtrl+O"), wxEmptyString, wxITEM_NORMAL);
+    MenuOpenCapture = new wxMenuItem(Menu1, idMenuOpenSource, _("Open source\tCtrl+O"), wxEmptyString, wxITEM_NORMAL);
     Menu1->Append(MenuOpenCapture);
+    MenuSaveCapture = new wxMenuItem(Menu1, idMenuSaveSource, _("Save source\tCtrl+X"), wxEmptyString, wxITEM_NORMAL);
+    Menu1->Append(MenuSaveCapture);
     Menu1->Break();
-    MenuLoadSettings = new wxMenuItem(Menu1, idMeuLoadSettings, _("Load settings\tCtrl+L"), wxEmptyString, wxITEM_NORMAL);
+    MenuLoadSettings = new wxMenuItem(Menu1, idMenuLoadSettings, _("Load settings\tCtrl+L"), wxEmptyString, wxITEM_NORMAL);
     Menu1->Append(MenuLoadSettings);
     MenuSaveSettings = new wxMenuItem(Menu1, idMenuSaveSettings, _("Save settings\tCtrl+S"), wxEmptyString, wxITEM_NORMAL);
     Menu1->Append(MenuSaveSettings);
@@ -387,9 +543,28 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     Connect(ID_SPINCTRL7,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlDurationChange);
     Connect(ID_CHECKBOX2,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&MainFrame::OnCheckBoxUseTimeBoundsClick);
     Connect(ID_FILEPICKERCTRL1,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&MainFrame::OnFilePickerCtrlZonesFileChanged);
+    Connect(ID_BUTTON9,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnButtonConfigStitchClick);
+    Connect(ID_BUTTON10,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnButtonConfigResetStitchingClick);
+    Connect(ID_CHOICE1,wxEVT_COMMAND_CHOICE_SELECTED,(wxObjectEventFunction)&MainFrame::OnChoiceCalibSubdevicesSelect);
+    Connect(ID_RADIOBOX2,wxEVT_COMMAND_RADIOBOX_SELECTED,(wxObjectEventFunction)&MainFrame::OnRadioBoxCalibBoardTypeSelect);
+    Connect(ID_SPINCTRL4,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlCalibWidthChange);
+    Connect(ID_SPINCTRL5,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlCalibHeightChange);
+    Connect(ID_SPINCTRL9,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlCalibSquareSizeChange);
+    Connect(ID_SPINCTRL10,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlCalibFramesCountChange);
+    Connect(ID_SPINCTRL13,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlCalibFrameDelayChange);
+    Connect(ID_SPINCTRL11,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlCalibAspectNumChange);
+    Connect(ID_SPINCTRL12,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlCalibAspectDenChange);
+    Connect(ID_CHECKBOX3,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&MainFrame::OnCheckBoxCalibZeroTangentDistClick);
+    Connect(ID_CHECKBOX4,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&MainFrame::OnCheckBoxCalibFixPrincipalPointClick);
+    Connect(ID_CHECKBOX5,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&MainFrame::OnCheckBoxCalibFlipVerticalClick);
+    Connect(ID_BUTTON2,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnButtonCalibCalculateClick);
+    Connect(ID_BUTTON7,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnButtonCalibResetClick);
+    Connect(ID_BUTTON5,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnButtonCalibLoadClick);
+    Connect(ID_BUTTON6,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnButtonCalibSaveClick);
     Connect(ID_NOTEBOOK1,wxEVT_COMMAND_NOTEBOOK_PAGE_CHANGED,(wxObjectEventFunction)&MainFrame::OnNotebook1PageChanged);
-    Connect(ID_MENUITEM1,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnMenuOpenCaptureSelected);
-    Connect(idMeuLoadSettings,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnMenuLoadSettingsSelected);
+    Connect(idMenuOpenSource,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnMenuOpenCaptureSelected);
+    Connect(idMenuSaveSource,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnMenuSaveCaptureSelected);
+    Connect(idMenuLoadSettings,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnMenuLoadSettingsSelected);
     Connect(idMenuSaveSettings,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnMenuSaveSettingsSelected);
     Connect(idMenuQuit,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnQuit);
     Connect(idMenuAbout,wxEVT_COMMAND_MENU_SELECTED,(wxObjectEventFunction)&MainFrame::OnAbout);
@@ -407,6 +582,21 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     SpinCtrlTimestepDouble->SetValue(_T("0"));
     GridBagSizer1->Replace(SpinCtrlTimestep, SpinCtrlTimestepDouble);
     SpinCtrlTimestepDouble->Bind(wxEVT_SPINCTRLDOUBLE, &MainFrame::OnSpinCtrlDoubleTimestepChange, this);
+    SpinCtrlTimestep->Hide();
+
+    SpinCtrlCalibFrameDelayDouble = new wxSpinCtrlDouble(CalibrationTab, ID_SPINCTRL13x, _T("0"), wxDefaultPosition, wxDefaultSize, 0, -1, 10000, 0, 0.01, _T("ID_SPINCTRL13"));
+    SpinCtrlCalibFrameDelayDouble->SetValue(_T("0"));
+    FlexGridSizer8->Replace(SpinCtrlCalibFrameDelay, SpinCtrlCalibFrameDelayDouble);
+    SpinCtrlCalibFrameDelayDouble->Bind(wxEVT_SPINCTRLDOUBLE, &MainFrame::OnSpinCtrlDoubleCalibFrameDelayChange, this);
+    SpinCtrlCalibFrameDelay->Hide();
+//    FlexGridSizer8->Layout();
+//    FlexGridSizer7->Fit(CalibrationTab);
+
+    // save a sizer to show/hide
+    StaticBoxSizerCalibSubdevices2 = StaticBoxSizerCalibSubdevices;
+    StaticBoxSizerConfigMultiSource2 = StaticBoxSizerConfigMultiSource;
+//    FlexGridSizerCalibStitch2 = FlexGridSizerCalibStitch;
+//    FlexGridSizerCalibMain2 = FlexGridSizerCalibMain;
 
     // adjust scrollbars in tabs
     int sz = FlexGridSizer3->CalcMin().GetHeight() * 115 / 100;
@@ -444,6 +634,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     ListBoxPipelinePlugins->Append("record video");
     ListBoxPipelinePlugins->Append("record pixels");
     ListBoxPipelinePlugins->Append("stopwatch");
+    ListBoxPipelinePlugins->Append("remote control");
 
     #ifdef ARUCO
     ListBoxPipelinePlugins->Append("aruco");
@@ -492,6 +683,18 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
 	ipEngine.capture = new CaptureAVTCamera (parameters.avtDevice);
 #endif //VIMBA
     }
+    else if (parameters.multiCapture == true)
+    {
+	// vector<int> cd;
+	// cd.push_back(0);
+	// cd.push_back(1);
+	// ipEngine.capture = new CaptureMultiUSBCamera (cd);
+
+	vector<string> filenames;
+	filenames.push_back("movie1.mp4");
+	filenames.push_back("movie2.mp4");
+	ipEngine.capture = new CaptureMultiVideo (filenames);
+    }
 
     if (!ipEngine.capture) ipEngine.capture = new CaptureDefault();
     wxString str = "USE Tracker: ";
@@ -525,6 +728,32 @@ void MainFrame::OnAbout(wxCommandEvent& event)
 
 void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 {
+    Mat oglScreenScaled;
+
+    // resize oglscreen in case it is too big....
+    if (oglScreen.cols >= 4096  || oglScreen.rows >= 4096)
+    {
+	Mat tmp;
+	if ((activeTab == ProcessingTab) && showProcessing)
+	    tmp = Mat (oglScreen.size(), CV_8U);
+	else
+	    tmp = Mat (oglScreen.size(), CV_8UC3);
+
+	float coeff = 1;
+	if (oglScreen.cols > oglScreen.rows)
+	    coeff = oglScreen.cols / 4096.0;
+	else 
+	    coeff = oglScreen.rows / 4096.0;
+	
+	Size sz (oglScreen.cols / coeff, oglScreen.rows / coeff);
+	resize (oglScreen, tmp, sz);
+	oglScreenScaled = tmp;
+    }
+    else
+    {
+	oglScreenScaled = oglScreen.clone();
+    }
+
     GLCanvas1->SetCurrent();
     wxPaintDC(this);
 
@@ -556,18 +785,18 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     // BW
-    if (activeTab == ProcessingTab && showProcessing)
+    if ((activeTab == ProcessingTab) && showProcessing)
     {
     	glTexImage2D(
     	    GL_TEXTURE_2D,
     	    0,
     	    GL_RGB,
-    	    oglScreen.cols,
-    	    oglScreen.rows,
+    	    oglScreenScaled.cols,
+    	    oglScreenScaled.rows,
     	    0,
     	    GL_LUMINANCE,
     	    GL_UNSIGNED_BYTE,
-    	    oglScreen.data);
+    	    oglScreenScaled.data);
     }
     // BGR image
     else
@@ -576,13 +805,15 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 	    GL_TEXTURE_2D,
 	    0,
 	    GL_RGB,
-    	    oglScreen.cols,
-    	    oglScreen.rows,
+    	    oglScreenScaled.cols,
+    	    oglScreenScaled.rows,
 	    0,
 	    GL_BGR,
 	    GL_UNSIGNED_BYTE,
-	    oglScreen.data);
+	    oglScreenScaled.data);
     }
+
+//    SaveMatToPNG (oglScreen, "debugStitchedOglScreen.png");
 
     // Draw a textured quad
     glBegin(GL_QUADS);
@@ -594,56 +825,60 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 
     // Draw HUD stuff
     // --------------
-    if (hudVisible && activeTab != BackgroundTab)
+    if (hudVisible && (activeTab != BackgroundTab))
     {
-
-	// Create Texture
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(
-	    GL_TEXTURE_2D,
-	    0,
-	    GL_RGBA,
-	    hud.cols,
-	    hud.rows,
-	    0,
-	    GL_BGRA,
-	    GL_UNSIGNED_BYTE,
-	    hud.data);
-
-	// Draw a textured quad
-	glColor4f (1.0f, 1.0f, 1.0f, 0.5f);
-	glBegin(GL_QUADS);
-	glTexCoord2f(zoomStartX, zoomStartY); glVertex2f(0.0f, 0.0f);
-	glTexCoord2f(zoomEndX, zoomStartY); glVertex2f(hud.cols, 0.0f);
-	glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(hud.cols, hud.rows);
-	glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, hud.rows);
-	glEnd();
-
-	// Create Texture
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(
-	    GL_TEXTURE_2D,
-	    0,
-	    GL_RGBA,
-	    hudApp.cols,
-	    hudApp.rows,
-	    0,
-	    GL_BGRA,
-	    GL_UNSIGNED_BYTE,
-	    hudApp.data);
-
-	// Draw a textured quad
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glColor4f (1.0f, 1.0f, 1.0f, 1.0f);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0f, 0.0f);
-	glTexCoord2f(1.0f, 0.0f); glVertex2f(hudApp.cols, 0.0f);
-	glTexCoord2f(1.0f, 1.0f); glVertex2f(hudApp.cols, hudApp.rows);
-	glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, hudApp.rows);
-	glEnd();
+	if (hud.cols < 4096  || hud.rows < 4096)
+	{
+	    // Create Texture
+	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	    glTexImage2D(
+		GL_TEXTURE_2D,
+		0,
+		GL_RGBA,
+		hud.cols,
+		hud.rows,
+		0,
+		GL_BGRA,
+		GL_UNSIGNED_BYTE,
+		hud.data);
+	    
+	    // Draw a textured quad
+	    glColor4f (1.0f, 1.0f, 1.0f, 0.5f);
+	    glBegin(GL_QUADS);
+	    glTexCoord2f(zoomStartX, zoomStartY); glVertex2f(0.0f, 0.0f);
+	    glTexCoord2f(zoomEndX, zoomStartY); glVertex2f(hud.cols, 0.0f);
+	    glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(hud.cols, hud.rows);
+	    glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, hud.rows);
+	    glEnd();
+	    
+	    // Create Texture
+	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	    glTexImage2D(
+		GL_TEXTURE_2D,
+		0,
+		GL_RGBA,
+		hudApp.cols,
+		hudApp.rows,
+		0,
+		GL_BGRA,
+		GL_UNSIGNED_BYTE,
+		hudApp.data);
+	    
+	    // Draw a textured quad
+	    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	    glColor4f (1.0f, 1.0f, 1.0f, 1.0f);
+	    glBegin(GL_QUADS);
+	    glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0f, 0.0f);
+	    glTexCoord2f(1.0f, 0.0f); glVertex2f(hudApp.cols, 0.0f);
+	    glTexCoord2f(1.0f, 1.0f); glVertex2f(hudApp.cols, hudApp.rows);
+	    glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, hudApp.rows);
+	    glEnd();
+	}
     }
-
+	
+//    SaveMatToPNG (hud, "debugStitchedHud.png");
+    
     glFlush();
     GLCanvas1->SwapBuffers();
 }
@@ -674,7 +909,7 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 	else getNextFrame = false;
     }
 
-    // process frames only out of bg tab
+    // process frames only out of bg tab & calib tab
     if (activeTab != BackgroundTab)
     {
 	if (play)
@@ -697,7 +932,15 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 	hudApp.setTo (0);
 	if (hudVisible) PrintInfoToHud();
 
-	ipEngine.Step(hudVisible);
+	if (activeTab != CalibrationTab)
+	{
+	    ipEngine.Step(hudVisible);
+	}
+	else if (activeTab == CalibrationTab)
+	{
+	    ipEngine.capture->Calibrate();
+	    ipEngine.capture->CalibrationOutputHud(hud);
+	}
     }
 
     // draw the main graphics screen
@@ -705,8 +948,10 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 	oglScreen = ipEngine.pipelineSnapshot;
     else if (activeTab == ProcessingTab || activeTab == ConfigTab)
 	oglScreen = ipEngine.capture->frame;
+    else if (activeTab == CalibrationTab)
+	oglScreen = ipEngine.capture->CalibrationGetFrame();
     else if (activeTab == BackgroundTab)
-    oglScreen = ipEngine.background;
+	oglScreen = ipEngine.background;
 
     // render ogl + hud with blending
     GLCanvas1->Refresh();
@@ -1019,6 +1264,24 @@ void MainFrame::OnNotebook1PageChanged(wxNotebookEvent& event)
 	activeTab = ConfigTab;
 	ipEngine.takeSnapshot = false;
     }
+    else if (Notebook1->GetSelection() == 3)
+    {
+	activeTab = CalibrationTab;
+	ipEngine.takeSnapshot = false;
+    }
+
+    // update viewport as a function of new view
+    if (activeTab == CalibrationTab)
+    {
+	Size sz = ipEngine.capture->CalibrationGetFrame().size();
+	AdjustOrthoAspectRatio (sz.width, sz.height);
+    }
+    else
+    {
+	AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+    }
+    UpdateUI();
+    GLCanvas1->Refresh();
 }
 
 
@@ -1439,6 +1702,10 @@ bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool s
 	dialog->SetPlugin(pfv);
 	dlg = dialog;
     }
+    else if (str == "remote control")
+    {
+	dlg = nullptr;
+    }
     else return false;
 
     if (pos < 0)
@@ -1831,6 +2098,61 @@ void MainFrame::UpdateUI ()
 	FilePickerCtrlZones->SetPath(parameters.zonesFilename);
     else
 	FilePickerCtrlZones->SetPath(ipEngine.zonesFilename);
+
+
+    // calibration tab
+    RadioBoxCalibBoardType->SetSelection(ipEngine.capture->CalibrationGetBoardType());
+    SpinCtrlCalibWidth->SetValue(ipEngine.capture->CalibrationGetBoardWidth());
+    SpinCtrlCalibHeight->SetValue(ipEngine.capture->CalibrationGetBoardHeight());
+    SpinCtrlCalibSquareSize->SetValue(ipEngine.capture->CalibrationGetSquareSize());
+
+    SpinCtrlCalibFramesCount->SetValue(ipEngine.capture->CalibrationGetFramesCount());
+    SpinCtrlCalibAspectNum->SetValue(ipEngine.capture->CalibrationGetAspectNum());
+    SpinCtrlCalibAspectDen->SetValue(ipEngine.capture->CalibrationGetAspectDen());
+    SpinCtrlCalibFrameDelayDouble->SetValue(ipEngine.capture->CalibrationGetFrameDelay());
+
+    CheckBoxCalibZeroTangentDist->SetValue(ipEngine.capture->CalibrationGetZeroTangentDist());
+    CheckBoxCalibFixPrincipalPoint->SetValue(ipEngine.capture->CalibrationGetFixPrincipalPoint());
+    CheckBoxCalibFlipVertical->SetValue(ipEngine.capture->CalibrationGetFlipVertical());
+
+    // check if some options should be hidden or displayed
+    bool multi = ipEngine.capture->type == Capture::MULTI_USB_CAMERA || ipEngine.capture->type == Capture::MULTI_VIDEO;
+
+    StaticBoxSizerConfigMultiSource2->Show(multi);
+    StaticBoxSizerCalibSubdevices2->Show(multi);
+//    BitmapButtonConfigStitch->Show(multi);
+//    ButtonCalibStitch->Show(multi);
+
+//    FlexGridSizerCalibStitch2->Show(multi);
+//    FlexGridSizerCalibMain2->Layout();
+    //this->Fit();
+
+    // fill subdevices names
+    if (multi)
+    {
+	if (ipEngine.capture->type == Capture::MULTI_USB_CAMERA)
+	{
+	    CaptureMultiUSBCamera* c = dynamic_cast<CaptureMultiUSBCamera*> (ipEngine.capture);
+	    ChoiceCalibSubdevices->Clear();
+	    unsigned int n = c->GetDeviceCount();
+	    for (unsigned int i = 0; i < n; i++)
+	    {
+		ChoiceCalibSubdevices->Append(c->GetDeviceName(i));
+	    }
+	    ChoiceCalibSubdevices->SetSelection(c->GetDeviceToCalibrate());
+	}
+	else if (ipEngine.capture->type == Capture::MULTI_VIDEO)
+	{
+	    CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
+	    ChoiceCalibSubdevices->Clear();
+	    unsigned int n = c->GetDeviceCount();
+	    for (unsigned int i = 0; i < n; i++)
+	    {
+		ChoiceCalibSubdevices->Append(c->GetDeviceName(i));
+	    }
+	    ChoiceCalibSubdevices->SetSelection(c->GetDeviceToCalibrate());
+	}	    
+    }
 }
 
 void MainFrame::ResetImageProcessingEngine(Parameters& parameters)
@@ -1895,20 +2217,19 @@ void MainFrame::OnMenuOpenCaptureSelected(wxCommandEvent& event)
     {
 	// show dialog
 	DialogOpenCapture dialog(this);
+	dialog.previousCapture = ipEngine.capture;
 
 	// use capture if possible
 	if (dialog.ShowModal() == wxID_OK)
 	{
 	    if (dialog.capture->type != Capture::NONE)
 	    {
-		delete ipEngine.capture;
 		ipEngine.capture = dialog.capture;
 		ResetImageProcessingEngine();
 		AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
 		GLCanvas1->Refresh();
 
 		wxString str = "USE Tracker: ";
-//		str += ipEngine.capture->GetName();
 		this->SetTitle(str + ipEngine.capture->GetName());
 		break;
 	    }
@@ -2054,4 +2375,269 @@ void MainFrame::RecursiveDisconnectCharEvent(wxWindow* pclComponent)
 bool MainFrame::IsRecording()
 {
     return output;
+}
+
+void MainFrame::OnMenuCalibrateSourceSelected(wxCommandEvent& event)
+{
+}
+
+void MainFrame::OnMenuLoadCalibrationDataSelected(wxCommandEvent& event)
+{
+}
+
+void MainFrame::OnMenuSaveCalibrationDataSelected(wxCommandEvent& event)
+{
+}
+
+// ======================================================
+// Events related to calibration
+// ======================================================
+
+void MainFrame::OnButtonCalibCalculateClick(wxCommandEvent& event)
+{
+    ipEngine.capture->CalibrationStart();
+}
+
+void MainFrame::OnButtonCalibResetClick(wxCommandEvent& event)
+{
+    ipEngine.capture->CalibrationReset();
+}
+
+void MainFrame::OnButtonCalibSaveClick(wxCommandEvent& event)
+{
+    wxString caption = wxT("Save current calibration settings");
+    wxString wildcard = wxT("XML file (*.xml)|*.xml");
+    wxFileDialog dialog(this, caption, "", "", wildcard, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+    if (dialog.ShowModal() == wxID_OK)
+    {
+	wxString path = dialog.GetPath();
+
+	// open file
+	FileStorage fs(path.ToStdString(), FileStorage::WRITE);
+
+	if (fs.isOpened())
+	{
+	    fs << "Calibration" << "{";
+
+	    ipEngine.capture->CalibrationSaveXML(fs);
+
+	    fs << "}";
+	    fs.release();
+	}
+	else
+	{
+	    wxMessageBox( wxT("Could not open file for saving calibration settings."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
+	}
+    }
+}
+
+void MainFrame::OnButtonCalibLoadClick(wxCommandEvent& event)
+{
+    wxString caption = wxT("Choose a calibration file to use");
+    wxString wildcard = wxT("XML data (*.xml)|*.xml");
+
+    wxFileDialog dialog(this, caption, "", "", wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+
+    if (dialog.ShowModal() == wxID_OK)
+    {
+	wxString path = dialog.GetPath();
+
+	cv::FileStorage file;
+	cv::FileNode rootNode;
+	file.open(path.ToStdString(), FileStorage::READ);
+	if (file.isOpened())
+	{
+	    rootNode = file["Calibration"];
+
+	    // process data
+	    ipEngine.capture->CalibrationLoadXML(rootNode);
+	}
+    }
+}
+
+void MainFrame::OnRadioBoxCalibBoardTypeSelect(wxCommandEvent& event)
+{
+    ipEngine.capture->CalibrationSetBoardType(event.GetSelection());
+}
+
+void MainFrame::OnSpinCtrlCalibWidthChange(wxSpinEvent& event)
+{
+    ipEngine.capture->CalibrationSetBoardWidth(event.GetValue());
+}
+
+void MainFrame::OnSpinCtrlCalibHeightChange(wxSpinEvent& event)
+{
+    ipEngine.capture->CalibrationSetBoardHeight(event.GetValue());
+}
+
+void MainFrame::OnSpinCtrlCalibSquareSizeChange(wxSpinEvent& event)
+{
+    ipEngine.capture->CalibrationSetSquareSize(event.GetValue());
+}
+
+void MainFrame::OnSpinCtrlCalibFramesCountChange(wxSpinEvent& event)
+{
+    ipEngine.capture->CalibrationSetFramesCount(event.GetValue());
+}
+
+void MainFrame::OnSpinCtrlCalibAspectNumChange(wxSpinEvent& event)
+{
+    ipEngine.capture->CalibrationSetAspect(event.GetValue() / SpinCtrlCalibAspectDen->GetValue());
+}
+
+void MainFrame::OnSpinCtrlCalibAspectDenChange(wxSpinEvent& event)
+{
+    ipEngine.capture->CalibrationSetAspect(SpinCtrlCalibAspectNum->GetValue() / event.GetValue());
+}
+
+void MainFrame::OnCheckBoxCalibZeroTangentDistClick(wxCommandEvent& event)
+{
+    ipEngine.capture->CalibrationSetZeroTangentDist(event.IsChecked());
+}
+
+void MainFrame::OnCheckBoxCalibFixPrincipalPointClick(wxCommandEvent& event)
+{
+    ipEngine.capture->CalibrationSetFixPrincipalPoint(event.IsChecked());
+}
+
+void MainFrame::OnCheckBoxCalibFlipVerticalClick(wxCommandEvent& event)
+{
+    ipEngine.capture->CalibrationSetFlipVertical(event.IsChecked());
+}
+
+void MainFrame::OnButtonCalibStitchClick(wxCommandEvent& event)
+{
+}
+
+void MainFrame::OnSpinCtrlCalibFrameDelayChange(wxSpinEvent& event)
+{
+    ipEngine.capture->CalibrationSetFrameDelay(event.GetValue());
+}
+
+void MainFrame::OnSpinCtrlDoubleCalibFrameDelayChange(wxSpinDoubleEvent& event)
+{
+    ipEngine.capture->CalibrationSetFrameDelay(event.GetValue());
+}
+
+void MainFrame::OnChoiceCalibSubdevicesSelect(wxCommandEvent& event)
+{
+    if (ipEngine.capture->type == Capture::MULTI_USB_CAMERA)
+    {
+	CaptureMultiUSBCamera* c = dynamic_cast<CaptureMultiUSBCamera*> (ipEngine.capture);
+	c->SetDeviceToCalibrate(event.GetSelection());
+
+	// adjust display to new subcapture
+	Size sz = ipEngine.capture->CalibrationGetFrame().size();
+	AdjustOrthoAspectRatio (sz.width, sz.height);
+
+	// make sure calib tab shows correct settings
+	UpdateUI();
+    }
+    if (ipEngine.capture->type == Capture::MULTI_VIDEO)
+    {
+	CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
+	c->SetDeviceToCalibrate(event.GetSelection());
+
+	// adjust display to new subcapture
+	Size sz = ipEngine.capture->CalibrationGetFrame().size();
+	AdjustOrthoAspectRatio (sz.width, sz.height);
+
+	// make sure calib tab shows correct settings
+	UpdateUI();
+    }
+}
+
+void MainFrame::OnButtonConfigStitchClick(wxCommandEvent& event)
+{
+    if (ipEngine.capture->type == Capture::MULTI_USB_CAMERA)
+    {
+	CaptureMultiUSBCamera* c = dynamic_cast<CaptureMultiUSBCamera*>(ipEngine.capture);
+	c->Stitch();
+	ResetImageProcessingEngine();
+	AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+	GLCanvas1->Refresh();
+    }
+    if (ipEngine.capture->type == Capture::MULTI_VIDEO)
+    {
+	CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
+	c->Stitch();
+	ResetImageProcessingEngine();
+	AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+	GLCanvas1->Refresh();
+    }
+}
+
+void MainFrame::OnButtonConfigResetStitchingClick(wxCommandEvent& event)
+{
+    if (ipEngine.capture->type == Capture::MULTI_USB_CAMERA)
+    {
+	CaptureMultiUSBCamera* c = dynamic_cast<CaptureMultiUSBCamera*>(ipEngine.capture);
+	c->ResetStitching();
+	ResetImageProcessingEngine();
+	AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+	GLCanvas1->Refresh();
+    }
+    if (ipEngine.capture->type == Capture::MULTI_VIDEO)
+    {
+	CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
+	c->ResetStitching();
+	ResetImageProcessingEngine();
+	AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+	GLCanvas1->Refresh();
+    }
+}
+
+void MainFrame::OnMenuSaveCaptureSelected(wxCommandEvent& event)
+{
+    wxString caption = wxT("Save current source configuration to an XML file");
+    wxString wildcard = wxT("Source configuration file (*.xml)|*.xml");
+    wxString defaultDir = wxEmptyString;
+    wxString defaultFilename = wxEmptyString;
+    wxFileDialog dialog(this, caption, defaultDir, defaultFilename, wildcard, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+    if (dialog.ShowModal() == wxID_OK)
+    {
+	wxString path = dialog.GetPath();
+
+	// open file
+	FileStorage fs(path.ToStdString(), FileStorage::WRITE);
+
+	if (fs.isOpened())
+	{
+	    fs << "Source" << "{";
+
+	    ipEngine.capture->SaveXML (fs);
+
+	    // ipEngine.SaveXML(fs);
+
+	    // // add pipeline
+	    // fs << "Pipeline" << "{";
+
+	    // // loop through all plugins of the first pipeline (in the gui)
+	    // for (unsigned int i = 0; i < ipEngine.pipelines[0].plugins.size(); i++)
+	    // {
+	    // 	wxString text = ListBoxPipeline->GetString(i);
+	    // 	string cc = TextToCamelCase (text.ToStdString());
+
+	    // 	fs << string("Plugin_") + std::to_string(i) << "{" << cc << "{"; // ugly hack to go around duplicate key bug
+
+	    // 	// plugins are nullptr in some pipelines, depending on multithreading...
+	    // 	if (ipEngine.pipelines[0].plugins[i])
+	    // 	    ipEngine.pipelines[0].plugins[i]->SaveXML(fs);
+	    // 	else
+	    // 	    ipEngine.pipelines[ipEngine.threadsCount].plugins[i]->SaveXML(fs);
+
+	    // 	fs << "}" << "}";
+	    // }
+
+	    // fs << "}"; // Pipeline
+	    fs << "}"; // SourceConfiguration
+	    fs.release();
+	}
+	else
+	{
+	    wxMessageBox( wxT("Could not open file for saving settings."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
+	}
+    }
 }

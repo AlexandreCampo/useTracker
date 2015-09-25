@@ -94,9 +94,17 @@ double CaptureImage::GetTime()
 
 void CaptureImage::SaveXML(FileStorage& fs)
 {
-    fs << "Source" << "{" << "Type";
-    fs << "image" << "Filename" << filename;
-    fs << "}";
+    fs << "Type" << "image";
+    fs << "Filename" << filename;
+
+    if (calibration.calibrated)
+    {
+	fs << "Calibration" << "{";
+
+	calibration.SaveXML(fs);
+
+	fs << "}";
+    }
 }
 
 void CaptureImage::LoadXML(FileNode& fn)
@@ -104,5 +112,11 @@ void CaptureImage::LoadXML(FileNode& fn)
     if (!fn.empty())
     {
 	filename = (string)fn["Filename"];
+
+	FileNode calibNode = fn ["Calibration"];
+	if (!calibNode.empty())
+	{
+	    calibration.LoadXML (calibNode);
+    }
     }
 }
