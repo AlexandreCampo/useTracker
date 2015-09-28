@@ -607,6 +607,10 @@ bool CaptureMultiUSBCamera::Stitch()
     Rect rect1 = boundingRect(warpedCorners);
     Rect stitchedRect = rect0 | rect1;
 
+    // ensure dimensions are even numbers (necessary to record h264 movies)
+    if (stitchedRect.width % 2 == 1) stitchedRect.width++;
+    if (stitchedRect.height % 2 == 1) stitchedRect.height++;
+
     cout << "Stitched rect : " << stitchedRect.x << " " << stitchedRect.y << " ";
     cout << stitchedRect.width << " " << stitchedRect.height << endl;
 

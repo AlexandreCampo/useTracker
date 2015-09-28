@@ -21,7 +21,7 @@
 
 Capture::Capture()
 {
-    std::cout << "Setting correct parent ptr for calib" << std::endl;
+    // std::cout << "Setting correct parent ptr for calib" << std::endl;
     calibration.capture = this;
 }
 
