@@ -78,6 +78,7 @@ bool CaptureVideo::Open (string filename)
     // read first frame to allow display
     Mat prevFrame = frame;
     source >> frame;
+    calibration.Undistort(frame);
 
     GetFrameNumber();
 
@@ -93,6 +94,7 @@ bool CaptureVideo::GetNextFrame ()
 {
     Mat previousFrame = frame;
     source >> frame;
+    calibration.Undistort(frame);
 
     GetFrameNumber();
 
@@ -135,6 +137,7 @@ bool CaptureVideo::GetFrame (double time)
 
     Mat previousFrame = frame;
     source >> frame;
+    calibration.Undistort(frame);
 
     GetFrameNumber();
     nextFrameTime += playTimestep;
@@ -163,6 +166,7 @@ void CaptureVideo::Stop()
 {
     source.set(CV_CAP_PROP_POS_FRAMES, 0);
     source >> frame;
+    calibration.Undistort(frame);
 
     isStopped = true;
     statusChanged = true;
@@ -175,6 +179,8 @@ bool CaptureVideo::SetFrameNumber(long frameNumber)
 
     Mat previousFrame = frame;    
     source >> frame;
+    calibration.Undistort(frame);
+
     statusChanged = true;
 
     nextFrameTime += playTimestep;

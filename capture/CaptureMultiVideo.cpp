@@ -607,6 +607,18 @@ bool CaptureMultiVideo::Stitch()
     cvtColor(subcaptures[1]->frame, viewGray1, COLOR_BGR2GRAY);
     cornerSubPix( viewGray1, points1, Size(11,11), Size(-1,-1), TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ));
 
+    // reorder points if they don't go left to right, top to bottom (findChessBoardCorners bug in opencv ?)
+    unsigned int bwidth = subcaptures[0]->calibration.boardSize.width;
+
+    if (points0[0].x > points0[bwidth].x)
+    {
+	reverse (points0.begin(), points0.end());
+    }
+    if (points1[0].x > points1[bwidth].x)
+    {
+	reverse (points1.begin(), points1.end());
+    }
+
     // now calculate matching
     homographies.clear();
     stitchMasks.clear();
@@ -620,7 +632,8 @@ bool CaptureMultiVideo::Stitch()
     stitchPoints[0].insert(stitchPoints[0].end(), points0.begin(), points0.end());
     stitchPoints[1].insert(stitchPoints[1].end(), points1.begin(), points1.end());
 
-    H = findHomography( stitchPoints[1], stitchPoints[0], CV_RANSAC );
+    H = findHomography( stitchPoints[1], stitchPoints[0]);
+//    H = findHomography( stitchPoints[1], stitchPoints[0], CV_RANSAC );
     homographies.push_back(H);
 
     //-- Get the corners from the image_1 ( the object to be "detected" )

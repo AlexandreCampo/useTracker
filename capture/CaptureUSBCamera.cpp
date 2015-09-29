@@ -91,6 +91,7 @@ bool CaptureUSBCamera::Open (int device)
     isPaused = true;
 
     source >> frame;
+    calibration.Undistort(frame);
     lastFrameTime = InternalGetTime();
 
     return (!frame.empty());
@@ -165,6 +166,8 @@ bool CaptureUSBCamera::GetFrame (double time)
     // take several frames otherwise we get an old buffered frame
     for (int i = 0; i < 4; i++)
 	source >> frame;
+
+    calibration.Undistort(frame);
 
     frameNumber++;
     lastFrameTime = InternalGetTime();

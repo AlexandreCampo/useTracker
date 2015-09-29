@@ -270,7 +270,7 @@ void CaptureCalibration::Calibrate ()
 	boardFound = findCirclesGrid( viewScaled, boardSize, pointBuf, CALIB_CB_ASYMMETRIC_GRID );
 	break;
     }
-    cout << "Analyzed image looking for a board" << endl;
+//    cout << "Analyzed image looking for a board" << endl;
 
     if (boardFound)                // If done with success,
     {
@@ -301,10 +301,9 @@ void CaptureCalibration::Calibrate ()
 	pointBuf.clear();
 	calibrating = false;
 	boardFound = false;
-    }
 
-//    if (analyzedFrames >= nrFrames)
-//	cout << "Done calibrating... stopping" << endl;
+	cout << "Done calibrating..." << endl;
+    }
 
 //    cout << "Leaving Calibrate, ptr " << this << endl;
 }
@@ -356,7 +355,7 @@ bool CaptureCalibration::CalculateCalibration()
     if (ok)
 	calibrated = true;
 
-    cout << (ok ? "Calibration succeeded" : "Calibration failed") << ". avg re projection error = "  << totalAvgErr ;
+    cout << (ok ? "Calibration succeeded" : "Calibration failed") << ". avg re projection error = "  << totalAvgErr << endl;
     return ok;
 }
 
