@@ -37,7 +37,7 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
     // this a webcam, give up calculation
     if (endTime < 0.01)
     {
-	if (capture->type == Capture::VIDEO)
+	if (capture->type == Capture::VIDEO || capture->type == Capture::MULTI_VIDEO)
 	{
 	    endTime = ((double)capture->GetFrameCount()) / capture->fps;
 	}
@@ -186,7 +186,7 @@ Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, u
     // this a webcam, give up calculation
     if (endTime < 0.01)
     {
-	if (capture->type == Capture::VIDEO)
+	if (capture->type == Capture::VIDEO || capture->type == Capture::MULTI_VIDEO)
 	{
 	    endTime = ((double)capture->GetFrameCount()) / capture->fps;
 	}

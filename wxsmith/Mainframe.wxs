@@ -516,6 +516,40 @@
 													<border>5</border>
 													<option>1</option>
 												</object>
+												<object class="sizeritem">
+													<object class="wxBitmapButton" name="ID_BITMAPBUTTON13" variable="BitmapButton5" member="yes">
+														<bitmap>/usr/share/useTracker/images/Actions-document-open-icon (1).png</bitmap>
+													</object>
+													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+													<border>5</border>
+													<option>1</option>
+												</object>
+												<object class="sizeritem">
+													<object class="wxButton" name="ID_BUTTON8" variable="ButtonConfigLoadStitching" member="yes">
+														<label>Load stitching</label>
+														<handler function="OnButtonConfigLoadStitchingClick" entry="EVT_BUTTON" />
+													</object>
+													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+													<border>5</border>
+													<option>1</option>
+												</object>
+												<object class="sizeritem">
+													<object class="wxBitmapButton" name="ID_BITMAPBUTTON14" variable="BitmapButton6" member="yes">
+														<bitmap>/usr/share/useTracker/images/Actions-document-save-icon (1).png</bitmap>
+													</object>
+													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+													<border>5</border>
+													<option>1</option>
+												</object>
+												<object class="sizeritem">
+													<object class="wxButton" name="ID_BUTTON11" variable="ButtonConfigSaveStitching" member="yes">
+														<label>Save stitching</label>
+														<handler function="OnButtonConfigSaveStitchingClick" entry="EVT_BUTTON" />
+													</object>
+													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+													<border>5</border>
+													<option>1</option>
+												</object>
 											</object>
 											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 											<border>5</border>

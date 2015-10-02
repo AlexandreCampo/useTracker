@@ -26,6 +26,7 @@
 
 #include <iostream>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <wx/msgdlg.h>
 
 using namespace std;
 using namespace cv;
@@ -51,6 +52,23 @@ const long DialogOpenCapture::ID_FILEPICKERCTRL2 = wxNewId();
 const long DialogOpenCapture::ID_BUTTON7 = wxNewId();
 const long DialogOpenCapture::ID_BUTTON8 = wxNewId();
 const long DialogOpenCapture::ID_PANEL4 = wxNewId();
+const long DialogOpenCapture::ID_FILEPICKERCTRL4 = wxNewId();
+const long DialogOpenCapture::ID_FILEPICKERCTRL5 = wxNewId();
+const long DialogOpenCapture::ID_FILEPICKERCTRL6 = wxNewId();
+const long DialogOpenCapture::ID_FILEPICKERCTRL7 = wxNewId();
+const long DialogOpenCapture::ID_BUTTON11 = wxNewId();
+const long DialogOpenCapture::ID_BUTTON12 = wxNewId();
+const long DialogOpenCapture::ID_PANEL7 = wxNewId();
+const long DialogOpenCapture::ID_CHECKBOX1 = wxNewId();
+const long DialogOpenCapture::ID_SPINCTRL3 = wxNewId();
+const long DialogOpenCapture::ID_CHECKBOX2 = wxNewId();
+const long DialogOpenCapture::ID_SPINCTRL4 = wxNewId();
+const long DialogOpenCapture::ID_CHECKBOX3 = wxNewId();
+const long DialogOpenCapture::ID_SPINCTRL5 = wxNewId();
+const long DialogOpenCapture::ID_CHECKBOX4 = wxNewId();
+const long DialogOpenCapture::ID_SPINCTRL6 = wxNewId();
+const long DialogOpenCapture::ID_BUTTON13 = wxNewId();
+const long DialogOpenCapture::ID_BUTTON15 = wxNewId();
 const long DialogOpenCapture::ID_PANEL6 = wxNewId();
 const long DialogOpenCapture::ID_FILEPICKERCTRL3 = wxNewId();
 const long DialogOpenCapture::ID_BUTTON9 = wxNewId();
@@ -71,17 +89,23 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	wxFlexGridSizer* FlexGridSizer8;
 	wxFlexGridSizer* FlexGridSizer1;
 	wxFlexGridSizer* FlexGridSizer2;
+	wxFlexGridSizer* FlexGridSizer15;
+	wxStaticBoxSizer* StaticBoxSizer7;
 	wxStaticBoxSizer* StaticBoxSizer5;
 	wxFlexGridSizer* FlexGridSizer11;
 	wxFlexGridSizer* FlexGridSizer7;
 	wxFlexGridSizer* FlexGridSizer4;
 	wxFlexGridSizer* FlexGridSizer9;
+	wxFlexGridSizer* FlexGridSizer14;
 	wxStaticBoxSizer* StaticBoxSizer3;
 	wxFlexGridSizer* FlexGridSizer6;
 	wxFlexGridSizer* FlexGridSizer3;
 	wxStaticBoxSizer* StaticBoxSizer4;
+	wxStaticBoxSizer* StaticBoxSizer6;
 	wxFlexGridSizer* FlexGridSizer10;
 	wxBoxSizer* BoxSizer1;
+	wxFlexGridSizer* FlexGridSizer13;
+	wxFlexGridSizer* FlexGridSizer12;
 	wxFlexGridSizer* FlexGridSizer5;
 	wxStaticBoxSizer* StaticBoxSizer1;
 
@@ -179,8 +203,66 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	PanelImage->SetSizer(FlexGridSizer7);
 	FlexGridSizer7->Fit(PanelImage);
 	FlexGridSizer7->SetSizeHints(PanelImage);
+	PanelMultiVideo = new wxPanel(Notebook1, ID_PANEL7, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _T("ID_PANEL7"));
+	FlexGridSizer12 = new wxFlexGridSizer(0, 1, 0, 0);
+	FlexGridSizer12->AddGrowableCol(0);
+	StaticBoxSizer6 = new wxStaticBoxSizer(wxVERTICAL, PanelMultiVideo, _("Select multiple sources"));
+	FilePickerCtrlMultiVideo1 = new wxFilePickerCtrl(PanelMultiVideo, ID_FILEPICKERCTRL4, wxEmptyString, _("Select a file"), _T("*"), wxDefaultPosition, wxDefaultSize, wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL4"));
+	FilePickerCtrlMultiVideo1->SetFocus();
+	StaticBoxSizer6->Add(FilePickerCtrlMultiVideo1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FilePickerCtrlMultiVideo2 = new wxFilePickerCtrl(PanelMultiVideo, ID_FILEPICKERCTRL5, wxEmptyString, _("Select a file"), _T("*"), wxDefaultPosition, wxDefaultSize, wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL5"));
+	StaticBoxSizer6->Add(FilePickerCtrlMultiVideo2, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FilePickerCtrlMultiVideo3 = new wxFilePickerCtrl(PanelMultiVideo, ID_FILEPICKERCTRL6, wxEmptyString, _("Select a file"), _T("*"), wxDefaultPosition, wxDefaultSize, wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL6"));
+	StaticBoxSizer6->Add(FilePickerCtrlMultiVideo3, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FilePickerCtrlMultiVideo4 = new wxFilePickerCtrl(PanelMultiVideo, ID_FILEPICKERCTRL7, wxEmptyString, _("Select a file"), _T("*"), wxDefaultPosition, wxDefaultSize, wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL7"));
+	StaticBoxSizer6->Add(FilePickerCtrlMultiVideo4, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer12->Add(StaticBoxSizer6, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer13 = new wxFlexGridSizer(0, 3, 0, 0);
+	ButtonMultiVideoCancel = new wxButton(PanelMultiVideo, ID_BUTTON11, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON11"));
+	FlexGridSizer13->Add(ButtonMultiVideoCancel, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	ButtonMultiVideoOk = new wxButton(PanelMultiVideo, ID_BUTTON12, _("Ok"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON12"));
+	FlexGridSizer13->Add(ButtonMultiVideoOk, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer12->Add(FlexGridSizer13, 1, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
+	PanelMultiVideo->SetSizer(FlexGridSizer12);
+	FlexGridSizer12->Fit(PanelMultiVideo);
+	FlexGridSizer12->SetSizeHints(PanelMultiVideo);
 	PanelMultiUSB = new wxPanel(Notebook1, ID_PANEL6, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _T("ID_PANEL6"));
 	FlexGridSizer11 = new wxFlexGridSizer(0, 1, 0, 0);
+	FlexGridSizer11->AddGrowableCol(0);
+	StaticBoxSizer7 = new wxStaticBoxSizer(wxVERTICAL, PanelMultiUSB, _("Select multiple sources"));
+	FlexGridSizer15 = new wxFlexGridSizer(0, 2, 0, 0);
+	CheckBoxMultiUSB0 = new wxCheckBox(PanelMultiUSB, ID_CHECKBOX1, _("Use device"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX1"));
+	CheckBoxMultiUSB0->SetValue(false);
+	FlexGridSizer15->Add(CheckBoxMultiUSB0, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	SpinCtrlMultiUSB0 = new wxSpinCtrl(PanelMultiUSB, ID_SPINCTRL3, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 100, 0, _T("ID_SPINCTRL3"));
+	SpinCtrlMultiUSB0->SetValue(_T("0"));
+	FlexGridSizer15->Add(SpinCtrlMultiUSB0, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	CheckBoxMultiUSB1 = new wxCheckBox(PanelMultiUSB, ID_CHECKBOX2, _("Use device"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX2"));
+	CheckBoxMultiUSB1->SetValue(false);
+	FlexGridSizer15->Add(CheckBoxMultiUSB1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	SpinCtrlMultiUSB1 = new wxSpinCtrl(PanelMultiUSB, ID_SPINCTRL4, _T("1"), wxDefaultPosition, wxDefaultSize, 0, 0, 100, 1, _T("ID_SPINCTRL4"));
+	SpinCtrlMultiUSB1->SetValue(_T("1"));
+	FlexGridSizer15->Add(SpinCtrlMultiUSB1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	CheckBoxMultiUSB2 = new wxCheckBox(PanelMultiUSB, ID_CHECKBOX3, _("Use device"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX3"));
+	CheckBoxMultiUSB2->SetValue(false);
+	FlexGridSizer15->Add(CheckBoxMultiUSB2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	SpinCtrlMultiUSB2 = new wxSpinCtrl(PanelMultiUSB, ID_SPINCTRL5, _T("2"), wxDefaultPosition, wxDefaultSize, 0, 0, 100, 2, _T("ID_SPINCTRL5"));
+	SpinCtrlMultiUSB2->SetValue(_T("2"));
+	FlexGridSizer15->Add(SpinCtrlMultiUSB2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	CheckBoxMultiUSB3 = new wxCheckBox(PanelMultiUSB, ID_CHECKBOX4, _("Use device"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX4"));
+	CheckBoxMultiUSB3->SetValue(false);
+	FlexGridSizer15->Add(CheckBoxMultiUSB3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	SpinCtrlMultiUSB3 = new wxSpinCtrl(PanelMultiUSB, ID_SPINCTRL6, _T("3"), wxDefaultPosition, wxDefaultSize, 0, 0, 100, 3, _T("ID_SPINCTRL6"));
+	SpinCtrlMultiUSB3->SetValue(_T("3"));
+	FlexGridSizer15->Add(SpinCtrlMultiUSB3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	StaticBoxSizer7->Add(FlexGridSizer15, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer11->Add(StaticBoxSizer7, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer14 = new wxFlexGridSizer(0, 3, 0, 0);
+	ButtonMultiUSBCancel = new wxButton(PanelMultiUSB, ID_BUTTON13, _("Cancel"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON13"));
+	FlexGridSizer14->Add(ButtonMultiUSBCancel, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	ButtonMultiUSBOk = new wxButton(PanelMultiUSB, ID_BUTTON15, _("Ok"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON15"));
+	FlexGridSizer14->Add(ButtonMultiUSBOk, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer11->Add(FlexGridSizer14, 1, wxALL|wxALIGN_RIGHT|wxALIGN_CENTER_VERTICAL, 5);
 	PanelMultiUSB->SetSizer(FlexGridSizer11);
 	FlexGridSizer11->Fit(PanelMultiUSB);
 	FlexGridSizer11->SetSizeHints(PanelMultiUSB);
@@ -204,6 +286,7 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	Notebook1->AddPage(PanelUSB, _("USB camera"), false);
 	Notebook1->AddPage(PanelAVT, _("AVT camera"), false);
 	Notebook1->AddPage(PanelImage, _("Image"), false);
+	Notebook1->AddPage(PanelMultiVideo, _("Multi Video"), false);
 	Notebook1->AddPage(PanelMultiUSB, _("Multi USB"), false);
 	Notebook1->AddPage(PanelConfigFile, _("Config file"), false);
 
@@ -217,6 +300,10 @@ DialogOpenCapture::DialogOpenCapture(wxWindow* parent,wxWindowID id,const wxPoin
 	Connect(ID_FILEPICKERCTRL2,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&DialogOpenCapture::OnFilePickerCtrlImageFileChanged);
 	Connect(ID_BUTTON7,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonImageCancelClick);
 	Connect(ID_BUTTON8,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonImageOkClick);
+	Connect(ID_BUTTON11,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonMultiVideoCancelClick);
+	Connect(ID_BUTTON12,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonMultiVideoOkClick);
+	Connect(ID_BUTTON13,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonMultiUSBCancelClick);
+	Connect(ID_BUTTON15,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonMultiUSBOkClick);
 	Connect(ID_BUTTON9,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonConfigFileCancelClick);
 	Connect(ID_BUTTON10,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogOpenCapture::OnButtonConfigFileOkClick);
 	Connect(wxEVT_CHAR,(wxObjectEventFunction)&DialogOpenCapture::OnChar);
@@ -356,33 +443,44 @@ void DialogOpenCapture::OnButtonConfigFileOkClick(wxCommandEvent& event)
 
 	if (!rootNode.empty())
 	{
-	    delete previousCapture;
 	    string type = (string)rootNode["Type"];
-	    if (type == "video")
+
+	    // this type does not delete existing capture
+	    if (type == "multiVideo")
 	    {
-		capture = new CaptureVideo(rootNode);
+		capture = previousCapture;
+		capture->LoadXML(rootNode);
 	    }
-	    else if (type == "USBcamera")
+	    // the following types replace current capture
+	    else 
 	    {
-		capture = new CaptureUSBCamera(rootNode);
-	    }
-	    else if (type == "image")
-	    {
-		capture = new CaptureImage(rootNode);
-	    }
+		delete previousCapture;
+		if (type == "video")
+		{
+		    capture = new CaptureVideo(rootNode);
+		}
+		else if (type == "USBcamera")
+		{
+		    capture = new CaptureUSBCamera(rootNode);
+		}
+		else if (type == "image")
+		{
+		    capture = new CaptureImage(rootNode);
+		}
 #ifdef VIMBA
-	    else if (type == "AVTcamera")
-	    {
-		capture = new CaptureAVTCamera(rootNode);
-	    }
+		else if (type == "AVTcamera")
+		{
+		    capture = new CaptureAVTCamera(rootNode);
+		}
 #endif // VIMBA
-	    else if (type == "multiUSBcamera")
-	    {
-		capture = new CaptureMultiUSBCamera(rootNode);
-	    }
-	    else
-	    {
-		capture = new CaptureDefault();
+		else if (type == "multiUSBcamera")
+		{
+		    capture = new CaptureMultiUSBCamera(rootNode);
+		}
+		else
+		{
+		    capture = new CaptureDefault();
+		}
 	    }
 	}
 	else
@@ -393,4 +491,113 @@ void DialogOpenCapture::OnButtonConfigFileOkClick(wxCommandEvent& event)
 
 //    capture = new CaptureVideo(FilePickerCtrlVideo->GetPath().ToStdString());
     EndModal(wxID_OK);
+}
+
+void DialogOpenCapture::OnButtonMultiVideoCancelClick(wxCommandEvent& event)
+{
+    EndModal(wxID_CANCEL);
+}
+
+void DialogOpenCapture::OnButtonMultiVideoOkClick(wxCommandEvent& event)
+{
+    // gather filenames
+    vector<string> filenames;
+    string filename;
+
+    filename = FilePickerCtrlMultiVideo1->GetPath().ToStdString();
+    if (!filename.empty()) filenames.push_back(filename);
+
+    filename = FilePickerCtrlMultiVideo2->GetPath().ToStdString();
+    if (!filename.empty()) filenames.push_back(filename);
+
+    filename = FilePickerCtrlMultiVideo3->GetPath().ToStdString();
+    if (!filename.empty()) filenames.push_back(filename);
+
+    filename = FilePickerCtrlMultiVideo4->GetPath().ToStdString();
+    if (!filename.empty()) filenames.push_back(filename);
+
+    if (filenames.size() == 0) 
+    {
+	wxMessageBox( wxT("Please select at least one video file."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
+	
+    }
+    else
+    {        
+	delete previousCapture;
+	if (filenames.size() == 1)
+	{
+	    capture = new CaptureVideo(filenames[0]);
+	}
+	else
+	{
+	    capture = new CaptureMultiVideo(filenames);
+	}
+	EndModal(wxID_OK);
+    }
+}
+
+void DialogOpenCapture::OnButtonMultiUSBCancelClick(wxCommandEvent& event)
+{
+    EndModal(wxID_CANCEL);
+}
+
+void DialogOpenCapture::OnButtonMultiUSBOkClick(wxCommandEvent& event)
+{
+    // gather devices
+    vector<int> devices;
+    int d;
+
+    bool duplicates = false;
+
+    if (CheckBoxMultiUSB0->IsChecked())
+    {
+	d = SpinCtrlMultiUSB0->GetValue();
+	devices.push_back(d);
+    }
+    if (CheckBoxMultiUSB1->IsChecked())
+    {
+	d = SpinCtrlMultiUSB1->GetValue();	
+	for (unsigned int i = 0; i < devices.size(); i++)
+	    if (devices[i] == d) duplicates = true;
+	devices.push_back(d);
+    }
+    if (CheckBoxMultiUSB2->IsChecked())
+    {
+	d = SpinCtrlMultiUSB2->GetValue();
+	for (unsigned int i = 0; i < devices.size(); i++)
+	    if (devices[i] == d) duplicates = true;
+	devices.push_back(d);
+    }
+    if (CheckBoxMultiUSB3->IsChecked())
+    {
+	d = SpinCtrlMultiUSB3->GetValue();
+	for (unsigned int i = 0; i < devices.size(); i++)
+	    if (devices[i] == d) duplicates = true;
+	devices.push_back(d);
+    }
+
+    if (devices.size() == 0) 
+    {
+	wxMessageBox( wxT("Please select at least one video file."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
+	
+    }
+    else if (duplicates) 
+    {
+	wxMessageBox( wxT("Can not use the same device twice (duplicate error)."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
+	
+    }
+    else
+    {        
+	delete previousCapture;
+
+	if (devices.size() == 1)
+	{
+	    capture = new CaptureUSBCamera(devices[0]);
+	}
+	else
+	{
+	    capture = new CaptureMultiUSBCamera(devices);
+	}
+	EndModal(wxID_OK);
+    }
 }

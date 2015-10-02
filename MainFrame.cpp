@@ -146,6 +146,10 @@ const long MainFrame::ID_STATICBITMAP4 = wxNewId();
 const long MainFrame::ID_BUTTON9 = wxNewId();
 const long MainFrame::ID_STATICBITMAP5 = wxNewId();
 const long MainFrame::ID_BUTTON10 = wxNewId();
+const long MainFrame::ID_BITMAPBUTTON13 = wxNewId();
+const long MainFrame::ID_BUTTON8 = wxNewId();
+const long MainFrame::ID_BITMAPBUTTON14 = wxNewId();
+const long MainFrame::ID_BUTTON11 = wxNewId();
 const long MainFrame::ID_SCROLLEDWINDOW4 = wxNewId();
 const long MainFrame::ID_CHOICE1 = wxNewId();
 const long MainFrame::ID_RADIOBOX2 = wxNewId();
@@ -381,6 +385,14 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FlexGridSizer13->Add(StaticBitmap5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonConfigResetStitching = new wxButton(ConfigTab, ID_BUTTON10, _("Reset stitching"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON10"));
     FlexGridSizer13->Add(ButtonConfigResetStitching, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    BitmapButton5 = new wxBitmapButton(ConfigTab, ID_BITMAPBUTTON13, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-open-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW, wxDefaultValidator, _T("ID_BITMAPBUTTON13"));
+    FlexGridSizer13->Add(BitmapButton5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    ButtonConfigLoadStitching = new wxButton(ConfigTab, ID_BUTTON8, _("Load stitching"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON8"));
+    FlexGridSizer13->Add(ButtonConfigLoadStitching, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    BitmapButton6 = new wxBitmapButton(ConfigTab, ID_BITMAPBUTTON14, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-save-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW, wxDefaultValidator, _T("ID_BITMAPBUTTON14"));
+    FlexGridSizer13->Add(BitmapButton6, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    ButtonConfigSaveStitching = new wxButton(ConfigTab, ID_BUTTON11, _("Save stitching"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON11"));
+    FlexGridSizer13->Add(ButtonConfigSaveStitching, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     StaticBoxSizerConfigMultiSource->Add(FlexGridSizer13, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer3->Add(StaticBoxSizerConfigMultiSource, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ConfigTab->SetSizer(FlexGridSizer3);
@@ -545,6 +557,8 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     Connect(ID_FILEPICKERCTRL1,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&MainFrame::OnFilePickerCtrlZonesFileChanged);
     Connect(ID_BUTTON9,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnButtonConfigStitchClick);
     Connect(ID_BUTTON10,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnButtonConfigResetStitchingClick);
+    Connect(ID_BUTTON8,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnButtonConfigLoadStitchingClick);
+    Connect(ID_BUTTON11,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnButtonConfigSaveStitchingClick);
     Connect(ID_CHOICE1,wxEVT_COMMAND_CHOICE_SELECTED,(wxObjectEventFunction)&MainFrame::OnChoiceCalibSubdevicesSelect);
     Connect(ID_RADIOBOX2,wxEVT_COMMAND_RADIOBOX_SELECTED,(wxObjectEventFunction)&MainFrame::OnRadioBoxCalibBoardTypeSelect);
     Connect(ID_SPINCTRL4,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlCalibWidthChange);
@@ -663,14 +677,64 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     // load capture source from command line params if possible
     if (!parameters.inputFilename.empty())
     {
-	// try to load input as video
-        ipEngine.capture = new CaptureVideo (parameters.inputFilename);
-
-	// if video not loaded, try image
-	if (ipEngine.capture->type == Capture::NONE)
+	// check extension
+	wxFileName f (parameters.inputFilename);
+	if (f.GetExt() == "xml")
 	{
-	    delete ipEngine.capture;
-	    ipEngine.capture = new CaptureImage (parameters.inputFilename);
+	    // TODO duplicated from dialog open capture. Needs a cleaner solution
+	    std::string filename = parameters.inputFilename;	    
+	    cv::FileStorage file;
+	    cv::FileNode rootNode;
+
+	    file.open(filename, cv::FileStorage::READ);
+	    if (file.isOpened())
+	    {
+		rootNode = file["Source"];
+		
+		if (!rootNode.empty())
+		{
+		    string type = (string)rootNode["Type"];
+
+		    if (type == "multiVideo") 
+		    {
+			ipEngine.capture->LoadXML(rootNode);
+		    }
+		    else if (type == "video")
+		    {
+			ipEngine.capture = new CaptureVideo(rootNode);
+		    }
+		    else if (type == "USBcamera")
+		    {
+			ipEngine.capture = new CaptureUSBCamera(rootNode);
+		    }
+		    else if (type == "image")
+		    {
+			ipEngine.capture = new CaptureImage(rootNode);
+		    }
+#ifdef VIMBA
+		    else if (type == "AVTcamera")
+		    {
+			ipEngine.capture = new CaptureAVTCamera(rootNode);
+		    }
+#endif // VIMBA
+		    else if (type == "multiUSBcamera")
+		    {
+			ipEngine.capture = new CaptureMultiUSBCamera(rootNode);
+		    }
+		}
+	    }	       
+	}
+	else
+	{
+	    // try to load input as video file
+	    ipEngine.capture = new CaptureVideo (parameters.inputFilename);
+	    
+	    // if video not loaded, try image
+	    if (ipEngine.capture->type == Capture::NONE)
+	    {
+		delete ipEngine.capture;
+		ipEngine.capture = new CaptureImage (parameters.inputFilename);
+	    }
 	}
     }
     else if (parameters.usbDevice >= 0)
@@ -683,17 +747,43 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
 	ipEngine.capture = new CaptureAVTCamera (parameters.avtDevice);
 #endif //VIMBA
     }
-    else if (parameters.multiCapture == true)
+    else if (parameters.multiUSBCapture == true)
     {
-	// vector<int> cd;
-	// cd.push_back(0);
-	// cd.push_back(1);
-	// ipEngine.capture = new CaptureMultiUSBCamera (cd);
+	CaptureMultiUSBCamera* mu = new CaptureMultiUSBCamera (parameters.usbDevices);
+	ipEngine.capture = mu;
+	if (mu && !parameters.stitchingFilename.empty())
+	{
+	    cv::FileStorage file (parameters.stitchingFilename, FileStorage::READ);
+	    if (file.isOpened())
+	    {
+		cv::FileNode rootNode = file["Source"];
+		mu->LoadXML(rootNode);
+	    }
+	}
+    }
+    else if (parameters.multiVideoCapture == true)
+    {
+	CaptureMultiVideo* mv = new CaptureMultiVideo (parameters.inputFilenames);
+	ipEngine.capture = mv;
+	if (mv && !parameters.stitchingFilename.empty())
+	{
+	    cv::FileStorage file (parameters.stitchingFilename, FileStorage::READ);
+	    if (file.isOpened())
+	    {
+		cv::FileNode rootNode = file["Source"];
+		mv->LoadXML(rootNode, true);
+	    }
+	}
+    }
 
-	vector<string> filenames;
-	filenames.push_back("movie1.mp4");
-	filenames.push_back("movie2.mp4");
-	ipEngine.capture = new CaptureMultiVideo (filenames);
+    if (ipEngine.capture && !parameters.calibrationFilename.empty())
+    {
+	cv::FileStorage file (parameters.calibrationFilename, FileStorage::READ);
+	if (file.isOpened())
+	{
+	    cv::FileNode rootNode = file["Calibration"];
+	    ipEngine.capture->calibration.LoadXML(rootNode);
+	}
     }
 
     if (!ipEngine.capture) ipEngine.capture = new CaptureDefault();
@@ -742,9 +832,9 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 	float coeff = 1;
 	if (oglScreen.cols > oglScreen.rows)
 	    coeff = oglScreen.cols / 4096.0;
-	else 
+	else
 	    coeff = oglScreen.rows / 4096.0;
-	
+
 	Size sz (oglScreen.cols / coeff, oglScreen.rows / coeff);
 	resize (oglScreen, tmp, sz);
 	oglScreenScaled = tmp;
@@ -841,7 +931,7 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 		GL_BGRA,
 		GL_UNSIGNED_BYTE,
 		hud.data);
-	    
+
 	    // Draw a textured quad
 	    glColor4f (1.0f, 1.0f, 1.0f, 0.5f);
 	    glBegin(GL_QUADS);
@@ -850,7 +940,7 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 	    glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(hud.cols, hud.rows);
 	    glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, hud.rows);
 	    glEnd();
-	    
+
 	    // Create Texture
 	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	    glTexImage2D(
@@ -863,7 +953,7 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 		GL_BGRA,
 		GL_UNSIGNED_BYTE,
 		hudApp.data);
-	    
+
 	    // Draw a textured quad
 	    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -876,9 +966,9 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 	    glEnd();
 	}
     }
-	
+
 //    SaveMatToPNG (hud, "debugStitchedHud.png");
-    
+
     glFlush();
     GLCanvas1->SwapBuffers();
 }
@@ -2148,10 +2238,18 @@ void MainFrame::UpdateUI ()
 	    unsigned int n = c->GetDeviceCount();
 	    for (unsigned int i = 0; i < n; i++)
 	    {
-		ChoiceCalibSubdevices->Append(c->GetDeviceName(i));
+		wxFileName f (c->GetDeviceName(i));
+		wxString n = f.GetName();
+		wxString n2 = n;
+		if (n2.Length() > 23)
+		{
+		    n2 = n.SubString(0,20);
+		    n2 << "...";
+		}
+		ChoiceCalibSubdevices->Append(n2);
 	    }
 	    ChoiceCalibSubdevices->SetSelection(c->GetDeviceToCalibrate());
-	}	    
+	}
     }
 }
 
@@ -2609,35 +2707,81 @@ void MainFrame::OnMenuSaveCaptureSelected(wxCommandEvent& event)
 
 	    ipEngine.capture->SaveXML (fs);
 
-	    // ipEngine.SaveXML(fs);
-
-	    // // add pipeline
-	    // fs << "Pipeline" << "{";
-
-	    // // loop through all plugins of the first pipeline (in the gui)
-	    // for (unsigned int i = 0; i < ipEngine.pipelines[0].plugins.size(); i++)
-	    // {
-	    // 	wxString text = ListBoxPipeline->GetString(i);
-	    // 	string cc = TextToCamelCase (text.ToStdString());
-
-	    // 	fs << string("Plugin_") + std::to_string(i) << "{" << cc << "{"; // ugly hack to go around duplicate key bug
-
-	    // 	// plugins are nullptr in some pipelines, depending on multithreading...
-	    // 	if (ipEngine.pipelines[0].plugins[i])
-	    // 	    ipEngine.pipelines[0].plugins[i]->SaveXML(fs);
-	    // 	else
-	    // 	    ipEngine.pipelines[ipEngine.threadsCount].plugins[i]->SaveXML(fs);
-
-	    // 	fs << "}" << "}";
-	    // }
-
-	    // fs << "}"; // Pipeline
 	    fs << "}"; // SourceConfiguration
 	    fs.release();
 	}
 	else
 	{
 	    wxMessageBox( wxT("Could not open file for saving settings."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
+	}
+    }
+}
+
+void MainFrame::OnButtonConfigLoadStitchingClick(wxCommandEvent& event)
+{
+    wxString caption = wxT("Choose a stitching file to use");
+    wxString wildcard = wxT("XML data (*.xml)|*.xml");
+
+    wxFileDialog dialog(this, caption, "", "", wildcard, wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+
+    if (dialog.ShowModal() == wxID_OK)
+    {
+	wxString path = dialog.GetPath();
+
+	cv::FileStorage file;
+	cv::FileNode rootNode;
+	file.open(path.ToStdString(), FileStorage::READ);
+	if (file.isOpened())
+	{
+	    rootNode = file["Source"];
+
+	    // try to cast as multi device
+	    CaptureMultiVideo* cv = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
+	    if (cv)
+	    {
+		cv->LoadXML(rootNode, true);
+		ResetImageProcessingEngine();
+		AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+		GLCanvas1->Refresh();
+	    }
+
+	    // TODO ADD MULTI USB
+	    // CaptureMultiVideo* cv = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
+	    // if (cv)
+	    // {
+	    // 	cv->LoadXML(rootNode, true);
+	    // }
+
+
+	}
+    }
+}
+
+void MainFrame::OnButtonConfigSaveStitchingClick(wxCommandEvent& event)
+{
+    wxString caption = wxT("Save current stitching settings");
+    wxString wildcard = wxT("XML file (*.xml)|*.xml");
+    wxFileDialog dialog(this, caption, "", "", wildcard, wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+
+    if (dialog.ShowModal() == wxID_OK)
+    {
+	wxString path = dialog.GetPath();
+
+	// open file
+	FileStorage fs(path.ToStdString(), FileStorage::WRITE);
+
+	if (fs.isOpened())
+	{
+	    fs << "Source" << "{";
+
+	    ipEngine.capture->SaveXML (fs);
+
+	    fs << "}"; // SourceConfiguration
+	    fs.release();
+	}
+	else
+	{
+	    wxMessageBox( wxT("Could not open file for saving stitching settings."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
 	}
     }
 }

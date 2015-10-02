@@ -38,13 +38,14 @@ void Parameters::parseCommandLine (int argc, char** argv)
 	("help,h", "produce help message")
 	("nogui,n", "command line only, disable graphical interface")
 	("parameters,p", po::value<string>(), "configuration file with parameters in xml format")
-	("inputfile,i", po::value<string>(), "use specified video file")
-	("usb,u", po::value<int>(), "use specified USB camera device")
+	("inputfile,i", po::value<vector<string>>()->multitoken(), "use specified video file(s)")
+	("usb,u", po::value<vector<int>>()->multitoken(), "use specified USB camera device(s)")
 	("avt,a", po::value<int>(), "use specified AVT camera device")
 	("mask,m", po::value<string>(), "mask image for zones of interest filename")
-	("start,s", po::value<float>(), "start time of tracking")
+	("start", po::value<float>(), "start time of tracking")
 	("length,l", po::value<float>(), "length (duration) of tracking")
-	("multi,x", "Activate multi usb capture (debug)")
+	("stitching", po::value<string>(), "stitching configuration file in xml format ")
+	("calibration", po::value<string>(), "calibration configuration file in xml format ")
 	("background,b", po::value<string>(), "specify the background image for motion detection")
 	;
 
@@ -90,14 +91,24 @@ void Parameters::parseCommandLine (int argc, char** argv)
 
     if (vm.count("usb"))
     {
-	usbDevice = vm["usb"].as<int>();
-	std::cout << "Using USB camera, device=" << usbDevice << " as data source" << std::endl;
-    }
+	usbDevices = vm["usb"].as<vector<int>>();
 
-    if (vm.count("multi"))
-    {
-	multiCapture = true;
-	std::cout << "Debug : multi capture as data source" << std::endl;
+	if (usbDevices.size() == 1)
+	{
+	    usbDevice = usbDevices[0];
+	    std::cout << "Using USB camera, device=" << usbDevice << " as data source" << std::endl;
+	}
+	else
+	{
+	    multiUSBCapture = true;
+	    std::cout << "Using multiple USB cameras, devices=";
+	    std::cout << usbDevices[0];
+	    for (unsigned int i = 1; i < usbDevices.size(); i++)
+	    {	    
+		std::cout << ", " << usbDevices[i];
+	    }
+	    std::cout << " as data source" << std::endl;
+	}
     }
 
     if (vm.count("avt"))
@@ -108,8 +119,24 @@ void Parameters::parseCommandLine (int argc, char** argv)
 
     if (vm.count("inputfile"))
     {       
-	inputFilename = vm["inputfile"].as<string>();
-	std::cout << "Using file " << inputFilename << " as data source" << std::endl;
+	inputFilenames = vm["inputfile"].as<vector<string>>();
+
+	if (inputFilenames.size() == 1)
+	{
+	    inputFilename = inputFilenames[0];
+	    std::cout << "Using file " << inputFilename << " as data source" << std::endl;
+	}
+	else
+	{
+	    multiVideoCapture = true;
+	    std::cout << "Using multiple files : ";
+	    std::cout << inputFilenames[0];
+	    for (unsigned int i = 1; i < inputFilenames.size(); i++)
+	    {	    
+		std::cout << ", " << inputFilenames[i];
+	    }
+	    std::cout << " as data source" << std::endl;
+	}
     }
 
     if (vm.count("mask"))
@@ -134,6 +161,18 @@ void Parameters::parseCommandLine (int argc, char** argv)
     {
 	bgFilename = vm["background"].as<string>();
 	std::cout << "Using image " << bgFilename << " as background" << std::endl;
+    }
+
+    if (vm.count("stitching"))
+    {
+	stitchingFilename = vm["stitching"].as<string>();
+	std::cout << "Using stitching configuration from file " << stitchingFilename << std::endl;
+    }
+
+    if (vm.count("calibration"))
+    {
+	calibrationFilename = vm["calibration"].as<string>();
+	std::cout << "Using calibration configuration from file " << calibrationFilename << std::endl;
     }
 
     std::cout << "Check possible command line switches with --help !" << std::endl << std::endl;

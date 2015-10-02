@@ -70,6 +70,9 @@ string CaptureMultiVideo::GetName()
 
 bool CaptureMultiVideo::Open (vector<string> filenames)
 {
+    if (filenames.size() == 0) 
+	return false;
+
     for (unsigned int i = 0; i < filenames.size(); i++)
     {
 	CaptureVideo* c = new CaptureVideo(filenames[i]);
@@ -248,7 +251,7 @@ void CaptureMultiVideo::SaveXML(FileStorage& fs)
     for (unsigned int i = 0; i < subcaptures.size(); i++)
     {
 	fs << std::string("Subdevice_") + std::to_string(i) << "{";
-
+		
 	subcaptures[i]->SaveXML(fs);
 
 	fs << "}";
@@ -277,17 +280,36 @@ void CaptureMultiVideo::SaveXML(FileStorage& fs)
 
 void CaptureMultiVideo::LoadXML(FileNode& fn)
 {
+    LoadXML(fn, false);
+}
+
+void CaptureMultiVideo::LoadXML(FileNode& fn, bool stitchingOnly)
+{
     if (!fn.empty())
     {
 	FileNode fn2 = fn["Subdevices"];
 	if (!fn2.empty())
 	{
+	    int sc = 0;
 	    FileNodeIterator it = fn2.begin(), it_end = fn2.end();
 	    for (; it != it_end; ++it)
 	    {
 		FileNode fn3 = (*it);
-		CaptureVideo* capture = new CaptureVideo(fn3);
-		subcaptures.push_back(capture);
+
+		if (stitchingOnly)
+		{
+		    FileNode calibNode = fn3 ["Calibration"];
+		    if (!calibNode.empty())
+		    {
+			subcaptures[sc]->calibration.LoadXML (calibNode);
+		    }		
+		    sc++;
+		}
+		else
+		{
+		    CaptureVideo* capture = new CaptureVideo(fn3);
+		    subcaptures.push_back(capture);
+		}
 	    }
 	}
 

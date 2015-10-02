@@ -23,11 +23,18 @@ public:
     std::string zonesFilename;
     int usbDevice = -1;
     int avtDevice = -1;
+    std::vector<int> usbDevices;
+    std::vector<std::string> inputFilenames;
+
+    std::string stitchingFilename;
+    std::string calibrationFilename;
+
     
     int startTime = -1;
     int durationTime = -1;
 
-    bool multiCapture = false;
+    bool multiUSBCapture = false;
+    bool multiVideoCapture = false;
 
     void loadXML (std::string filename);
     void parseCommandLine (int argc, char** argv);

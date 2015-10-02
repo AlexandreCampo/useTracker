@@ -70,6 +70,7 @@ struct CaptureMultiVideo : public Capture
     bool SetFrameNumber(long f);
 
     void LoadXML (cv::FileNode& fn);
+    void LoadXML (cv::FileNode& fn, bool stitchingOnly);
     void SaveXML (cv::FileStorage& fs);
 
     std::string GetName();

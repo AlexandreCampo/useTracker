@@ -160,7 +160,9 @@ void CaptureUSBCamera::Play()
 
 bool CaptureUSBCamera::GetFrame (double time)
 {
+    time *= 1000000.0;
     while (InternalGetTime() < time) this_thread::sleep_for(chrono::milliseconds(10));
+
     Mat previousFrame = frame;
 
     // take several frames otherwise we get an old buffered frame

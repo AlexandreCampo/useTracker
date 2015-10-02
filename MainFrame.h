@@ -139,6 +139,8 @@ private:
     void OnButtonConfigStitchClick(wxCommandEvent& event);
     void OnButtonConfigResetStitchingClick(wxCommandEvent& event);
     void OnMenuSaveCaptureSelected(wxCommandEvent& event);
+    void OnButtonConfigLoadStitchingClick(wxCommandEvent& event);
+    void OnButtonConfigSaveStitchingClick(wxCommandEvent& event);
     //*)
 
     //(*Identifiers(MainFrame)
@@ -186,6 +188,10 @@ private:
     static const long ID_BUTTON9;
     static const long ID_STATICBITMAP5;
     static const long ID_BUTTON10;
+    static const long ID_BITMAPBUTTON13;
+    static const long ID_BUTTON8;
+    static const long ID_BITMAPBUTTON14;
+    static const long ID_BUTTON11;
     static const long ID_SCROLLEDWINDOW4;
     static const long ID_CHOICE1;
     static const long ID_RADIOBOX2;
@@ -250,6 +256,7 @@ private:
     wxSpinCtrl* SpinCtrlCalibFramesCount;
     wxMenuItem* MenuSaveSettings;
     wxBitmapButton* buttonStepBackwards;
+    wxButton* ButtonConfigLoadStitching;
     wxCheckBox* CheckBoxCalibZeroTangentDist;
     wxScrolledWindow* BackgroundTab;
     wxStaticText* StaticText1;
@@ -263,6 +270,7 @@ private:
     wxStaticText* StaticText3;
     wxButton* ButtonBgLoad;
     wxChoice* ChoiceCalibSubdevices;
+    wxButton* ButtonConfigSaveStitching;
     wxButton* ButtonConfigStitch;
     wxButton* ButtonCalibSave;
     wxRadioBox* RadioBoxMethod;
@@ -272,6 +280,7 @@ private:
     wxBitmapButton* buttonStepForward;
     wxStaticText* StaticText8;
     wxStaticText* StaticText12;
+    wxBitmapButton* BitmapButton5;
     wxBitmapButton* BitmapButton4;
     wxFileDialog* FileDialog1;
     wxStaticBox* StaticBox1;
@@ -307,6 +316,7 @@ private:
     wxStaticText* StaticText11;
     wxMenuItem* MenuSaveCapture;
     wxButton* ButtonCalibLoad;
+    wxBitmapButton* BitmapButton6;
     wxStaticBitmap* StaticBitmap2;
     //*)
 
