@@ -224,10 +224,20 @@ bool CaptureMultiUSBCamera::GetFrame (double time)
     }
 
     bool frameEmpty = false;
-    for (unsigned int i = 0; i < subcaptures.size(); i++)
+    for (unsigned int i = subcaptures.size() - 1; i >= 0; i--)
     {
 	frameEmpty = frameEmpty || subcaptures[i]->frame.empty();
-	subcaptures[i]->frame.copyTo(frame(rects[i]));
+
+	if (stitched)
+	{
+	    Mat tmp;
+	    warpPerspective(subcaptures[i]->frame, tmp, homographies[i], frame.size());
+	    tmp.copyTo(frame, stitchMasks[i]);
+	}
+	else
+	{
+	    subcaptures[i]->frame.copyTo(frame(rects[i]));
+	}
     }
 
     // at least one subcapture did not return a frame

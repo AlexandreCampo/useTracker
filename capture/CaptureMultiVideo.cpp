@@ -206,17 +206,25 @@ bool CaptureMultiVideo::GetFrame (double time)
 {
     Mat previousFrame = frame;
 
-    // take several frames otherwise we get an old buffered frame
-    for (unsigned int i = 0; i < subcaptures.size(); i++)
-    {
-	subcaptures[i]->GetFrame(time);
-    }
-
     bool frameEmpty = false;
-    for (unsigned int i = 0; i < subcaptures.size(); i++)
+
+    for (int j = subcaptures.size() - 1; j >= 0; j--)
     {
+	unsigned int i = (unsigned int) j;
+
+	subcaptures[i]->GetFrame(time);
 	frameEmpty = frameEmpty || subcaptures[i]->frame.empty();
-	subcaptures[i]->frame.copyTo(frame(rects[i]));
+
+	if (stitched)
+	{
+	    Mat tmp;
+	    warpPerspective(subcaptures[i]->frame, tmp, homographies[i], frame.size());
+	    tmp.copyTo(frame, stitchMasks[i]);
+	}
+	else
+	{
+	    subcaptures[i]->frame.copyTo(frame(rects[i]));
+	}
     }
 
     // at least one subcapture did not return a frame
