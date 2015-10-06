@@ -820,20 +820,12 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 {
     Mat oglScreenScaled;
     Mat hudScaled;
-    Mat hudAppScaled;
 
     // resize oglscreen in case it is too big....
     if (oglScreen.cols >= 4096  || oglScreen.rows >= 4096)
     {
 	Mat tmpScreen;
 	Mat tmpHud;
-
-	// tmpHud = Mat (hud.size(), CV_8UC4);
-
-	// if ((activeTab == ProcessingTab) && showProcessing)
-	//     tmpScreen = Mat (oglScreen.size(), CV_8U);
-	// else
-	//     tmpScreen = Mat (oglScreen.size(), CV_8UC3);
 
 	float coeff = 1;
 	if (oglScreen.cols > oglScreen.rows)
@@ -844,9 +836,6 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 	Size sz (oglScreen.cols / coeff, oglScreen.rows / coeff);
 	resize (oglScreen, oglScreenScaled, sz);
 	resize (hud, hudScaled, sz);
-
-	// oglScreenScaled = tmpScreen;
-	// hudScaled = tmpHud;
     }
     else
     {
@@ -913,8 +902,6 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 	    oglScreenScaled.data);
     }
 
-//    SaveMatToPNG (oglScreen, "debugStitchedOglScreen.png");
-
     // Draw a textured quad
     glBegin(GL_QUADS);
     glTexCoord2f(zoomStartX, zoomStartY); glVertex2f(0.0f, 0.0f);
@@ -944,9 +931,9 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 	glColor4f (1.0f, 1.0f, 1.0f, 0.5f);
 	glBegin(GL_QUADS);
 	glTexCoord2f(zoomStartX, zoomStartY); glVertex2f(0.0f, 0.0f);
-	glTexCoord2f(zoomEndX, zoomStartY); glVertex2f(hudScaled.cols, 0.0f);
-	glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(hudScaled.cols, hudScaled.rows);
-	glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, hudScaled.rows);
+	glTexCoord2f(zoomEndX, zoomStartY); glVertex2f(oglScreen.cols, 0.0f);
+	glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(oglScreen.cols, oglScreen.rows);
+	glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, oglScreen.rows);
 	glEnd();
 	
 	// Create Texture
@@ -968,9 +955,9 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 	glColor4f (1.0f, 1.0f, 1.0f, 1.0f);
 	glBegin(GL_QUADS);
 	glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0f, 0.0f);
-	glTexCoord2f(1.0f, 0.0f); glVertex2f(hud.cols, 0.0f);
-	glTexCoord2f(1.0f, 1.0f); glVertex2f(hud.cols, hud.rows);
-	glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, hud.rows);
+	glTexCoord2f(1.0f, 0.0f); glVertex2f(oglScreen.cols, 0.0f);
+	glTexCoord2f(1.0f, 1.0f); glVertex2f(oglScreen.cols, oglScreen.rows);
+	glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, oglScreen.rows);
 	glEnd();
     }
 
@@ -1131,8 +1118,9 @@ void MainFrame::PrintInfoToHud()
     // selection
     if (marqueeRegisteredDown && marqueeRegisteredMotion)
     {
-	rectangle(hud, Point(marqueeStart.x, marqueeStart.y), Point(marqueeEnd.x, marqueeEnd.y), Scalar (255, 255, 255, 255), 2);
-//	rectangle(hudApp, Point(marqueeStart.x, marqueeStart.y), Point(marqueeEnd.x, marqueeEnd.y), Scalar (255, 255, 255, 255), 2);
+	float coeffX = (float) hudApp.cols / (float) hud.cols;
+	float coeffY = (float) hudApp.rows / (float) hud.rows;
+	rectangle(hudApp, Point(marqueeStart.x * coeffX, marqueeStart.y * coeffY), Point(marqueeEnd.x * coeffX, marqueeEnd.y * coeffY), Scalar (255, 255, 255, 255), 2);
     }
 
     // play speed
