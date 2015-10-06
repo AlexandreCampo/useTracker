@@ -85,6 +85,10 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
     // automatically calculate background
 
     // for every pixel :
+    unsigned char* r = new unsigned char (readCount);
+    unsigned char* g = new unsigned char (readCount);
+    unsigned char* b = new unsigned char (readCount);
+
     int index2 = 0;
     for (int y = 0; y < height; y++)
     {
@@ -93,9 +97,6 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
     	for (int x = 0; x < width; x++)
     	{
     	    // gather some stats in a buffer
-    	    unsigned char r[readCount];
-    	    unsigned char g[readCount];
-    	    unsigned char b[readCount];
     	    int idx = index2;
     	    for (unsigned int i = 0; i < readCount; i++)
     	    {
@@ -109,10 +110,10 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
 
     	    // now find out the most representative values
     	    unsigned char bgr = 0, bgg = 0, bgb = 0;
-    	    unsigned char bgrCount = 0, bggCount = 0, bgbCount = 0;
-    	    char hist[256];
+    	    unsigned long bgrCount = 0, bggCount = 0, bgbCount = 0;
+    	    unsigned long hist[256];
 
-    	    memset (hist, 0, 256);
+    	    memset (hist, 0, sizeof (unsigned long) * 256);
     	    for (unsigned int i = 0; i < readCount; i++) hist[r[i]]++;
     	    for (unsigned int i = 0; i < 256; i++)
     	    {
@@ -122,7 +123,7 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
     		}
     	    }
 
-    	    memset (hist, 0, 256);
+    	    memset (hist, 0, sizeof (unsigned long) * 256);
     	    for (unsigned int i = 0; i < readCount; i++) hist[g[i]]++;
     	    for (unsigned int i = 0; i < 256; i++)
     	    {
@@ -132,7 +133,7 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
     		}
     	    }
 
-    	    memset (hist, 0, 256);
+    	    memset (hist, 0, sizeof (unsigned long) * 256);
     	    for (unsigned int i = 0; i < readCount; i++) hist[b[i]]++;
     	    for (unsigned int i = 0; i < 256; i++)
     	    {
@@ -163,6 +164,10 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
     	    bgRow[x*3+2] = fb;
     	}
     }
+    
+    delete[] r;
+    delete[] g;
+    delete[] b;
 
     delete[] samples;
     cerr << "Background calculated" << endl;

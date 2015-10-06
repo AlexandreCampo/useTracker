@@ -102,7 +102,7 @@ bool CaptureMultiVideo::Open ()
     fps = subcaptures[0]->fps;
 
     stitchPoints.resize(subcaptures.size());
-    bool frameMissing = false;
+    bool frameEmpty = false;
 
     if (!stitched)
     {
@@ -110,11 +110,11 @@ bool CaptureMultiVideo::Open ()
 
 	for (unsigned int i = 0; i < subcaptures.size(); i++)
 	{
-	    frameMissing = frameMissing || subcaptures[i]->frame.empty();
+	    frameEmpty = frameEmpty || subcaptures[i]->frame.empty();
 	}
 
 	// produce first frame
-	if (!frameMissing)
+	if (!frameEmpty)
 	{
 	    for (unsigned int i = 0; i < subcaptures.size(); i++)
 	    {
@@ -128,8 +128,8 @@ bool CaptureMultiVideo::Open ()
 	{
 	    unsigned int i = (unsigned int) j;
 
-	    subcaptures[i]->GetNextFrame();
-	    frameMissing = frameMissing || subcaptures[i]->frame.empty();
+	    bool available = subcaptures[i]->GetNextFrame();
+	    frameEmpty = frameEmpty || !available;
 
 	    Mat tmp;
 	    warpPerspective(subcaptures[i]->frame, tmp, homographies[i], frame.size());
@@ -137,7 +137,7 @@ bool CaptureMultiVideo::Open ()
 	}
     }
 
-    return (!frameMissing);
+    return (!frameEmpty);
 }
 
 void CaptureMultiVideo::Close ()
@@ -147,16 +147,14 @@ void CaptureMultiVideo::Close ()
 
 bool CaptureMultiVideo::GetNextFrame ()
 {
-    Mat previousFrame = frame;
-
     bool frameEmpty = false;
 
     for (int j = subcaptures.size() - 1; j >= 0; j--)
     {
 	unsigned int i = (unsigned int) j;
 
-	subcaptures[i]->GetNextFrame();
-	frameEmpty = frameEmpty || subcaptures[i]->frame.empty();
+	bool available = subcaptures[i]->GetNextFrame();
+	frameEmpty = frameEmpty || !available;
 
 	if (stitched)
 	{
@@ -171,12 +169,7 @@ bool CaptureMultiVideo::GetNextFrame ()
     }
 
     // at least one subcapture did not return a frame
-    if (frameEmpty)
-    {
-	frame = previousFrame;
-	return false;
-    }
-    return true;
+    return !frameEmpty;
 }
 
 wxLongLong CaptureMultiVideo::GetNextFrameSystemTime()
@@ -204,16 +197,14 @@ void CaptureMultiVideo::Play()
 
 bool CaptureMultiVideo::GetFrame (double time)
 {
-    Mat previousFrame = frame;
-
     bool frameEmpty = false;
 
     for (int j = subcaptures.size() - 1; j >= 0; j--)
     {
 	unsigned int i = (unsigned int) j;
 
-	subcaptures[i]->GetFrame(time);
-	frameEmpty = frameEmpty || subcaptures[i]->frame.empty();
+	bool available = subcaptures[i]->GetFrame(time);
+	frameEmpty = frameEmpty || !available;
 
 	if (stitched)
 	{
@@ -228,13 +219,61 @@ bool CaptureMultiVideo::GetFrame (double time)
     }
 
     // at least one subcapture did not return a frame
-    if (frameEmpty)
-    {
-	frame = previousFrame;
-	return false;
-    }
-    return true;
+    return !frameEmpty;
 }
+
+bool CaptureMultiVideo::GetPreviousFrame()
+{
+    bool frameEmpty = false;
+
+    for (int j = subcaptures.size() - 1; j >= 0; j--)
+    {
+	unsigned int i = (unsigned int) j;
+
+	bool available = subcaptures[i]->GetPreviousFrame();
+	frameEmpty = frameEmpty || !available;
+
+	if (stitched)
+	{
+	    Mat tmp;
+	    warpPerspective(subcaptures[i]->frame, tmp, homographies[i], frame.size());
+	    tmp.copyTo(frame, stitchMasks[i]);
+	}
+	else
+	{
+	    subcaptures[i]->frame.copyTo(frame(rects[i]));
+	}
+    }
+
+    return !frameEmpty;
+}
+
+bool CaptureMultiVideo::SetFrameNumber(long frameNumber)
+{
+    bool frameEmpty = false;
+
+    for (int j = subcaptures.size() - 1; j >= 0; j--)
+    {
+	unsigned int i = (unsigned int) j;
+
+	bool available = subcaptures[i]->SetFrameNumber(frameNumber);
+	frameEmpty = frameEmpty || !available;
+
+	if (stitched)
+	{
+	    Mat tmp;
+	    warpPerspective(subcaptures[i]->frame, tmp, homographies[i], frame.size());
+	    tmp.copyTo(frame, stitchMasks[i]);
+	}
+	else
+	{
+	    subcaptures[i]->frame.copyTo(frame(rects[i]));
+	}
+    }
+
+    return !frameEmpty;
+}
+
 
 long CaptureMultiVideo::GetFrameNumber ()
 {
@@ -243,7 +282,28 @@ long CaptureMultiVideo::GetFrameNumber ()
 
 long CaptureMultiVideo::GetFrameCount ()
 {
-    return subcaptures[masterDevice]->GetFrameCount();
+    unsigned long minframes = (unsigned long) -1;
+
+    for (unsigned int i = 0; i < subcaptures.size(); i++)
+    {
+	unsigned long fc = (unsigned long) subcaptures[i]->GetFrameCount();
+	if (fc < minframes)
+	    minframes = fc;
+    }
+
+    return minframes;
+}
+
+void CaptureMultiVideo::SetSpeedFaster(int speed)
+{
+    for (unsigned int i = 0; i < subcaptures.size(); i++)
+	subcaptures[i]->SetSpeedFaster(speed);
+}
+
+void CaptureMultiVideo::SetSpeedSlower(int speed)
+{
+    for (unsigned int i = 0; i < subcaptures.size(); i++)
+	subcaptures[i]->SetSpeedSlower(speed);
 }
 
 double CaptureMultiVideo::GetTime()

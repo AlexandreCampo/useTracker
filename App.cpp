@@ -43,6 +43,8 @@
 
 #include "CaptureVideo.h"
 #include "CaptureUSBCamera.h"
+#include "CaptureMultiUSBCamera.h"
+#include "CaptureMultiVideo.h"
 #include "CaptureImage.h"
 #ifdef VIMBA
 #include "CaptureAVTCamera.h"
@@ -96,22 +98,73 @@ int main(int argc, char **argv)
 	
 	ipEngine.LoadXML (parameters.rootNode);
 
+	// TODO this whole part duplicated from MainFrame.cpp
 	// load capture source from command line params if possible
 	if (!parameters.inputFilename.empty())
 	{
-	    // try to load input as video
-	    ipEngine.capture = new CaptureVideo (parameters.inputFilename);
-	    
-	    // if video not loaded, try image
-	    if (ipEngine.capture->type == Capture::NONE)
+	    // check extension
+	    wxFileName f (parameters.inputFilename);
+	    if (f.GetExt() == "xml")
 	    {
-		delete ipEngine.capture;
-		ipEngine.capture = new CaptureImage (parameters.inputFilename);
+		// TODO duplicated from dialog open capture. Needs a cleaner solution
+		std::string filename = parameters.inputFilename;	    
+		cv::FileStorage file;
+		cv::FileNode rootNode;
+		
+		file.open(filename, cv::FileStorage::READ);
+		if (file.isOpened())
+		{
+		    rootNode = file["Source"];
+		    
+		    if (!rootNode.empty())
+		    {
+			string type = (string)rootNode["Type"];
+			
+			if (type == "multiVideo") 
+			{
+			    ipEngine.capture->LoadXML(rootNode);
+			}
+			else if (type == "video")
+			{
+			    ipEngine.capture = new CaptureVideo(rootNode);
+			}
+			else if (type == "USBcamera")
+			{
+			    ipEngine.capture = new CaptureUSBCamera(rootNode);
+			}
+			else if (type == "image")
+			{
+			    ipEngine.capture = new CaptureImage(rootNode);
+			}
+#ifdef VIMBA
+			else if (type == "AVTcamera")
+			{
+			    ipEngine.capture = new CaptureAVTCamera(rootNode);
+			}
+#endif // VIMBA
+			else if (type == "multiUSBcamera")
+			{
+			    ipEngine.capture = new CaptureMultiUSBCamera(rootNode);
+			}
+		    }
+		}	       
+	    }
+	    else
+	    {
+		// try to load input as video file
+		ipEngine.capture = new CaptureVideo (parameters.inputFilename);
+		
+		// if video not loaded, try image
+		if (ipEngine.capture->type == Capture::NONE)
+		{
+		    delete ipEngine.capture;
+		    ipEngine.capture = new CaptureImage (parameters.inputFilename);
+		}
 	    }
 	}
 	else if (parameters.usbDevice >= 0)
 	{
-	    ipEngine.capture = new CaptureUSBCamera (parameters.usbDevice);
+	ipEngine.capture = new CaptureUSBCamera (parameters.usbDevice);
 	}
 	else if (parameters.avtDevice >= 0)
 	{
@@ -119,6 +172,70 @@ int main(int argc, char **argv)
 	    ipEngine.capture = new CaptureAVTCamera (parameters.avtDevice);
 #endif //VIMBA
 	}
+	else if (parameters.multiUSBCapture == true)
+	{
+	    CaptureMultiUSBCamera* mu = new CaptureMultiUSBCamera (parameters.usbDevices);
+	    ipEngine.capture = mu;
+	    if (mu && !parameters.stitchingFilename.empty())
+	    {
+		cv::FileStorage file (parameters.stitchingFilename, FileStorage::READ);
+		if (file.isOpened())
+		{
+		    cv::FileNode rootNode = file["Source"];
+		    mu->LoadXML(rootNode);
+		}
+	    }
+	}
+	else if (parameters.multiVideoCapture == true)
+	{
+	    CaptureMultiVideo* mv = new CaptureMultiVideo (parameters.inputFilenames);
+	    ipEngine.capture = mv;
+	    if (mv && !parameters.stitchingFilename.empty())
+	    {
+		cv::FileStorage file (parameters.stitchingFilename, FileStorage::READ);
+		if (file.isOpened())
+		{
+		    cv::FileNode rootNode = file["Source"];
+		    mv->LoadXML(rootNode, true);
+		}
+	    }
+	}
+	
+	if (ipEngine.capture && !parameters.calibrationFilename.empty())
+	{
+	    cv::FileStorage file (parameters.calibrationFilename, FileStorage::READ);
+	    if (file.isOpened())
+	    {
+		cv::FileNode rootNode = file["Calibration"];
+		ipEngine.capture->calibration.LoadXML(rootNode);
+	    }
+	}
+	
+	
+
+// 	// load capture source from command line params if possible
+// 	if (!parameters.inputFilename.empty())
+// 	{
+// 	    // try to load input as video
+// 	    ipEngine.capture = new CaptureVideo (parameters.inputFilename);
+	    
+// 	    // if video not loaded, try image
+// 	    if (ipEngine.capture->type == Capture::NONE)
+// 	    {
+// 		delete ipEngine.capture;
+// 		ipEngine.capture = new CaptureImage (parameters.inputFilename);
+// 	    }
+// 	}
+// 	else if (parameters.usbDevice >= 0)
+// 	{
+// 	    ipEngine.capture = new CaptureUSBCamera (parameters.usbDevice);
+// 	}
+// 	else if (parameters.avtDevice >= 0)
+// 	{
+// #ifdef VIMBA
+// 	    ipEngine.capture = new CaptureAVTCamera (parameters.avtDevice);
+// #endif //VIMBA
+// 	}
 	
 	ipEngine.Reset(parameters);
 	
@@ -160,6 +277,11 @@ int main(int argc, char **argv)
 		
 		std::cout << "Progress : " << progress  << "% | frame " << frameNumber << "/" << totalFrames << " | time " << ipEngine.capture->GetTime() << "s" <<  std::endl;
 	    }
+
+	    // end if outside time boundaries
+	    if (ipEngine.useTimeBoundaries && ipEngine.durationTime > 0.0000001)
+		if (ipEngine.capture->GetTime() > ipEngine.startTime + ipEngine.durationTime)
+		    break;
 	}
 
 	ipEngine.CloseOutput();

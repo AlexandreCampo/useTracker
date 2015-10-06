@@ -409,7 +409,7 @@ void CaptureCalibration::Undistort (Mat& frame)
 {
 //    Mat temp;
 
-    if (calibrated)
+    if (calibrated && !frame.empty())
     {
 	Mat temp = frame.clone();
 	remap(temp, frame, undistortedMap1, undistortedMap2, INTER_LINEAR);

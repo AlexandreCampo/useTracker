@@ -109,7 +109,7 @@ bool CaptureMultiUSBCamera::Open ()
     fps = minFPS;
 
     stitchPoints.resize(subcaptures.size());
-    bool frameMissing = false;
+    bool frameEmpty = false;
 	
     if (!stitched)
     {
@@ -117,11 +117,11 @@ bool CaptureMultiUSBCamera::Open ()
 	
 	for (unsigned int i = 0; i < subcaptures.size(); i++)
 	{
-	    frameMissing = frameMissing || subcaptures[i]->frame.empty();
+	    frameEmpty = frameEmpty || subcaptures[i]->frame.empty();
 	}
 	
 	// produce first frame
-	if (!frameMissing)
+	if (!frameEmpty)
 	{
 	    for (unsigned int i = 0; i < subcaptures.size(); i++)
 	    {
@@ -135,8 +135,8 @@ bool CaptureMultiUSBCamera::Open ()
 	{
 	    unsigned int i = (unsigned int) j;
 	    
-	    subcaptures[i]->GetNextFrame();
-	    frameMissing = frameMissing || subcaptures[i]->frame.empty();
+	    bool available = subcaptures[i]->GetNextFrame();
+	    frameEmpty = frameEmpty || !available;
 	
 	    Mat tmp;
 	    warpPerspective(subcaptures[i]->frame, tmp, homographies[i], frame.size());
@@ -144,7 +144,7 @@ bool CaptureMultiUSBCamera::Open ()
 	}
     }
 
-    return (!frameMissing);
+    return (!frameEmpty);
 }
 
 void CaptureMultiUSBCamera::Close ()
@@ -154,16 +154,14 @@ void CaptureMultiUSBCamera::Close ()
 
 bool CaptureMultiUSBCamera::GetNextFrame ()
 {
-    Mat previousFrame = frame;
-
     bool frameEmpty = false;
 
     for (int j = subcaptures.size() - 1; j >= 0; j--)
     {
 	unsigned int i = (unsigned int) j;
 
-	subcaptures[i]->GetNextFrame();
-	frameEmpty = frameEmpty || subcaptures[i]->frame.empty();
+	bool available = subcaptures[i]->GetNextFrame();
+	frameEmpty = frameEmpty || !available;
 
 	if (stitched)
 	{
@@ -178,12 +176,7 @@ bool CaptureMultiUSBCamera::GetNextFrame ()
     }
 
     // at least one subcapture did not return a frame
-    if (frameEmpty)
-    {
-	frame = previousFrame;
-	return false;
-    }
-    return true;
+    return !frameEmpty;
 }
 
 wxLongLong CaptureMultiUSBCamera::GetNextFrameSystemTime()
@@ -212,21 +205,21 @@ void CaptureMultiUSBCamera::Play()
 bool CaptureMultiUSBCamera::GetFrame (double time)
 {
     while (InternalGetTime() < time) this_thread::sleep_for(chrono::milliseconds(10));
-    Mat previousFrame = frame;
 
     // take several frames otherwise we get an old buffered frame
+    bool available[subcaptures.size()];
     for (int j = 0; j < 4; j++)
     {
 	for (unsigned int i = 0; i < subcaptures.size(); i++)
 	{
-	    subcaptures[i]->GetNextFrame();
+	    available[i] = subcaptures[i]->GetNextFrame();
 	}
     }
 
     bool frameEmpty = false;
     for (unsigned int i = subcaptures.size() - 1; i >= 0; i--)
     {
-	frameEmpty = frameEmpty || subcaptures[i]->frame.empty();
+	frameEmpty = frameEmpty || !available[i];
 
 	if (stitched)
 	{
@@ -241,12 +234,7 @@ bool CaptureMultiUSBCamera::GetFrame (double time)
     }
 
     // at least one subcapture did not return a frame
-    if (frameEmpty)
-    {
-	frame = previousFrame;
-	return false;
-    }
-    return true;
+    return !frameEmpty;
 }
 
 long CaptureMultiUSBCamera::GetFrameNumber ()

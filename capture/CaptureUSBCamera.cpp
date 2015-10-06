@@ -71,7 +71,8 @@ bool CaptureUSBCamera::Open (int device)
     fps = source.get(CV_CAP_PROP_FPS);
 
     // manually estimate fps (opencv bug workaround)
-    if (fps <= 0.000001)
+    if (fps <= 0.000001 || std::isnan(fps)) fps = 1;
+//    if (fps <= 0.000001)
     {
 	for (int i = 0; i < 10; i++) source >> frame;
 	wxLongLong t1 = wxGetUTCTimeUSec();

@@ -618,8 +618,12 @@ void ImageProcessingEngine::Step(bool drawHud)
     {
 	// check time boundaries
 	if (useTimeBoundaries)
-	    if (ctime < startTime || ctime > (startTime + durationTime))
+	{
+	    if (ctime < startTime)
 		return;
+	    if (durationTime > 0.0000001 && ctime > (startTime + durationTime))
+		return;
+	}
 
 	// finally respect timestep if it is set
 	if (timestep > 0.00001 && ctime < nextStepTime)

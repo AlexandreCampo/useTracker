@@ -66,8 +66,7 @@ bool CaptureVideo::Open (string filename)
     fps = source.get(CV_CAP_PROP_FPS);
 
     // fps incorrectly detected
-//    if (fps <= 0.000001 || std::isnan(fps)) fps = 1;
-    if (fps <= 0.000001) fps = 1;
+    if (fps <= 0.000001 || std::isnan(fps)) fps = 1;
 
     playSpeed = 0;
     playTimestep.Assign(1000000.0 / fps);

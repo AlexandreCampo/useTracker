@@ -819,15 +819,21 @@ void MainFrame::OnAbout(wxCommandEvent& event)
 void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 {
     Mat oglScreenScaled;
+    Mat hudScaled;
+    Mat hudAppScaled;
 
     // resize oglscreen in case it is too big....
     if (oglScreen.cols >= 4096  || oglScreen.rows >= 4096)
     {
-	Mat tmp;
-	if ((activeTab == ProcessingTab) && showProcessing)
-	    tmp = Mat (oglScreen.size(), CV_8U);
-	else
-	    tmp = Mat (oglScreen.size(), CV_8UC3);
+	Mat tmpScreen;
+	Mat tmpHud;
+
+	// tmpHud = Mat (hud.size(), CV_8UC4);
+
+	// if ((activeTab == ProcessingTab) && showProcessing)
+	//     tmpScreen = Mat (oglScreen.size(), CV_8U);
+	// else
+	//     tmpScreen = Mat (oglScreen.size(), CV_8UC3);
 
 	float coeff = 1;
 	if (oglScreen.cols > oglScreen.rows)
@@ -836,12 +842,16 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 	    coeff = oglScreen.rows / 4096.0;
 
 	Size sz (oglScreen.cols / coeff, oglScreen.rows / coeff);
-	resize (oglScreen, tmp, sz);
-	oglScreenScaled = tmp;
+	resize (oglScreen, oglScreenScaled, sz);
+	resize (hud, hudScaled, sz);
+
+	// oglScreenScaled = tmpScreen;
+	// hudScaled = tmpHud;
     }
     else
     {
-	oglScreenScaled = oglScreen.clone();
+	oglScreenScaled = oglScreen; // .clone();
+	hudScaled = hud;
     }
 
     GLCanvas1->SetCurrent();
@@ -917,54 +927,51 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
     // --------------
     if (hudVisible && (activeTab != BackgroundTab))
     {
-	if (hud.cols < 4096  || hud.rows < 4096)
-	{
-	    // Create Texture
-	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	    glTexImage2D(
-		GL_TEXTURE_2D,
-		0,
-		GL_RGBA,
-		hud.cols,
-		hud.rows,
-		0,
-		GL_BGRA,
-		GL_UNSIGNED_BYTE,
-		hud.data);
+	// Create Texture
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage2D(
+	    GL_TEXTURE_2D,
+	    0,
+	    GL_RGBA,
+	    hudScaled.cols,
+	    hudScaled.rows,
+	    0,
+	    GL_BGRA,
+	    GL_UNSIGNED_BYTE,
+	    hudScaled.data);
 
-	    // Draw a textured quad
-	    glColor4f (1.0f, 1.0f, 1.0f, 0.5f);
-	    glBegin(GL_QUADS);
-	    glTexCoord2f(zoomStartX, zoomStartY); glVertex2f(0.0f, 0.0f);
-	    glTexCoord2f(zoomEndX, zoomStartY); glVertex2f(hud.cols, 0.0f);
-	    glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(hud.cols, hud.rows);
-	    glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, hud.rows);
-	    glEnd();
+	// Draw a textured quad
+	glColor4f (1.0f, 1.0f, 1.0f, 0.5f);
+	glBegin(GL_QUADS);
+	glTexCoord2f(zoomStartX, zoomStartY); glVertex2f(0.0f, 0.0f);
+	glTexCoord2f(zoomEndX, zoomStartY); glVertex2f(hudScaled.cols, 0.0f);
+	glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(hudScaled.cols, hudScaled.rows);
+	glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, hudScaled.rows);
+	glEnd();
+	
+	// Create Texture
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage2D(
+	    GL_TEXTURE_2D,
+	    0,
+	    GL_RGBA,
+	    hudApp.cols,
+	    hudApp.rows,
+	    0,
+	    GL_BGRA,
+	    GL_UNSIGNED_BYTE,
+	    hudApp.data);
 
-	    // Create Texture
-	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	    glTexImage2D(
-		GL_TEXTURE_2D,
-		0,
-		GL_RGBA,
-		hudApp.cols,
-		hudApp.rows,
-		0,
-		GL_BGRA,
-		GL_UNSIGNED_BYTE,
-		hudApp.data);
-
-	    // Draw a textured quad
-	    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	    glColor4f (1.0f, 1.0f, 1.0f, 1.0f);
-	    glBegin(GL_QUADS);
-	    glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0f, 0.0f);
-	    glTexCoord2f(1.0f, 0.0f); glVertex2f(hudApp.cols, 0.0f);
-	    glTexCoord2f(1.0f, 1.0f); glVertex2f(hudApp.cols, hudApp.rows);
-	    glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, hudApp.rows);
-	    glEnd();
-	}
+	// Draw a textured quad
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glColor4f (1.0f, 1.0f, 1.0f, 1.0f);
+	glBegin(GL_QUADS);
+	glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0f, 0.0f);
+	glTexCoord2f(1.0f, 0.0f); glVertex2f(hud.cols, 0.0f);
+	glTexCoord2f(1.0f, 1.0f); glVertex2f(hud.cols, hud.rows);
+	glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, hud.rows);
+	glEnd();
     }
 
 //    SaveMatToPNG (hud, "debugStitchedHud.png");
@@ -1060,7 +1067,7 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 
 void MainFrame::DrawTrackerSelection(wxClientDC& dc)
 {
-    if (ipEngine.capture->type == Capture::VIDEO)
+    if (ipEngine.capture->type == Capture::VIDEO || ipEngine.capture->type == Capture::MULTI_VIDEO)
     {
 	if (ListBoxPipeline->GetCount() > 0)
 	{
@@ -1124,7 +1131,8 @@ void MainFrame::PrintInfoToHud()
     // selection
     if (marqueeRegisteredDown && marqueeRegisteredMotion)
     {
-	rectangle(hudApp, Point(marqueeStart.x, marqueeStart.y), Point(marqueeEnd.x, marqueeEnd.y), Scalar (255, 255, 255, 255), 2);
+	rectangle(hud, Point(marqueeStart.x, marqueeStart.y), Point(marqueeEnd.x, marqueeEnd.y), Scalar (255, 255, 255, 255), 2);
+//	rectangle(hudApp, Point(marqueeStart.x, marqueeStart.y), Point(marqueeEnd.x, marqueeEnd.y), Scalar (255, 255, 255, 255), 2);
     }
 
     // play speed
@@ -1216,11 +1224,16 @@ void MainFrame::OnbuttonStopClick(wxCommandEvent& event)
 
 void MainFrame::OnvideoSliderCmdScrollChanged(wxScrollEvent& event)
 {
-    if(ipEngine.capture->type == Capture::VIDEO)
+    if(ipEngine.capture->type == Capture::VIDEO || ipEngine.capture->type == Capture::MULTI_VIDEO)
     {
-	CaptureVideo* capv = dynamic_cast<CaptureVideo*>(ipEngine.capture);
 	int targetFrame = videoSlider->GetValue() * ipEngine.capture->GetFrameCount() / 10000;
-	capv->SetFrameNumber(targetFrame);
+	
+	CaptureVideo* capv = dynamic_cast<CaptureVideo*>(ipEngine.capture);
+	if (capv) capv->SetFrameNumber(targetFrame);
+
+	CaptureMultiVideo* mcapv = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
+	if (mcapv) mcapv->SetFrameNumber(targetFrame);
+
 	sliderMoving = false;
 	videoSlider->UnsetToolTip();
 
@@ -1236,7 +1249,7 @@ void MainFrame::OnvideoSliderCmdScrollChanged(wxScrollEvent& event)
 
 void MainFrame::OnvideoSliderCmdScrollThumbTrack(wxScrollEvent& event)
 {
-    if (ipEngine.capture->type == Capture::VIDEO)
+    if (ipEngine.capture->type == Capture::VIDEO || ipEngine.capture->type == Capture::MULTI_VIDEO)
     {
 	wxLongLong s;
 	int targetFrame = videoSlider->GetValue() * ipEngine.capture->GetFrameCount() / 10;
@@ -1586,6 +1599,17 @@ void MainFrame::OnbuttonForwardClick(wxCommandEvent& event)
 	else
 	    cap->SetSpeedSlower(-playSpeed + 1);
     }
+
+    CaptureMultiVideo* mcap = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
+    if (mcap)
+    {
+	playSpeed++;
+
+	if (playSpeed >= 0)
+	    mcap->SetSpeedFaster(playSpeed + 1);
+	else
+	    mcap->SetSpeedSlower(-playSpeed + 1);
+    }
 }
 
 void MainFrame::OnbuttonBackwardsClick(wxCommandEvent& event)
@@ -1599,6 +1623,16 @@ void MainFrame::OnbuttonBackwardsClick(wxCommandEvent& event)
 	    cap->SetSpeedFaster(playSpeed + 1);
 	else
 	    cap->SetSpeedSlower(-playSpeed + 1);
+    }
+    CaptureMultiVideo* mcap = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
+    if (mcap)
+    {
+	playSpeed--;
+
+	if (playSpeed >= 0)
+	    mcap->SetSpeedFaster(playSpeed + 1);
+	else
+	    mcap->SetSpeedSlower(-playSpeed + 1);
     }
 }
 
@@ -1623,19 +1657,22 @@ void MainFrame::OnbuttonStepForwardClick(wxCommandEvent& event)
 
 void MainFrame::OnbuttonStepBackwardsClick(wxCommandEvent& event)
 {
-    if(ipEngine.capture->type == Capture::VIDEO)
+    if(ipEngine.capture->type == Capture::VIDEO || ipEngine.capture->type == Capture::MULTI_VIDEO)
     {
 	CaptureVideo* capv = dynamic_cast<CaptureVideo*>(ipEngine.capture);
+	CaptureMultiVideo* mcapv = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
 
 	// disable play as we enter frame by frame
 	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
 	buttonPlay->Refresh();
 	play = false;
 	manualPlay = true;
-	capv->Pause();
+	if (capv) capv->Pause();
+	if (mcapv) mcapv->Pause();
 
 	// jump video to previous frame...
-	capv->GetPreviousFrame();
+	if (capv) capv->GetPreviousFrame();
+	if (mcapv) mcapv->GetPreviousFrame();
     }
 }
 
@@ -2262,7 +2299,7 @@ void MainFrame::ResetImageProcessingEngine(Parameters& parameters)
 
     // regenerate and assign hud / empty frame
     hud.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
-    hudApp.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
+    hudApp.create(1280 * ((float) ipEngine.capture->height) / ((float) ipEngine.capture->width), 1280, CV_8UC4);
     ipEngine.hud = hud;
     ipEngine.takeSnapshot = true;
 
@@ -2293,7 +2330,8 @@ void MainFrame::ResetImageProcessingEngine()
 {
     // regenerate and assign hud / empty frame
     hud.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
-    hudApp.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
+    hudApp.create(1280 * ((float) ipEngine.capture->height) / ((float) ipEngine.capture->width), 1280, CV_8UC4);
+    // hudApp.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
     ipEngine.hud = hud;
 
     ipEngine.Reset();
@@ -2386,11 +2424,17 @@ void MainFrame::OnChar(wxKeyEvent& event)
 	break;
 
     case WXK_BACK:
-	if (ipEngine.capture->type == Capture::VIDEO)
+	CaptureVideo* cap = dynamic_cast<CaptureVideo*> (ipEngine.capture);
+	if (cap)
 	{
-	    CaptureVideo* cap = dynamic_cast<CaptureVideo*> (ipEngine.capture);
 	    playSpeed = 0;
 	    cap->SetSpeedFaster(1);
+	}
+	CaptureMultiVideo* mcap = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
+	if (mcap)
+	{
+	    playSpeed = 0;
+	    mcap->SetSpeedFaster(1);
 	}
 	break;
     }

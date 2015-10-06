@@ -203,6 +203,7 @@ void CaptureAVTCamera::Play()
 
 bool CaptureAVTCamera::GetFrame (double time)
 {
+    time *= 1000000.0;
     while (InternalGetTime() < time) this_thread::sleep_for(chrono::milliseconds(10));
 
     if (vimbaApiController.FrameAvailable())
