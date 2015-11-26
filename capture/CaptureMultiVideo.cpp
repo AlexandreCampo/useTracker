@@ -40,6 +40,7 @@ CaptureMultiVideo::CaptureMultiVideo(vector<string> filenames) : Capture()
     deviceToCalibrate = 0;
     stitched = false;
     stitching = false;
+    adjustBrightness = false;
 
     if (Open(filenames))
 	type = MULTI_VIDEO;
@@ -50,6 +51,7 @@ CaptureMultiVideo::CaptureMultiVideo(FileNode& fn) : Capture()
     deviceToCalibrate = 0;
     stitched = false;
     stitching = false;
+    adjustBrightness = false;
 
     LoadXML(fn);
     if (Open())
@@ -103,7 +105,7 @@ bool CaptureMultiVideo::Open ()
 
     stitchPoints.resize(subcaptures.size());
     bool frameEmpty = false;
-
+   
     if (!stitched)
     {
 	ResetStitching();
@@ -111,15 +113,6 @@ bool CaptureMultiVideo::Open ()
 	for (unsigned int i = 0; i < subcaptures.size(); i++)
 	{
 	    frameEmpty = frameEmpty || subcaptures[i]->frame.empty();
-	}
-
-	// produce first frame
-	if (!frameEmpty)
-	{
-	    for (unsigned int i = 0; i < subcaptures.size(); i++)
-	    {
-		subcaptures[i]->frame.copyTo(frame(rects[i]));
-	    }
 	}
     }
     else
@@ -130,12 +123,12 @@ bool CaptureMultiVideo::Open ()
 
 	    bool available = subcaptures[i]->GetNextFrame();
 	    frameEmpty = frameEmpty || !available;
-
-	    Mat tmp;
-	    warpPerspective(subcaptures[i]->frame, tmp, homographies[i], frame.size());
-	    tmp.copyTo(frame, stitchMasks[i]);
 	}
     }
+
+    // produce first frame
+    if (!frameEmpty)
+	Merge();
 
     return (!frameEmpty);
 }
@@ -155,18 +148,9 @@ bool CaptureMultiVideo::GetNextFrame ()
 
 	bool available = subcaptures[i]->GetNextFrame();
 	frameEmpty = frameEmpty || !available;
-
-	if (stitched)
-	{
-	    Mat tmp;
-	    warpPerspective(subcaptures[i]->frame, tmp, homographies[i], frame.size());
-	    tmp.copyTo(frame, stitchMasks[i]);
-	}
-	else
-	{
-	    subcaptures[i]->frame.copyTo(frame(rects[i]));
-	}
     }
+
+    Merge();
 
     // at least one subcapture did not return a frame
     return !frameEmpty;
@@ -181,6 +165,8 @@ void CaptureMultiVideo::Stop()
 {
     for (auto c : subcaptures)
 	c->Stop();
+
+    Merge();
 }
 
 void CaptureMultiVideo::Pause()
@@ -205,18 +191,9 @@ bool CaptureMultiVideo::GetFrame (double time)
 
 	bool available = subcaptures[i]->GetFrame(time);
 	frameEmpty = frameEmpty || !available;
-
-	if (stitched)
-	{
-	    Mat tmp;
-	    warpPerspective(subcaptures[i]->frame, tmp, homographies[i], frame.size());
-	    tmp.copyTo(frame, stitchMasks[i]);
-	}
-	else
-	{
-	    subcaptures[i]->frame.copyTo(frame(rects[i]));
-	}
     }
+
+    Merge();
 
     // at least one subcapture did not return a frame
     return !frameEmpty;
@@ -232,18 +209,9 @@ bool CaptureMultiVideo::GetPreviousFrame()
 
 	bool available = subcaptures[i]->GetPreviousFrame();
 	frameEmpty = frameEmpty || !available;
-
-	if (stitched)
-	{
-	    Mat tmp;
-	    warpPerspective(subcaptures[i]->frame, tmp, homographies[i], frame.size());
-	    tmp.copyTo(frame, stitchMasks[i]);
-	}
-	else
-	{
-	    subcaptures[i]->frame.copyTo(frame(rects[i]));
-	}
     }
+
+    Merge();
 
     return !frameEmpty;
 }
@@ -258,18 +226,9 @@ bool CaptureMultiVideo::SetFrameNumber(long frameNumber)
 
 	bool available = subcaptures[i]->SetFrameNumber(frameNumber);
 	frameEmpty = frameEmpty || !available;
-
-	if (stitched)
-	{
-	    Mat tmp;
-	    warpPerspective(subcaptures[i]->frame, tmp, homographies[i], frame.size());
-	    tmp.copyTo(frame, stitchMasks[i]);
-	}
-	else
-	{
-	    subcaptures[i]->frame.copyTo(frame(rects[i]));
-	}
     }
+
+    Merge();
 
     return !frameEmpty;
 }
@@ -314,6 +273,7 @@ double CaptureMultiVideo::GetTime()
 void CaptureMultiVideo::SaveXML(FileStorage& fs)
 {
     fs << "Type" << "multiVideo";
+    fs << "AdjustBrightness" << adjustBrightness;
     fs << "Subdevices" << "{";
 
     for (unsigned int i = 0; i < subcaptures.size(); i++)
@@ -381,6 +341,20 @@ void CaptureMultiVideo::LoadXML(FileNode& fn, bool stitchingOnly)
 	    }
 	}
 
+	// load auto brightness flag
+	adjustBrightness = (int)fn["AdjustBrightness"];
+
+	// if we need to adjust brightness
+	if (adjustBrightness)
+	{
+	    for (unsigned int i = 0; i < subcaptures.size(); i++)
+	    {
+		cv::Scalar b;
+		CalculateAverageBrightness(subcaptures[i], b);
+		targetBrightness.push_back(b);
+	    }
+	}
+
 	// load stitching
 	fn2 = fn["Stitching"];
 	if (!fn2.empty())
@@ -416,6 +390,9 @@ void CaptureMultiVideo::LoadXML(FileNode& fn, bool stitchingOnly)
 	    stitched = false;
 	}
     }
+
+    // load first frame
+    Stop();
 }
 
 
@@ -723,7 +700,6 @@ bool CaptureMultiVideo::Stitch()
     stitchPoints[1].insert(stitchPoints[1].end(), points1.begin(), points1.end());
 
     H = findHomography( stitchPoints[1], stitchPoints[0]);
-//    H = findHomography( stitchPoints[1], stitchPoints[0], CV_RANSAC );
     homographies.push_back(H);
 
     //-- Get the corners from the image_1 ( the object to be "detected" )
@@ -905,4 +881,81 @@ bool CaptureMultiVideo::Stitch()
   stitched = true;
 
   return true;
+}
+
+void CaptureMultiVideo::CalculateAverageBrightness(Capture* capture, cv::Scalar& brightness)
+{
+    int width = capture->width;
+    int height = capture->height;
+    Mat cumulated = Mat::zeros(height, width, CV_32SC3);
+
+    float endTime = ((double)GetFrameCount()) / fps;
+
+    cerr << "Calculating average luminosity for capture " << capture << endl;
+
+    capture->Stop();
+    capture->Play();
+
+    // scan X frames
+    unsigned int readCount = 0;
+    unsigned int framesCount = 10;
+    float intervalTime = endTime / framesCount;
+
+    cv::Scalar sum;
+    while (readCount < framesCount)
+    {
+	capture->GetFrame (intervalTime * readCount);
+
+	double msgTime = capture->GetTime();
+    	cerr << "using frame at time " << msgTime << endl;
+
+    	if (capture->frame.empty())
+    	    break;
+
+	cv::Scalar s = cv::sum(capture->frame);
+	sum = sum + s;
+
+    	readCount++;
+    }
+
+    capture->Stop();
+
+    brightness = sum / (double)(framesCount * width * height);
+}
+
+
+void CaptureMultiVideo::AdjustBrightness (int sc)
+{
+    Capture* capture = subcaptures[sc];
+
+    // calculate average brightness
+    cv::Scalar brightness = cv::sum(capture->frame);
+    brightness = brightness / (double)(capture->width * capture->height);
+    
+    // get difference to target
+    cv::Scalar diff = targetBrightness[sc] - brightness;
+
+    capture->frame = capture->frame + diff;
+}
+
+void CaptureMultiVideo::Merge()
+{
+    for (int j = subcaptures.size() - 1; j >= 0; j--)
+    {
+	unsigned int i = (unsigned int) j;
+
+	if (adjustBrightness)
+	    AdjustBrightness (i);
+
+	if (stitched)
+	{
+	    Mat tmp;
+	    warpPerspective(subcaptures[i]->frame, tmp, homographies[i], frame.size());
+	    tmp.copyTo(frame, stitchMasks[i]);
+	}
+	else
+	{
+	    subcaptures[i]->frame.copyTo(frame(rects[i]));
+	}
+    }
 }

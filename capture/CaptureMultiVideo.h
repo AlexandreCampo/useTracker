@@ -38,7 +38,8 @@ struct CaptureMultiVideo : public Capture
     bool stitched;
     bool stitching;
 
-
+    bool adjustBrightness;
+    std::vector<cv::Scalar> targetBrightness;
 
     // methods
     CaptureMultiVideo(std::vector<std::string> filenames);
@@ -116,6 +117,11 @@ struct CaptureMultiVideo : public Capture
     void ResetStitching();
     bool Stitch();
     bool TryToStitch();
+
+    void CalculateAverageBrightness(Capture* c, cv::Scalar& b);
+    void AdjustBrightness (int subcapture);
+
+    void Merge();
 };
 
 

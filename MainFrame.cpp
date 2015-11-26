@@ -142,6 +142,7 @@ const long MainFrame::ID_SPINCTRL8 = wxNewId();
 const long MainFrame::ID_STATICTEXT9 = wxNewId();
 const long MainFrame::ID_CHECKBOX2 = wxNewId();
 const long MainFrame::ID_FILEPICKERCTRL1 = wxNewId();
+const long MainFrame::ID_CHECKBOX6 = wxNewId();
 const long MainFrame::ID_STATICBITMAP4 = wxNewId();
 const long MainFrame::ID_BUTTON9 = wxNewId();
 const long MainFrame::ID_STATICBITMAP5 = wxNewId();
@@ -209,6 +210,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     wxFlexGridSizer* FlexGridSizer8;
     wxFlexGridSizer* FlexGridSizer1;
     wxFlexGridSizer* FlexGridSizer2;
+    wxFlexGridSizer* FlexGridSizer15;
     wxMenu* Menu1;
     wxFlexGridSizer* FlexGridSizer11;
     wxFlexGridSizer* FlexGridSizer7;
@@ -375,7 +377,12 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FilePickerCtrlZones = new wxFilePickerCtrl(ConfigTab, ID_FILEPICKERCTRL1, wxEmptyString, _("Choose an image to use for zones"), _T("*.png"), wxDefaultPosition, wxDefaultSize, wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
     StaticBoxSizer4->Add(FilePickerCtrlZones, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer3->Add(StaticBoxSizer4, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    StaticBoxSizerConfigMultiSource = new wxStaticBoxSizer(wxHORIZONTAL, ConfigTab, _("Multi source"));
+    StaticBoxSizerConfigMultiSource = new wxStaticBoxSizer(wxVERTICAL, ConfigTab, _("Multi source"));
+    FlexGridSizer15 = new wxFlexGridSizer(0, 1, 0, 0);
+    FlexGridSizer15->AddGrowableCol(0);
+    CheckBoxConfigStitchAdjustLuminosity = new wxCheckBox(ConfigTab, ID_CHECKBOX6, _("Adjust luminosity"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX6"));
+    CheckBoxConfigStitchAdjustLuminosity->SetValue(false);
+    FlexGridSizer15->Add(CheckBoxConfigStitchAdjustLuminosity, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer13 = new wxFlexGridSizer(0, 2, 0, 0);
     StaticBitmap4 = new wxStaticBitmap(ConfigTab, ID_STATICBITMAP4, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Apps-plasmagik-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP4"));
     FlexGridSizer13->Add(StaticBitmap4, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
@@ -393,7 +400,8 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FlexGridSizer13->Add(BitmapButton6, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonConfigSaveStitching = new wxButton(ConfigTab, ID_BUTTON11, _("Save stitching"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON11"));
     FlexGridSizer13->Add(ButtonConfigSaveStitching, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    StaticBoxSizerConfigMultiSource->Add(FlexGridSizer13, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer15->Add(FlexGridSizer13, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    StaticBoxSizerConfigMultiSource->Add(FlexGridSizer15, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     FlexGridSizer3->Add(StaticBoxSizerConfigMultiSource, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ConfigTab->SetSizer(FlexGridSizer3);
     FlexGridSizer3->Fit(ConfigTab);
@@ -555,6 +563,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     Connect(ID_SPINCTRL7,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlDurationChange);
     Connect(ID_CHECKBOX2,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&MainFrame::OnCheckBoxUseTimeBoundsClick);
     Connect(ID_FILEPICKERCTRL1,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&MainFrame::OnFilePickerCtrlZonesFileChanged);
+    Connect(ID_CHECKBOX6,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&MainFrame::OnCheckBoxConfigStitchAdjustLuminosityClick);
     Connect(ID_BUTTON9,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnButtonConfigStitchClick);
     Connect(ID_BUTTON10,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnButtonConfigResetStitchingClick);
     Connect(ID_BUTTON8,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnButtonConfigLoadStitchingClick);
@@ -682,7 +691,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
 	if (f.GetExt() == "xml")
 	{
 	    // TODO duplicated from dialog open capture. Needs a cleaner solution
-	    std::string filename = parameters.inputFilename;	    
+	    std::string filename = parameters.inputFilename;
 	    cv::FileStorage file;
 	    cv::FileNode rootNode;
 
@@ -690,12 +699,12 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
 	    if (file.isOpened())
 	    {
 		rootNode = file["Source"];
-		
+
 		if (!rootNode.empty())
 		{
 		    string type = (string)rootNode["Type"];
 
-		    if (type == "multiVideo") 
+		    if (type == "multiVideo")
 		    {
 			ipEngine.capture->LoadXML(rootNode);
 		    }
@@ -722,13 +731,13 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
 			ipEngine.capture = new CaptureMultiUSBCamera(rootNode);
 		    }
 		}
-	    }	       
+	    }
 	}
 	else
 	{
 	    // try to load input as video file
 	    ipEngine.capture = new CaptureVideo (parameters.inputFilename);
-	    
+
 	    // if video not loaded, try image
 	    if (ipEngine.capture->type == Capture::NONE)
 	    {
@@ -935,7 +944,7 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 	glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(oglScreen.cols, oglScreen.rows);
 	glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, oglScreen.rows);
 	glEnd();
-	
+
 	// Create Texture
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage2D(
@@ -1215,7 +1224,7 @@ void MainFrame::OnvideoSliderCmdScrollChanged(wxScrollEvent& event)
     if(ipEngine.capture->type == Capture::VIDEO || ipEngine.capture->type == Capture::MULTI_VIDEO)
     {
 	int targetFrame = videoSlider->GetValue() * ipEngine.capture->GetFrameCount() / 10000;
-	
+
 	CaptureVideo* capv = dynamic_cast<CaptureVideo*>(ipEngine.capture);
 	if (capv) capv->SetFrameNumber(targetFrame);
 
@@ -2815,5 +2824,14 @@ void MainFrame::OnButtonConfigSaveStitchingClick(wxCommandEvent& event)
 	{
 	    wxMessageBox( wxT("Could not open file for saving stitching settings."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
 	}
+    }
+}
+
+void MainFrame::OnCheckBoxConfigStitchAdjustLuminosityClick(wxCommandEvent& event)
+{
+    if (ipEngine.capture->type == Capture::MULTI_VIDEO)
+    {
+	CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
+//	c->ResetStitching();
     }
 }

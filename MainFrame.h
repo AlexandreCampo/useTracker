@@ -141,6 +141,7 @@ private:
     void OnMenuSaveCaptureSelected(wxCommandEvent& event);
     void OnButtonConfigLoadStitchingClick(wxCommandEvent& event);
     void OnButtonConfigSaveStitchingClick(wxCommandEvent& event);
+    void OnCheckBoxConfigStitchAdjustLuminosityClick(wxCommandEvent& event);
     //*)
 
     //(*Identifiers(MainFrame)
@@ -184,6 +185,7 @@ private:
     static const long ID_STATICTEXT9;
     static const long ID_CHECKBOX2;
     static const long ID_FILEPICKERCTRL1;
+    static const long ID_CHECKBOX6;
     static const long ID_STATICBITMAP4;
     static const long ID_BUTTON9;
     static const long ID_STATICBITMAP5;
@@ -303,6 +305,7 @@ private:
     wxMenuItem* MenuOpenCapture;
     wxMenuItem* MenuLoadSettings;
     wxCheckBox* CheckBoxCalibFlipVertical;
+    wxCheckBox* CheckBoxConfigStitchAdjustLuminosity;
     wxSpinCtrl* SpinCtrlCalibWidth;
     wxFilePickerCtrl* FilePickerCtrlZones;
     wxButton* ButtonCalibReset;

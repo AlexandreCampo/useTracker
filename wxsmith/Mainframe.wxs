@@ -479,80 +479,98 @@
 								<object class="sizeritem">
 									<object class="wxStaticBoxSizer" variable="StaticBoxSizerConfigMultiSource" member="no">
 										<label>Multi source</label>
+										<orient>wxVERTICAL</orient>
 										<object class="sizeritem">
-											<object class="wxFlexGridSizer" variable="FlexGridSizer13" member="no">
-												<cols>2</cols>
+											<object class="wxFlexGridSizer" variable="FlexGridSizer15" member="no">
+												<cols>1</cols>
+												<growablecols>0</growablecols>
 												<object class="sizeritem">
-													<object class="wxStaticBitmap" name="ID_STATICBITMAP4" variable="StaticBitmap4" member="yes">
-														<bitmap>/usr/share/useTracker/images/Apps-plasmagik-icon (1).png</bitmap>
+													<object class="wxCheckBox" name="ID_CHECKBOX6" variable="CheckBoxConfigStitchAdjustLuminosity" member="yes">
+														<label>Adjust luminosity</label>
+														<handler function="OnCheckBoxConfigStitchAdjustLuminosityClick" entry="EVT_CHECKBOX" />
 													</object>
 													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 													<border>5</border>
 													<option>1</option>
 												</object>
 												<object class="sizeritem">
-													<object class="wxButton" name="ID_BUTTON9" variable="ButtonConfigStitch" member="yes">
-														<label>Stitch images</label>
-														<handler function="OnButtonConfigStitchClick" entry="EVT_BUTTON" />
-													</object>
-													<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-													<border>5</border>
-													<option>1</option>
-												</object>
-												<object class="sizeritem">
-													<object class="wxStaticBitmap" name="ID_STATICBITMAP5" variable="StaticBitmap5" member="yes">
-														<bitmap>/usr/share/useTracker/images/Actions-edit-delete-icon (1).png</bitmap>
-													</object>
-													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-													<border>5</border>
-													<option>1</option>
-												</object>
-												<object class="sizeritem">
-													<object class="wxButton" name="ID_BUTTON10" variable="ButtonConfigResetStitching" member="yes">
-														<label>Reset stitching</label>
-														<handler function="OnButtonConfigResetStitchingClick" entry="EVT_BUTTON" />
-													</object>
-													<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-													<border>5</border>
-													<option>1</option>
-												</object>
-												<object class="sizeritem">
-													<object class="wxBitmapButton" name="ID_BITMAPBUTTON13" variable="BitmapButton5" member="yes">
-														<bitmap>/usr/share/useTracker/images/Actions-document-open-icon (1).png</bitmap>
-													</object>
-													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-													<border>5</border>
-													<option>1</option>
-												</object>
-												<object class="sizeritem">
-													<object class="wxButton" name="ID_BUTTON8" variable="ButtonConfigLoadStitching" member="yes">
-														<label>Load stitching</label>
-														<handler function="OnButtonConfigLoadStitchingClick" entry="EVT_BUTTON" />
-													</object>
-													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-													<border>5</border>
-													<option>1</option>
-												</object>
-												<object class="sizeritem">
-													<object class="wxBitmapButton" name="ID_BITMAPBUTTON14" variable="BitmapButton6" member="yes">
-														<bitmap>/usr/share/useTracker/images/Actions-document-save-icon (1).png</bitmap>
-													</object>
-													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-													<border>5</border>
-													<option>1</option>
-												</object>
-												<object class="sizeritem">
-													<object class="wxButton" name="ID_BUTTON11" variable="ButtonConfigSaveStitching" member="yes">
-														<label>Save stitching</label>
-														<handler function="OnButtonConfigSaveStitchingClick" entry="EVT_BUTTON" />
+													<object class="wxFlexGridSizer" variable="FlexGridSizer13" member="no">
+														<cols>2</cols>
+														<object class="sizeritem">
+															<object class="wxStaticBitmap" name="ID_STATICBITMAP4" variable="StaticBitmap4" member="yes">
+																<bitmap>/usr/share/useTracker/images/Apps-plasmagik-icon (1).png</bitmap>
+															</object>
+															<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<option>1</option>
+														</object>
+														<object class="sizeritem">
+															<object class="wxButton" name="ID_BUTTON9" variable="ButtonConfigStitch" member="yes">
+																<label>Stitch images</label>
+																<handler function="OnButtonConfigStitchClick" entry="EVT_BUTTON" />
+															</object>
+															<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<option>1</option>
+														</object>
+														<object class="sizeritem">
+															<object class="wxStaticBitmap" name="ID_STATICBITMAP5" variable="StaticBitmap5" member="yes">
+																<bitmap>/usr/share/useTracker/images/Actions-edit-delete-icon (1).png</bitmap>
+															</object>
+															<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<option>1</option>
+														</object>
+														<object class="sizeritem">
+															<object class="wxButton" name="ID_BUTTON10" variable="ButtonConfigResetStitching" member="yes">
+																<label>Reset stitching</label>
+																<handler function="OnButtonConfigResetStitchingClick" entry="EVT_BUTTON" />
+															</object>
+															<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<option>1</option>
+														</object>
+														<object class="sizeritem">
+															<object class="wxBitmapButton" name="ID_BITMAPBUTTON13" variable="BitmapButton5" member="yes">
+																<bitmap>/usr/share/useTracker/images/Actions-document-open-icon (1).png</bitmap>
+															</object>
+															<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<option>1</option>
+														</object>
+														<object class="sizeritem">
+															<object class="wxButton" name="ID_BUTTON8" variable="ButtonConfigLoadStitching" member="yes">
+																<label>Load stitching</label>
+																<handler function="OnButtonConfigLoadStitchingClick" entry="EVT_BUTTON" />
+															</object>
+															<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<option>1</option>
+														</object>
+														<object class="sizeritem">
+															<object class="wxBitmapButton" name="ID_BITMAPBUTTON14" variable="BitmapButton6" member="yes">
+																<bitmap>/usr/share/useTracker/images/Actions-document-save-icon (1).png</bitmap>
+															</object>
+															<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<option>1</option>
+														</object>
+														<object class="sizeritem">
+															<object class="wxButton" name="ID_BUTTON11" variable="ButtonConfigSaveStitching" member="yes">
+																<label>Save stitching</label>
+																<handler function="OnButtonConfigSaveStitchingClick" entry="EVT_BUTTON" />
+															</object>
+															<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+															<border>5</border>
+															<option>1</option>
+														</object>
 													</object>
 													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 													<border>5</border>
 													<option>1</option>
 												</object>
 											</object>
-											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-											<border>5</border>
+											<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 											<option>1</option>
 										</object>
 									</object>
