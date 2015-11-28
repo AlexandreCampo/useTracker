@@ -11,7 +11,7 @@
 			<cols>1</cols>
 			<object class="sizeritem">
 				<object class="wxStaticBoxSizer" variable="StaticBoxSizer1" member="no">
-					<label>ExtractMotion</label>
+					<label>Background difference</label>
 					<object class="sizeritem">
 						<object class="wxFlexGridSizer" variable="FlexGridSizer1" member="no">
 							<cols>2</cols>

@@ -58,6 +58,7 @@
 #include "DialogAruco.h"
 #include "DialogStopwatch.h"
 #include "DialogSimpleTags.h"
+#include "DialogAdaptiveThreshold.h"
 
 #include "Utils.h"
 #include "Capture.h"
@@ -644,6 +645,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
 
     ListBoxPipelinePlugins->Append("zones of interest");
     ListBoxPipelinePlugins->Append("background difference");
+    ListBoxPipelinePlugins->Append("adaptive threshold");
     ListBoxPipelinePlugins->Append("color segmentation");
     ListBoxPipelinePlugins->Append("erosion");
     ListBoxPipelinePlugins->Append("safe erosion");
@@ -1737,6 +1739,12 @@ bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool s
     if (str == "background difference")
     {
 	DialogExtractMotion* dialog = new DialogExtractMotion(this);
+	dialog->SetPlugin(pfv);
+	dlg = dialog;
+    }
+    if (str == "adaptive threshold")
+    {
+	DialogAdaptiveThreshold* dialog = new DialogAdaptiveThreshold(this);
 	dialog->SetPlugin(pfv);
 	dlg = dialog;
     }

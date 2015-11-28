@@ -50,7 +50,7 @@ DialogExtractMotion::DialogExtractMotion(wxWindow* parent,wxWindowID id,const wx
 	SetMaxSize(wxSize(-1,-1));
 	SetFocus();
 	FlexGridSizer3 = new wxFlexGridSizer(0, 1, 0, 0);
-	StaticBoxSizer1 = new wxStaticBoxSizer(wxHORIZONTAL, this, _("ExtractMotion"));
+	StaticBoxSizer1 = new wxStaticBoxSizer(wxHORIZONTAL, this, _("Background difference"));
 	FlexGridSizer1 = new wxFlexGridSizer(0, 2, 0, 0);
 	StaticText1 = new wxStaticText(this, ID_STATICTEXT1, _("Sensitivity to difference with background"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT1"));
 	FlexGridSizer1->Add(StaticText1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);

@@ -34,8 +34,7 @@ ExtractBlobs::~ExtractBlobs()
 }
 
 void ExtractBlobs::Reset()
-{
-//    if (output) OpenOutput();
+{    
 }
 
 void ExtractBlobs::Apply()
@@ -119,8 +118,6 @@ void ExtractBlobs::Apply()
 	    Segment& s = (*segPtr)[si];
 	    bool matched = false;
 
-//	    cout << s.min << ":" << s.max << " ";
-
 	    for (unsigned int psi = minpsi; psi < psidx; psi++)
 	    {
 		Segment& ps = (*psegPtr)[psi];
@@ -132,8 +129,6 @@ void ExtractBlobs::Apply()
 			// found a matching segment
 			if (!matched)
 			{
-//			    cout << " over " << ps.min << ":" << ps.max << ":" <<  blobs[ps.blobIdx].size << ":" << blobs[ps.blobIdx].available << ":" << ps.blobIdx << " | ";
-
 			    // first match, merge segment to existing blob
 			    s.blobIdx = ps.blobIdx;
 			    blobs[s.blobIdx].size += s.size;
@@ -146,8 +141,6 @@ void ExtractBlobs::Apply()
 			    // more than one match, merge two blobs, unless already the same...
 			    if (s.blobIdx != ps.blobIdx)
 			    {
-//				cout << "over+ " << ps.min << ":" << ps.max << ":" << blobs[ps.blobIdx].size << ":" << blobs[ps.blobIdx].available  << ":" << ps.blobIdx << " becomes " << blobs[s.blobIdx].size << ":" << blobs[s.blobIdx].available << ":" << s.blobIdx << " update ";
-
 				blobs[s.blobIdx].size += blobs[ps.blobIdx].size;
 				blobs[s.blobIdx].x += blobs[ps.blobIdx].x;
 				blobs[s.blobIdx].y += blobs[ps.blobIdx].y;
@@ -158,7 +151,6 @@ void ExtractBlobs::Apply()
 				for (unsigned int ssi = 0; ssi < sidx; ssi++)
 				    if ((*segPtr)[ssi].blobIdx == oldIdx)
 				    {
-//					cout << "s" << ssi << " ";
 					(*segPtr)[ssi].blobIdx = s.blobIdx;
 				    }
 
@@ -166,7 +158,6 @@ void ExtractBlobs::Apply()
 				    if ((*psegPtr)[pssi].blobIdx == oldIdx)
 				    {
 					(*psegPtr)[pssi].blobIdx = s.blobIdx;
-//					cout << "p" << pssi << " ";
 				    }
 
 				// also update blobIdx for all blobs
@@ -199,8 +190,6 @@ void ExtractBlobs::Apply()
 		b.assignment = blobs.size();
 		s.blobIdx = b.assignment;
 		blobs.push_back(b);
-
-//		cout << "not matched, creates b" << s.blobIdx << " | ";
 	    }
 	    // if recording labels, write down the numbers...
 	    if (recordLabels)
@@ -212,7 +201,6 @@ void ExtractBlobs::Apply()
 		}
 	    }
 	}
-//	cout << endl;
 
 	// last step: swap scanlines
 	vector<Segment>* tmp = psegPtr;
@@ -222,7 +210,6 @@ void ExtractBlobs::Apply()
     }
 
     // finally update blobs positions and validate their size
-//    int debug = 0;
     for (vector<Blob>::iterator b = blobs.begin(); b != blobs.end(); ++b)
     {
 	if (b->available)
@@ -238,11 +225,7 @@ void ExtractBlobs::Apply()
 		b->available = false;
 	    }
 	}
-//	cout << "Blob " << debug << " " << b->x << " " << b->y << " " << b->size << " " << b->available << " " << b->assignment << endl;
-//	debug++;
     }
-
-    //  cout << "Found a total of " << blobs.size() << " blobs of which " << debug << " are valid" << endl;
 }
 
 
@@ -261,7 +244,6 @@ void ExtractBlobs::OutputHud (Mat& hud)
 	    pos.x = b.x;
 	    pos.y = b.y;
 	    int sqlen = sqrt(b.size) / 2;
-//	    cout << "Display bob " << " " << b.x << " " << b.y << " " << b.size << endl;
 	    rectangle(hud, pos-Point(sqlen,sqlen), pos+Point(sqlen,sqlen), cvScalar(127, 127, 127, 255), CV_FILLED);
 	    putText(hud, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,0,0, 255), 2, CV_AA);
 	    putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,255,200, 255), 2, CV_AA);
