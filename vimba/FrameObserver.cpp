@@ -38,8 +38,8 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
     bool bQueueDirectly = true;
     VmbFrameStatusType eReceiveStatus;
 
-    if( pFrame->GetReceiveStatus( eReceiveStatus ) == VmbFrameStatusComplete )
-//    if( pFrame->GetReceiveStatus( eReceiveStatus ) == VmbErrorSuccess )
+//    if( pFrame->GetReceiveStatus( eReceiveStatus ) == VmbFrameStatusComplete )
+    if( pFrame->GetReceiveStatus( eReceiveStatus ) == VmbErrorSuccess )
     {
         // Lock the frame queue
 	m_FramesMutex.lock();

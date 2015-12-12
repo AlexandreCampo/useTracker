@@ -243,7 +243,7 @@ wxLongLong CaptureAVTCamera::InternalGetTime()
 
 void CaptureAVTCamera::SaveXML(FileStorage& fs)
 {
-    fs << << "Type" << "AVTcamera";
+    fs << "Type" << "AVTcamera";
     fs << "Device" << device;
 
     if (calibration.calibrated)
