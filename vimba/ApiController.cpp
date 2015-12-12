@@ -33,7 +33,7 @@
 #include "StreamSystemInfo.h"
 #include "ErrorCodeToMessage.h"
 
-#include <AVTImageTransform/Include/VmbTransform.h>
+#include <VimbaImageTransform/Include/VmbTransform.h>
 
 
 namespace AVT {
