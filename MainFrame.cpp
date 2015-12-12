@@ -1742,7 +1742,7 @@ bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool s
 	dialog->SetPlugin(pfv);
 	dlg = dialog;
     }
-    if (str == "adaptive threshold")
+    else if (str == "adaptive threshold")
     {
 	DialogAdaptiveThreshold* dialog = new DialogAdaptiveThreshold(this);
 	dialog->SetPlugin(pfv);

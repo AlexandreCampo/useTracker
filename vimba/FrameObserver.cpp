@@ -38,7 +38,8 @@ void FrameObserver::FrameReceived( const FramePtr pFrame )
     bool bQueueDirectly = true;
     VmbFrameStatusType eReceiveStatus;
 
-    if( pFrame->GetReceiveStatus( eReceiveStatus ) == VmbErrorSuccess )
+    if( pFrame->GetReceiveStatus( eReceiveStatus ) == VmbFrameStatusComplete )
+//    if( pFrame->GetReceiveStatus( eReceiveStatus ) == VmbErrorSuccess )
     {
         // Lock the frame queue
 	m_FramesMutex.lock();
@@ -65,9 +66,15 @@ FramePtr FrameObserver::GetFrame()
 {
     // Lock the frame queue
     m_FramesMutex.lock();
-    // Pop frame from queue
-    FramePtr res = m_Frames.front();
-    m_Frames.pop();
+
+    FramePtr res;
+    if (!m_Frames.empty())
+    {
+	// Pop frame from queue
+	res = m_Frames.front();
+	m_Frames.pop();
+    }
+
     // Unlock frame queue
     m_FramesMutex.unlock();
     return res;
