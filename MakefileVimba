@@ -22,7 +22,7 @@ INC_VIMBADEBUG = $(INC)
 CFLAGS_VIMBADEBUG = $(CFLAGS) -g -I $(VIMBAPATH)/ -DVIMBA=1
 RESINC_VIMBADEBUG = $(RESINC)
 RCFLAGS_VIMBADEBUG = $(RCFLAGS)
-LIBDIR_VIMBADEBUG = $(LIBDIR) -L$(VIMBAPATH)/AVTImageTransform/DynamicLib/x86_64bit -L$(VIMBAPATH)/VimbaCPP/DynamicLib/x86_64bit
+LIBDIR_VIMBADEBUG = $(LIBDIR) -L$(VIMBAPATH)/VimbaImageTransform/DynamicLib/x86_64bit -L$(VIMBAPATH)/VimbaCPP/DynamicLib/x86_64bit
 LIB_VIMBADEBUG = $(LIB)
 LDFLAGS_VIMBADEBUG =  -lVimbaCPP -lVimbaC -lVimbaImageTransform -Wl,-rpath-link,$(VIMBAPATH)/VimbaCPP/DynamicLib/x86_64bit/ -Wl,-rpath,$(VIMBAPATH)/VimbaImageTransform/DynamicLib/x86_64bit/ -Wl,-rpath,$(VIMBAPATH)/VimbaCPP/DynamicLib/x86_64bit/ $(LDFLAGS)
 OBJDIR_VIMBADEBUG = obj/VimbaDebug
@@ -33,7 +33,7 @@ INC_VIMBARELEASE = $(INC)
 CFLAGS_VIMBARELEASE = $(CFLAGS) -march=corei7-avx -fexpensive-optimizations -O3 -march=native -flto -I $(VIMBAPATH)/ -DVIMBA=1
 RESINC_VIMBARELEASE = $(RESINC)
 RCFLAGS_VIMBARELEASE = $(RCFLAGS)
-LIBDIR_VIMBARELEASE = $(LIBDIR) -L$(VIMBAPATH)/AVTImageTransform/DynamicLib/x86_64bit -L$(VIMBAPATH)/VimbaCPP/DynamicLib/x86_64bit
+LIBDIR_VIMBARELEASE = $(LIBDIR) -L$(VIMBAPATH)/VimbaImageTransform/DynamicLib/x86_64bit -L$(VIMBAPATH)/VimbaCPP/DynamicLib/x86_64bit
 LIB_VIMBARELEASE = $(LIB)
 LDFLAGS_VIMBARELEASE =  -s -flto -lVimbaCPP -lVimbaC -lVimbaImageTransform -Wl,-rpath-link,$(VIMBAPATH)/VimbaCPP/DynamicLib/x86_64bit/ -Wl,-rpath,$(VIMBAPATH)/VimbaImageTransform/DynamicLib/x86_64bit/ -Wl,-rpath,$(VIMBAPATH)/VimbaCPP/DynamicLib/x86_64bit/ $(LDFLAGS)
 OBJDIR_VIMBARELEASE = obj/VimbaRelease

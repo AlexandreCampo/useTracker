@@ -58,7 +58,7 @@
 					<Add option="-Wl,-rpath-link,$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit/" />
 					<Add option="-Wl,-rpath,$VIMBAPATH/VimbaImageTransform/DynamicLib/x86_64bit/" />
 					<Add option="-Wl,-rpath,$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit/" />
-					<Add directory="$VIMBAPATH/AVTImageTransform/DynamicLib/x86_64bit" />
+					<Add directory="$VIMBAPATH/VimbaImageTransform/DynamicLib/x86_64bit" />
 					<Add directory="$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit" />
 				</Linker>
 			</Target>
@@ -86,7 +86,7 @@
 					<Add option="-Wl,-rpath-link,$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit/" />
 					<Add option="-Wl,-rpath,$VIMBAPATH/VimbaImageTransform/DynamicLib/x86_64bit/" />
 					<Add option="-Wl,-rpath,$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit/" />
-					<Add directory="$VIMBAPATH/AVTImageTransform/DynamicLib/x86_64bit" />
+					<Add directory="$VIMBAPATH/VimbaImageTransform/DynamicLib/x86_64bit" />
 					<Add directory="$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit" />
 				</Linker>
 			</Target>
