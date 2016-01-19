@@ -1216,8 +1216,12 @@ void MainFrame::OnbuttonStopClick(wxCommandEvent& event)
     for (unsigned int i= 0; i < ipEngine.pipelines[0].plugins.size(); i++)
     {
 	PipelinePlugin* pp = ipEngine.pipelines[ipEngine.threadsCount].plugins[i];
+
 	Tracker* tracker = dynamic_cast<Tracker*>(pp);
 	if (tracker && !tracker->replay) tracker->ClearHistory();
+
+	MovingAverage* movingAverage = dynamic_cast<MovingAverage*>(pp);
+	if (movingAverage) movingAverage->ClearHistory();
     }
 }
 
