@@ -33,8 +33,6 @@ void MovingAverage::Reset()
     movingAverage = Mat::zeros (pipeline->height, pipeline->width, CV_8UC1);
     framesSum = Mat::zeros (pipeline->height, pipeline->width, CV_32F);
     oldFrame = Mat::zeros (pipeline->height, pipeline->width, CV_32F);
-    length = 1;
-    threshold = 1;
 }
 
 MovingAverage::~MovingAverage ()
@@ -62,6 +60,11 @@ void MovingAverage::Apply()
 
 	    frames.pop();
 	}
+	// not enough frames accumulated, return blank 
+	else
+	{
+	    movingAverage.setTo(0);
+	}
     }
 
     movingAverage.copyTo(pipeline->marked);
@@ -77,6 +80,14 @@ void MovingAverage::SetLength(unsigned int l)
 	frames.pop();
     }
     length = l;
+}
+
+void MovingAverage::ClearHistory()
+{
+    while (!frames.empty()) 
+	frames.pop();
+
+    framesSum.setTo(0);
 }
 
 void MovingAverage::SetThreshold(unsigned int t)

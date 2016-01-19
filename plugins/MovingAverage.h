@@ -46,6 +46,7 @@ public:
     void SetLength(unsigned int l);
     void SetThreshold(unsigned int t);
 
+    void ClearHistory();
 };
 
 #endif
