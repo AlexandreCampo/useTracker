@@ -22,34 +22,26 @@
 
 #include "Capture.h"
 
-/* extern "C" */
-/* { */
-/* #ifdef __cplusplus */
-/* #define __STDC_CONSTANT_MACROS */
-/* #ifdef _STDINT_H */
-/* #undef _STDINT_H */
-/* #endif */
-/* # include <stdint.h> */
-/* #endif */
+extern "C"
+{
+#ifdef __cplusplus
+#define __STDC_CONSTANT_MACROS
+#ifdef _STDINT_H
+#undef _STDINT_H
+#endif
+# include <stdint.h>
+#endif
 
-
-/* #include <libavutil/common.h> */
-/* #include <libavutil/avutil.h> */
-/* #include <libavutil/imgutils.h> */
-/* #include <libavutil/samplefmt.h> */
-/* #include <libavformat/avformat.h> */
-/* #include <libavcodec/avcodec.h> */
-/* #include <libswscale/swscale.h> */
-/* #include <libavutil/opt.h> */
-/* } */
 
 #include <libavutil/common.h>
+#include <libavutil/avutil.h>
 #include <libavutil/imgutils.h>
 #include <libavutil/samplefmt.h>
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
 #include <libavutil/opt.h>
+}
 
 struct CaptureVideo : Capture
 {
@@ -115,9 +107,9 @@ struct CaptureVideo : Capture
 
     int ret;
 
-//    AVFrame* frameRGB = NULL;
-    /* int numBytes; */
-    /* uint8_t* buffer = NULL; */
+    AVFrame* frameBGR = NULL;
+    int numBytes;
+    uint8_t* buffer = NULL;
 
     int width;
     int height;

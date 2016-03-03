@@ -23,27 +23,6 @@
 #include <wx/time.h>
 #include <cmath>
 
-extern "C"
-{
-#ifdef __cplusplus
-#define __STDC_CONSTANT_MACROS
-#ifdef _STDINT_H
-#undef _STDINT_H
-#endif
-# include <stdint.h>
-#endif
-
-
-#include <libavutil/common.h>
-#include <libavutil/avutil.h>
-#include <libavutil/imgutils.h>
-#include <libavutil/samplefmt.h>
-#include <libavformat/avformat.h>
-#include <libavcodec/avcodec.h>
-#include <libswscale/swscale.h>
-#include <libavutil/opt.h>
-}
-
 using namespace std;
 using namespace cv;
 
@@ -150,7 +129,7 @@ bool CaptureVideo::Open (string filename)
     // }
 
     avframe = avcodec_alloc_frame();
-//    frameRGB=avcodec_alloc_frame();
+    frameBGR = avcodec_alloc_frame();
     if (video_stream->avg_frame_rate.den > 0)
 	fps = av_q2d(video_stream->avg_frame_rate);
     else 
@@ -165,9 +144,9 @@ bool CaptureVideo::Open (string filename)
     width = codec_context->width;
     height = codec_context->height;
     
-    // numBytes=avpicture_get_size(PIX_FMT_RGB24, width, height);
-    // buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
-    // memset (buffer, 0, numBytes * sizeof(uint8_t));
+    numBytes=avpicture_get_size(PIX_FMT_BGR24, width, height);
+    buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
+    memset (buffer, 0, numBytes * sizeof(uint8_t));
 
     // prepare context for conversion to opencv Mat
     img_convert_ctx = sws_getContext(width, height, 
@@ -175,9 +154,9 @@ bool CaptureVideo::Open (string filename)
 				     width, height, PIX_FMT_BGR24, SWS_FAST_BILINEAR,
 				     NULL, NULL, NULL);
     
-    // // Assign appropriate parts of buffer to image planes in frameRGB
-    // // Note that frameRGB is an AVFrame, but AVFrame is a superset of AVPicture
-    // avpicture_fill((AVPicture *)frameRGB, buffer, PIX_FMT_RGB24, width, height);
+    // Assign appropriate parts of buffer to image planes in frameRGB
+    // Note that frameRGB is an AVFrame, but AVFrame is a superset of AVPicture
+    avpicture_fill((AVPicture *)frameBGR, buffer, PIX_FMT_BGR24, width, height);
     
     Rewind();
 
@@ -190,8 +169,9 @@ bool CaptureVideo::Open (string filename)
 
     // read first frame to allow display
 
-    frame = Mat::zeros (height, width, CV_8UC3); 
-    
+//    frame = Mat::zeros (height, width, CV_8UC3); 
+    frame = Mat();
+  
 //    source >> frame;
     if (!GrabFrame ())
 	return false;
@@ -235,8 +215,9 @@ bool CaptureVideo::Open (string filename)
 
 void CaptureVideo::Close ()
 {
-    // Free the YUV frame
+    // Free the YUV and BGR frames
     av_free(avframe);
+    av_free(frameBGR);
     
     // Close the codec
     if (codec_context) avcodec_close(codec_context);
@@ -279,10 +260,17 @@ bool CaptureVideo::GrabFrame ()
 
 bool CaptureVideo::ConvertFrame ()
 {
+    // prepare context for conversion to opencv Mat
+    // img_convert_ctx = sws_getContext(width, height, 
+    // 				     codec_context->pix_fmt, 
+    // 				     width, height, PIX_FMT_BGR24, SWS_FAST_BILINEAR,
+    // 				     NULL, NULL, NULL);
+
     // Convert the image from its native format to BGR opencv Mat
-    unsigned char* ptrs[3] = {frame.data, frame.data, frame.data};
-    int strides[3] = {(int)frame.step[0], (int)frame.step[0], (int)frame.step[0]};
-    sws_scale(img_convert_ctx, avframe->data, avframe->linesize, 0, height, ptrs, strides);
+    sws_scale(img_convert_ctx, avframe->data, avframe->linesize, 0, height, frameBGR->data, frameBGR->linesize);
+    
+    frame = Mat (height, width, CV_8UC3, frameBGR->data[0], frameBGR->linesize[0]);
+
     return true;
 }
 
