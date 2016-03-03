@@ -22,12 +22,42 @@
 
 #include "Capture.h"
 
+/* extern "C" */
+/* { */
+/* #ifdef __cplusplus */
+/* #define __STDC_CONSTANT_MACROS */
+/* #ifdef _STDINT_H */
+/* #undef _STDINT_H */
+/* #endif */
+/* # include <stdint.h> */
+/* #endif */
+
+
+/* #include <libavutil/common.h> */
+/* #include <libavutil/avutil.h> */
+/* #include <libavutil/imgutils.h> */
+/* #include <libavutil/samplefmt.h> */
+/* #include <libavformat/avformat.h> */
+/* #include <libavcodec/avcodec.h> */
+/* #include <libswscale/swscale.h> */
+/* #include <libavutil/opt.h> */
+/* } */
+
+#include <libavutil/common.h>
+#include <libavutil/imgutils.h>
+#include <libavutil/samplefmt.h>
+#include <libavformat/avformat.h>
+#include <libavcodec/avcodec.h>
+#include <libswscale/swscale.h>
+#include <libavutil/opt.h>
+
 struct CaptureVideo : Capture
 {
     std::string filename;
-    cv::VideoCapture source;
+//    cv::VideoCapture source;
+    cv::Mat frame;
 
-    unsigned int frameNumber = 0;
+    long frameNumber = 0;
     wxLongLong startTime = 0;
     wxLongLong nextFrameTime = 0;
     wxLongLong playTimestep = 0;
@@ -68,6 +98,44 @@ struct CaptureVideo : Capture
     void SaveXML (cv::FileStorage& fs);
 
     std::string GetName();
+
+    // internal libav
+    AVFormatContext* format_context = NULL;
+    AVCodecContext* codec_context = NULL;
+    AVCodec* codec = NULL;
+    AVStream* video_stream = NULL;
+    int video_stream_idx = -1;
+
+    struct SwsContext* img_convert_ctx = NULL;
+
+//    AVOutputFormat* output_format = NULL;
+
+    AVFrame* avframe = NULL;
+    AVPacket avpacket;
+
+    int ret;
+
+//    AVFrame* frameRGB = NULL;
+    /* int numBytes; */
+    /* uint8_t* buffer = NULL; */
+
+    int width;
+    int height;
+    float fps;
+    double fpsi; // internal fps, counts can be weird and is specific to the encoded file
+    
+//    int frameCount;
+    unsigned char endcode[4] = {0, 0, 1, 0xb7};
+
+//    int verbose;
+
+    bool GrabFrame();
+    bool ConvertFrame();
+    double r2d(AVRational r) const;
+    void Rewind();
+    double GetFrameTime ();
+
+
 };
 
 

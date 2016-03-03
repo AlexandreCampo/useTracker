@@ -407,17 +407,11 @@ double CaptureCalibration::ComputeReprojectionErrors( const vector<vector<Point3
 
 void CaptureCalibration::Undistort (Mat& frame)
 {
-//    Mat temp;
-
     if (calibrated && !frame.empty())
     {
 	Mat temp = frame.clone();
 	remap(temp, frame, undistortedMap1, undistortedMap2, INTER_LINEAR);
-//	undistort(temp, frame, cameraMatrix, distCoeffs);
-//	capture->frame = temp;
     }
-
-//    return temp;
 }
 
 void CaptureCalibration::Reset()
