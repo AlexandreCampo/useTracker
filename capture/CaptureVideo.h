@@ -47,8 +47,9 @@ struct CaptureVideo : Capture
 {
     std::string filename;
 //    cv::VideoCapture source;
-    cv::Mat frame;
+//    cv::Mat frame;
 
+    long firstFramePTS = 0;
     long frameNumber = 0;
     wxLongLong startTime = 0;
     wxLongLong nextFrameTime = 0;
@@ -107,14 +108,14 @@ struct CaptureVideo : Capture
 
     int ret;
 
-    AVFrame* frameBGR = NULL;
+    AVFrame frameBGR;
     int numBytes;
     uint8_t* buffer = NULL;
 
-    int width;
-    int height;
-    float fps;
-    double fpsi; // internal fps, counts can be weird and is specific to the encoded file
+    /* int width; */
+    /* int height; */
+    /* float fps; */
+    /* double fpsi; // internal fps, counts can be weird and is specific to the encoded file */
     
 //    int frameCount;
     unsigned char endcode[4] = {0, 0, 1, 0xb7};
@@ -126,7 +127,7 @@ struct CaptureVideo : Capture
     double r2d(AVRational r) const;
     void Rewind();
     double GetFrameTime ();
-
+    long RecalculateFrameNumberFromTimestamp();
 
 };
 

@@ -29,18 +29,12 @@ using namespace cv;
 
 CaptureVideo::CaptureVideo(string filename) : Capture()
 {
-    av_init_packet (&avpacket);
-    av_register_all();
-
     if (Open (filename))
 	type = VIDEO;
 }
 
 CaptureVideo::CaptureVideo(FileNode& fn) : Capture()
 {
-    av_init_packet (&avpacket);
-    av_register_all();
-
     LoadXML (fn);
     if (Open (filename))
 	type = VIDEO;
@@ -68,6 +62,9 @@ bool CaptureVideo::Open (string filename)
     // open the video file
     this->filename = filename;
 
+    memset(&avpacket, 0, sizeof(avpacket));
+    av_init_packet (&avpacket);
+    av_register_all();
 	    	    
 //	av_log_set_level(AV_LOG_FATAL);
     av_log_set_level(AV_LOG_VERBOSE);
@@ -129,13 +126,13 @@ bool CaptureVideo::Open (string filename)
     // }
 
     avframe = avcodec_alloc_frame();
-    frameBGR = avcodec_alloc_frame();
+//    frameBGR = avcodec_alloc_frame();
     if (video_stream->avg_frame_rate.den > 0)
 	fps = av_q2d(video_stream->avg_frame_rate);
     else 
 	fps = av_q2d(video_stream->r_frame_rate);
     
-    fpsi = 1.0 / av_q2d(video_stream->time_base);
+//    fpsi = 1.0 / av_q2d(video_stream->time_base);
 
 
 //	cout << "Video FPS, FPSI " << fps << " " << fpsi << " den " << video_stream->avg_frame_rate.den << " r framerate " << av_q2d(video_stream->r_frame_rate) << " time base " << av_q2d(video_stream->time_base) << " start time " << video_stream->start_time << endl;
@@ -143,6 +140,8 @@ bool CaptureVideo::Open (string filename)
     // Determine required buffer size and allocate buffer
     width = codec_context->width;
     height = codec_context->height;
+
+    memset( &frameBGR, 0, sizeof(frameBGR) );
     
     numBytes=avpicture_get_size(PIX_FMT_BGR24, width, height);
     buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
@@ -156,10 +155,28 @@ bool CaptureVideo::Open (string filename)
     
     // Assign appropriate parts of buffer to image planes in frameRGB
     // Note that frameRGB is an AVFrame, but AVFrame is a superset of AVPicture
-    avpicture_fill((AVPicture *)frameBGR, buffer, PIX_FMT_BGR24, width, height);
-    
-    Rewind();
 
+    frame = Mat::zeros (height, width, CV_8UC3); 
+//    frameBGR.data[0] = (uint8_t *)frame.data;
+    avpicture_fill((AVPicture *)&frameBGR, frameBGR.data[0], PIX_FMT_BGR24, width, height);
+    
+//    Rewind();
+    
+    GrabFrame();
+    ConvertFrame();
+
+//    firstFrameNumber = frameNumber;
+    long pts;
+
+    if (avpacket.pts != AV_NOPTS_VALUE && avpacket.pts != 0)
+	pts = avpacket.pts;
+    else
+	pts = avpacket.dts;
+
+    cout << "Init : first pts = " << pts << " pkt pts = " << avpacket.pts << " dts = " << avpacket.dts << " start time = " << video_stream->start_time << endl;
+    firstFramePTS = pts;
+    
+    frameNumber = 0;
 
     playSpeed = 0;
     playTimestep.Assign(1000000.0 / fps);
@@ -169,14 +186,13 @@ bool CaptureVideo::Open (string filename)
 
     // read first frame to allow display
 
-//    frame = Mat::zeros (height, width, CV_8UC3); 
-    frame = Mat();
+//    frame = Mat();
   
 //    source >> frame;
-    if (!GrabFrame ())
-	return false;
-    ConvertFrame();
-    GetFrameNumber();
+    // if (!GrabFrame ())
+    // 	return false;
+    // ConvertFrame();
+    // GetFrameNumber();
 
     calibration.Undistort(frame);
 
@@ -217,7 +233,7 @@ void CaptureVideo::Close ()
 {
     // Free the YUV and BGR frames
     av_free(avframe);
-    av_free(frameBGR);
+//    av_free(frameBGR);
     
     // Close the codec
     if (codec_context) avcodec_close(codec_context);
@@ -251,7 +267,10 @@ bool CaptureVideo::GrabFrame ()
 	    
 	    // Did we get a video frame?
 	    if(frameFinished) 
+	    {
+		cout << "grab : pts/dts = " << avpacket.pts << ":" << avpacket.dts << " first = " << firstFramePTS << " tb = " << video_stream->time_base.num << ":" << video_stream->time_base.den << endl; 
 		return true;
+	    }
 	}
     }
 
@@ -261,15 +280,36 @@ bool CaptureVideo::GrabFrame ()
 bool CaptureVideo::ConvertFrame ()
 {
     // prepare context for conversion to opencv Mat
-    // img_convert_ctx = sws_getContext(width, height, 
-    // 				     codec_context->pix_fmt, 
-    // 				     width, height, PIX_FMT_BGR24, SWS_FAST_BILINEAR,
-    // 				     NULL, NULL, NULL);
+    img_convert_ctx = sws_getContext(width, height, 
+    				     codec_context->pix_fmt, 
+    				     width, height, PIX_FMT_BGR24, SWS_FAST_BILINEAR,
+    				     NULL, NULL, NULL);
+
+//    int aligns[AV_NUM_DATA_POINTERS];
+//   avcodec_align_dimensions2(codec_context, &width, &height, aligns);
+    frameBGR.data[0] = (uint8_t*)realloc(frameBGR.data[0], avpicture_get_size( AV_PIX_FMT_BGR24, width, height));
+    avpicture_fill( (AVPicture*)&frameBGR, frameBGR.data[0], AV_PIX_FMT_BGR24, width, height );
+
+
+    // av_frame_unref(&frameBGR);
+    // frameBGR.format = AV_PIX_FMT_BGR24;
+    // frameBGR.width = width;
+    // frameBGR.height = height;
+    // if (0 != av_frame_get_buffer(&frameBGR, 32))
+    // {
+    // 	cerr << "Error : Out of memory, cannot allocate new conversion frame" << endl;
+    // 	return false;
+    // }
 
     // Convert the image from its native format to BGR opencv Mat
-    sws_scale(img_convert_ctx, avframe->data, avframe->linesize, 0, height, frameBGR->data, frameBGR->linesize);
-    
-    frame = Mat (height, width, CV_8UC3, frameBGR->data[0], frameBGR->linesize[0]);
+    sws_scale(img_convert_ctx, avframe->data, avframe->linesize, 0, height, frameBGR.data, frameBGR.linesize);
+  
+    // just copy to mat
+    memcpy (frame.data, frameBGR.data[0], frame.step[0] * height);
+
+//    frame.data = frameBGR->data[0];
+//    frame.step[0] = frameBGR->linesize[0];
+//    frame = Mat (height, width, CV_8UC3, frameBGR->data[0], frameBGR->linesize[0]);
 
     return true;
 }
@@ -278,14 +318,14 @@ bool CaptureVideo::ConvertFrame ()
 bool CaptureVideo::GetNextFrame ()
 {
     if (!GrabFrame ())
+    {
+	nextFrameTime += playTimestep;    
 	return false;
+    }
 
     ConvertFrame();
-    //GetFrameNumber();
     frameNumber++;
     calibration.Undistort(frame);
-
-    nextFrameTime += playTimestep;
 
     return true;
 }
@@ -313,22 +353,55 @@ void CaptureVideo::Play()
     }
 }
 
-long CaptureVideo::GetFrameNumber ()
-{
-    frameNumber = (long)(fps * GetTime() + 0.5);
-    return frameNumber;
-}
-
-double CaptureVideo::GetTime ()
+long CaptureVideo::RecalculateFrameNumberFromTimestamp()
 {
     long pts;
 
     if (avpacket.pts != AV_NOPTS_VALUE && avpacket.pts != 0)
 	pts = avpacket.pts;
-    else
+    else 
 	pts = avpacket.dts;
 
-    double time = (double)(pts - video_stream->start_time) * r2d(video_stream->time_base);
+    double time = (double)(pts - firstFramePTS) * r2d(video_stream->time_base);
+
+    // long int ts = av_frame_get_best_effort_timestamp(frame);
+    // double time = double(ts - video_stream->start_time) / fpsi;
+
+    frameNumber = (long)(fps * time + 0.5);
+
+    // TODO DEBUG
+    cout << "Recalculate from timestamp : pts = " << pts << "pkt= " << avpacket.pts << ":" <<avpacket.dts << " start time = " << video_stream->start_time << " frame=" << frameNumber << " time = " << time << endl;
+
+    return frameNumber;
+}
+
+long CaptureVideo::GetFrameNumber ()
+{
+    // frameNumber = (long)(fps * GetTime() + 0.5);
+
+    // TODO DEBUG
+//    cout << "Get frame number = " << frameNumber << endl;
+
+    return frameNumber;
+}
+
+double CaptureVideo::GetTime ()
+{
+//     long pts;
+
+//     if (avpacket.pts != AV_NOPTS_VALUE && avpacket.pts != 0)
+// 	pts = avpacket.pts;
+//     else
+// 	pts = avpacket.dts;
+    
+// //    pts -= firstFrameNumber;
+
+//     double time = (double)(pts - video_stream->start_time) * r2d(video_stream->time_base);
+
+    double time = (double) frameNumber / fps;
+
+    // TODO DEBUG
+//    cout << "Get time : pts = " << pts << "pkt= " << avpacket.pts << ":" <<avpacket.dts << " start time = " << video_stream->start_time << " time = " << time << endl;
 
     // long int ts = av_frame_get_best_effort_timestamp(frame);
     // double time = double(ts - video_stream->start_time) / fpsi;
@@ -337,18 +410,19 @@ double CaptureVideo::GetTime ()
 
 void CaptureVideo::Rewind ()
 {
-    av_seek_frame(format_context, video_stream_idx, video_stream->start_time, AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY);
+    av_seek_frame(format_context, video_stream_idx, firstFramePTS, AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY);
     avcodec_flush_buffers(codec_context);
     GrabFrame();
     ConvertFrame();
-    GetFrameNumber();
+//    GetFrameNumber();
+    frameNumber = 0;
 }
 
 
 bool CaptureVideo::GetFrame (double time)
 {
     // calculate desired timestamp
-    long int desiredFrame = long(time * fpsi) - video_stream->start_time;
+    long int desiredFrame = long(time * fps) - firstFramePTS;
 
     return SetFrameNumber(desiredFrame);
 }
@@ -370,57 +444,66 @@ void CaptureVideo::Stop()
 
     isStopped = true;
     statusChanged = true;
-    GetFrameNumber();
 }
 
 bool CaptureVideo::SetFrameNumber(long desiredFrame)
 {
     // get current frame
-    long int currentFrame = GetFrameNumber ();
-    long int framesJumped = (desiredFrame - currentFrame ) / fpsi * fps;
+    if (desiredFrame < 0) desiredFrame = 0;
 
-//	cout << "Seek : going from frame " << currentFrame << " to frame " << desiredFrame << " skipping " << framesJumped << " frames" << endl;
-//	cout << "Seek : is now at frame " << GetFrameTimestamp() << endl;
-    
-    // go backwards ? then rewind and forward
-    if (currentFrame > desiredFrame) 
-    {
-	Rewind();
-	currentFrame = GetFrameNumber ();
-    }
-    
+    cout << "Seek 0 : going from frame " << frameNumber << " to frame " << desiredFrame << endl;
+        
     // first try to use seek, if goal is far away
-    if (framesJumped > fps * 10)
+//    if (abs(desiredFrame - frameNumber) > fps * 10)
+//    for (int i = 0; i < 4; i++)
     {
+	// int flags = AVSEEK_FLAG_ANY;
+
+	// if (frameNumber > desiredFrame) 
+	//     flags |= AVSEEK_FLAG_BACKWARD;
+
 	int flags = AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY;
-	//if (keyframe) flags = AVSEEK_FLAG_BACKWARD;
 	
-	av_seek_frame(format_context, video_stream_idx, desiredFrame, flags);
+	long targetPTS = firstFramePTS + long(desiredFrame / fps / r2d(video_stream->time_base) + 0.5);
+	cout << "Seek 1 : asking for PTS " << targetPTS << endl;
+	av_seek_frame(format_context, video_stream_idx, targetPTS, flags);
 	avcodec_flush_buffers(codec_context);
 	GrabFrame();
-	currentFrame = GetFrameNumber();
+	// GetFrameNumber();
+	RecalculateFrameNumberFromTimestamp();
 //	currentFrame = GetFrameTimestamp ();
-//	    cout << "Seek : is now at frame " << GetFrameTimestamp() << endl;
+	    cout << "Seek 2 : is now at frame " << frameNumber << endl;
     }
+
+    // still ahead of desired frame ? 
+    if (frameNumber > desiredFrame) 
+    {
+	av_seek_frame(format_context, video_stream_idx, firstFramePTS, AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY);
+	avcodec_flush_buffers(codec_context);
+	GrabFrame();
+    }
+    cout << "Seek 2.5 : is now at frame " << frameNumber << endl;
+
 	
     // now go forward until desired frame is reached
-    long int framesCount = (desiredFrame - currentFrame ) / fpsi * fps;
-    
-    for (int i = 0; i < framesCount; i++) 
+    int currentFrame = frameNumber;
+    while (currentFrame < desiredFrame)
+//    for (int i = 0; i < desiredFrame - frameNumber; i++) 
     {
 	if (!GrabFrame())
 	    break;
 	// if (GetFrameTimestamp() >= desiredFrame) break; // tried hard to match stuff with mariano...
-//	    cout << "Seek : is now at frame " << GetFrameTimestamp() << endl;
+	cout << "Seek 3 : is now at frame " << currentFrame << endl;
+	currentFrame++;
     }
 //	while (GetFrameTimestamp() < desiredFrame) GetNextFrame();
-    
-//	cout << "Seek : is now at frame " << GetFrameTimestamp() << endl;
+    frameNumber = currentFrame;
+    cout << "Seek 4 : is now at frame " << frameNumber << endl;
    
 //    source.set(CV_CAP_PROP_POS_MSEC, time * 1000.0);
 
     ConvertFrame();
-    GetFrameNumber();
+//    GetFrameNumber();
 
     // Mat previousFrame = frame;
     // source >> frame;
