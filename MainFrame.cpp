@@ -74,6 +74,10 @@
 #include "Pipeline.h"
 
 
+// TODO DEBUG
+wxLongLong starttime =  wxGetUTCTimeUSec();
+
+
 extern Parameters parameters;
 
 //helper functions
@@ -996,12 +1000,18 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
     // calculate delay to grab next frame (reserve some usec, better be slightly in advance)
     wxLongLong td = ipEngine.capture->GetNextFrameSystemTime() - currentTime - 500;
 
+//    cout << "Idle : time = " << (currentTime - starttime).ToDouble() / 1000000.0 << " nextF = " << (ipEngine.capture->GetNextFrameSystemTime() - starttime).ToDouble() / 1000000.0 << " starttime = " << starttime.ToDouble() << " td = " << td.ToDouble() << endl; 
+
     // wait for next frame / refresh ?
     if (td > 0)
     {
 	// min UI refresh rate
 	if (td < 33000) wxMicroSleep(td.ToLong());
-	else getNextFrame = false;
+	else
+	{
+	    wxMicroSleep(33000);
+	    getNextFrame = false;
+	}
     }
 
     // process frames only out of bg tab & calib tab
@@ -1011,6 +1021,7 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 	{
 	    if (getNextFrame)
 	    {
+//		cout << "Idle : getting next frame" << endl;
 		bool gotFrame = ipEngine.GetNextFrame();
 
 		// end of stream ?

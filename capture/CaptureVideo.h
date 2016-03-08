@@ -49,13 +49,12 @@ struct CaptureVideo : Capture
 //    cv::VideoCapture source;
 //    cv::Mat frame;
 
-    long firstFramePTS = 0;
     long frameNumber = 0;
     wxLongLong startTime = 0;
     wxLongLong nextFrameTime = 0;
-    wxLongLong playTimestep = 0;
+//    wxLongLong playTimestep = 0;
     wxLongLong time = 0;
-    int playSpeed = 0;
+    wxLongLong playSpeed;
 
 
     CaptureVideo(std::string filename);
@@ -120,6 +119,23 @@ struct CaptureVideo : Capture
 //    int frameCount;
     unsigned char endcode[4] = {0, 0, 1, 0xb7};
 
+    /* long faultyPtsCount = 0; */
+    /* long faultyDtsCount = 0; */
+    long firstPts = 0;
+    long nextPts = 0;
+    long currentPts = 0;
+//    long lastPts = 0;
+    long deltaPts = 0;
+    wxLongLong frameDelay;
+//    long lastDtsi = LONG_MIN;
+//    double currentFrameDelay = 0.0;
+//    double nextFrameDelay = 0.0;
+//    double lastDts = 0.0;
+//    double predictedNextPts = 0.0;
+//    double currentPts = 0.0;
+    //double nextPts = 0.0;
+    
+
 //    int verbose;
 
     bool GrabFrame();
@@ -128,7 +144,9 @@ struct CaptureVideo : Capture
     void Rewind();
     double GetFrameTime ();
     long RecalculateFrameNumberFromTimestamp();
-
+    double GetDuration();
+    void EstimateFrameTimings();
+    void SeekTimestamp(long ts);
 };
 
 
