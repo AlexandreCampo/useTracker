@@ -138,6 +138,8 @@ bool CaptureVideo::Open (string filename)
     isPaused = true;
     nextFrameTime = wxGetUTCTimeUSec();
 
+//    cout << "Opened video : start_time " << video_stream->start_time << " firstPts " << firstPts << " fps " << fps << " nb_frames " << video_stream->nb_frames << " duration1 " << (double)format_context->duration / (double)AV_TIME_BASE << " duration2 " <<  video_stream->duration * av_q2d(video_stream->time_base) << " d() = " << GetDuration() << endl;
+
     return true;
 }
 
@@ -235,6 +237,8 @@ bool CaptureVideo::GetNextFrame ()
 
     if (!GrabFrame ())
 	return false;
+
+//    cout << "GetNextFrame : " << " pts:dts " << avframe->pkt_pts << ":" << avframe->pkt_dts << " tb " << video_stream->time_base.num << ":" << video_stream->time_base.den << endl;
     
     calibration.Undistort(frame);
 
@@ -319,11 +323,23 @@ void CaptureVideo::SeekTimestamp (long targetPts)
 
     long previousDeltaPts = deltaPts;
 
+//    cout << "Seek 0 : " << " going from pts " << currentPts << " to pts " << targetPts << endl;
+
     // seek frame
-    av_seek_frame(format_context, video_stream_idx, targetPts, AVSEEK_FLAG_BACKWARD);
-    avcodec_flush_buffers(codec_context);
-    ConvertFrame();
-    GrabFrame();
+    int attempts = 0;
+    long t = targetPts;
+    long step = 1.0 / fps / av_q2d(video_stream->time_base) + 0.5;
+    do
+    {
+	av_seek_frame(format_context, video_stream_idx, t, AVSEEK_FLAG_BACKWARD);
+	avcodec_flush_buffers(codec_context);
+	ConvertFrame();
+	GrabFrame();
+//	cout << "Seek 1a : is now at pts " << nextPts << " requested " << t << endl;
+	t -= step;	
+    }	while (nextPts > targetPts && attempts++ < 30);
+
+//    cout << "Seek 1b : is now at pts " << nextPts << endl;
 
     // still ahead of desired frame ? then rewind
     if (nextPts > targetPts) 
@@ -333,9 +349,13 @@ void CaptureVideo::SeekTimestamp (long targetPts)
 	ConvertFrame();
 	GrabFrame();
     }    
-    
+
+//    cout << "Seek 2 : is now at pts " << nextPts << endl;
+
+//    cout << "Seek 3 : ";
+
     // now go forward until desired frame is reached
-    long step = 1.0 / fps / av_q2d(video_stream->time_base) + 0.5;
+//    long step = 1.0 / fps / av_q2d(video_stream->time_base) + 0.5;
     while (nextPts <= targetPts)
     {
 	// convert only the final 5 frames
@@ -344,13 +364,18 @@ void CaptureVideo::SeekTimestamp (long targetPts)
 
 	if (!GrabFrame())
 	    break;
+
+//	cout << nextPts << " ";
     }
+//    cout << endl;
 
     // we jumped frames back or forward, but we try to maintain same playback
     deltaPts = previousDeltaPts;
     frameDelay.Assign (deltaPts * av_q2d(video_stream->time_base) * 1000000.0);
 
     frameNumber = RecalculateFrameNumberFromTimestamp();
+    
+//    cout << "Seek 4 : is now at pts " << nextPts << " deltaPts " << deltaPts << " frameDelay " << frameDelay.ToDouble() / 1000000.0 << " frame " << frameNumber << endl;
 
     calibration.Undistort(frame);
 
