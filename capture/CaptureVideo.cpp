@@ -132,13 +132,16 @@ bool CaptureVideo::Open (string filename)
     ConvertFrame();
     calibration.Undistort(frame);
 
+    deltaPts = 1.0 / fps / av_q2d(video_stream->time_base) + 0.5; // initial approximation
+    frameDelay.Assign (deltaPts * av_q2d(video_stream->time_base) * 1000000.0);
+    currentPts = nextPts;
     firstPts = nextPts;    
     frameNumber = 0;
     playSpeed.Assign(1.0);
     isPaused = true;
     nextFrameTime = wxGetUTCTimeUSec();
 
-//    cout << "Opened video : start_time " << video_stream->start_time << " firstPts " << firstPts << " fps " << fps << " nb_frames " << video_stream->nb_frames << " duration1 " << (double)format_context->duration / (double)AV_TIME_BASE << " duration2 " <<  video_stream->duration * av_q2d(video_stream->time_base) << " d() = " << GetDuration() << endl;
+//    cout << "Opened video : start_time " << video_stream->start_time << " firstPts " << firstPts << " fps " << fps << " nb_frames " << video_stream->nb_frames << " duration1 " << (double)format_context->duration / (double)AV_TIME_BASE << " duration2 " <<  video_stream->duration * av_q2d(video_stream->time_base) << " d() = " << GetDuration() << " tb " << video_stream->time_base.num << ":" << video_stream->time_base.den << " ctb " << video_stream->codec->time_base.num << ":" << video_stream->codec->time_base.den << " init time " << GetTime() << endl;
 
     return true;
 }
@@ -325,6 +328,17 @@ void CaptureVideo::SeekTimestamp (long targetPts)
 
 //    cout << "Seek 0 : " << " going from pts " << currentPts << " to pts " << targetPts << endl;
 
+    // get closer from target frame, seeking to non keyframes
+    av_seek_frame(format_context, video_stream_idx, targetPts, AVSEEK_FLAG_ANY);
+    avcodec_flush_buffers(codec_context);
+    ConvertFrame();
+    GrabFrame();
+
+//    cout << "Seek 0.5 : " << " now at pts " << nextPts << endl;
+
+//    int flags = AVSEEK_FLAG_FRAME | AVSEEK_FLAG_BACKWARD;
+//    if (targetPts < currentPts) flags |= AVSEEK_FLAG_BACKWARD;
+
     // seek frame
     int attempts = 0;
     long t = targetPts;
@@ -437,7 +451,7 @@ void CaptureVideo::SetSpeedFaster(int speed)
     if (speed > 1)
 	playSpeed.Assign(1.0 / (double)speed); 
     else 
-	playSpeed.Assign (1);
+	playSpeed.Assign (1.0);
 
     nextFrameTime = wxGetUTCTimeUSec() + frameDelay * playSpeed;
 }
@@ -447,7 +461,7 @@ void CaptureVideo::SetSpeedSlower(int speed)
     if (speed > 1)
 	playSpeed.Assign(speed); 
     else 
-	playSpeed.Assign(1);
+	playSpeed.Assign(1.0);
 
     nextFrameTime = wxGetUTCTimeUSec() + frameDelay * playSpeed;
 }
