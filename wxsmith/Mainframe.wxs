@@ -256,8 +256,10 @@
 														<content>
 															<item>mean</item>
 															<item>median</item>
+															<item>max</item>
 														</content>
-														<dimension>2</dimension>
+														<default>1</default>
+														<dimension>3</dimension>
 														<handler function="OnRadioBoxMethodSelect" entry="EVT_RADIOBOX" />
 													</object>
 													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
