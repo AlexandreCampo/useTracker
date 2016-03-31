@@ -176,6 +176,72 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
 }
 
 
+Mat CalculateBackgroundMax (Capture* capture, float startTime, float endTime, unsigned int framesCount)
+{
+    int width = capture->width;
+    int height = capture->height;
+    Mat background = Mat::zeros(height, width, CV_8UC3);
+
+    // do not calc bg for an image...
+    if (capture->type == Capture::IMAGE) return background;
+
+    // if endtime is very small, consider that we want to use the entire capture duration. In case
+    // this a webcam, give up calculation
+    if (endTime < 0.01)
+    {
+	if (capture->type == Capture::VIDEO || capture->type == Capture::MULTI_VIDEO)
+	{
+	    endTime = ((double)capture->GetFrameCount()) / capture->fps;
+	}
+	else
+	    return background;
+    }
+
+    cerr << "Calculating max background" << endl;
+
+    capture->Stop();
+    capture->Play();
+
+    unsigned int readCount = 0;
+
+    float intervalTime = (endTime - startTime) / framesCount;
+    while (readCount < framesCount)
+    {
+	capture->GetFrame (startTime + intervalTime * readCount);
+
+	double msgTime = capture->GetTime();
+    	cerr << "using frame at time " << msgTime << endl;
+
+    	if (capture->frame.empty())
+    	    break;
+
+    	for (int y = 0; y < height; y++)
+    	{
+    	    unsigned char* frameRow = capture->frame.ptr<unsigned char>(y);
+	    unsigned char* bgRow = background.ptr<unsigned char>(y);
+
+    	    for (int x = 0; x < width; x++)
+    	    {
+    		if(bgRow[x * 3] < frameRow[x * 3])
+			bgRow[x * 3] = frameRow[x * 3];
+    		if(bgRow[x * 3 + 1] < frameRow[x * 3 + 1])
+			bgRow[x * 3 + 1] = frameRow[x * 3 + 1];
+    		if(bgRow[x * 3 + 2] < frameRow[x * 3 + 2])
+			bgRow[x * 3 + 2] = frameRow[x * 3 + 2];
+    	    }
+    	}
+    	readCount++;
+    }
+
+    capture->Stop();
+
+    cerr << "Background calculated" << endl;
+
+    return background;
+}
+
+
+
 
 Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, unsigned int framesCount)
 {

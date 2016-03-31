@@ -98,6 +98,8 @@ void ImageProcessingEngine::Reset(Parameters& parameters)
     {
 	if (bgCalcType == BG_MEDIAN)
 	    background = CalculateBackgroundMedian (capture, bgStartTime, bgEndTime, bgFrames);
+	else if (bgCalcType == BG_MAX)
+	    background = CalculateBackgroundMax (capture, bgStartTime, bgEndTime, bgFrames);
 	else if (bgCalcType == BG_MEAN)
 	    background = CalculateBackgroundMean (capture, bgStartTime, bgEndTime, bgFrames);
 	else
@@ -277,7 +279,7 @@ void ImageProcessingEngine::LoadXML(FileNode& fn)
 	string bt = (string)fn["BackgroundCalcType"];
 	if (bt == "median") bgCalcType = BG_MEDIAN;
 	else if (bt == "mean") bgCalcType = BG_MEAN;
-
+	else if (bt == "max") bgCalcType = BG_MAX;
 	zonesFilename = (string)fn["ZonesFilename"];
     }
 }
@@ -300,6 +302,8 @@ void ImageProcessingEngine::SaveXML(FileStorage& fs)
 	fs << "BackgroundCalcType" << "median";
     else if (bgCalcType == BG_MEAN)
 	fs << "BackgroundCalcType" << "mean";
+    else if (bgCalcType == BG_MAX)
+	fs << "BackgroundCalcType" << "max";
     fs << "ZonesFilename" << zonesFilename;
 }
 

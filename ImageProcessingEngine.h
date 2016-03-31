@@ -69,7 +69,7 @@ struct ImageProcessingEngine
 
 
     // background
-    enum BgCalcType {BG_MEAN, BG_MEDIAN};
+    enum BgCalcType {BG_MEAN, BG_MEDIAN, BG_MAX};
     BgCalcType bgCalcType = BG_MEAN;
     std::string bgFilename;
     bool bgRecalculate = false;
