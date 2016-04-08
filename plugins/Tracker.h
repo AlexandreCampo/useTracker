@@ -89,6 +89,12 @@ struct Tracker : public PipelinePlugin
 	bool operator<(const Interdistance &dp) const { return distsq < dp.distsq; }
     };
 
+    struct HistoryEntry
+    {
+	int frame;
+	int entitiesCount;
+	int index;
+    }
 
     // class members
     unsigned int entitiesCount = 1;
@@ -112,6 +118,7 @@ struct Tracker : public PipelinePlugin
     // history & replay
     bool replay = false;
     std::vector<Entity> history;
+    std::vector<HistoryEntry> historyEntries;
     unsigned int historyIndex = 0;
     unsigned int historyStartFrame = 0;
     unsigned int trailLength = 10;

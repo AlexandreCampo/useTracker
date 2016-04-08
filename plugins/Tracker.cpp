@@ -96,6 +96,7 @@ void Tracker::Replay()
 
     if (currentFrame >= historyStartFrame)
     {
+
 	historyIndex = (currentFrame - historyStartFrame) * entitiesCount;
 
 //	cout << "using hindex=" << historyIndex << endl;
