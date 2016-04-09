@@ -91,10 +91,14 @@ struct Tracker : public PipelinePlugin
 
     struct HistoryEntry
     {
-	int frame;
-	int entitiesCount;
-	int index;
-    }
+	HistoryEntry(unsigned int f, unsigned int i)
+	    {
+		frameNumber = f;
+		entitiesIndex = i;
+	    }
+	unsigned int frameNumber;
+	unsigned int entitiesIndex;
+    };
 
     // class members
     unsigned int entitiesCount = 1;
@@ -119,7 +123,7 @@ struct Tracker : public PipelinePlugin
     bool replay = false;
     std::vector<Entity> history;
     std::vector<HistoryEntry> historyEntries;
-    unsigned int historyIndex = 0;
+    unsigned int historyEntriesIndex = 0;
     unsigned int historyStartFrame = 0;
     unsigned int trailLength = 10;
 

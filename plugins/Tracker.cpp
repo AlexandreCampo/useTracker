@@ -94,30 +94,59 @@ void Tracker::Replay()
     // TODO DEBUG
 //    cout << "Tracker : current frame=" << currentFrame << " h-start=" << historyStartFrame << " h-size=" << history.size() << endl;
 
+    bool found = false;
+    int eidx = -1; 
+    
     if (currentFrame >= historyStartFrame)
     {
-
-	historyIndex = (currentFrame - historyStartFrame) * entitiesCount;
-
-//	cout << "using hindex=" << historyIndex << endl;
-
-	if (historyIndex < history.size())
+	if (historyEntriesIndex < historyEntries.size())
 	{
-	    for (unsigned int e = 0; e < entitiesCount; e++)
+	    // directly find correct frame, or search forward
+	    for (unsigned int i = historyEntriesIndex; i < historyEntries.size(); i++)
 	    {
-		entities[e] = history[historyIndex+e];
+		if (historyEntries[i].frameNumber == currentFrame)
+		{
+		    // found the entries, update current entities
+		    eidx = historyEntries[i].entitiesIndex;
+		    historyEntriesIndex = i;
+		    found = true;	
+		    break;
+		}
+	    }
+
+	    // look for frame in previous entries
+	    if (!found)
+	    {
+		for (unsigned int i = 0; i < historyEntriesIndex; i++)
+		{
+		    if (historyEntries[i].frameNumber == currentFrame)
+		    {
+			historyEntriesIndex = i;
+			eidx = historyEntries[i].entitiesIndex;
+			found = true;
+			break;
+		    }
+		}
 	    }
 	}
     }
-    else
+
+    if (found)
     {
-	historyIndex = history.size();
+	for (unsigned int e = 0; e < entitiesCount; e++)
+	{
+	    entities[e] = history[eidx+e];
+	}
+	historyEntriesIndex++;
     }
+    else
+	historyEntriesIndex = historyEntries.size();
 }
 
 void Tracker::Track()
 {
     vector<Blob>& blobs = pipeline->parent->blobs;
+    int frameNumber = pipeline->parent->capture->GetFrameNumber();
 
     // remember previous positions
     previousEntities = entities;
@@ -130,7 +159,7 @@ void Tracker::Track()
 	if (entities[e].zone != ZONE_VISIBLE && !previousEntities[e].assigned) continue;
 
 	// if entity not detected for a long time
-	if (pipeline->parent->capture->GetFrameNumber() - entities[e].lastFrameDetected >= motionEstimatorTimeout * pipeline->parent->capture->fps) continue;
+	if (frameNumber - entities[e].lastFrameDetected >= motionEstimatorTimeout * pipeline->parent->capture->fps) continue;
 
 	// extrapolate motion of  entities
 	float dx = 0.0, dy = 0.0;
@@ -199,14 +228,14 @@ void Tracker::Track()
 	// this test is not applied on first assignment
 	if (entities[e].lastFrameDetected >= 0)
 	{
-	    float maxMotion = maxMotionPerSecond * (pipeline->parent->capture->GetFrameNumber() - entities[e].lastFrameDetected) / pipeline->parent->capture->fps;
+	    float maxMotion = maxMotionPerSecond * (frameNumber - entities[e].lastFrameDetected) / pipeline->parent->capture->fps;
 	    if (interdistances[d].distsq > maxMotion * maxMotion) continue;
 	}
 
 	bool createVirtualEntity = false;
 
 	// if the entity is a virtual one, assigned long enough, promote it to a real one
-	if (e >= entitiesCount && (pipeline->parent->capture->GetFrameNumber() - entities[e].lastFrameNotDetected) > virtualEntitiesLifetime * pipeline->parent->capture->fps)
+	if (e >= entitiesCount && (frameNumber - entities[e].lastFrameNotDetected) > virtualEntitiesLifetime * pipeline->parent->capture->fps)
 	{
 	    // find the corresponding real entity
 	    entities[e].toforget = true;
@@ -222,7 +251,7 @@ void Tracker::Track()
 	{
 	    if (virtualEntitiesZone && entities[e].zone != ZONE_VISIBLE) createVirtualEntity = true;
 	    else if (virtualEntitiesDistsq >= 1 && interdistances[d].distsq > virtualEntitiesDistsq) createVirtualEntity = true;
-	    else if (pipeline->parent->capture->GetFrameNumber() - entities[e].lastFrameDetected > virtualEntitiesDelay * pipeline->parent->capture->fps) createVirtualEntity = true;
+	    else if (frameNumber - entities[e].lastFrameDetected > virtualEntitiesDelay * pipeline->parent->capture->fps) createVirtualEntity = true;
 	}
 
 	if (createVirtualEntity && useVirtualEntities)
@@ -230,7 +259,7 @@ void Tracker::Track()
 	    entities[e].toforget = true;
 	    entities.push_back(Entity(motionEstimatorLength));
 	    entities.back().linkedEntity = e;
-	    entities.back().lastFrameNotDetected = pipeline->parent->capture->GetFrameNumber() - pipeline->parent->timestep * pipeline->parent->capture->fps;
+	    entities.back().lastFrameNotDetected = frameNumber - pipeline->parent->timestep * pipeline->parent->capture->fps;
 	    e = entities.size() - 1;
 	}
 
@@ -243,7 +272,7 @@ void Tracker::Track()
 //	    entities[e].zone = ZONE_VISIBLE;
 	blobs[b].available = false;
 	blobs[b].assignment = e;
-	entities[e].lastFrameDetected = pipeline->parent->capture->GetFrameNumber();
+	entities[e].lastFrameDetected = frameNumber;
 
 	if (e < previousEntities.size())
 	    UpdateMotionEstimator (entities[e], previousEntities[e]);
@@ -263,7 +292,7 @@ void Tracker::Track()
     // and reset counters if not detected
     for (unsigned int e = 0; e < entities.size(); e++)
     {
-	if (!entities[e].assigned) entities[e].lastFrameNotDetected = pipeline->parent->capture->GetFrameNumber();
+	if (!entities[e].assigned) entities[e].lastFrameNotDetected = frameNumber;
     }
 
     // if (textStream.is_open()) outputText (textStream, entities, frameNumber, video->GetFrameTime());
@@ -272,22 +301,21 @@ void Tracker::Track()
     // save to history
 //    cout << "Tracker : " << "saved data from frame " << pipeline->parent->capture->GetFrameNumber() << endl;
 
-    if (history.empty()) historyStartFrame = pipeline->parent->capture->GetFrameNumber();
+    if (history.empty()) historyStartFrame = frameNumber;
 
 //    cout << "Tracked frame " << pipeline->parent->capture->GetFrameNumber() << " hindex" << history.size() / entitiesCount << " hstart = " << historyStartFrame << endl;
 
+    historyEntries.push_back(HistoryEntry (frameNumber, history.size()));
     for (unsigned int e = 0; e < entitiesCount; e++)
     {
     	history.push_back(entities[e]);
     }
-    historyIndex += entitiesCount;
 }
 
 void Tracker::OutputHud (Mat& hud)
 {
     char str[8];
     Point pos;
-
 
     // draw a trail if history available
     // first, draw past positions
@@ -299,16 +327,17 @@ void Tracker::OutputHud (Mat& hud)
     }
 
     // draw past trail if possible (data available)
-    if (!replay || historyIndex < history.size())
+    if (!replay || historyEntriesIndex < historyEntries.size())
     {
-	for (unsigned int h = historyIndex - trailLength * entitiesCount; h <= historyIndex; h += entitiesCount)
+	for (unsigned int h = historyEntriesIndex - trailLength; h <= historyEntriesIndex; h++)
 	{
-	    if (h >= 0 && h < history.size())
+	    if (h >= 0 && h < historyEntries.size())
 	    {
-		for (unsigned int e = 0, eh = h; e < entitiesCount; e++, eh++)
+		int ei = historyEntries[h].entitiesIndex;
+		for (unsigned int e = 0; e < entitiesCount; e++)
 		{
-		    pos.x = history[eh].x;
-		    pos.y = history[eh].y;
+		    pos.x = history[ei+e].x;
+		    pos.y = history[ei+e].y;
 
 		    if (last[e].x >= 0)
 		    {
@@ -324,14 +353,15 @@ void Tracker::OutputHud (Mat& hud)
     // then, try to draw future positions if in replay mode
     if (replay)
     {
-	for (unsigned int h = historyIndex + entitiesCount; h < historyIndex + trailLength*entitiesCount; h+=entitiesCount)
+	for (unsigned int h = historyEntriesIndex; h < historyEntriesIndex + trailLength; h++)
 	{
-	    if (h >= 0 && h < history.size())
+	    if (h >= 0 && h < historyEntries.size())
 	    {
-		for (unsigned int e = 0, eh = h; e < entitiesCount; e++, eh++)
+		int ei = historyEntries[h].entitiesIndex;
+		for (unsigned int e = 0; e < entitiesCount; e++)
 		{
-		    pos.x = history[eh].x;
-		    pos.y = history[eh].y;
+		    pos.x = history[ei+e].x;
+		    pos.y = history[ei+e].y;
 
 		    if (last[e].x >= 0)
 		    {
@@ -345,13 +375,14 @@ void Tracker::OutputHud (Mat& hud)
     }
 
     // plot id number, if possible
-    if (!replay || historyIndex < history.size())
+    if (!replay || historyEntriesIndex < historyEntries.size())
     {
+	unsigned int ei = historyEntries[historyEntriesIndex].entitiesIndex;
 	for (unsigned int e = 0; e < entitiesCount; e++)
 	{
 	    sprintf (str, "%d", e);
-	    pos.x = entities[e].x;
-	    pos.y = entities[e].y;
+	    pos.x = entities[ei + e].x;
+	    pos.y = entities[ei + e].y;
 	    putText(hud, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,0,0,255), 2, CV_AA);
 	    putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,255,200,255), 2, CV_AA);
 	}
@@ -474,9 +505,10 @@ void Tracker::ClearHistory()
 //    cout << "===============================================Clearing history=======================================================================" << endl;
 
     historyStartFrame = pipeline->parent->capture->GetFrameNumber();
-    historyIndex = 0;
 //    cout << "H start = " << historyStartFrame << endl;
     history.clear();
+    historyEntries.clear();
+    historyEntriesIndex = 0;
 }
 
 void Tracker::LoadHistory(string filename)
@@ -494,15 +526,19 @@ void Tracker::LoadHistory(string filename)
     int count = 0;
     unsigned int frameNumber;
     Entity e;
+    int readEntities = 0;
 
     if (!file.eof())
     {
 	file >> str >> historyStartFrame >> e.lastFrameDetected >> e.lastFrameNotDetected >> str
 	     >> e.assigned >> e.zone >> e.size >> e.x >> e.y;
 
+	historyEntries.push_back(HistoryEntry(historyStartFrame, 0));
+
 	do
 	{
 	    history.push_back(e);
+	    readEntities++;
 	    
 	    file >> str >> frameNumber >> e.lastFrameDetected >> e.lastFrameNotDetected >> str
 		 >> e.assigned >> e.zone >> e.size >> e.x >> e.y;
@@ -510,6 +546,12 @@ void Tracker::LoadHistory(string filename)
 	    if (count == 0)
 		if (frameNumber != historyStartFrame)
 		    count = history.size();
+	    
+	    if (count > 0 && (readEntities % count == 0))
+	    {
+		historyEntries.push_back(HistoryEntry(frameNumber, history.size()-1));
+
+	    }
 	    
 	} while (!file.eof()); // if eof is reached while parsing data, do not record the entity
     }
