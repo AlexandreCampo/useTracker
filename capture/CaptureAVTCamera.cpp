@@ -146,7 +146,7 @@ bool CaptureAVTCamera::GetNextFrame ()
 	}
 
 	if (gotFrame) break;
-	else if (wxGetUTCTimeUSec() - startTime > 100000)
+	else if (wxGetUTCTimeUSec() - startTime > 1000000)
 	{
 	    return false;
 	}
