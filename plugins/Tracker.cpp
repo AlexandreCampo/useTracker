@@ -377,12 +377,12 @@ void Tracker::OutputHud (Mat& hud)
     // plot id number, if possible
     if (!replay || historyEntriesIndex < historyEntries.size())
     {
-	unsigned int ei = historyEntries[historyEntriesIndex].entitiesIndex;
+//	unsigned int ei = historyEntries[historyEntriesIndex].entitiesIndex;
 	for (unsigned int e = 0; e < entitiesCount; e++)
 	{
 	    sprintf (str, "%d", e);
-	    pos.x = entities[ei + e].x;
-	    pos.y = entities[ei + e].y;
+	    pos.x = entities[e].x;
+	    pos.y = entities[e].y;
 	    putText(hud, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,0,0,255), 2, CV_AA);
 	    putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,255,200,255), 2, CV_AA);
 	}
