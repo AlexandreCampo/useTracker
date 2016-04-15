@@ -1082,7 +1082,7 @@ void MainFrame::DrawTrackerSelection(wxClientDC& dc)
 		unsigned int hidx = tracker->historyEntries.size();
 		float hlength = 0;
 		if (hidx > 0)
-		    tracker->historyEntries[hidx]->frameNumber;
+		    tracker->historyEntries[hidx].frameNumber;
 		float totalFrames = ipEngine.capture->GetFrameCount()+1;
 
 		wxPoint pos = videoSlider->GetPosition();
