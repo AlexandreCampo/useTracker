@@ -305,6 +305,7 @@ void Tracker::Track()
 
 //    cout << "Tracked frame " << pipeline->parent->capture->GetFrameNumber() << " hindex" << history.size() / entitiesCount << " hstart = " << historyStartFrame << endl;
 
+    historyEntriesIndex = historyEntries.size();
     historyEntries.push_back(HistoryEntry (frameNumber, history.size()));
     for (unsigned int e = 0; e < entitiesCount; e++)
     {
@@ -327,7 +328,7 @@ void Tracker::OutputHud (Mat& hud)
     }
 
     // draw past trail if possible (data available)
-    if (!replay || historyEntriesIndex < historyEntries.size())
+    if (historyEntriesIndex < historyEntries.size())
     {
 	for (unsigned int h = historyEntriesIndex - trailLength; h <= historyEntriesIndex; h++)
 	{
@@ -375,8 +376,8 @@ void Tracker::OutputHud (Mat& hud)
     }
 
     // plot id number, if possible
-    if (!replay || historyEntriesIndex < historyEntries.size())
-    {
+//    if (!replay || historyEntriesIndex < historyEntries.size())
+//    {
 //	unsigned int ei = historyEntries[historyEntriesIndex].entitiesIndex;
 	for (unsigned int e = 0; e < entitiesCount; e++)
 	{
@@ -386,7 +387,7 @@ void Tracker::OutputHud (Mat& hud)
 	    putText(hud, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,0,0,255), 2, CV_AA);
 	    putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,255,200,255), 2, CV_AA);
 	}
-    }
+//    }
 }
 
 void Tracker::OutputStep ()
