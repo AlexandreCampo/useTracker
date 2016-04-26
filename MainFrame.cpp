@@ -2344,6 +2344,21 @@ void MainFrame::ResetImageProcessingEngine(Parameters& parameters)
     	    AddPipelinePlugin (txt, fn);
 	}
     }
+
+    // if specific start time was asked, seek there
+    if (parameters.startTime >= 0)
+    {
+	if(ipEngine.capture->type == Capture::VIDEO)
+	{
+	    CaptureVideo* capv = dynamic_cast<CaptureVideo*>(ipEngine.capture);
+	    if (capv) capv->SetTime(parameters.startTime);
+	}
+	if(ipEngine.capture->type == Capture::MULTI_VIDEO)
+	{
+	    CaptureMultiVideo* mcapv = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
+	    if (mcapv) mcapv->SetTime(parameters.startTime);
+	}
+    }   
 }
 
 void MainFrame::ResetImageProcessingEngine()
