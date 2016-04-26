@@ -318,6 +318,11 @@ bool CaptureVideo::GetFrame (double desiredTime)
     return true;
 }
 
+void CaptureVideo::SetTime (double desiredTime)
+{
+    GetFrame(desiredTime);
+}
+
 void CaptureVideo::SeekTimestamp (long targetPts)
 {    
     if (targetPts == currentPts) return;

@@ -199,6 +199,12 @@ bool CaptureMultiVideo::GetFrame (double time)
     return !frameEmpty;
 }
 
+void CaptureMultiVideo::SetTime (double desiredTime)
+{
+    GetFrame(desiredTime);
+}
+
+
 bool CaptureMultiVideo::GetPreviousFrame()
 {
     bool frameEmpty = false;
