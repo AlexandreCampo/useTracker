@@ -30,8 +30,8 @@ public:
     std::string calibrationFilename;
 
     
-    int startTime = -1;
-    int durationTime = -1;
+    double startTime = -1;
+    double durationTime = -1;
 
     bool multiUSBCapture = false;
     bool multiVideoCapture = false;

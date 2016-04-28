@@ -159,6 +159,25 @@ void ImageProcessingEngine::Reset(Parameters& parameters)
 
     SetupThreads();
 
+    // force start time and duration if requested from command line
+    if (parameters.startTime >= -0.000001) ipEngine.startTime = parameters.startTime;
+    if (parameters.durationTime >= -0.000001) ipEngine.durationTime = parameters.durationTime;
+
+    // if specific start time was asked, seek there
+    if (parameters.startTime >= 0 || ipEngine.useTimeBoundaries)
+    {
+	if(capture->type == Capture::VIDEO)
+	{
+	    CaptureVideo* capv = dynamic_cast<CaptureVideo*>(capture);
+	    if (capv) capv->SetTime(startTime);
+	}
+	if(capture->type == Capture::MULTI_VIDEO)
+	{
+	    CaptureMultiVideo* mcapv = dynamic_cast<CaptureMultiVideo*>(capture);
+	    if (mcapv) mcapv->SetTime(startTime);
+	}
+    }   
+
     std::cerr << "Tracker core has been reset and is ready" << std::endl;
 }
 
@@ -205,7 +224,7 @@ void ImageProcessingEngine::Reset()
 	y += sliceHeight;
     }
     pipelines[threadsCount].Reset(Rect(0, 0, capture->width, capture->height));
-
+   
     std::cerr << "Tracker core has been reset and is ready" << std::endl;
 }
 
