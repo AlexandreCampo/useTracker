@@ -53,6 +53,7 @@ using namespace std;
 #include "Blob.h"
 
 #include "CaptureVideo.h"
+#include "CaptureMultiVideo.h"
 #include "CaptureImage.h"
 #include "CaptureUSBCamera.h"
 #include "CaptureDefault.h"
@@ -160,11 +161,11 @@ void ImageProcessingEngine::Reset(Parameters& parameters)
     SetupThreads();
 
     // force start time and duration if requested from command line
-    if (parameters.startTime >= -0.000001) ipEngine.startTime = parameters.startTime;
-    if (parameters.durationTime >= -0.000001) ipEngine.durationTime = parameters.durationTime;
+    if (parameters.startTime >= -0.000001) startTime = parameters.startTime;
+    if (parameters.durationTime >= -0.000001) durationTime = parameters.durationTime;
 
     // if specific start time was asked, seek there
-    if (parameters.startTime >= 0 || ipEngine.useTimeBoundaries)
+    if (parameters.startTime >= 0 || useTimeBoundaries)
     {
 	if(capture->type == Capture::VIDEO)
 	{
@@ -173,8 +174,8 @@ void ImageProcessingEngine::Reset(Parameters& parameters)
 	}
 	if(capture->type == Capture::MULTI_VIDEO)
 	{
-	    CaptureMultiVideo* mcapv = dynamic_cast<CaptureMultiVideo*>(capture);
-	    if (mcapv) mcapv->SetTime(startTime);
+	    CaptureMultiVideo* capv = dynamic_cast<CaptureMultiVideo*>(capture);
+	    if (capv) capv->SetTime(startTime);
 	}
     }   
 
