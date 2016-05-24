@@ -119,16 +119,16 @@
 			<Add option="-lpthread" />
 			<Add option="`pkg-config --libs opencv`" />
 			<Add option="`pkg-config --libs libavcodec libavformat libswscale libavutil`" />
-			<Add option="-ldl" />
 			<Add option="-lva" />
 			<Add option="-lbz2" />
 			<Add option="-lz" />
-			<Add option="-lm" />
 			<Add option="-lpng" />
 			<Add option="-lx264" />
 			<Add option="-lboost_program_options" />
 			<Add option="-laruco" />
 			<Add option="-lbluetooth" />
+			<Add option="-lm" />
+			<Add option="-ldl" />
 		</Linker>
 		<Unit filename="App.cpp" />
 		<Unit filename="App.h" />

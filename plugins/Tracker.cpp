@@ -92,7 +92,10 @@ void Tracker::Replay()
     unsigned int currentFrame = pipeline->parent->capture->GetFrameNumber();
 
     // TODO DEBUG
-//    cout << "Tracker : current frame=" << currentFrame << " h-start=" << historyStartFrame << " h-size=" << history.size() << endl;
+    unsigned int hef = 0;
+    if (historyEntriesIndex < historyEntries.size())
+	hef = historyEntries[historyEntriesIndex].frameNumber;
+    cout << "Tracker : current frame=" << currentFrame << " h-start=" << historyStartFrame << " h-size=" << history.size() << " heIdx=" << historyEntriesIndex << " heFrame=" << hef << endl;
 
     bool found = false;
     int eidx = -1; 
@@ -101,9 +104,12 @@ void Tracker::Replay()
     {
 	if (historyEntriesIndex < historyEntries.size())
 	{
+	    cout << "looking foward..." << endl;
+
 	    // directly find correct frame, or search forward
 	    for (unsigned int i = historyEntriesIndex; i < historyEntries.size(); i++)
 	    {
+//		cout << "looking foward : i=" << i << " hef =" << historyEntries[i].frameNumber << endl;
 		if (historyEntries[i].frameNumber == currentFrame)
 		{
 		    // found the entries, update current entities
@@ -113,6 +119,11 @@ void Tracker::Replay()
 		    break;
 		}
 	    }
+	    
+	    if (found) 
+		cout << "found : eidx=" << eidx << " historyEntriesIndex =" << historyEntriesIndex << endl;
+	    else
+		cout << "noot found..." << endl;
 
 	    // look for frame in previous entries
 	    if (!found)
@@ -139,8 +150,8 @@ void Tracker::Replay()
 	}
 	historyEntriesIndex++;
     }
-    else
-	historyEntriesIndex = historyEntries.size();
+    // else
+    // 	historyEntriesIndex = historyEntries.size();
 }
 
 void Tracker::Track()
@@ -303,7 +314,7 @@ void Tracker::Track()
 
     if (history.empty()) historyStartFrame = frameNumber;
 
-//    cout << "Tracked frame " << pipeline->parent->capture->GetFrameNumber() << " hindex" << history.size() / entitiesCount << " hstart = " << historyStartFrame << endl;
+    cout << "Tracked frame " << pipeline->parent->capture->GetFrameNumber() << " hindex" << history.size() / entitiesCount << " hstart = " << historyStartFrame << endl;
 
     historyEntriesIndex = historyEntries.size();
     historyEntries.push_back(HistoryEntry (frameNumber, history.size()));
@@ -503,10 +514,10 @@ void Tracker::SetReplay(bool enable)
 
 void Tracker::ClearHistory()
 {
-//    cout << "===============================================Clearing history=======================================================================" << endl;
+    cout << "===============================================Clearing history=======================================================================" << endl;
 
     historyStartFrame = pipeline->parent->capture->GetFrameNumber();
-//    cout << "H start = " << historyStartFrame << endl;
+    cout << "H start = " << historyStartFrame << endl;
     history.clear();
     historyEntries.clear();
     historyEntriesIndex = 0;

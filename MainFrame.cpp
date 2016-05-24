@@ -1226,6 +1226,7 @@ void MainFrame::OnbuttonStopClick(wxCommandEvent& event)
 
 	Tracker* tracker = dynamic_cast<Tracker*>(pp);
 	if (tracker && !tracker->replay) tracker->ClearHistory();
+	if (tracker && tracker->replay) tracker->historyEntriesIndex = 0;
 
 	MovingAverage* movingAverage = dynamic_cast<MovingAverage*>(pp);
 	if (movingAverage) movingAverage->ClearHistory();
@@ -1254,6 +1255,7 @@ void MainFrame::OnvideoSliderCmdScrollChanged(wxScrollEvent& event)
 
 	    Tracker* tracker = dynamic_cast<Tracker*>(pp);
 	    if (tracker && !tracker->replay) tracker->ClearHistory();
+	    if (tracker && tracker->replay) tracker->historyEntriesIndex = 0;
 
 	    MovingAverage* movingAverage = dynamic_cast<MovingAverage*>(pp);
 	    if (movingAverage) movingAverage->ClearHistory();

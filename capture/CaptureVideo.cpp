@@ -196,12 +196,16 @@ bool CaptureVideo::GrabFrame ()
 bool CaptureVideo::ConvertFrame ()
 {
     // prepare context for conversion to opencv Mat
-    img_convert_ctx = sws_getContext(width, height, 
-    				     codec_context->pix_fmt, 
-    				     width, height, PIX_FMT_BGR24, SWS_FAST_BILINEAR,
-    				     NULL, NULL, NULL);
+    if (img_convert_ctx == NULL)
+    {
+	img_convert_ctx = sws_getContext(width, height, 
+					 codec_context->pix_fmt, 
+					 width, height, PIX_FMT_BGR24, SWS_FAST_BILINEAR,
+					 NULL, NULL, NULL);
+    }
 
-    avpicture_fill( (AVPicture*)&frameBGR, frame.data, AV_PIX_FMT_BGR24, width, height );
+// TODO DEBUG	
+//    avpicture_fill( (AVPicture*)&frameBGR, frame.data, AV_PIX_FMT_BGR24, width, height );
 
     // Convert the image from its native format to BGR opencv Mat
     sws_scale(img_convert_ctx, avframe->data, avframe->linesize, 0, height, frameBGR.data, frameBGR.linesize);

@@ -17,30 +17,43 @@
 /*    along with USE Tracker.  If not, see <http://www.gnu.org/licenses/>.    */
 /*----------------------------------------------------------------------------*/
 
-#ifndef EXTRACT_MOTION_H
-#define EXTRACT_MOTION_H
+#ifndef DENSITY_MAP_H
+#define DENSITY_MAP_H
 
 #include "PipelinePlugin.h"
 
 #include <opencv2/imgproc/imgproc.hpp>
 
 
-class ExtractMotion : public PipelinePlugin
+class DensityMap : public PipelinePlugin
 {
 public:
 
-    int threshold = 20;
-
-    cv::Mat diff;
+    // record to file
+    std::string outputFilename;
+    std::fstream outputStream;
+    
+    // area to process
+    int minX, maxX, minY, maxY;
+    int resolutionX, resolutionY;
+    int cellSizeX, cellSizeY;
+    
     cv::Mat sum;
-    cv::Mat marked2;
-//    Mat background;
 
-    ExtractMotion();
-    void Apply();
+    DensityMap();
+    ~DensityMap();
+
     void Reset();
+
+    void Apply();
+
     void LoadXML (cv::FileNode& fn);
     void SaveXML (cv::FileStorage& fs);
+    void OutputHud (cv::Mat& hud);
+
+    void OutputStep();
+    void OpenOutput();
+    void CloseOutput();
 };
 
 #endif

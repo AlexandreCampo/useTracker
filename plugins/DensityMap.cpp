@@ -17,26 +17,27 @@
 /*    along with USE Tracker.  If not, see <http://www.gnu.org/licenses/>.    */
 /*----------------------------------------------------------------------------*/
 
-#include "ExtractMotion.h"
+#include "DensityMap.h"
 
 
 using namespace cv;
 
-ExtractMotion::ExtractMotion() : PipelinePlugin()
+DensityMap::DensityMap() : PipelinePlugin()
 {
     multithreaded = true;
 }
 
-void ExtractMotion::Reset()
+void DensityMap::Reset()
 {
-    diff = Mat(pipeline->height, pipeline->width, CV_8UC3);
-    sum = Mat(pipeline->height, pipeline->width, CV_8U);
-    marked2 = Mat(pipeline->height, pipeline->width, CV_8U);
+    sum = Mat(resolutionY, resolutionX, CV_32U);
 }
 
 
-void ExtractMotion::Apply()
+void DensityMap::Apply()
 {
+    // add selected rect to accumulator
+    
+
     absdiff (pipeline->frame, pipeline->background, diff);
     cvtColor(diff, sum, CV_BGR2GRAY);
     cv::threshold(sum, marked2, threshold, 255, THRESH_BINARY);
@@ -44,7 +45,7 @@ void ExtractMotion::Apply()
     pipeline->marked &= marked2;
 }
 
-void ExtractMotion::LoadXML (FileNode& fn)
+void DensityMap::LoadXML (FileNode& fn)
 {
     if (!fn.empty())
     {
@@ -53,7 +54,7 @@ void ExtractMotion::LoadXML (FileNode& fn)
     }
 }
 
-void ExtractMotion::SaveXML (FileStorage& fs)
+void DensityMap::SaveXML (FileStorage& fs)
 {
     fs << "Active" << active;
     fs << "Threshold" << threshold;
