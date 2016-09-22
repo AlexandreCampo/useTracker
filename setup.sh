@@ -46,6 +46,7 @@ echo
 echo
 echo "Downloading ArUco" $version
 version="$(wget -q -O - http://sourceforge.net/projects/aruco/files/ | egrep -m1 -o '\"[0-9](\.[0-9]+)+' | cut -c2-)"
+version="1.3.0"
 wget -O aruco-$version.tgz http://sourceforge.net/projects/aruco/files/$version/aruco-"$version".tgz/download
 
 echo
