@@ -173,8 +173,8 @@ void RecordVideo::OpenOutput ()
     //frame = alloc_picture(codec_context->pix_fmt, pipeline->width, pipeline->height);
 
     // FFMPEG STYLE
-    frame = avcodec_alloc_frame();
-//    frame = av_frame_alloc();
+// TODO deprecated    frame = avcodec_alloc_frame();
+    frame = av_frame_alloc();
     frame->format = codec_context->pix_fmt;
     frame->width  = pipeline->width;
     frame->height = pipeline->height;
@@ -190,8 +190,8 @@ void RecordVideo::OpenOutput ()
     	return;
     }
 
-    frameBGR=avcodec_alloc_frame();
-//    frameBGR=av_frame_alloc();
+// TODO deprecated    frameBGR=avcodec_alloc_frame();
+    frameBGR=av_frame_alloc();
     int numBytes=avpicture_get_size(PIX_FMT_RGB24, pipeline->width, pipeline->height);
     buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
     memset (buffer, 0, numBytes * sizeof(uint8_t));
@@ -298,11 +298,12 @@ void RecordVideo::CloseOutput ()
 
     // free the frame
     av_freep(&frame->data[0]);
-    avcodec_free_frame(&frame);
-//    av_frame_free(&frame);
+//  TODO deprecated   avcodec_free_frame(&frame);
+    av_frame_free(&frame);
+    
     av_freep(&frameBGR->data[0]);
-    avcodec_free_frame(&frameBGR);
-//    av_frame_free(&frameBGR);
+// TODO deprecated    avcodec_free_frame(&frameBGR);
+    av_frame_free(&frameBGR);
 
 //    av_free(buffer);
 

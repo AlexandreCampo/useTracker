@@ -97,7 +97,8 @@ struct CaptureVideo : Capture
     AVCodec* codec = NULL;
     AVStream* video_stream = NULL;
     int video_stream_idx = -1;
-
+    AVPixelFormat  pixel_format;
+    
     struct SwsContext* img_convert_ctx = NULL;
 
 //    AVOutputFormat* output_format = NULL;

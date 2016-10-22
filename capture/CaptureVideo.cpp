@@ -102,7 +102,8 @@ bool CaptureVideo::Open (string filename)
     
     // av_dump_format(format_context, 0, filename.c_str(), 0);
 
-    avframe = avcodec_alloc_frame();
+// TODO deprecated    avframe = avcodec_alloc_frame();
+    avframe = av_frame_alloc();
 
     if (video_stream->avg_frame_rate.den > 0)
 	fps = av_q2d(video_stream->avg_frame_rate);
@@ -116,10 +117,24 @@ bool CaptureVideo::Open (string filename)
     cout << "detected w/h/fps " << width << " " << height << " " << fps << std::endl;
 
     memset( &frameBGR, 0, sizeof(frameBGR) );
+
+    
+    switch (codec_context->pix_fmt) 
+    {
+    case AV_PIX_FMT_YUVJ420P : pixel_format = AV_PIX_FMT_YUV420P; break;
+    case AV_PIX_FMT_YUVJ422P : pixel_format = AV_PIX_FMT_YUV422P; break;
+    case AV_PIX_FMT_YUVJ444P : pixel_format = AV_PIX_FMT_YUV444P; break;
+    case AV_PIX_FMT_YUVJ440P : pixel_format = AV_PIX_FMT_YUV440P; break;
+    default:
+        pixel_format = codec_context->pix_fmt;
+        break;
+    }
+
     
     // prepare context for conversion to opencv Mat
     img_convert_ctx = sws_getContext(width, height, 
-				     codec_context->pix_fmt, 
+				     //codec_context->pix_fmt,
+				     pixel_format,
 				     width, height, PIX_FMT_BGR24, SWS_FAST_BILINEAR,
 				     NULL, NULL, NULL);
     
@@ -149,7 +164,8 @@ bool CaptureVideo::Open (string filename)
 void CaptureVideo::Close ()
 {
     // Free the YUV and BGR frames
-    av_free(avframe);
+    // TODO deprecated av_free(avframe);
+    av_frame_free(&avframe);
     
     // Close the codec
     if (codec_context) avcodec_close(codec_context);
@@ -197,7 +213,8 @@ bool CaptureVideo::ConvertFrame ()
 {
     // prepare context for conversion to opencv Mat
     img_convert_ctx = sws_getContext(width, height, 
-    				     codec_context->pix_fmt, 
+    				     //codec_context->pix_fmt,
+				     pixel_format,
     				     width, height, PIX_FMT_BGR24, SWS_FAST_BILINEAR,
     				     NULL, NULL, NULL);
 

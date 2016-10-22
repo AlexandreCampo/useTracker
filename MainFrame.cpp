@@ -631,8 +631,8 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     BackgroundTab->SetScrollbars (0, 5, 0, sz/5);
 
     // setup drag and drop for image processing pipeline
-    ListBoxPipeline = new wxCheckListBox(StaticBox1, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(ProcessingTab,wxSize(115,100)), 0, 0, wxLB_SINGLE|wxLB_NEEDED_SB);
-    ListBoxPipelinePlugins = new wxListBox(StaticBox2, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(ProcessingTab,wxSize(115,180)), 0, 0, wxLB_SINGLE);
+    ListBoxPipeline = new wxCheckListBox(StaticBox1, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(ProcessingTab,wxSize(115,140)), 0, 0, wxLB_SINGLE|wxLB_NEEDED_SB);
+    ListBoxPipelinePlugins = new wxListBox(StaticBox2, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(ProcessingTab,wxSize(115,220)), 0, 0, wxLB_SINGLE);
 
     textDropTargetAdd = new MyTextDropTargetAdd (this);
     textDropTargetMove = new MyTextDropTargetMove (this);
@@ -1171,6 +1171,38 @@ void MainFrame::PrintInfoToHud()
 	pos.y += textSize.height + hudApp.rows / 20;
 	putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
 	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,255,200,255), 2, CV_AA);
+    }
+
+    // mouse coordinates
+    wxPoint mp = wxGetMousePosition();
+    wxPoint lmp = GLCanvas1->ScreenToClient(mp);
+    
+    // is over displayed image ?
+    if (lmp.x >= glPadX && lmp.y >= glPadY && lmp.x < (glCanvasWidth - glPadX) && lmp.y < (glCanvasHeight - glPadY))
+    {
+	// then transform to image
+	float px = ((float)lmp.x - glPadX) / (glCanvasWidth - glPadX * 2);
+	float py = ((float)lmp.y - glPadY) / (glCanvasHeight - glPadY * 2);
+
+	// transform according to zoom level
+	float ppx = zoomStartX + (zoomEndX - zoomStartX) * px;
+	float ppy = zoomStartY + (zoomEndY - zoomStartY) * py;
+
+	int pppx = ppx * ipEngine.capture->width;
+	int pppy = ppy * ipEngine.capture->height;
+
+	// float px = zoomStartX + (zoomEndX - zoomStartX) * (float) p.x / (float)oglScreen.cols;
+	// float py = zoomStartY + (zoomEndY - zoomStartY) * (float) p.y / (float)oglScreen.rows;
+	// pp.x = px * ipEngine.capture->width;
+	// pp.y = py * ipEngine.capture->height;
+	
+	// show in hud
+	sprintf (str, "Mouse : %d %d", pppx, pppy);
+	textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 0.6, 2, &baseline);
+	pos.x = hudApp.cols / 100;
+	pos.y = hudApp.rows - textSize.height;
+	putText(hudApp, str, pos+Point(1,1), FONT_HERSHEY_SIMPLEX, 0.6, cvScalar(0,0,0,255), 2, CV_AA);
+	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 0.6, cvScalar(0,255,200,255), 2, CV_AA);
     }
 }
 
