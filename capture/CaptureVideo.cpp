@@ -102,9 +102,12 @@ bool CaptureVideo::Open (string filename)
     
     // av_dump_format(format_context, 0, filename.c_str(), 0);
 
-// TODO deprecated    avframe = avcodec_alloc_frame();
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
     avframe = av_frame_alloc();
-
+#else
+    avframe = avcodec_alloc_frame();
+#endif
+    
     if (video_stream->avg_frame_rate.den > 0)
 	fps = av_q2d(video_stream->avg_frame_rate);
     else 
@@ -164,8 +167,11 @@ bool CaptureVideo::Open (string filename)
 void CaptureVideo::Close ()
 {
     // Free the YUV and BGR frames
-    // TODO deprecated av_free(avframe);
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
     av_frame_free(&avframe);
+#else
+    av_free(avframe);
+#endif
     
     // Close the codec
     if (codec_context) avcodec_close(codec_context);

@@ -173,8 +173,12 @@ void RecordVideo::OpenOutput ()
     //frame = alloc_picture(codec_context->pix_fmt, pipeline->width, pipeline->height);
 
     // FFMPEG STYLE
-// TODO deprecated    frame = avcodec_alloc_frame();
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
     frame = av_frame_alloc();
+#else
+    frame = avcodec_alloc_frame();
+#endif
+    
     frame->format = codec_context->pix_fmt;
     frame->width  = pipeline->width;
     frame->height = pipeline->height;
@@ -190,8 +194,12 @@ void RecordVideo::OpenOutput ()
     	return;
     }
 
-// TODO deprecated    frameBGR=avcodec_alloc_frame();
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
     frameBGR=av_frame_alloc();
+#else
+    frameBGR=avcodec_alloc_frame();
+#endif
+    
     int numBytes=avpicture_get_size(PIX_FMT_RGB24, pipeline->width, pipeline->height);
     buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
     memset (buffer, 0, numBytes * sizeof(uint8_t));
@@ -298,13 +306,22 @@ void RecordVideo::CloseOutput ()
 
     // free the frame
     av_freep(&frame->data[0]);
-//  TODO deprecated   avcodec_free_frame(&frame);
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
     av_frame_free(&frame);
+#else
+    avcodec_free_frame(&frame);
+#endif
     
     av_freep(&frameBGR->data[0]);
-// TODO deprecated    avcodec_free_frame(&frameBGR);
-    av_frame_free(&frameBGR);
 
+    
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
+    av_frame_free(&frameBGR);
+#else    
+    avcodec_free_frame(&frameBGR);
+#endif
+    
 //    av_free(buffer);
 
     outputOpened = false;
