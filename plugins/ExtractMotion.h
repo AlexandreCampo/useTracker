@@ -23,20 +23,26 @@
 #include "PipelinePlugin.h"
 
 #include <opencv2/imgproc/imgproc.hpp>
-
+#include <opencv2/core/core.hpp>
+#include <opencv2/video/background_segm.hpp>
 
 class ExtractMotion : public PipelinePlugin
 {
 public:
 
     int threshold = 20;
+    int zone = 0;
+    bool restrictToZone = false;
+    bool additive = false;
 
     cv::Mat diff;
     cv::Mat sum;
     cv::Mat marked2;
+    cv::Mat marked3;
 //    Mat background;
 
     ExtractMotion();
+    ~ExtractMotion();
     void Apply();
     void Reset();
     void LoadXML (cv::FileNode& fn);

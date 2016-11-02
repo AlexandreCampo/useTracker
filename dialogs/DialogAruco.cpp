@@ -144,11 +144,11 @@ DialogAruco::DialogAruco(wxWindow* parent,wxWindowID id,const wxPoint& pos,const
 
 	SpinCtrlDoubleMinSize = new wxSpinCtrlDouble(this, ID_SPINCTRL3x, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 1, 0, 0.0001, _T("ID_SPINCTRL3x"));
 	FlexGridSizer3->Replace(SpinCtrlMinSize, SpinCtrlDoubleMinSize);
-	SpinCtrlMinSize->Bind(wxEVT_SPINCTRLDOUBLE, &DialogAruco::OnSpinCtrlMinSizeChange, this);
+	SpinCtrlDoubleMinSize->Bind(wxEVT_SPINCTRLDOUBLE, &DialogAruco::OnSpinCtrlMinSizeChange, this);
 
 	SpinCtrlDoubleMaxSize = new wxSpinCtrlDouble(this, ID_SPINCTRL4x, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 1, 0, 0.0001, _T("ID_SPINCTRL4x"));
 	FlexGridSizer3->Replace(SpinCtrlMaxSize, SpinCtrlDoubleMaxSize);
-	SpinCtrlMaxSize->Bind(wxEVT_SPINCTRLDOUBLE, &DialogAruco::OnSpinCtrlMaxSizeChange, this);
+	SpinCtrlDoubleMaxSize->Bind(wxEVT_SPINCTRLDOUBLE, &DialogAruco::OnSpinCtrlMaxSizeChange, this);
 
 }
 

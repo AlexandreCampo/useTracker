@@ -36,6 +36,7 @@ void ColorSegmentation::Reset()
 {
     frameHSV = Mat(pipeline->height, pipeline->width, CV_8UC3);
     marked2 = Mat(pipeline->height, pipeline->width, CV_8UC3);
+    marked3 = Mat(pipeline->height, pipeline->width, CV_8U);
 
     pixelSrc = Mat (1, 1, CV_8UC3);
     pixelDst = Mat (1, 1, CV_8UC3);
@@ -54,27 +55,41 @@ void ColorSegmentation::Apply()
 	if (minHSV[0] <= maxHSV[0])
 	{
 	    inRange(frameHSV, minHSV, maxHSV, marked2);
-	    pipeline->marked &= marked2;
 	}
 	else
 	{
-	    Vec3b tmp = maxHSV;
+	    Vec3b tmp; // = maxHSV;
 	    tmp[0] = 180;
+	    tmp[1] = 255;
+	    tmp[2] = 255;
 	    inRange(frameHSV, minHSV, tmp, marked2);
-	    pipeline->marked &= marked2;
 
 	    tmp = minHSV;
 	    tmp[0] = 0;
-	    inRange(frameHSV, tmp, maxHSV, marked2);
-	    pipeline->marked &= marked2;
+	    tmp[1] = 0;
+	    tmp[2] = 0;
+	    inRange(frameHSV, tmp, maxHSV, marked3);
+	    
+	    marked2 |= marked3;
 	}
     }
     else
     {
 	// threshold to retain only desired pixels
 	inRange(pipeline->frame, minBGR, maxBGR, marked2);
-	pipeline->marked &= marked2;
     }
+
+    if (restrictToZone)
+    {
+	cv::inRange(pipeline->zoneMap, zone, zone, marked3);
+	marked2 &= marked3;	    
+    }
+    
+    if (additive)	
+	pipeline->marked |= marked2;
+    else
+	pipeline->marked &= marked2;
+
 }
 
 
@@ -115,6 +130,11 @@ void ColorSegmentation::LoadXML (FileNode& fn)
 	    minHSV = Vec3b (minH / 2, minS, minV);
 	    maxHSV = Vec3b (maxH / 2, maxS, maxV);
 	}
+	
+	restrictToZone = (int)fn["RestrictToZone"];
+	if (restrictToZone)
+	    zone = (int)fn["Zone"];
+	additive = (int)fn["Additive"];
     }
 }
 
@@ -144,4 +164,9 @@ void ColorSegmentation::SaveXML (FileStorage& fs)
 	fs << "maxG" << maxBGR[1];
 	fs << "maxB" << maxBGR[0];
     }
+    
+    fs << "RestrictToZone" << restrictToZone;
+    if (restrictToZone)
+	fs << "Zone" << zone;
+    fs << "Additive" << additive;
 }

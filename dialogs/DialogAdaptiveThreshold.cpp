@@ -32,6 +32,10 @@ const long DialogAdaptiveThreshold::ID_STATICTEXT1 = wxNewId();
 const long DialogAdaptiveThreshold::ID_SPINCTRL1 = wxNewId();
 const long DialogAdaptiveThreshold::ID_STATICTEXT2 = wxNewId();
 const long DialogAdaptiveThreshold::ID_SPINCTRL2 = wxNewId();
+const long DialogAdaptiveThreshold::ID_RADIOBOX2 = wxNewId();
+const long DialogAdaptiveThreshold::ID_CHECKBOX1 = wxNewId();
+const long DialogAdaptiveThreshold::ID_STATICTEXT3 = wxNewId();
+const long DialogAdaptiveThreshold::ID_SPINCTRL_ZONE = wxNewId();
 const long DialogAdaptiveThreshold::ID_BUTTON1 = wxNewId();
 //*)
 
@@ -45,6 +49,7 @@ DialogAdaptiveThreshold::DialogAdaptiveThreshold(wxWindow* parent,wxWindowID id,
 	//(*Initialize(DialogAdaptiveThreshold)
 	wxFlexGridSizer* FlexGridSizer1;
 	wxFlexGridSizer* FlexGridSizer2;
+	wxFlexGridSizer* FlexGridSizer4;
 	wxFlexGridSizer* FlexGridSizer3;
 	wxStaticBoxSizer* StaticBoxSizer1;
 
@@ -62,7 +67,7 @@ DialogAdaptiveThreshold::DialogAdaptiveThreshold(wxWindow* parent,wxWindowID id,
 	};
 	RadioBoxMethod = new wxRadioBox(this, ID_RADIOBOX1, _("Thresholding method"), wxDefaultPosition, wxDefaultSize, 2, __wxRadioBoxChoices_1, 2, 0, wxDefaultValidator, _T("ID_RADIOBOX1"));
 	RadioBoxMethod->SetSelection(0);
-	FlexGridSizer3->Add(RadioBoxMethod, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer3->Add(RadioBoxMethod, 1, wxALL|wxEXPAND, 5);
 	StaticBoxSizer1 = new wxStaticBoxSizer(wxHORIZONTAL, this, _("Adaptive background difference"));
 	FlexGridSizer1 = new wxFlexGridSizer(0, 2, 0, 0);
 	StaticText1 = new wxStaticText(this, ID_STATICTEXT1, _("Block size"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT1"));
@@ -75,8 +80,27 @@ DialogAdaptiveThreshold::DialogAdaptiveThreshold(wxWindow* parent,wxWindowID id,
 	SpinCtrlConstant = new wxSpinCtrl(this, ID_SPINCTRL2, _T("0"), wxDefaultPosition, wxDefaultSize, 0, -255, 255, 0, _T("ID_SPINCTRL2"));
 	SpinCtrlConstant->SetValue(_T("0"));
 	FlexGridSizer1->Add(SpinCtrlConstant, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	StaticBoxSizer1->Add(FlexGridSizer1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	FlexGridSizer3->Add(StaticBoxSizer1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	StaticBoxSizer1->Add(FlexGridSizer1, 1, wxALL, 5);
+	FlexGridSizer3->Add(StaticBoxSizer1, 1, wxALL|wxEXPAND, 5);
+	wxString __wxRadioBoxChoices_2[2] =
+	{
+		_("Confirm previously detected pixels (AND operator)"),
+		_("Add to previously detected pixels (OR operator)")
+	};
+	RadioBoxOperator = new wxRadioBox(this, ID_RADIOBOX2, _("Action type"), wxDefaultPosition, wxDefaultSize, 2, __wxRadioBoxChoices_2, 2, 0, wxDefaultValidator, _T("ID_RADIOBOX2"));
+	RadioBoxOperator->SetSelection(0);
+	FlexGridSizer3->Add(RadioBoxOperator, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer4 = new wxFlexGridSizer(0, 3, 0, 0);
+	FlexGridSizer4->AddGrowableCol(0);
+	CheckBoxRestrictToZone = new wxCheckBox(this, ID_CHECKBOX1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX1"));
+	CheckBoxRestrictToZone->SetValue(false);
+	FlexGridSizer4->Add(CheckBoxRestrictToZone, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	StaticText3 = new wxStaticText(this, ID_STATICTEXT3, _("Restrict to zone (grey level)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT3"));
+	FlexGridSizer4->Add(StaticText3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	SpinCtrlZone = new wxSpinCtrl(this, ID_SPINCTRL_ZONE, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 255, 0, _T("ID_SPINCTRL_ZONE"));
+	SpinCtrlZone->SetValue(_T("0"));
+	FlexGridSizer4->Add(SpinCtrlZone, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer3->Add(FlexGridSizer4, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer2 = new wxFlexGridSizer(0, 3, 0, 0);
 	ButtonOk = new wxButton(this, ID_BUTTON1, _("OK"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
 	ButtonOk->SetDefault();
@@ -90,6 +114,9 @@ DialogAdaptiveThreshold::DialogAdaptiveThreshold(wxWindow* parent,wxWindowID id,
 	Connect(ID_RADIOBOX1,wxEVT_COMMAND_RADIOBOX_SELECTED,(wxObjectEventFunction)&DialogAdaptiveThreshold::OnRadioBoxMethodSelect);
 	Connect(ID_SPINCTRL1,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogAdaptiveThreshold::OnSpinCtrlBlockSizeChange);
 	Connect(ID_SPINCTRL2,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogAdaptiveThreshold::OnSpinCtrlConstantChange);
+	Connect(ID_RADIOBOX2,wxEVT_COMMAND_RADIOBOX_SELECTED,(wxObjectEventFunction)&DialogAdaptiveThreshold::OnRadioBoxOperatorSelect);
+	Connect(ID_CHECKBOX1,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogAdaptiveThreshold::OnCheckBoxRestrictToZoneClick);
+	Connect(ID_SPINCTRL_ZONE,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogAdaptiveThreshold::OnSpinCtrlZoneChange);
 	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogAdaptiveThreshold::OnButtonOkClick);
 	//*)
 
@@ -115,6 +142,10 @@ void DialogAdaptiveThreshold::SetPlugin (std::vector<PipelinePlugin*> pfv)
 
     SpinCtrlBlockSize->SetValue(plugin[0]->blockSize);
     SpinCtrlConstant->SetValue(plugin[0]->constant);
+
+    SpinCtrlZone->SetValue(plugin[0]->zone);
+    RadioBoxOperator->SetSelection(plugin[0]->additive);
+    CheckBoxRestrictToZone->SetValue(plugin[0]->restrictToZone);    
 }
 
 void DialogAdaptiveThreshold::OnButtonOkClick(wxCommandEvent& event)
@@ -138,4 +169,22 @@ void DialogAdaptiveThreshold::OnSpinCtrlConstantChange(wxSpinEvent& event)
 {
     for (auto f : plugin)
 	f->SetConstant(event.GetValue());
+}
+
+void DialogAdaptiveThreshold::OnSpinCtrlZoneChange(wxSpinEvent& event)
+{
+    for (auto f : plugin)
+    	f->zone = SpinCtrlZone->GetValue();
+}
+
+void DialogAdaptiveThreshold::OnCheckBoxRestrictToZoneClick(wxCommandEvent& event)
+{
+    for (auto f : plugin)
+    	f->restrictToZone = event.IsChecked();
+}
+
+void DialogAdaptiveThreshold::OnRadioBoxOperatorSelect(wxCommandEvent& event)
+{
+    for (auto f : plugin)
+    	f->additive = RadioBoxOperator->GetSelection();
 }

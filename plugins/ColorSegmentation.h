@@ -33,6 +33,7 @@ public:
 
     cv::Mat frameHSV;
     cv::Mat marked2;
+    cv::Mat marked3;
     cv::Vec3b minBGR = {0,0,0};
     cv::Vec3b maxBGR = {255,255,255};
     cv::Vec3b minHSV = {0,0,0};
@@ -42,6 +43,10 @@ public:
     cv::Mat pixelDst;
     cv::Mat pixelRes;
     cv::Mat pixelRes2;
+
+    int zone = 0;
+    bool restrictToZone = false;
+    bool additive = false;
 
     ColorSegmentation();
     void Reset();

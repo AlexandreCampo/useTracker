@@ -33,7 +33,7 @@ void ZonesOfInterest::Reset()
 
 void ZonesOfInterest::Apply()
 {
-    pipeline->marked &= pipeline->zoneMap;
+    pipeline->zoneMap.copyTo(pipeline->marked);
 }
 
 void ZonesOfInterest::LoadXML (FileNode& fn)

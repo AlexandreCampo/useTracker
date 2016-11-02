@@ -19,7 +19,7 @@
 					<dimension>2</dimension>
 					<handler function="OnRadioBoxMethodSelect" entry="EVT_RADIOBOX" />
 				</object>
-				<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+				<flag>wxALL|wxEXPAND</flag>
 				<border>5</border>
 				<option>1</option>
 			</object>
@@ -67,6 +67,55 @@
 								<border>5</border>
 								<option>1</option>
 							</object>
+						</object>
+						<flag>wxALL</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
+				</object>
+				<flag>wxALL|wxEXPAND</flag>
+				<border>5</border>
+				<option>1</option>
+			</object>
+			<object class="sizeritem">
+				<object class="wxRadioBox" name="ID_RADIOBOX2" variable="RadioBoxOperator" member="yes">
+					<label>Action type</label>
+					<content>
+						<item>Confirm previously detected pixels (AND operator)</item>
+						<item>Add to previously detected pixels (OR operator)</item>
+					</content>
+					<dimension>2</dimension>
+					<handler function="OnRadioBoxOperatorSelect" entry="EVT_RADIOBOX" />
+				</object>
+				<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+				<border>5</border>
+				<option>1</option>
+			</object>
+			<object class="sizeritem">
+				<object class="wxFlexGridSizer" variable="FlexGridSizer4" member="no">
+					<cols>3</cols>
+					<growablecols>0</growablecols>
+					<object class="sizeritem">
+						<object class="wxCheckBox" name="ID_CHECKBOX1" variable="CheckBoxRestrictToZone" member="yes">
+							<handler function="OnCheckBoxRestrictToZoneClick" entry="EVT_CHECKBOX" />
+						</object>
+						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
+					<object class="sizeritem">
+						<object class="wxStaticText" name="ID_STATICTEXT3" variable="StaticText3" member="yes">
+							<label>Restrict to zone (grey level)</label>
+						</object>
+						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<border>5</border>
+						<option>1</option>
+					</object>
+					<object class="sizeritem">
+						<object class="wxSpinCtrl" name="ID_SPINCTRL_ZONE" variable="SpinCtrlZone" member="yes">
+							<value>0</value>
+							<max>255</max>
+							<handler function="OnSpinCtrlZoneChange" entry="EVT_SPINCTRL" />
 						</object>
 						<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
 						<border>5</border>

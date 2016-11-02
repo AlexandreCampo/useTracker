@@ -28,6 +28,9 @@
 #include "Erosion.h"
 #include "Dilation.h"
 #include "ExtractMotion.h"
+#include "BackgroundDiffMOG.h"
+#include "BackgroundDiffMOG2.h"
+#include "BackgroundDiffGMG.h"
 #include "ColorSegmentation.h"
 #include "ExtractBlobs.h"
 #include "GetBlobsAngles.h"
@@ -70,6 +73,9 @@ std::map<std::string, vector<PipelinePlugin*> (*)(cv::FileNode&, unsigned int)> 
 int main(int argc, char **argv)
 {
     NewPipelinePluginVector["BackgroundDifference"] = &CreatePipelinePluginVector<ExtractMotion>;
+    NewPipelinePluginVector["BackgroundDiffMog"] = &CreatePipelinePluginVector<BackgroundDiffMOG>;
+    NewPipelinePluginVector["BackgroundDiffMog2"] = &CreatePipelinePluginVector<BackgroundDiffMOG2>;
+    NewPipelinePluginVector["BackgroundDiffGmg"] = &CreatePipelinePluginVector<BackgroundDiffGMG>;
     NewPipelinePluginVector["ColorSegmentation"] = &CreatePipelinePluginVector<ColorSegmentation>;
     NewPipelinePluginVector["Erosion"] = &CreatePipelinePluginVector<Erosion>;
     NewPipelinePluginVector["Dilation"] = &CreatePipelinePluginVector<Dilation>;

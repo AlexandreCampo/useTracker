@@ -47,6 +47,10 @@ const long DialogColorSegmentation::ID_STATICTEXT6 = wxNewId();
 const long DialogColorSegmentation::ID_SPINCTRL5 = wxNewId();
 const long DialogColorSegmentation::ID_STATICTEXT8 = wxNewId();
 const long DialogColorSegmentation::ID_SPINCTRL6 = wxNewId();
+const long DialogColorSegmentation::ID_RADIOBOX2 = wxNewId();
+const long DialogColorSegmentation::ID_CHECKBOX1 = wxNewId();
+const long DialogColorSegmentation::ID_STATICTEXT9 = wxNewId();
+const long DialogColorSegmentation::ID_SPINCTRL_ZONE = wxNewId();
 const long DialogColorSegmentation::ID_BUTTON1 = wxNewId();
 //*)
 
@@ -61,17 +65,17 @@ DialogColorSegmentation::DialogColorSegmentation(wxWindow* parent,wxWindowID id,
 	wxFlexGridSizer* FlexGridSizer1;
 	wxFlexGridSizer* FlexGridSizer2;
 	wxFlexGridSizer* FlexGridSizer4;
+	wxFlexGridSizer* FlexGridSizer6;
 	wxFlexGridSizer* FlexGridSizer3;
+	wxFlexGridSizer* FlexGridSizer5;
 	wxStaticBoxSizer* StaticBoxSizer1;
 
-	Create(parent, id, _("Color segmentation"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE, _T("id"));
-	SetClientSize(wxDefaultSize);
-	Move(wxDefaultPosition);
+	Create(parent, wxID_ANY, _("Color segmentation"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE, _T("wxID_ANY"));
 	SetMinSize(wxSize(-1,-1));
 	SetMaxSize(wxSize(-1,-1));
 	SetFocus();
 	FlexGridSizer3 = new wxFlexGridSizer(0, 1, 0, 0);
-	FlexGridSizer4 = new wxFlexGridSizer(0, 3, 0, 0);
+	FlexGridSizer4 = new wxFlexGridSizer(0, 2, 0, 0);
 	wxString __wxRadioBoxChoices_1[2] =
 	{
 		_("HSV"),
@@ -122,6 +126,28 @@ DialogColorSegmentation::DialogColorSegmentation(wxWindow* parent,wxWindowID id,
 	StaticBoxSizer1->Add(FlexGridSizer1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer4->Add(StaticBoxSizer1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer3->Add(FlexGridSizer4, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer6 = new wxFlexGridSizer(0, 1, 0, 0);
+	FlexGridSizer6->AddGrowableCol(1);
+	wxString __wxRadioBoxChoices_2[2] =
+	{
+		_("Confirm previously detected pixels (AND operator)"),
+		_("Add to previously detected pixels (OR operator)")
+	};
+	RadioBoxOperator = new wxRadioBox(this, ID_RADIOBOX2, _("Action type"), wxDefaultPosition, wxDefaultSize, 2, __wxRadioBoxChoices_2, 2, 0, wxDefaultValidator, _T("ID_RADIOBOX2"));
+	RadioBoxOperator->SetSelection(0);
+	FlexGridSizer6->Add(RadioBoxOperator, 1, wxALL|wxEXPAND, 5);
+	FlexGridSizer3->Add(FlexGridSizer6, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer5 = new wxFlexGridSizer(0, 3, 0, 0);
+	FlexGridSizer5->AddGrowableCol(1);
+	CheckBoxRestrictToZone = new wxCheckBox(this, ID_CHECKBOX1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX1"));
+	CheckBoxRestrictToZone->SetValue(false);
+	FlexGridSizer5->Add(CheckBoxRestrictToZone, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	StaticText3 = new wxStaticText(this, ID_STATICTEXT9, _("Restrict to zone (grey level)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT9"));
+	FlexGridSizer5->Add(StaticText3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	SpinCtrlZone = new wxSpinCtrl(this, ID_SPINCTRL_ZONE, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 255, 0, _T("ID_SPINCTRL_ZONE"));
+	SpinCtrlZone->SetValue(_T("0"));
+	FlexGridSizer5->Add(SpinCtrlZone, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer3->Add(FlexGridSizer5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer2 = new wxFlexGridSizer(0, 3, 0, 0);
 	ButtonOk = new wxButton(this, ID_BUTTON1, _("OK"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
 	ButtonOk->SetDefault();
@@ -141,6 +167,9 @@ DialogColorSegmentation::DialogColorSegmentation(wxWindow* parent,wxWindowID id,
 	Connect(ID_SPINCTRL4,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogColorSegmentation::OnSpinCtrlChange);
 	Connect(ID_SPINCTRL5,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogColorSegmentation::OnSpinCtrlChange);
 	Connect(ID_SPINCTRL6,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogColorSegmentation::OnSpinCtrlChange);
+	Connect(ID_RADIOBOX2,wxEVT_COMMAND_RADIOBOX_SELECTED,(wxObjectEventFunction)&DialogColorSegmentation::OnRadioBoxOperatorSelect);
+	Connect(ID_CHECKBOX1,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogColorSegmentation::OnCheckBoxRestrictToZoneClick);
+	Connect(ID_SPINCTRL_ZONE,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogColorSegmentation::OnSpinCtrlZoneChange);
 	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogColorSegmentation::OnButtonOkClick);
 	//*)
 
@@ -164,6 +193,10 @@ void DialogColorSegmentation::SetPlugin (vector<PipelinePlugin*> pfv)
     for (auto func : pfv)
 	plugin.push_back(dynamic_cast<ColorSegmentation*> (func));
 
+    SpinCtrlZone->SetValue(plugin[0]->zone);
+    RadioBoxOperator->SetSelection(plugin[0]->additive);
+    CheckBoxRestrictToZone->SetValue(plugin[0]->restrictToZone);
+    
     if (plugin[0]->type == ColorSegmentation::BGR)
     {
 	RadioBox1->SetSelection(1);
@@ -404,3 +437,21 @@ void DialogColorSegmentation::OnColourPickerCtrlMaxColourChanged(wxColourPickerE
     }
 }
 
+
+void DialogColorSegmentation::OnCheckBoxRestrictToZoneClick(wxCommandEvent& event)
+{
+    for (auto f : plugin)
+    	f->restrictToZone = event.IsChecked();
+}
+
+void DialogColorSegmentation::OnSpinCtrlZoneChange(wxSpinEvent& event)
+{
+    for (auto f : plugin)
+    	f->zone = SpinCtrlZone->GetValue();
+}
+
+void DialogColorSegmentation::OnRadioBoxOperatorSelect(wxCommandEvent& event)
+{
+    for (auto f : plugin)
+    	f->additive = RadioBoxOperator->GetSelection();
+}

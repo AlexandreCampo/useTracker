@@ -33,9 +33,14 @@ public:
     int blockSize = 1;
     int constant = 0;
 
+    int zone = 0;
+    bool restrictToZone = false;
+    bool additive = false;
+
     cv::Mat diff;
     cv::Mat sum;
     cv::Mat marked2;
+    cv::Mat marked3;
 
     AdaptiveThreshold();
     void Apply();

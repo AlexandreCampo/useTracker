@@ -177,6 +177,12 @@
 		<Unit filename="dialogs/DialogExtractBlobs.h" />
 		<Unit filename="dialogs/DialogExtractMotion.cpp" />
 		<Unit filename="dialogs/DialogExtractMotion.h" />
+		<Unit filename="dialogs/DialogBackgroundDiffMOG.cpp" />
+		<Unit filename="dialogs/DialogBackgroundDiffMOG.h" />
+		<Unit filename="dialogs/DialogBackgroundDiffMOG2.cpp" />
+		<Unit filename="dialogs/DialogBackgroundDiffMOG2.h" />
+		<Unit filename="dialogs/DialogBackgroundDiffGMG.cpp" />
+		<Unit filename="dialogs/DialogBackgroundDiffGMG.h" />
 		<Unit filename="dialogs/DialogMovingAverage.cpp" />
 		<Unit filename="dialogs/DialogMovingAverage.h" />
 		<Unit filename="dialogs/DialogOpenCapture.cpp" />
@@ -201,6 +207,9 @@
 		<Unit filename="plugins/Erosion.cpp" />
 		<Unit filename="plugins/ExtractBlobs.cpp" />
 		<Unit filename="plugins/ExtractMotion.cpp" />
+		<Unit filename="plugins/BackgroundDiffMOG.cpp" />
+		<Unit filename="plugins/BackgroundDiffMOG2.cpp" />
+		<Unit filename="plugins/BackgroundDiffGMG.cpp" />
 		<Unit filename="plugins/FrameDifference.cpp" />
 		<Unit filename="plugins/GetBlobsAngles.cpp" />
 		<Unit filename="plugins/MovingAverage.cpp" />
@@ -235,6 +244,9 @@
 		<Unit filename="wxsmith/DialogErosion.wxs" />
 		<Unit filename="wxsmith/DialogExtractBlobs.wxs" />
 		<Unit filename="wxsmith/DialogExtractMotion.wxs" />
+		<Unit filename="wxsmith/DialogBackgroundDiffMOG.wxs" />
+		<Unit filename="wxsmith/DialogBackgroundDiffMOG2.wxs" />
+		<Unit filename="wxsmith/DialogBackgroundDiffGMG.wxs" />
 		<Unit filename="wxsmith/DialogMovingAverage.wxs" />
 		<Unit filename="wxsmith/DialogOpenCapture.wxs" />
 		<Unit filename="wxsmith/DialogRecordPixels.wxs" />
@@ -258,6 +270,9 @@
 					<wxDialog wxs="wxsmith/DialogDilation.wxs" src="dialogs/DialogDilation.cpp" hdr="dialogs/DialogDilation.h" fwddecl="0" i18n="1" name="DialogDilation" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogColorSegmentation.wxs" src="dialogs/DialogColorSegmentation.cpp" hdr="dialogs/DialogColorSegmentation.h" fwddecl="0" i18n="1" name="DialogColorSegmentation" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogExtractMotion.wxs" src="dialogs/DialogExtractMotion.cpp" hdr="dialogs/DialogExtractMotion.h" fwddecl="0" i18n="1" name="DialogExtractMotion" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogBackgroundDiffMOG.wxs" src="dialogs/DialogBackgroundDiffMOG.cpp" hdr="dialogs/DialogBackgroundDiffMOG.h" fwddecl="0" i18n="1" name="DialogBackgroundDiffMOG" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogBackgroundDiffMOG2.wxs" src="dialogs/DialogBackgroundDiffMOG2.cpp" hdr="dialogs/DialogBackgroundDiffMOG2.h" fwddecl="0" i18n="1" name="DialogBackgroundDiffMOG2" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogBackgroundDiffGMG.wxs" src="dialogs/DialogBackgroundDiffGMG.cpp" hdr="dialogs/DialogBackgroundDiffGMG.h" fwddecl="0" i18n="1" name="DialogBackgroundDiffGMG" language="CPP" />															
 					<wxDialog wxs="wxsmith/DialogAdaptiveThreshold.wxs" src="dialogs/DialogAdaptiveThreshold.cpp" hdr="dialogs/DialogAdaptiveThreshold.h" fwddecl="0" i18n="1" name="DialogAdaptiveThreshold" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogExtractBlobs.wxs" src="dialogs/DialogExtractBlobs.cpp" hdr="dialogs/DialogExtractBlobs.h" fwddecl="0" i18n="1" name="DialogExtractBlobs" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogTracker.wxs" src="dialogs/DialogTracker.cpp" hdr="dialogs/DialogTracker.h" fwddecl="0" i18n="1" name="DialogTracker" language="CPP" />

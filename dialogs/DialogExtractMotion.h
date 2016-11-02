@@ -22,10 +22,12 @@
 
 //(*Headers(DialogExtractMotion)
 #include <wx/spinctrl.h>
+#include <wx/checkbox.h>
 #include <wx/dialog.h>
 #include <wx/sizer.h>
 #include <wx/button.h>
 #include <wx/stattext.h>
+#include <wx/radiobox.h>
 //*)
 
 #include "PipelinePlugin.h"
@@ -42,16 +44,24 @@ class DialogExtractMotion: public wxDialog
 		virtual ~DialogExtractMotion();
 
 		//(*Declarations(DialogExtractMotion)
-		wxSpinCtrl* SpinCtrlExtractMotionSize;
+		wxCheckBox* CheckBoxRestrictToZone;
+		wxSpinCtrl* SpinCtrlThreshold;
 		wxStaticText* StaticText1;
+		wxSpinCtrl* SpinCtrlZone;
 		wxButton* ButtonOk;
+		wxStaticText* StaticText2;
+		wxRadioBox* RadioBox1;
 		//*)
 
 	protected:
 
 		//(*Identifiers(DialogExtractMotion)
 		static const long ID_STATICTEXT1;
-		static const long ID_SPINCTRL1;
+		static const long ID_SPINCTRL_THRESHOLD;
+		static const long ID_RADIOBOX1;
+		static const long ID_CHECKBOX1;
+		static const long ID_STATICTEXT2;
+		static const long ID_SPINCTRL_ZONE;
 		static const long ID_BUTTON1;
 		//*)
 
@@ -61,8 +71,11 @@ class DialogExtractMotion: public wxDialog
 		void OnButtonCancelClick(wxCommandEvent& event);
 		void OnButtonApplyClick(wxCommandEvent& event);
 		void OnButtonOkClick(wxCommandEvent& event);
-		void OnSpinCtrlExtractMotionSizeChange(wxSpinEvent& event);
 		void OnKeyDown(wxKeyEvent& event);
+		void OnCheckBoxRestrictToZoneClick(wxCommandEvent& event);
+		void OnRadioBox1Select(wxCommandEvent& event);
+		void OnSpinCtrlZoneChange(wxSpinEvent& event);
+		void OnSpinCtrlThresholdChange(wxSpinEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

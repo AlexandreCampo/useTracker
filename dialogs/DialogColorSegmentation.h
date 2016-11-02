@@ -22,6 +22,7 @@
 
 //(*Headers(DialogColorSegmentation)
 #include <wx/spinctrl.h>
+#include <wx/checkbox.h>
 #include <wx/dialog.h>
 #include <wx/sizer.h>
 #include <wx/button.h>
@@ -51,15 +52,19 @@ class DialogColorSegmentation: public wxDialog
 		wxSpinCtrl* SpinCtrlHighC2;
 		wxStaticText* HighC1;
 		wxSpinCtrl* SpinCtrlLowC2;
+		wxCheckBox* CheckBoxRestrictToZone;
 		wxColourPickerCtrl* ColourPickerCtrlMin;
 		wxSpinCtrl* SpinCtrlHighC3;
 		wxSpinCtrl* SpinCtrlLowC3;
 		wxColourPickerCtrl* ColourPickerCtrlMax;
 		wxStaticText* StaticText1;
 		wxStaticText* LowC1;
+		wxStaticText* StaticText3;
+		wxSpinCtrl* SpinCtrlZone;
 		wxStaticText* LowC3;
 		wxButton* ButtonOk;
 		wxStaticText* LowC2;
+		wxRadioBox* RadioBoxOperator;
 		wxSpinCtrl* SpinCtrlLowC1;
 		wxSpinCtrl* SpinCtrlHighC1;
 		wxStaticText* StaticText2;
@@ -87,6 +92,10 @@ class DialogColorSegmentation: public wxDialog
 		static const long ID_SPINCTRL5;
 		static const long ID_STATICTEXT8;
 		static const long ID_SPINCTRL6;
+		static const long ID_RADIOBOX2;
+		static const long ID_CHECKBOX1;
+		static const long ID_STATICTEXT9;
+		static const long ID_SPINCTRL_ZONE;
 		static const long ID_BUTTON1;
 		//*)
 
@@ -100,6 +109,9 @@ class DialogColorSegmentation: public wxDialog
 		void OnSpinCtrlChange(wxSpinEvent& event);
 		void OnColourPickerCtrlMaxColourChanged(wxColourPickerEvent& event);
 		void OnColourPickerCtrlMinColourChanged(wxColourPickerEvent& event);
+		void OnCheckBoxRestrictToZoneClick(wxCommandEvent& event);
+		void OnSpinCtrlZoneChange(wxSpinEvent& event);
+		void OnRadioBoxOperatorSelect(wxCommandEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

@@ -22,6 +22,7 @@
 
 //(*Headers(DialogAdaptiveThreshold)
 #include <wx/spinctrl.h>
+#include <wx/checkbox.h>
 #include <wx/dialog.h>
 #include <wx/sizer.h>
 #include <wx/button.h>
@@ -43,10 +44,14 @@ class DialogAdaptiveThreshold: public wxDialog
 		virtual ~DialogAdaptiveThreshold();
 
 		//(*Declarations(DialogAdaptiveThreshold)
+		wxCheckBox* CheckBoxRestrictToZone;
 		wxStaticText* StaticText1;
+		wxStaticText* StaticText3;
+		wxSpinCtrl* SpinCtrlZone;
 		wxRadioBox* RadioBoxMethod;
 		wxButton* ButtonOk;
 		wxSpinCtrl* SpinCtrlConstant;
+		wxRadioBox* RadioBoxOperator;
 		wxStaticText* StaticText2;
 		wxSpinCtrl* SpinCtrlBlockSize;
 		//*)
@@ -59,6 +64,10 @@ class DialogAdaptiveThreshold: public wxDialog
 		static const long ID_SPINCTRL1;
 		static const long ID_STATICTEXT2;
 		static const long ID_SPINCTRL2;
+		static const long ID_RADIOBOX2;
+		static const long ID_CHECKBOX1;
+		static const long ID_STATICTEXT3;
+		static const long ID_SPINCTRL_ZONE;
 		static const long ID_BUTTON1;
 		//*)
 
@@ -70,6 +79,9 @@ class DialogAdaptiveThreshold: public wxDialog
 		void OnRadioBoxMethodSelect(wxCommandEvent& event);
 		void OnSpinCtrlBlockSizeChange(wxSpinEvent& event);
 		void OnSpinCtrlConstantChange(wxSpinEvent& event);
+		void OnSpinCtrlZoneChange(wxSpinEvent& event);
+		void OnCheckBoxRestrictToZoneClick(wxCommandEvent& event);
+		void OnRadioBoxOperatorSelect(wxCommandEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

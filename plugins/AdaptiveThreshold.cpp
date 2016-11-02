@@ -32,6 +32,7 @@ void AdaptiveThreshold::Reset()
     diff = Mat(pipeline->height, pipeline->width, CV_8UC3);
     sum = Mat(pipeline->height, pipeline->width, CV_8U);
     marked2 = Mat(pipeline->height, pipeline->width, CV_8U);
+    marked3 = Mat(pipeline->height, pipeline->width, CV_8U);
 }
 
 
@@ -41,7 +42,16 @@ void AdaptiveThreshold::Apply()
     cvtColor(diff, sum, CV_BGR2GRAY);
     cv::adaptiveThreshold(sum, marked2, 255, thresholdMethod, THRESH_BINARY, blockSize*2+1, constant);
 
-    pipeline->marked &= marked2;
+    if (restrictToZone)
+    {
+	cv::inRange(pipeline->zoneMap, zone, zone, marked3);
+	marked2 &= marked3;	    
+    }
+    
+    if (additive)	
+	pipeline->marked |= marked2;
+    else
+	pipeline->marked &= marked2;
 }
 
 void AdaptiveThreshold::SetBlockSize(int bs)
@@ -74,6 +84,11 @@ void AdaptiveThreshold::LoadXML (FileNode& fn)
 
 	blockSize = (float)fn["BlockSize"];
 	constant = (float)fn["Constant"];
+
+	restrictToZone = (int)fn["RestrictToZone"];
+	if (restrictToZone)
+	    zone = (int)fn["Zone"];
+	additive = (int)fn["Additive"];
     }
 }
 
@@ -88,5 +103,10 @@ void AdaptiveThreshold::SaveXML (FileStorage& fs)
 	
     fs << "BlockSize" << blockSize;
     fs << "Constant" << constant;
+    
+    fs << "RestrictToZone" << restrictToZone;
+    if (restrictToZone)
+	fs << "Zone" << zone;
+    fs << "Additive" << additive;
 }
 

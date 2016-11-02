@@ -27,11 +27,17 @@ ExtractMotion::ExtractMotion() : PipelinePlugin()
     multithreaded = true;
 }
 
+ExtractMotion::~ExtractMotion()
+{
+    multithreaded = true;
+}
+
 void ExtractMotion::Reset()
 {
     diff = Mat(pipeline->height, pipeline->width, CV_8UC3);
     sum = Mat(pipeline->height, pipeline->width, CV_8U);
     marked2 = Mat(pipeline->height, pipeline->width, CV_8U);
+    marked3 = Mat(pipeline->height, pipeline->width, CV_8U);
 }
 
 
@@ -41,7 +47,16 @@ void ExtractMotion::Apply()
     cvtColor(diff, sum, CV_BGR2GRAY);
     cv::threshold(sum, marked2, threshold, 255, THRESH_BINARY);
 
-    pipeline->marked &= marked2;
+    if (restrictToZone)
+    {
+	cv::inRange(pipeline->zoneMap, zone, zone, marked3);
+	marked2 &= marked3;	    
+    }
+    
+    if (additive)	
+	pipeline->marked |= marked2;
+    else
+	pipeline->marked &= marked2;
 }
 
 void ExtractMotion::LoadXML (FileNode& fn)
@@ -50,6 +65,10 @@ void ExtractMotion::LoadXML (FileNode& fn)
     {
 	active = (int)fn["Active"];
 	threshold = (int)fn["Threshold"];
+	restrictToZone = (int)fn["RestrictToZone"];
+	if (restrictToZone)
+	    zone = (int)fn["Zone"];
+	additive = (int)fn["Additive"];
     }
 }
 
@@ -57,5 +76,10 @@ void ExtractMotion::SaveXML (FileStorage& fs)
 {
     fs << "Active" << active;
     fs << "Threshold" << threshold;
+    fs << "RestrictToZone" << restrictToZone;
+    if (restrictToZone)
+	fs << "Zone" << zone;
+    fs << "Additive" << additive;
+    
 }
 

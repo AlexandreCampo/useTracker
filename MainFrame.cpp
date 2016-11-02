@@ -49,6 +49,9 @@
 #include "DialogMovingAverage.h"
 #include "DialogDilation.h"
 #include "DialogExtractMotion.h"
+#include "DialogBackgroundDiffMOG.h"
+#include "DialogBackgroundDiffMOG2.h"
+#include "DialogBackgroundDiffGMG.h"
 #include "DialogColorSegmentation.h"
 #include "DialogExtractBlobs.h"
 #include "DialogTracker.h"
@@ -253,7 +256,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     GLCanvas1->SetMinSize(wxSize(-1,-1));
     GLCanvas1->SetMaxSize(wxSize(-1,-1));
     GLCanvas1->SetFocus();
-    FlexGridSizer6->Add(GLCanvas1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer6->Add(GLCanvas1, 1, wxALL|wxEXPAND, 5);
     FlexGridSizer2 = new wxFlexGridSizer(1, 9, 0, 0);
     FlexGridSizer2->AddGrowableCol(7);
     buttonOutput = new wxBitmapButton(this, ID_BITMAPBUTTON1, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-record-icon inactive.png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW, wxDefaultValidator, _T("ID_BITMAPBUTTON1"));
@@ -274,11 +277,11 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     videoSlider = new wxSlider(this, ID_SLIDER1, 0, 0, 10000, wxDefaultPosition, wxSize(-1,-1), 0, wxDefaultValidator, _T("ID_SLIDER1"));
     videoSlider->SetMinSize(wxSize(-1,-1));
     videoSlider->SetMaxSize(wxSize(-1,-1));
-    FlexGridSizer2->Add(videoSlider, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 12);
+    FlexGridSizer2->Add(videoSlider, 1, wxALL|wxEXPAND, 12);
     buttonHud = new wxBitmapButton(this, ID_BITMAPBUTTON11, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Apps-utilities-system-monitor-icon active (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON11"));
     FlexGridSizer2->Add(buttonHud, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    FlexGridSizer6->Add(FlexGridSizer2, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    FlexGridSizer1->Add(FlexGridSizer6, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer6->Add(FlexGridSizer2, 1, wxALL|wxEXPAND, 5);
+    FlexGridSizer1->Add(FlexGridSizer6, 1, wxALL|wxEXPAND, 5);
     Notebook1 = new wxNotebook(this, ID_NOTEBOOK1, wxDefaultPosition, wxDefaultSize, 0, _T("ID_NOTEBOOK1"));
     Notebook1->SetMaxSize(wxSize(-1,650));
     ProcessingTab = new wxScrolledWindow(Notebook1, ID_SCROLLEDWINDOW1, wxDefaultPosition, wxDefaultSize, wxVSCROLL|wxHSCROLL, _T("ID_SCROLLEDWINDOW1"));
@@ -333,7 +336,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     StaticBitmap1 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP1, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Categories-applications-system-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP1"));
     FlexGridSizer4->Add(StaticBitmap1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonBgRecalculate = new wxButton(BackgroundTab, ID_BUTTON1, _("Recalculate"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
-    FlexGridSizer4->Add(ButtonBgRecalculate, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer4->Add(ButtonBgRecalculate, 1, wxALL|wxEXPAND, 5);
     StaticBitmap2 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP2, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-open-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP2"));
     FlexGridSizer4->Add(StaticBitmap2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonBgLoad = new wxButton(BackgroundTab, ID_BUTTON3, _("Load background"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON3"));
@@ -343,7 +346,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     ButtonBgSave = new wxButton(BackgroundTab, ID_BUTTON4, _("Save background"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON4"));
     FlexGridSizer4->Add(ButtonBgSave, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     StaticBoxSizer2->Add(FlexGridSizer4, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    FlexGridSizer10->Add(StaticBoxSizer2, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer10->Add(StaticBoxSizer2, 1, wxALL|wxEXPAND, 5);
     BackgroundTab->SetSizer(FlexGridSizer10);
     FlexGridSizer10->Fit(BackgroundTab);
     FlexGridSizer10->SetSizeHints(BackgroundTab);
@@ -373,11 +376,11 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     CheckBoxUseTimeBounds->SetValue(false);
     GridBagSizer1->Add(CheckBoxUseTimeBounds, wxGBPosition(4, 1), wxDefaultSpan, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     StaticBoxSizer1->Add(GridBagSizer1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 1);
-    FlexGridSizer3->Add(StaticBoxSizer1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer3->Add(StaticBoxSizer1, 1, wxALL|wxEXPAND, 5);
     StaticBoxSizer4 = new wxStaticBoxSizer(wxHORIZONTAL, ConfigTab, _("Zones of interest"));
     FilePickerCtrlZones = new wxFilePickerCtrl(ConfigTab, ID_FILEPICKERCTRL1, wxEmptyString, _("Choose an image to use for zones"), _T("*.png"), wxDefaultPosition, wxDefaultSize, wxFLP_CHANGE_DIR|wxFLP_FILE_MUST_EXIST|wxFLP_OPEN, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
     StaticBoxSizer4->Add(FilePickerCtrlZones, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    FlexGridSizer3->Add(StaticBoxSizer4, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer3->Add(StaticBoxSizer4, 1, wxALL|wxEXPAND, 5);
     StaticBoxSizerConfigMultiSource = new wxStaticBoxSizer(wxVERTICAL, ConfigTab, _("Multi source"));
     FlexGridSizer15 = new wxFlexGridSizer(0, 1, 0, 0);
     FlexGridSizer15->AddGrowableCol(0);
@@ -388,11 +391,11 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     StaticBitmap4 = new wxStaticBitmap(ConfigTab, ID_STATICBITMAP4, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Apps-plasmagik-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP4"));
     FlexGridSizer13->Add(StaticBitmap4, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonConfigStitch = new wxButton(ConfigTab, ID_BUTTON9, _("Stitch images"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON9"));
-    FlexGridSizer13->Add(ButtonConfigStitch, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer13->Add(ButtonConfigStitch, 1, wxALL|wxEXPAND, 5);
     StaticBitmap5 = new wxStaticBitmap(ConfigTab, ID_STATICBITMAP5, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-edit-delete-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP5"));
     FlexGridSizer13->Add(StaticBitmap5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonConfigResetStitching = new wxButton(ConfigTab, ID_BUTTON10, _("Reset stitching"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON10"));
-    FlexGridSizer13->Add(ButtonConfigResetStitching, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer13->Add(ButtonConfigResetStitching, 1, wxALL|wxEXPAND, 5);
     BitmapButton5 = new wxBitmapButton(ConfigTab, ID_BITMAPBUTTON13, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-open-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW, wxDefaultValidator, _T("ID_BITMAPBUTTON13"));
     FlexGridSizer13->Add(BitmapButton5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonConfigLoadStitching = new wxButton(ConfigTab, ID_BUTTON8, _("Load stitching"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON8"));
@@ -402,8 +405,8 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     ButtonConfigSaveStitching = new wxButton(ConfigTab, ID_BUTTON11, _("Save stitching"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON11"));
     FlexGridSizer13->Add(ButtonConfigSaveStitching, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer15->Add(FlexGridSizer13, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    StaticBoxSizerConfigMultiSource->Add(FlexGridSizer15, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    FlexGridSizer3->Add(StaticBoxSizerConfigMultiSource, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    StaticBoxSizerConfigMultiSource->Add(FlexGridSizer15, 1, wxALL|wxEXPAND, 0);
+    FlexGridSizer3->Add(StaticBoxSizerConfigMultiSource, 1, wxALL|wxEXPAND, 5);
     ConfigTab->SetSizer(FlexGridSizer3);
     FlexGridSizer3->Fit(ConfigTab);
     FlexGridSizer3->SetSizeHints(ConfigTab);
@@ -416,7 +419,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     StaticBoxSizerCalibSubdevices = new wxStaticBoxSizer(wxHORIZONTAL, CalibrationTab, _("Select subdevice"));
     ChoiceCalibSubdevices = new wxChoice(CalibrationTab, ID_CHOICE1, wxDefaultPosition, wxDefaultSize, 0, 0, 0, wxDefaultValidator, _T("ID_CHOICE1"));
     StaticBoxSizerCalibSubdevices->Add(ChoiceCalibSubdevices, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    FlexGridSizerCalibMain->Add(StaticBoxSizerCalibSubdevices, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 1);
+    FlexGridSizerCalibMain->Add(StaticBoxSizerCalibSubdevices, 1, wxALL|wxEXPAND, 1);
     wxString __wxRadioBoxChoices_2[3] =
     {
     	_("Chessboard"),
@@ -425,7 +428,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     };
     RadioBoxCalibBoardType = new wxRadioBox(CalibrationTab, ID_RADIOBOX2, _("Board type"), wxDefaultPosition, wxDefaultSize, 3, __wxRadioBoxChoices_2, 3, 0, wxDefaultValidator, _T("ID_RADIOBOX2"));
     RadioBoxCalibBoardType->SetSelection(0);
-    FlexGridSizerCalibMain->Add(RadioBoxCalibBoardType, 0, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 1);
+    FlexGridSizerCalibMain->Add(RadioBoxCalibBoardType, 0, wxALL|wxEXPAND, 1);
     FlexGridSizer8 = new wxFlexGridSizer(0, 2, 0, 0);
     StaticText10 = new wxStaticText(CalibrationTab, ID_STATICTEXT10, _("Columns"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT10"));
     FlexGridSizer8->Add(StaticText10, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
@@ -466,7 +469,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     SpinCtrlCalibAspectDen->SetMinSize(wxDLG_UNIT(CalibrationTab,wxSize(25,-1)));
     FlexGridSizer9->Add(SpinCtrlCalibAspectDen, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     FlexGridSizer8->Add(FlexGridSizer9, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    FlexGridSizerCalibMain->Add(FlexGridSizer8, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 1);
+    FlexGridSizerCalibMain->Add(FlexGridSizer8, 1, wxALL|wxEXPAND, 1);
     FlexGridSizer14 = new wxFlexGridSizer(0, 1, 0, 0);
     FlexGridSizer14->AddGrowableCol(0);
     CheckBoxCalibZeroTangentDist = new wxCheckBox(CalibrationTab, ID_CHECKBOX3, _("Assume no tangential disto"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX3"));
@@ -478,27 +481,27 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     CheckBoxCalibFlipVertical = new wxCheckBox(CalibrationTab, ID_CHECKBOX5, _("Vertical flip"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX5"));
     CheckBoxCalibFlipVertical->SetValue(false);
     FlexGridSizer14->Add(CheckBoxCalibFlipVertical, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 0);
-    FlexGridSizerCalibMain->Add(FlexGridSizer14, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 1);
+    FlexGridSizerCalibMain->Add(FlexGridSizer14, 1, wxALL|wxEXPAND, 1);
     FlexGridSizer12 = new wxFlexGridSizer(0, 2, 0, 0);
     BitmapButton1 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON5, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Categories-applications-system-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON5"));
     FlexGridSizer12->Add(BitmapButton1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     ButtonCalibCalculate = new wxButton(CalibrationTab, ID_BUTTON2, _("Calibrate"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON2"));
-    FlexGridSizer12->Add(ButtonCalibCalculate, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    FlexGridSizer12->Add(ButtonCalibCalculate, 1, wxALL|wxEXPAND, 0);
     BitmapButton4 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON12, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-edit-delete-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON12"));
     FlexGridSizer12->Add(BitmapButton4, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     ButtonCalibReset = new wxButton(CalibrationTab, ID_BUTTON7, _("Reset"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON7"));
-    FlexGridSizer12->Add(ButtonCalibReset, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    FlexGridSizer12->Add(ButtonCalibReset, 1, wxALL|wxEXPAND, 0);
     BitmapButton2 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON6, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-open-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON6"));
     FlexGridSizer12->Add(BitmapButton2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     ButtonCalibLoad = new wxButton(CalibrationTab, ID_BUTTON5, _("Load calibration"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON5"));
-    FlexGridSizer12->Add(ButtonCalibLoad, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    FlexGridSizer12->Add(ButtonCalibLoad, 1, wxALL|wxEXPAND, 0);
     BitmapButton3 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON7, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-save-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON7"));
     FlexGridSizer12->Add(BitmapButton3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     ButtonCalibSave = new wxButton(CalibrationTab, ID_BUTTON6, _("Save calibration"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON6"));
-    FlexGridSizer12->Add(ButtonCalibSave, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    FlexGridSizer12->Add(ButtonCalibSave, 1, wxALL|wxEXPAND, 0);
     FlexGridSizerCalibMain->Add(FlexGridSizer12, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     StaticBoxSizer3->Add(FlexGridSizerCalibMain, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    FlexGridSizer7->Add(StaticBoxSizer3, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer7->Add(StaticBoxSizer3, 1, wxALL|wxEXPAND, 5);
     CalibrationTab->SetSizer(FlexGridSizer7);
     FlexGridSizer7->Fit(CalibrationTab);
     FlexGridSizer7->SetSizeHints(CalibrationTab);
@@ -506,7 +509,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     Notebook1->AddPage(BackgroundTab, _("Bg"), false);
     Notebook1->AddPage(ConfigTab, _("Config"), false);
     Notebook1->AddPage(CalibrationTab, _("Calib"), false);
-    FlexGridSizer1->Add(Notebook1, 1, wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer1->Add(Notebook1, 1, wxALL|wxEXPAND, 5);
     SetSizer(FlexGridSizer1);
     MenuBar1 = new wxMenuBar();
     Menu1 = new wxMenu();
@@ -645,6 +648,9 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
 
     ListBoxPipelinePlugins->Append("zones of interest");
     ListBoxPipelinePlugins->Append("background difference");
+    ListBoxPipelinePlugins->Append("background diff mog");
+    ListBoxPipelinePlugins->Append("background diff mog2");
+    ListBoxPipelinePlugins->Append("background diff gmg");
     ListBoxPipelinePlugins->Append("adaptive threshold");
     ListBoxPipelinePlugins->Append("color segmentation");
     ListBoxPipelinePlugins->Append("erosion");
@@ -885,7 +891,10 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     // BW
-    if ((activeTab == ProcessingTab) && showProcessing)
+    if (
+	((activeTab == ProcessingTab) && showProcessing)
+	|| activeTab == ConfigTab
+	)
     {
     	glTexImage2D(
     	    GL_TEXTURE_2D,
@@ -923,29 +932,32 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 
     // Draw HUD stuff
     // --------------
-    if (hudVisible && (activeTab != BackgroundTab))
+    if (hudVisible)
     {
-	// Create Texture
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(
-	    GL_TEXTURE_2D,
-	    0,
-	    GL_RGBA,
-	    hudScaled.cols,
-	    hudScaled.rows,
-	    0,
-	    GL_BGRA,
-	    GL_UNSIGNED_BYTE,
-	    hudScaled.data);
+	if (activeTab == ProcessingTab)
+	{
+	    // Create Texture
+	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	    glTexImage2D(
+		GL_TEXTURE_2D,
+		0,
+		GL_RGBA,
+		hudScaled.cols,
+		hudScaled.rows,
+		0,
+		GL_BGRA,
+		GL_UNSIGNED_BYTE,
+		hudScaled.data);
 
-	// Draw a textured quad
-	glColor4f (1.0f, 1.0f, 1.0f, 0.5f);
-	glBegin(GL_QUADS);
-	glTexCoord2f(zoomStartX, zoomStartY); glVertex2f(0.0f, 0.0f);
-	glTexCoord2f(zoomEndX, zoomStartY); glVertex2f(oglScreen.cols, 0.0f);
-	glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(oglScreen.cols, oglScreen.rows);
-	glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, oglScreen.rows);
-	glEnd();
+	    // Draw a textured quad
+	    glColor4f (1.0f, 1.0f, 1.0f, 0.5f);
+	    glBegin(GL_QUADS);
+	    glTexCoord2f(zoomStartX, zoomStartY); glVertex2f(0.0f, 0.0f);
+	    glTexCoord2f(zoomEndX, zoomStartY); glVertex2f(oglScreen.cols, 0.0f);
+	    glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(oglScreen.cols, oglScreen.rows);
+	    glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, oglScreen.rows);
+	    glEnd();
+	}
 
 	// Create Texture
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -1008,8 +1020,8 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 	}
     }
 
-    // process frames only out of bg tab & calib tab
-    if (activeTab != BackgroundTab)
+    // process frames only out of bg tab, config tab & calib tab
+    if (activeTab == ProcessingTab)
     {
 	if (play)
 	{
@@ -1026,27 +1038,29 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 		}
 	    }
 	}
+    }
 
-	// print hud
-	hudApp.setTo (0);
-	if (hudVisible) PrintInfoToHud();
-
-	if (activeTab != CalibrationTab)
-	{
-	    ipEngine.Step(hudVisible);
-	}
-	else if (activeTab == CalibrationTab)
-	{
-	    ipEngine.capture->Calibrate();
-	    ipEngine.capture->CalibrationOutputHud(hud);
-	}
+    // print hud
+    hudApp.setTo (0);
+    if (hudVisible) PrintInfoToHud();
+    
+    if (activeTab == ProcessingTab)
+    {
+	ipEngine.Step(hudVisible);
+    }
+    else if (activeTab == CalibrationTab)
+    {
+	ipEngine.capture->Calibrate();
+	ipEngine.capture->CalibrationOutputHud(hud);
     }
 
     // draw the main graphics screen
     if (activeTab == ProcessingTab && showProcessing)
 	oglScreen = ipEngine.pipelineSnapshot;
-    else if (activeTab == ProcessingTab || activeTab == ConfigTab)
+    else if (activeTab == ProcessingTab)
 	oglScreen = ipEngine.capture->frame;
+    else if (activeTab == ConfigTab)
+	oglScreen = ipEngine.zoneMap;	
     else if (activeTab == CalibrationTab)
 	oglScreen = ipEngine.capture->CalibrationGetFrame();
     else if (activeTab == BackgroundTab)
@@ -1120,18 +1134,75 @@ void MainFrame::DrawTrackerSelection(wxClientDC& dc)
 
 void MainFrame::PrintInfoToHud()
 {
-    int stotal = ipEngine.capture->GetTime();
-    int h = stotal / 3600;
-    int m = (stotal - h*3600) / 60;
-    int s = stotal - h*3600 - m*60;
     char str[256];
-    sprintf (str, "%02d:%02d:%02d", h, m, s);
-
+    Point pos;
     int baseline = 0;
-    Size textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 2.0, 2, &baseline);
-    Point pos (hudApp.cols - textSize.width - hudApp.cols / 20, textSize.height + hudApp.rows / 20);
-    putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 2.0, cvScalar(0,0,0,255), 2, CV_AA);
-    putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 2.0, cvScalar(0,255,200,255), 2, CV_AA);
+    Size textSize;       
+    
+    if (activeTab == ProcessingTab)
+    {
+	int stotal = ipEngine.capture->GetTime();
+	int h = stotal / 3600;
+	int m = (stotal - h*3600) / 60;
+	int s = stotal - h*3600 - m*60;
+	sprintf (str, "%02d:%02d:%02d", h, m, s);
+	
+	textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 2.0, 2, &baseline);
+	pos = Point (hudApp.cols - textSize.width - hudApp.cols / 20, textSize.height + hudApp.rows / 20);
+
+	putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 2.0, cvScalar(0,0,0,255), 2, CV_AA);
+	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 2.0, cvScalar(0,255,200,255), 2, CV_AA);
+		
+	// play speed
+	if (playSpeed > 0)
+	{
+	    sprintf (str, "%dx faster", playSpeed+1);
+	    textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
+	    pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
+	    pos.y += textSize.height + hudApp.rows / 20;
+	    
+	    putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
+	    putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,255,200,255), 2, CV_AA);
+	}
+	if (playSpeed < 0)
+	{
+	    sprintf (str, "%dx slower", -playSpeed+1);
+	    textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
+	    pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
+	    pos.y += textSize.height + hudApp.rows / 20;
+	    putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
+	    putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,255,200,255), 2, CV_AA);
+	}
+
+	// frame number
+	if (manualPlay)
+	{
+	    sprintf (str, "frame number %ld", ipEngine.capture->GetFrameNumber());
+	    textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
+	    pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
+	    pos.y += textSize.height + hudApp.rows / 20;
+	    putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
+	    putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,255,200,255), 2, CV_AA);
+	}
+    }
+    else if (activeTab == ConfigTab)
+    {
+	sprintf (str, "Displaying mask");
+	textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
+	pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
+	pos.y = textSize.height + hudApp.rows / 20;
+	putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
+	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,255,200,255), 2, CV_AA);
+    }
+    else if (activeTab == BackgroundTab)
+    {
+	sprintf (str, "Displaying background");
+	textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
+	pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
+	pos.y = textSize.height + hudApp.rows / 20;
+	putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
+	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,255,200,255), 2, CV_AA);
+    }
 
     // selection
     if (marqueeRegisteredDown && marqueeRegisteredMotion)
@@ -1140,39 +1211,7 @@ void MainFrame::PrintInfoToHud()
 	float coeffY = (float) hudApp.rows / (float) hud.rows;
 	rectangle(hudApp, Point(marqueeStart.x * coeffX, marqueeStart.y * coeffY), Point(marqueeEnd.x * coeffX, marqueeEnd.y * coeffY), Scalar (255, 255, 255, 255), 2);
     }
-
-    // play speed
-    if (playSpeed > 0)
-    {
-	sprintf (str, "%dx faster", playSpeed+1);
-	textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
-	pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
-	pos.y += textSize.height + hudApp.rows / 20;
-
-	putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,255,200,255), 2, CV_AA);
-    }
-    if (playSpeed < 0)
-    {
-	sprintf (str, "%dx slower", -playSpeed+1);
-	textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
-	pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
-	pos.y += textSize.height + hudApp.rows / 20;
-	putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,255,200,255), 2, CV_AA);
-    }
-
-    // frame number
-    if (manualPlay)
-    {
-	sprintf (str, "frame number %ld", ipEngine.capture->GetFrameNumber());
-	textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
-	pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
-	pos.y += textSize.height + hudApp.rows / 20;
-	putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,255,200,255), 2, CV_AA);
-    }
-
+   
     // mouse coordinates
     wxPoint mp = wxGetMousePosition();
     wxPoint lmp = GLCanvas1->ScreenToClient(mp);
@@ -1198,6 +1237,13 @@ void MainFrame::PrintInfoToHud()
 	
 	// show in hud
 	sprintf (str, "Mouse : %d %d", pppx, pppy);
+
+	if (activeTab == ConfigTab)
+	{
+	    int zone = ipEngine.zoneMap.at<uchar>(pppy, pppx);
+	    sprintf (str, "Mouse : %d %d, over zone : %d", pppx, pppy, zone);
+	}
+
 	textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 0.6, 2, &baseline);
 	pos.x = hudApp.cols / 100;
 	pos.y = hudApp.rows - textSize.height;
@@ -1747,7 +1793,7 @@ string MainFrame::TextToCamelCase (string text)
     bool upNext = true;
     for (unsigned int i = 0; i < text.size(); i++)
     {
-        if (isalpha(text[i]))
+        if (isalnum(text[i]))
 	{
             if (upNext) res += toupper(text[i]);
             else res += text[i];
@@ -1779,13 +1825,31 @@ string MainFrame::CamelCaseToText (string text)
 bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool showDialog)
 {
     wxDialog* dlg;
-
+    
     auto pfv = NewPipelinePluginVector[TextToCamelCase(str)] (fn, ipEngine.threadsCount);
 //    auto pfv = CreatePipelinePlugin (TextToCamelCase(str), fn, ipEngine.threadsCount);
 
     if (str == "background difference")
     {
 	DialogExtractMotion* dialog = new DialogExtractMotion(this);
+	dialog->SetPlugin(pfv);
+	dlg = dialog;
+    }
+    else if (str == "background diff mog")
+    {
+	DialogBackgroundDiffMOG* dialog = new DialogBackgroundDiffMOG(this);
+	dialog->SetPlugin(pfv);
+	dlg = dialog;
+    }
+    else if (str == "background diff mog2")
+    {
+	DialogBackgroundDiffMOG2* dialog = new DialogBackgroundDiffMOG2(this);
+	dialog->SetPlugin(pfv);
+	dlg = dialog;
+    }
+    else if (str == "background diff gmg")
+    {
+	DialogBackgroundDiffGMG* dialog = new DialogBackgroundDiffGMG(this);
 	dialog->SetPlugin(pfv);
 	dlg = dialog;
     }
@@ -1885,7 +1949,11 @@ bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool s
     {
 	dlg = nullptr;
     }
-    else return false;
+    else
+    {
+	cerr << "Unknown plugin name..." << endl;
+	return false;
+    }
 
     if (pos < 0)
     {
