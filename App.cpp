@@ -31,6 +31,7 @@
 #include "BackgroundDiffMOG.h"
 #include "BackgroundDiffMOG2.h"
 #include "BackgroundDiffGMG.h"
+#include "Watershed.h"
 #include "ColorSegmentation.h"
 #include "ExtractBlobs.h"
 #include "GetBlobsAngles.h"
@@ -76,6 +77,7 @@ int main(int argc, char **argv)
     NewPipelinePluginVector["BackgroundDiffMog"] = &CreatePipelinePluginVector<BackgroundDiffMOG>;
     NewPipelinePluginVector["BackgroundDiffMog2"] = &CreatePipelinePluginVector<BackgroundDiffMOG2>;
     NewPipelinePluginVector["BackgroundDiffGmg"] = &CreatePipelinePluginVector<BackgroundDiffGMG>;
+    NewPipelinePluginVector["Watershed"] = &CreatePipelinePluginVector<Watershed>;
     NewPipelinePluginVector["ColorSegmentation"] = &CreatePipelinePluginVector<ColorSegmentation>;
     NewPipelinePluginVector["Erosion"] = &CreatePipelinePluginVector<Erosion>;
     NewPipelinePluginVector["Dilation"] = &CreatePipelinePluginVector<Dilation>;
