@@ -127,7 +127,7 @@ DialogColorSegmentation::DialogColorSegmentation(wxWindow* parent,wxWindowID id,
 	FlexGridSizer4->Add(StaticBoxSizer1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer3->Add(FlexGridSizer4, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer6 = new wxFlexGridSizer(0, 1, 0, 0);
-	FlexGridSizer6->AddGrowableCol(1);
+	FlexGridSizer6->AddGrowableCol(0);
 	wxString __wxRadioBoxChoices_2[2] =
 	{
 		_("Confirm previously detected pixels (AND operator)"),
@@ -196,7 +196,7 @@ void DialogColorSegmentation::SetPlugin (vector<PipelinePlugin*> pfv)
     SpinCtrlZone->SetValue(plugin[0]->zone);
     RadioBoxOperator->SetSelection(plugin[0]->additive);
     CheckBoxRestrictToZone->SetValue(plugin[0]->restrictToZone);
-    
+
     if (plugin[0]->type == ColorSegmentation::BGR)
     {
 	RadioBox1->SetSelection(1);
