@@ -48,7 +48,7 @@ DialogTakeSnapshots::DialogTakeSnapshots(wxWindow* parent,wxWindowID id,const wx
 
 	Create(parent, wxID_ANY, _("Extract blobs"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE, _T("wxID_ANY"));
 	FlexGridSizer1 = new wxFlexGridSizer(0, 1, 0, 0);
-	StaticBoxSizer2 = new wxStaticBoxSizer(wxVERTICAL, this, _("Output to path/filename"));
+	StaticBoxSizer2 = new wxStaticBoxSizer(wxVERTICAL, this, _("Save detected pixels to images"));
 	FlexGridSizer5 = new wxFlexGridSizer(0, 2, 0, 0);
 	FlexGridSizer5->AddGrowableCol(1);
 	CheckBoxOutput = new wxCheckBox(this, ID_CHECKBOX1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX1"));
@@ -57,7 +57,7 @@ DialogTakeSnapshots::DialogTakeSnapshots(wxWindow* parent,wxWindowID id,const wx
 	FilePickerCtrl1 = new wxFilePickerCtrl(this, ID_FILEPICKERCTRL1, wxEmptyString, _("Choose an output file"), _T("*.csv"), wxDefaultPosition, wxDefaultSize, wxFLP_OVERWRITE_PROMPT|wxFLP_SAVE|wxFLP_USE_TEXTCTRL, wxDefaultValidator, _T("ID_FILEPICKERCTRL1"));
 	FlexGridSizer5->Add(FilePickerCtrl1, 1, wxALL|wxEXPAND, 5);
 	StaticBoxSizer2->Add(FlexGridSizer5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	StaticText1 = new wxStaticText(this, ID_STATICTEXT1, _("(frame numbers will appended)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT1"));
+	StaticText1 = new wxStaticText(this, ID_STATICTEXT1, _("(frame numbers will be appended)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT1"));
 	StaticBoxSizer2->Add(StaticText1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer1->Add(StaticBoxSizer2, 1, wxALL|wxEXPAND, 5);
 	FlexGridSizer2 = new wxFlexGridSizer(0, 3, 0, 0);
