@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# if oyur local is modified and you want to ensure it is the same as the master, you can erase all the changes by running
+# if your local copy is modified and you want to ensure it is the same as the master, you can erase all the changes by running
 # git reset --hard origin/master
 
 # find location of the script, which should be root of useTracker
@@ -20,6 +20,21 @@ echo Updating > update_status.txt
 (
 echo "# Pulling update from github repository" ; git pull &> update_status.txt
 error=$(cat update_status.txt | grep Aborting | wc -l)
+
+wxversion=3.0
+
+# make sure you all necessary packages installed
+if [ $error -eq 0 ]; then
+zenity --info --text "About to update required package dependencies"
+(echo "# Updating packages..."; pkexec apt-get --yes install build-essential cmake libwxbase$wxversion-dev libopencv-dev libboost-program-options-dev libboost-filesystem-dev libwxgtk$wxversion-dev libwxgtk-media$wxversion-dev freeglut3-dev libva-dev libbz2-dev libx264-dev libbluetooth-dev
+) |
+zenity --progress \
+  --title="Updating package dependencies for USE Tracker" \
+  --progress\
+  --auto-close\
+  --pulsate
+fi
+
 if [ $error -eq 0 ]; then
 echo "# Cleaning sources"; make clean &> update_status.txt
 echo "# Building from updated sources"; make release &> update_status.txt

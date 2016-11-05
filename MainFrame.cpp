@@ -62,6 +62,7 @@
 #include "DialogStopwatch.h"
 #include "DialogSimpleTags.h"
 #include "DialogAdaptiveThreshold.h"
+#include "DialogTakeSnapshots.h"
 
 #include "Utils.h"
 #include "Capture.h"
@@ -634,8 +635,8 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     BackgroundTab->SetScrollbars (0, 5, 0, sz/5);
 
     // setup drag and drop for image processing pipeline
-    ListBoxPipeline = new wxCheckListBox(StaticBox1, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(ProcessingTab,wxSize(115,140)), 0, 0, wxLB_SINGLE|wxLB_NEEDED_SB);
-    ListBoxPipelinePlugins = new wxListBox(StaticBox2, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(ProcessingTab,wxSize(115,220)), 0, 0, wxLB_SINGLE);
+    ListBoxPipeline = new wxCheckListBox(StaticBox1, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(ProcessingTab,wxSize(115,120)), 0, 0, wxLB_SINGLE|wxLB_NEEDED_SB);
+    ListBoxPipelinePlugins = new wxListBox(StaticBox2, wxID_ANY, wxDefaultPosition, wxDLG_UNIT(ProcessingTab,wxSize(115,260)), 0, 0, wxLB_SINGLE);
 
     textDropTargetAdd = new MyTextDropTargetAdd (this);
     textDropTargetMove = new MyTextDropTargetMove (this);
@@ -663,6 +664,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     ListBoxPipelinePlugins->Append("track blobs");
     ListBoxPipelinePlugins->Append("simple tags");
     ListBoxPipelinePlugins->Append("record video");
+    ListBoxPipelinePlugins->Append("take snapshots");
     ListBoxPipelinePlugins->Append("record pixels");
     ListBoxPipelinePlugins->Append("stopwatch");
     ListBoxPipelinePlugins->Append("remote control");
@@ -1912,6 +1914,12 @@ bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool s
     else if (str == "record video")
     {
 	DialogRecordVideo* dialog = new DialogRecordVideo(this);
+	dialog->SetPlugin(pfv);
+	dlg = dialog;
+    }
+    else if (str == "take snapshots")
+    {
+	DialogTakeSnapshots* dialog = new DialogTakeSnapshots(this);
 	dialog->SetPlugin(pfv);
 	dlg = dialog;
     }

@@ -44,6 +44,7 @@
 #include "Stopwatch.h"
 #include "RemoteControl.h"
 #include "AdaptiveThreshold.h"
+#include "TakeSnapshots.h"
 
 #include "CaptureVideo.h"
 #include "CaptureUSBCamera.h"
@@ -92,6 +93,7 @@ int main(int argc, char **argv)
     NewPipelinePluginVector["Stopwatch"] = &CreatePipelinePluginVector<Stopwatch>;
     NewPipelinePluginVector["RemoteControl"] = &CreatePipelinePluginVector<RemoteControl>;
     NewPipelinePluginVector["AdaptiveThreshold"] = &CreatePipelinePluginVector<AdaptiveThreshold>;
+    NewPipelinePluginVector["TakeSnapshots"] = &CreatePipelinePluginVector<TakeSnapshots>;
 
     #ifdef ARUCO
     NewPipelinePluginVector["Aruco"] = &CreatePipelinePluginVector<Aruco>;
