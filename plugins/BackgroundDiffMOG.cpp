@@ -93,7 +93,7 @@ void BackgroundDiffMOG::Apply()
     }
     
     if (additive)	
-	pipeline->marked |= marked2;
+	pipeline->marked |= (marked2 & pipeline->zoneMap);
     else
 	pipeline->marked &= marked2;
 }

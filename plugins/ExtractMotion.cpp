@@ -53,8 +53,8 @@ void ExtractMotion::Apply()
 	marked2 &= marked3;	    
     }
     
-    if (additive)	
-	pipeline->marked |= marked2;
+    if (additive)
+	pipeline->marked |= (marked2 & pipeline->zoneMap);
     else
 	pipeline->marked &= marked2;
 }
