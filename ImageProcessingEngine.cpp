@@ -161,9 +161,20 @@ void ImageProcessingEngine::Reset(Parameters& parameters)
     SetupThreads();
 
     // force start time and duration if requested from command line
-    if (parameters.startTime >= -0.000001) startTime = parameters.startTime;
-    if (parameters.durationTime >= -0.000001) durationTime = parameters.durationTime;
+    if (parameters.startTime >= -0.000001)
+    {
+	startTime = parameters.startTime;
+	useTimeBoundaries = true;
+    }
+    if (parameters.durationTime >= -0.000001)
+    {
+	durationTime = parameters.durationTime;
+	useTimeBoundaries = true;
+    }
 
+    // just in case...
+    if (startTime < 0) startTime = 0;
+    
     // if specific start time was asked, seek there
     if (parameters.startTime >= 0 || useTimeBoundaries)
     {
