@@ -9,5 +9,5 @@ using namespace cv;
 #include <iostream>
 
 
-Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime, unsigned int framesCount);
-Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, unsigned int framesCount);
+Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime, unsigned int framesCount, unsigned char lowThreshold, unsigned char highThreshold);
+Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, unsigned int framesCount, unsigned char lowThreshold, unsigned char highThreshold);

@@ -35,7 +35,7 @@
 							<handler function="OnGLCanvas1MouseEnter" entry="EVT_ENTER_WINDOW" />
 							<handler function="OnGLCanvas1Resize" entry="EVT_SIZE" />
 						</object>
-						<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<flag>wxALL|wxEXPAND</flag>
 						<border>5</border>
 						<option>1</option>
 					</object>
@@ -116,7 +116,7 @@
 									<handler function="OnvideoSliderCmdScrollThumbTrack" entry="EVT_COMMAND_SCROLL_THUMBTRACK" />
 									<handler function="OnvideoSliderCmdScrollChanged" entry="EVT_COMMAND_SCROLL_CHANGED" />
 								</object>
-								<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+								<flag>wxALL|wxEXPAND</flag>
 								<border>12</border>
 								<option>1</option>
 							</object>
@@ -130,12 +130,12 @@
 								<option>1</option>
 							</object>
 						</object>
-						<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+						<flag>wxALL|wxEXPAND</flag>
 						<border>5</border>
 						<option>1</option>
 					</object>
 				</object>
-				<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+				<flag>wxALL|wxEXPAND</flag>
 				<border>5</border>
 				<option>1</option>
 			</object>
@@ -243,6 +243,42 @@
 													<option>1</option>
 												</object>
 												<object class="sizeritem">
+													<object class="wxStaticText" name="ID_STATICTEXT17" variable="StaticText17" member="yes">
+														<label>Low threshold</label>
+													</object>
+													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+													<border>5</border>
+													<option>1</option>
+												</object>
+												<object class="sizeritem">
+													<object class="wxSpinCtrl" name="ID_SPINCTRL14" variable="SpinCtrlBgLowThreshold" member="yes">
+														<value>0</value>
+														<max>255</max>
+														<handler function="OnSpinCtrlBgLowThresholdChange" entry="EVT_SPINCTRL" />
+													</object>
+													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+													<border>5</border>
+													<option>1</option>
+												</object>
+												<object class="sizeritem">
+													<object class="wxStaticText" name="ID_STATICTEXT18" variable="StaticText18" member="yes">
+														<label>High threshold</label>
+													</object>
+													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+													<border>5</border>
+													<option>1</option>
+												</object>
+												<object class="sizeritem">
+													<object class="wxSpinCtrl" name="ID_SPINCTRL15" variable="SpinCtrlBgHighThreshold" member="yes">
+														<value>255</value>
+														<max>255</max>
+														<handler function="OnSpinCtrlBgHighThresholdChange" entry="EVT_SPINCTRL" />
+													</object>
+													<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+													<border>5</border>
+													<option>1</option>
+												</object>
+												<object class="sizeritem">
 													<object class="wxStaticText" name="ID_STATICTEXT5" variable="StaticText5" member="yes">
 														<label>Method</label>
 													</object>
@@ -299,7 +335,7 @@
 														<label>Recalculate</label>
 														<handler function="OnbuttonBgRecalculateClick" entry="EVT_BUTTON" />
 													</object>
-													<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+													<flag>wxALL|wxEXPAND</flag>
 													<border>5</border>
 													<option>1</option>
 												</object>
@@ -343,7 +379,7 @@
 											<option>1</option>
 										</object>
 									</object>
-									<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+									<flag>wxALL|wxEXPAND</flag>
 									<border>5</border>
 									<option>1</option>
 								</object>
@@ -453,7 +489,7 @@
 											<option>1</option>
 										</object>
 									</object>
-									<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+									<flag>wxALL|wxEXPAND</flag>
 									<border>5</border>
 									<option>1</option>
 								</object>
@@ -472,7 +508,7 @@
 											<option>1</option>
 										</object>
 									</object>
-									<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+									<flag>wxALL|wxEXPAND</flag>
 									<border>5</border>
 									<option>1</option>
 								</object>
@@ -509,7 +545,7 @@
 																<label>Stitch images</label>
 																<handler function="OnButtonConfigStitchClick" entry="EVT_BUTTON" />
 															</object>
-															<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+															<flag>wxALL|wxEXPAND</flag>
 															<border>5</border>
 															<option>1</option>
 														</object>
@@ -526,7 +562,7 @@
 																<label>Reset stitching</label>
 																<handler function="OnButtonConfigResetStitchingClick" entry="EVT_BUTTON" />
 															</object>
-															<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+															<flag>wxALL|wxEXPAND</flag>
 															<border>5</border>
 															<option>1</option>
 														</object>
@@ -570,11 +606,11 @@
 													<option>1</option>
 												</object>
 											</object>
-											<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+											<flag>wxALL|wxEXPAND</flag>
 											<option>1</option>
 										</object>
 									</object>
-									<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+									<flag>wxALL|wxEXPAND</flag>
 									<border>5</border>
 									<option>1</option>
 								</object>
@@ -607,7 +643,7 @@
 															<option>1</option>
 														</object>
 													</object>
-													<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+													<flag>wxALL|wxEXPAND</flag>
 													<border>1</border>
 													<option>1</option>
 												</object>
@@ -622,7 +658,7 @@
 														<dimension>3</dimension>
 														<handler function="OnRadioBoxCalibBoardTypeSelect" entry="EVT_RADIOBOX" />
 													</object>
-													<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+													<flag>wxALL|wxEXPAND</flag>
 													<border>1</border>
 												</object>
 												<object class="sizeritem">
@@ -752,7 +788,7 @@
 															<option>1</option>
 														</object>
 													</object>
-													<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+													<flag>wxALL|wxEXPAND</flag>
 													<border>1</border>
 													<option>1</option>
 												</object>
@@ -785,7 +821,7 @@
 															<option>1</option>
 														</object>
 													</object>
-													<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+													<flag>wxALL|wxEXPAND</flag>
 													<border>1</border>
 													<option>1</option>
 												</object>
@@ -805,7 +841,7 @@
 																<label>Calibrate</label>
 																<handler function="OnButtonCalibCalculateClick" entry="EVT_BUTTON" />
 															</object>
-															<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+															<flag>wxALL|wxEXPAND</flag>
 															<option>1</option>
 														</object>
 														<object class="sizeritem">
@@ -821,7 +857,7 @@
 																<label>Reset</label>
 																<handler function="OnButtonCalibResetClick" entry="EVT_BUTTON" />
 															</object>
-															<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+															<flag>wxALL|wxEXPAND</flag>
 															<option>1</option>
 														</object>
 														<object class="sizeritem">
@@ -837,7 +873,7 @@
 																<label>Load calibration</label>
 																<handler function="OnButtonCalibLoadClick" entry="EVT_BUTTON" />
 															</object>
-															<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+															<flag>wxALL|wxEXPAND</flag>
 															<option>1</option>
 														</object>
 														<object class="sizeritem">
@@ -853,7 +889,7 @@
 																<label>Save calibration</label>
 																<handler function="OnButtonCalibSaveClick" entry="EVT_BUTTON" />
 															</object>
-															<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+															<flag>wxALL|wxEXPAND</flag>
 															<option>1</option>
 														</object>
 													</object>
@@ -867,7 +903,7 @@
 											<option>1</option>
 										</object>
 									</object>
-									<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+									<flag>wxALL|wxEXPAND</flag>
 									<border>5</border>
 									<option>1</option>
 								</object>
@@ -876,7 +912,7 @@
 						<label>Calib</label>
 					</object>
 				</object>
-				<flag>wxALL|wxEXPAND|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+				<flag>wxALL|wxEXPAND</flag>
 				<border>5</border>
 				<option>1</option>
 			</object>

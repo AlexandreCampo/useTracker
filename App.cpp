@@ -275,11 +275,15 @@ int main(int argc, char **argv)
 	}
 	
 	long progress = 0;
+	long startFrame = ipEngine.startTime * ipEngine.capture->fps;
 	while (ipEngine.GetNextFrame())
 	{
-	    ipEngine.Step();
+	    // respect timestep if it is set
+	    if (ipEngine.timestep > 0.00001 && ipEngine.capture->GetTime() >= ipEngine.nextStepTime)
+		ipEngine.Step();
+	    
 	    long frameNumber = ipEngine.capture->GetFrameNumber();
-	    long newProgress = (frameNumber * 100) / totalFrames;
+	    long newProgress = ((frameNumber - startFrame) * 100) / totalFrames;
 	    if (newProgress > progress)
 	    {
 		progress = newProgress;

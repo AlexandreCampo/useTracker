@@ -38,6 +38,7 @@ struct Capture
     virtual ~Capture() {};
 
     virtual bool GetNextFrame () = 0;
+//    virtual bool ConvertFrame ();
     virtual wxLongLong GetNextFrameSystemTime () = 0;
     virtual bool GetFrame (double time) = 0;
 

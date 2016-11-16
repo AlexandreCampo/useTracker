@@ -142,6 +142,8 @@ private:
     void OnButtonConfigLoadStitchingClick(wxCommandEvent& event);
     void OnButtonConfigSaveStitchingClick(wxCommandEvent& event);
     void OnCheckBoxConfigStitchAdjustLuminosityClick(wxCommandEvent& event);
+    void OnSpinCtrlBgHighThresholdChange(wxSpinEvent& event);
+    void OnSpinCtrlBgLowThresholdChange(wxSpinEvent& event);
     //*)
 
     //(*Identifiers(MainFrame)
@@ -165,6 +167,10 @@ private:
     static const long ID_SPINCTRL3;
     static const long ID_STATICTEXT2;
     static const long ID_SPINCTRL2;
+    static const long ID_STATICTEXT17;
+    static const long ID_SPINCTRL14;
+    static const long ID_STATICTEXT18;
+    static const long ID_SPINCTRL15;
     static const long ID_STATICTEXT5;
     static const long ID_RADIOBOX1;
     static const long ID_STATICTEXT4;
@@ -251,6 +257,7 @@ private:
     wxSpinCtrl* SpinCtrlDuration;
     wxBitmapButton* buttonPlay;
     wxSpinCtrl* SpinCtrlCalibAspectDen;
+    wxStaticText* StaticText17;
     wxButton* ButtonCalibCalculate;
     wxBitmapButton* buttonForward;
     wxButton* ButtonBgRecalculate;
@@ -260,6 +267,7 @@ private:
     wxBitmapButton* buttonStepBackwards;
     wxButton* ButtonConfigLoadStitching;
     wxCheckBox* CheckBoxCalibZeroTangentDist;
+    wxStaticText* StaticText18;
     wxScrolledWindow* BackgroundTab;
     wxStaticText* StaticText1;
     wxScrolledWindow* CalibrationTab;
@@ -296,6 +304,7 @@ private:
     wxStaticText* StaticText5;
     wxSpinCtrl* SpinCtrlBgFrames;
     wxStaticText* StaticText2;
+    wxSpinCtrl* SpinCtrlBgLowThreshold;
     wxNotebook* Notebook1;
     wxStaticBitmap* StaticBitmap3;
     wxStaticBitmap* StaticBitmap1;
@@ -303,6 +312,7 @@ private:
     wxStaticBitmap* StaticBitmap4;
     wxStaticText* StaticText6;
     wxMenuItem* MenuOpenCapture;
+    wxSpinCtrl* SpinCtrlBgHighThreshold;
     wxMenuItem* MenuLoadSettings;
     wxCheckBox* CheckBoxCalibFlipVertical;
     wxCheckBox* CheckBoxConfigStitchAdjustLuminosity;

@@ -76,6 +76,8 @@ struct ImageProcessingEngine
     int bgFrames = 11;
     float bgEndTime = 0.0;
     float bgStartTime = 0.0;
+    unsigned char bgLowThreshold = 0;
+    unsigned char bgHighThreshold = 255;
 
     // zones of interest
     std::string zonesFilename;

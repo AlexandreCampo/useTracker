@@ -24,7 +24,7 @@ using namespace cv;
 using namespace std;
 
 
-Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime, unsigned int framesCount)
+Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime, unsigned int framesCount, unsigned char lowThreshold, unsigned char highThreshold)
 {
     int width = capture->width;
     int height = capture->height;
@@ -71,9 +71,9 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
 
     	    for (int x = 0; x < width; x++)
     	    {
-    		samples[index++] = frameRow[x * 3];
-    		samples[index++] = frameRow[x * 3 + 1];
-    		samples[index++] = frameRow[x * 3 + 2];
+		samples[index++] = frameRow[x * 3];
+		samples[index++] = frameRow[x * 3 + 1];
+		samples[index++] = frameRow[x * 3 + 2];
     	    }
     	}
     	readCount++;
@@ -109,47 +109,81 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
     	    index2 += 3;
 
     	    // now find out the most representative values
-    	    unsigned char bgr = 0, bgg = 0, bgb = 0;
+    	    unsigned char bgr = 127, bgg = 127, bgb = 127;
     	    unsigned long bgrCount = 0, bggCount = 0, bgbCount = 0;
     	    unsigned long hist[256];
-
+	    
     	    memset (hist, 0, sizeof (unsigned long) * 256);
     	    for (unsigned int i = 0; i < readCount; i++) hist[r[i]]++;
-    	    for (unsigned int i = 0; i < 256; i++)
+    	    for (unsigned int i = lowThreshold; i <= highThreshold; i++)
     	    {
     		if (hist[i] > bgrCount)
     		{
     		    bgrCount = hist[i]; bgr = i;
     		}
     	    }
+	    // found no pixels due to thresholds, repeat to have some meaningful value
+	    if (bgrCount == 0)
+	    {
+		for (unsigned int i = 0; i <= 255; i++)
+		{
+		    if (hist[i] > bgrCount)
+		    {
+			bgrCount = hist[i]; bgr = i;
+		    }
+		}       	
+	    }
 
     	    memset (hist, 0, sizeof (unsigned long) * 256);
     	    for (unsigned int i = 0; i < readCount; i++) hist[g[i]]++;
-    	    for (unsigned int i = 0; i < 256; i++)
+    	    for (unsigned int i = lowThreshold; i <= highThreshold; i++)
     	    {
     		if (hist[i] > bggCount)
     		{
     		    bggCount = hist[i]; bgg = i;
     		}
     	    }
+	    // found no pixels due to thresholds, repeat to have some meaningful value
+	    if (bggCount == 0)
+	    {
+		for (unsigned int i = 0; i <= 255; i++)
+		{
+		    if (hist[i] > bggCount)
+		    {
+			bggCount = hist[i]; bgg = i;
+		    }
+		}
+	    }
 
     	    memset (hist, 0, sizeof (unsigned long) * 256);
     	    for (unsigned int i = 0; i < readCount; i++) hist[b[i]]++;
-    	    for (unsigned int i = 0; i < 256; i++)
+    	    for (unsigned int i = lowThreshold; i <= highThreshold; i++)
     	    {
     		if (hist[i] > bgbCount)
     		{
     		    bgbCount = hist[i]; bgb = i;
     		}
     	    }
-
+	    // found no pixels due to thresholds, repeat to have some meaningful value
+	    if (bgbCount == 0)
+	    {
+		for (unsigned int i = 0; i <= 255; i++)
+		{
+		    if (hist[i] > bgbCount)
+		    {
+			bgbCount = hist[i]; bgb = i;
+		    }
+		}
+	    }
+	    
     	    // now go through the triplets and select the one that is the closest from this evaluation
     	    unsigned int mindist = 1000000;
     	    unsigned char fr = 0, fg = 0, fb = 0;
     	    for (unsigned int i = 0; i < readCount; i++)
     	    {
+		unsigned int luminance = int(r[i]) + int(g[i]) + int(b[i]);		
     		unsigned int dist = abs(int(r[i]) - int(bgr)) + abs(int(g[i]) - int(bgg)) + abs(int(b[i]) - int(bgb));
-    		if (dist < mindist)
+    		if (dist < mindist && luminance >= (lowThreshold * 3) && luminance <= (highThreshold * 3))
     		{
     		    mindist = dist;
     		    fr = r[i];
@@ -157,6 +191,22 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
     		    fb = b[i];
     		}
     	    }
+
+	    // relax if threshold does not yield results...
+	    if (mindist == 1000000)
+	    {
+		for (unsigned int i = 0; i < readCount; i++)
+		{
+		    unsigned int dist = abs(int(r[i]) - int(bgr)) + abs(int(g[i]) - int(bgg)) + abs(int(b[i]) - int(bgb));
+		    if (dist < mindist)
+		    {
+			mindist = dist;
+			fr = r[i];
+			fg = g[i];
+			fb = b[i];
+		    }
+		}
+	    }	   
 
     	    // and at last record result in the bg buffer
     	    bgRow[x*3] = fr;
@@ -177,7 +227,7 @@ Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime,
 
 
 
-Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, unsigned int framesCount)
+Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, unsigned int framesCount, unsigned char lowThreshold, unsigned char highThreshold)
 {
     int width = capture->width;
     int height = capture->height;

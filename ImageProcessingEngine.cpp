@@ -98,9 +98,13 @@ void ImageProcessingEngine::Reset(Parameters& parameters)
     if (parameters.bgFilename.empty() && bgRecalculate && capture->type != Capture::IMAGE)
     {
 	if (bgCalcType == BG_MEDIAN)
-	    background = CalculateBackgroundMedian (capture, bgStartTime, bgEndTime, bgFrames);
+	{
+	    background = CalculateBackgroundMedian (capture, bgStartTime, bgEndTime, bgFrames, bgLowThreshold, bgHighThreshold);
+	}
 	else if (bgCalcType == BG_MEAN)
-	    background = CalculateBackgroundMean (capture, bgStartTime, bgEndTime, bgFrames);
+	{
+	    background = CalculateBackgroundMean (capture, bgStartTime, bgEndTime, bgFrames, bgLowThreshold, bgHighThreshold);
+	}
 	else
 	{
 	    cerr << "Unknown background calculation type..." << std::endl;
@@ -304,6 +308,8 @@ void ImageProcessingEngine::LoadXML(FileNode& fn)
 	bgFrames = (int)fn["BackgroundFrames"];
 	bgEndTime = (int)fn["BackgroundEndTime"];
 	bgStartTime = (int)fn["BackgroundStartTime"];
+	bgLowThreshold = (int)fn["BackgroundLowThreshold"];
+	bgHighThreshold = (int)fn["BackgroundHighThreshold"];
 
 	string bt = (string)fn["BackgroundCalcType"];
 	if (bt == "median") bgCalcType = BG_MEDIAN;
@@ -327,6 +333,8 @@ void ImageProcessingEngine::SaveXML(FileStorage& fs)
     fs << "BackgroundFrames" << bgFrames;
     fs << "BackgroundStartTime" << bgStartTime;
     fs << "BackgroundEndTime" << bgEndTime;
+    fs << "BackgroundLowThreshold" << bgLowThreshold;
+    fs << "BackgroundHighThreshold" << bgHighThreshold;
     if (bgCalcType == BG_MEDIAN)
 	fs << "BackgroundCalcType" << "median";
     else if (bgCalcType == BG_MEAN)
@@ -656,9 +664,10 @@ void ImageProcessingEngine::Step(bool drawHud)
 		return;
 	}
 
-	// finally respect timestep if it is set
-	if (timestep > 0.00001 && ctime < nextStepTime)
-	    return;
+	// // finally respect timestep if it is set
+	// removed as it prevents online visualization of param change
+	// if (timestep > 0.00001 && ctime < nextStepTime)
+	//     return;
     }
 
     // passed all tests, proceed to image analysis
@@ -698,12 +707,19 @@ bool ImageProcessingEngine::GetNextFrame()
 {
     bool capres = capture->GetNextFrame();
     double ctime = capture->GetTime();
-
+        
     // respect time bounds (not implementing forward jump...)
     if (useTimeBoundaries && durationTime > 0.0000001)
     	if (ctime > (startTime + durationTime))
     	    return false;
 
+    // // finally respect timestep if it is set
+    // if (timestep > 0.00001 && ctime < nextStepTime)
+    // 	return capres;
+
+    // // else finish frame conversion if needed
+    // capture->ConvertFrame();
+    
     return capres;
 }
 

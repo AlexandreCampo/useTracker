@@ -127,6 +127,10 @@ const long MainFrame::ID_STATICTEXT3 = wxNewId();
 const long MainFrame::ID_SPINCTRL3 = wxNewId();
 const long MainFrame::ID_STATICTEXT2 = wxNewId();
 const long MainFrame::ID_SPINCTRL2 = wxNewId();
+const long MainFrame::ID_STATICTEXT17 = wxNewId();
+const long MainFrame::ID_SPINCTRL14 = wxNewId();
+const long MainFrame::ID_STATICTEXT18 = wxNewId();
+const long MainFrame::ID_SPINCTRL15 = wxNewId();
 const long MainFrame::ID_STATICTEXT5 = wxNewId();
 const long MainFrame::ID_RADIOBOX1 = wxNewId();
 const long MainFrame::ID_STATICTEXT4 = wxNewId();
@@ -317,6 +321,16 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     SpinCtrlBgFrames = new wxSpinCtrl(BackgroundTab, ID_SPINCTRL2, _T("17"), wxDefaultPosition, wxDefaultSize, 0, 1, 1000, 17, _T("ID_SPINCTRL2"));
     SpinCtrlBgFrames->SetValue(_T("17"));
     FlexGridSizer5->Add(SpinCtrlBgFrames, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+    StaticText17 = new wxStaticText(BackgroundTab, ID_STATICTEXT17, _("Low threshold"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT17"));
+    FlexGridSizer5->Add(StaticText17, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    SpinCtrlBgLowThreshold = new wxSpinCtrl(BackgroundTab, ID_SPINCTRL14, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 255, 0, _T("ID_SPINCTRL14"));
+    SpinCtrlBgLowThreshold->SetValue(_T("0"));
+    FlexGridSizer5->Add(SpinCtrlBgLowThreshold, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    StaticText18 = new wxStaticText(BackgroundTab, ID_STATICTEXT18, _("High threshold"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT18"));
+    FlexGridSizer5->Add(StaticText18, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    SpinCtrlBgHighThreshold = new wxSpinCtrl(BackgroundTab, ID_SPINCTRL15, _T("255"), wxDefaultPosition, wxDefaultSize, 0, 0, 255, 255, _T("ID_SPINCTRL15"));
+    SpinCtrlBgHighThreshold->SetValue(_T("255"));
+    FlexGridSizer5->Add(SpinCtrlBgHighThreshold, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     StaticText5 = new wxStaticText(BackgroundTab, ID_STATICTEXT5, _("Method"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT5"));
     FlexGridSizer5->Add(StaticText5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     wxString __wxRadioBoxChoices_1[2] =
@@ -559,6 +573,8 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     Connect(ID_SPINCTRL1,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlBgStartChange);
     Connect(ID_SPINCTRL3,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlBgEndChange);
     Connect(ID_SPINCTRL2,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlBgFramesChange);
+    Connect(ID_SPINCTRL14,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlBgLowThresholdChange);
+    Connect(ID_SPINCTRL15,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlBgHighThresholdChange);
     Connect(ID_RADIOBOX1,wxEVT_COMMAND_RADIOBOX_SELECTED,(wxObjectEventFunction)&MainFrame::OnRadioBoxMethodSelect);
     Connect(ID_CHECKBOX1,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&MainFrame::OnCheckBoxRecalculateClick);
     Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnbuttonBgRecalculateClick);
@@ -1045,7 +1061,7 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
     // print hud
     hudApp.setTo (0);
     if (hudVisible) PrintInfoToHud();
-    
+
     if (activeTab == ProcessingTab)
     {
 	ipEngine.Step(hudVisible);
@@ -1062,7 +1078,7 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
     else if (activeTab == ProcessingTab)
 	oglScreen = ipEngine.capture->frame;
     else if (activeTab == ConfigTab)
-	oglScreen = ipEngine.zoneMap;	
+	oglScreen = ipEngine.zoneMap;
     else if (activeTab == CalibrationTab)
 	oglScreen = ipEngine.capture->CalibrationGetFrame();
     else if (activeTab == BackgroundTab)
@@ -1139,8 +1155,8 @@ void MainFrame::PrintInfoToHud()
     char str[256];
     Point pos;
     int baseline = 0;
-    Size textSize;       
-    
+    Size textSize;
+
     if (activeTab == ProcessingTab)
     {
 	int stotal = ipEngine.capture->GetTime();
@@ -1148,13 +1164,13 @@ void MainFrame::PrintInfoToHud()
 	int m = (stotal - h*3600) / 60;
 	int s = stotal - h*3600 - m*60;
 	sprintf (str, "%02d:%02d:%02d", h, m, s);
-	
+
 	textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 2.0, 2, &baseline);
 	pos = Point (hudApp.cols - textSize.width - hudApp.cols / 20, textSize.height + hudApp.rows / 20);
 
 	putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 2.0, cvScalar(0,0,0,255), 2, CV_AA);
 	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 2.0, cvScalar(0,255,200,255), 2, CV_AA);
-		
+
 	// play speed
 	if (playSpeed > 0)
 	{
@@ -1162,7 +1178,7 @@ void MainFrame::PrintInfoToHud()
 	    textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
 	    pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
 	    pos.y += textSize.height + hudApp.rows / 20;
-	    
+
 	    putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
 	    putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,255,200,255), 2, CV_AA);
 	}
@@ -1213,11 +1229,11 @@ void MainFrame::PrintInfoToHud()
 	float coeffY = (float) hudApp.rows / (float) hud.rows;
 	rectangle(hudApp, Point(marqueeStart.x * coeffX, marqueeStart.y * coeffY), Point(marqueeEnd.x * coeffX, marqueeEnd.y * coeffY), Scalar (255, 255, 255, 255), 2);
     }
-   
+
     // mouse coordinates
     wxPoint mp = wxGetMousePosition();
     wxPoint lmp = GLCanvas1->ScreenToClient(mp);
-    
+
     // is over displayed image ?
     if (lmp.x >= glPadX && lmp.y >= glPadY && lmp.x < (glCanvasWidth - glPadX) && lmp.y < (glCanvasHeight - glPadY))
     {
@@ -1236,7 +1252,7 @@ void MainFrame::PrintInfoToHud()
 	// float py = zoomStartY + (zoomEndY - zoomStartY) * (float) p.y / (float)oglScreen.rows;
 	// pp.x = px * ipEngine.capture->width;
 	// pp.y = py * ipEngine.capture->height;
-	
+
 	// show in hud
 	sprintf (str, "Mouse : %d %d", pppx, pppy);
 
@@ -1367,6 +1383,8 @@ void MainFrame::OnUpdateFrameParameters (wxCommandEvent& event)
     ipEngine.bgFrames = SpinCtrlBgFrames->GetValue();
     //ipEngine.bgInterval = SpinCtrlBgInterval->GetValue();
     ipEngine.bgStartTime = SpinCtrlBgStart->GetValue();
+    ipEngine.bgLowThreshold = (unsigned char) SpinCtrlBgStart->GetValue();
+    ipEngine.bgHighThreshold = (unsigned char) SpinCtrlBgStart->GetValue();
     //parameters.bgFilename = string(TextCtrlBgFilename->GetValue());
     //parameters.bgUseFile = RadioBoxBgUseFile->IsItemEnabled(0);
 }
@@ -1381,9 +1399,9 @@ void MainFrame::OnbuttonBgRecalculateClick(wxCommandEvent& event)
 {
     Mat newBg;
     if (ipEngine.bgCalcType == ImageProcessingEngine::BG_MEDIAN)
-	newBg = CalculateBackgroundMedian (ipEngine.capture, ipEngine.bgStartTime, ipEngine.bgEndTime, ipEngine.bgFrames);
+	newBg = CalculateBackgroundMedian (ipEngine.capture, ipEngine.bgStartTime, ipEngine.bgEndTime, ipEngine.bgFrames, ipEngine.bgLowThreshold, ipEngine.bgHighThreshold);
     else if (ipEngine.bgCalcType == ImageProcessingEngine::BG_MEAN)
-	newBg = CalculateBackgroundMean (ipEngine.capture, ipEngine.bgStartTime, ipEngine.bgEndTime, ipEngine.bgFrames);
+	newBg = CalculateBackgroundMean (ipEngine.capture, ipEngine.bgStartTime, ipEngine.bgEndTime, ipEngine.bgFrames, ipEngine.bgLowThreshold, ipEngine.bgHighThreshold);
     newBg.copyTo(ipEngine.background);
 
     // wxProgressDialog dialog(wxT(“Progress dialog example”),
@@ -1827,7 +1845,7 @@ string MainFrame::CamelCaseToText (string text)
 bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool showDialog)
 {
     wxDialog* dlg;
-    
+
     auto pfv = NewPipelinePluginVector[TextToCamelCase(str)] (fn, ipEngine.threadsCount);
 //    auto pfv = CreatePipelinePlugin (TextToCamelCase(str), fn, ipEngine.threadsCount);
 
@@ -2339,6 +2357,11 @@ void MainFrame::UpdateUI ()
     SpinCtrlBgStart->SetValue(ipEngine.bgStartTime);
     SpinCtrlBgEnd->SetValue(ipEngine.bgEndTime);
     SpinCtrlBgFrames->SetValue(ipEngine.bgFrames);
+    SpinCtrlBgLowThreshold->SetValue((int)ipEngine.bgLowThreshold);
+
+    cout << "just set spinctrl high to " << (int) ipEngine.bgHighThreshold << endl;
+    
+    SpinCtrlBgHighThreshold->SetValue((int)ipEngine.bgHighThreshold);
     CheckBoxRecalculate->SetValue(ipEngine.bgRecalculate);
     if (ipEngine.bgCalcType == ImageProcessingEngine::BG_MEDIAN) RadioBoxMethod->SetStringSelection("median");
     if (ipEngine.bgCalcType == ImageProcessingEngine::BG_MEAN) RadioBoxMethod->SetStringSelection("mean");
@@ -2962,7 +2985,18 @@ void MainFrame::OnCheckBoxConfigStitchAdjustLuminosityClick(wxCommandEvent& even
 {
     if (ipEngine.capture->type == Capture::MULTI_VIDEO)
     {
-	CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
+	// TODO nothing happens here ? 
+//	CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
 //	c->ResetStitching();
     }
+}
+
+void MainFrame::OnSpinCtrlBgHighThresholdChange(wxSpinEvent& event)
+{
+    ipEngine.bgHighThreshold = (unsigned char) event.GetPosition();
+}
+
+void MainFrame::OnSpinCtrlBgLowThresholdChange(wxSpinEvent& event)
+{
+    ipEngine.bgLowThreshold = (unsigned char) event.GetPosition();
 }
