@@ -319,12 +319,13 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FlexGridSizer5->Add(SpinCtrlBgFrames, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     StaticText5 = new wxStaticText(BackgroundTab, ID_STATICTEXT5, _("Method"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT5"));
     FlexGridSizer5->Add(StaticText5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    wxString __wxRadioBoxChoices_1[2] =
+    wxString __wxRadioBoxChoices_1[3] =
     {
     	_("mean"),
-    	_("median")
+    	_("median"),
+	_("max")
     };
-    RadioBoxMethod = new wxRadioBox(BackgroundTab, ID_RADIOBOX1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 2, __wxRadioBoxChoices_1, 2, 0, wxDefaultValidator, _T("ID_RADIOBOX1"));
+    RadioBoxMethod = new wxRadioBox(BackgroundTab, ID_RADIOBOX1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 3, __wxRadioBoxChoices_1, 2, 0, wxDefaultValidator, _T("ID_RADIOBOX1"));
     RadioBoxMethod->SetSelection(0);
     FlexGridSizer5->Add(RadioBoxMethod, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     StaticText4 = new wxStaticText(BackgroundTab, ID_STATICTEXT4, _("When loading"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT4"));
@@ -1382,6 +1383,8 @@ void MainFrame::OnbuttonBgRecalculateClick(wxCommandEvent& event)
     Mat newBg;
     if (ipEngine.bgCalcType == ImageProcessingEngine::BG_MEDIAN)
 	newBg = CalculateBackgroundMedian (ipEngine.capture, ipEngine.bgStartTime, ipEngine.bgEndTime, ipEngine.bgFrames);
+    else if (ipEngine.bgCalcType == ImageProcessingEngine::BG_MAX)
+	newBg = CalculateBackgroundMax (ipEngine.capture, ipEngine.bgStartTime, ipEngine.bgEndTime, ipEngine.bgFrames);
     else if (ipEngine.bgCalcType == ImageProcessingEngine::BG_MEAN)
 	newBg = CalculateBackgroundMean (ipEngine.capture, ipEngine.bgStartTime, ipEngine.bgEndTime, ipEngine.bgFrames);
     newBg.copyTo(ipEngine.background);
@@ -2331,6 +2334,7 @@ void MainFrame::OnRadioBoxMethodSelect(wxCommandEvent& event)
     {
 	if (sel == "median") ipEngine.bgCalcType = ImageProcessingEngine::BG_MEDIAN;
 	if (sel == "mean") ipEngine.bgCalcType = ImageProcessingEngine::BG_MEAN;
+	if (sel == "max") ipEngine.bgCalcType = ImageProcessingEngine::BG_MAX;
     }
 }
 
@@ -2342,6 +2346,7 @@ void MainFrame::UpdateUI ()
     CheckBoxRecalculate->SetValue(ipEngine.bgRecalculate);
     if (ipEngine.bgCalcType == ImageProcessingEngine::BG_MEDIAN) RadioBoxMethod->SetStringSelection("median");
     if (ipEngine.bgCalcType == ImageProcessingEngine::BG_MEAN) RadioBoxMethod->SetStringSelection("mean");
+    if (ipEngine.bgCalcType == ImageProcessingEngine::BG_MAX) RadioBoxMethod->SetStringSelection("max");
 
     SpinCtrlStartTime->SetValue(ipEngine.startTime);
     SpinCtrlDuration->SetValue(ipEngine.durationTime);
