@@ -280,7 +280,7 @@ int main(int argc, char **argv)
 	{
 	    // respect timestep if it is set
 	    // todo...
-//	    if (ipEngine.timestep > 0.00001 && ipEngine.capture->GetTime() >= ipEngine.nextStepTime)
+	    if (ipEngine.timestep < 0.00001 || ipEngine.capture->GetTime() >= ipEngine.nextStepTime)
 		ipEngine.Step();
 	    
 	    long frameNumber = ipEngine.capture->GetFrameNumber();
