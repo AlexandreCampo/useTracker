@@ -49,7 +49,7 @@ version="$(wget -q -O - http://sourceforge.net/projects/aruco/files/ | egrep -m1
 version="1.3.0"
 #wget -O aruco-$version.tgz http://sourceforge.net/projects/aruco/files/$version/aruco-"$version".tgz/download
 
-wget https://downloads.sourceforge.net/project/aruco/OldVersions/aruco-1.3.0.tgz
+wget -O aruco-$version.tgz https://downloads.sourceforge.net/project/aruco/OldVersions/aruco-1.3.0.tgz
 
 
 echo
