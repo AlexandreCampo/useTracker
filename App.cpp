@@ -45,6 +45,7 @@
 #include "RemoteControl.h"
 #include "AdaptiveThreshold.h"
 #include "TakeSnapshots.h"
+#include "Anthomology.h"
 
 #include "CaptureVideo.h"
 #include "CaptureUSBCamera.h"
@@ -94,6 +95,7 @@ int main(int argc, char **argv)
     NewPipelinePluginVector["RemoteControl"] = &CreatePipelinePluginVector<RemoteControl>;
     NewPipelinePluginVector["AdaptiveThreshold"] = &CreatePipelinePluginVector<AdaptiveThreshold>;
     NewPipelinePluginVector["TakeSnapshots"] = &CreatePipelinePluginVector<TakeSnapshots>;
+    NewPipelinePluginVector["Anthomology"] = &CreatePipelinePluginVector<Anthomology>;
 
     #ifdef ARUCO
     NewPipelinePluginVector["Aruco"] = &CreatePipelinePluginVector<Aruco>;

@@ -203,6 +203,8 @@
 		<Unit filename="dialogs/DialogTakeSnapshots.h" />
 		<Unit filename="dialogs/DialogTracker.cpp" />
 		<Unit filename="dialogs/DialogTracker.h" />
+		<Unit filename="dialogs/DialogAnthomology.cpp" />
+		<Unit filename="dialogs/DialogAnthomology.h" />
 		<Unit filename="plugins/AdaptiveThreshold.cpp" />
 		<Unit filename="plugins/Aruco.cpp" />
 		<Unit filename="plugins/Aruco.h" />
@@ -227,6 +229,7 @@
 		<Unit filename="plugins/Stopwatch.cpp" />
 		<Unit filename="plugins/Stopwatch.h" />
 		<Unit filename="plugins/TakeSnapshots.cpp" />
+		<Unit filename="plugins/Anthomology.cpp" />
 		<Unit filename="plugins/Tracker.cpp" />
 		<Unit filename="plugins/ZonesOfInterest.cpp" />
 		<Unit filename="plugins/ZonesOfInterest.h" />
@@ -260,6 +263,7 @@
 		<Unit filename="wxsmith/DialogSimpleTags.wxs" />
 		<Unit filename="wxsmith/DialogStopwatch.wxs" />
 		<Unit filename="wxsmith/DialogTakeSnapshots.wxs" />
+		<Unit filename="wxsmith/DialogAnthomology.wxs" />
 		<Unit filename="wxsmith/DialogTracker.wxs" />
 		<Unit filename="wxsmith/Mainframe.wxs" />
 		<Extensions>
@@ -289,6 +293,7 @@
 					<wxDialog wxs="wxsmith/DialogAruco.wxs" src="dialogs/DialogAruco.cpp" hdr="dialogs/DialogAruco.h" fwddecl="0" i18n="1" name="DialogAruco" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogStopwatch.wxs" src="dialogs/DialogStopwatch.cpp" hdr="dialogs/DialogStopwatch.h" fwddecl="0" i18n="1" name="DialogStopwatch" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogSimpleTags.wxs" src="dialogs/DialogSimpleTags.cpp" hdr="dialogs/DialogSimpleTags.h" fwddecl="0" i18n="1" name="DialogSimpleTags" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogAnthomology.wxs" src="dialogs/DialogAnthomology.cpp" hdr="dialogs/DialogAnthomology.h" fwddecl="0" i18n="1" name="DialogAnthomology" language="CPP" />
 				</resources>
 			</wxsmith>
 			<debugger />
