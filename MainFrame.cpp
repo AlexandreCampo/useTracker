@@ -63,6 +63,7 @@
 #include "DialogSimpleTags.h"
 #include "DialogAdaptiveThreshold.h"
 #include "DialogTakeSnapshots.h"
+#include "DialogArucoColor.h"
 
 #include "Utils.h"
 #include "Capture.h"
@@ -683,6 +684,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     ListBoxPipelinePlugins->Append("take snapshots");
     ListBoxPipelinePlugins->Append("record pixels");
     ListBoxPipelinePlugins->Append("stopwatch");
+    ListBoxPipelinePlugins->Append("aruco color");
     ListBoxPipelinePlugins->Append("remote control");
 
     #ifdef ARUCO
@@ -1974,6 +1976,12 @@ bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool s
     else if (str == "remote control")
     {
 	dlg = nullptr;
+    }
+    else if (str == "aruco color")
+    {
+	DialogArucoColor* dialog = new DialogArucoColor(this);
+	dialog->SetPlugin(pfv);
+	dlg = dialog;
     }
     else
     {
