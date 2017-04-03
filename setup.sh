@@ -49,7 +49,7 @@ echo "Downloading ArUco" $version
 version="1.3.0"
 #wget -O aruco-$version.tgz http://sourceforge.net/projects/aruco/files/$version/aruco-"$version".tgz/download
 
-wget -O https://downloads.sourceforge.net/project/aruco/OldVersions/aruco-1.3.0.tgz
+wget https://downloads.sourceforge.net/project/aruco/OldVersions/aruco-1.3.0.tgz
 
 echo
 echo
