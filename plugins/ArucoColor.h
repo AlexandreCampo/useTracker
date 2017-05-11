@@ -24,20 +24,30 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 
+#include <arucoColor/arucoColor.h>
+
+
 class ArucoColor : public PipelinePlugin
 {
 public:
 
+
+    
+    // instantiate aruco color lib/main object
+    ac::ArucoColor libac;
+    
     int size = 1;
     cv::Mat structuringElement;
     cv::Mat result;
-
+    
     ArucoColor();
 
     void Reset();
     void Apply();
     void LoadXML (cv::FileNode& fn);
     void SaveXML (cv::FileStorage& fs);
+
+    void OutputHud (cv::Mat& hud);
 
     void SetSize(int s);
 };

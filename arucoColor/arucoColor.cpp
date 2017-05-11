@@ -8,7 +8,9 @@
 using namespace cv; 
 using namespace std;
 
-
+namespace ac
+{
+    
 ArucoColor::ArucoColor()
 {
     // init data structures for image segmentation   
@@ -42,7 +44,7 @@ void ArucoColor::setDictionary(std::vector<int> codes)
     {
 	dictionary->add(codes[i], i);
 
-	Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
+	Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255), 255);
 	drawingColors.push_back(color);
     }
 }
@@ -92,22 +94,22 @@ void ArucoColor::segmentImage (const Mat& img)
     cvtColor(img, grey, CV_BGR2GRAY);
     adaptiveThreshold(grey, segmented, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, ATBLOCK, ATCONST);
 
-    // use negative version for better detection
-    bitwise_not(segmented, segmented);
+    // // use negative version for better detection
+    // bitwise_not(segmented, segmented);
 
-    // detect colors
-    cvtColor(img, hsv, CV_BGR2HSV);
+    // // detect colors
+    // cvtColor(img, hsv, CV_BGR2HSV);
         
-    inRange(hsv, hsvMin, hsvMax, segmented2);
+    // inRange(hsv, hsvMin, hsvMax, segmented2);
 
-    // erode & dilate colors
-    if (DILATE > 0)
-    {
-	dilate (segmented2, segmented3, structuringElement);	    
-    }
+    // // erode & dilate colors
+    // if (DILATE > 0)
+    // {
+    // 	dilate (segmented2, segmented3, structuringElement);	    
+    // }
 
-    // merge detection of colors and white borders
-    segmented |= segmented3;
+    // // merge detection of colors and white borders
+    // segmented |= segmented3;
 }
 
 void ArucoColor::findRectangles(Mat& seg)
@@ -244,7 +246,7 @@ void ArucoColor::drawMarkers(Mat& img)
 	std::ostringstream str;
 	str << m.id;			    
 	Point pt = m.corners[0];
-	cv::putText(img, str.str(), pt, CV_FONT_HERSHEY_PLAIN, 3, Scalar (0,0,250), 2, CV_AA);		    
+	cv::putText(img, str.str(), pt, CV_FONT_HERSHEY_PLAIN, 5, Scalar (0,0,250, 255), 3, CV_AA);		    
 	i++;
     }
 }
@@ -254,7 +256,7 @@ std::vector<ArucoColor::DetectedMarker>& ArucoColor::detect (const Mat& img)
     detectedMarkers.clear();
     
     segmentImage(img);
-
+    
     findRectangles(segmented);
 
     // Draw contours + hull results
@@ -262,8 +264,12 @@ std::vector<ArucoColor::DetectedMarker>& ArucoColor::detect (const Mat& img)
     for( int i = 0; i < hulls.size(); i++ )
     {
 	// warp to get rectified rectangle
-	warp(hsv, markerImage, markerImage.size(), hulls[i]);
+	warp(img, markerImage, markerImage.size(), hulls[i]);
 
+	// convert marker image to hsv
+	cvtColor(markerImage, markerImage, CV_BGR2HSV);
+
+	
 	Marker candidate;
 	if (decodeMarker(markerImage, candidate))
 	{	    
@@ -279,4 +285,6 @@ std::vector<ArucoColor::DetectedMarker>& ArucoColor::detect (const Mat& img)
 	}
     }
     return detectedMarkers;
+}
+
 }

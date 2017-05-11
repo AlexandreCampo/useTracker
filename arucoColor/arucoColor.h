@@ -11,6 +11,9 @@
 #include "opencv2/highgui/highgui.hpp"
 
 
+namespace ac
+{
+    
 class ArucoColor
 {
 public:
@@ -41,6 +44,9 @@ public:
 //    void setParameters
     
     void setMarkersDimensions (int numRows, int numCols);
+
+
+    cv::Mat segmented;
     
 private:
 
@@ -87,7 +93,6 @@ private:
     // members for segmentation
     cv::Mat grey;
     cv::Mat hsv;
-    cv::Mat segmented;
     cv::Mat segmented2;
     cv::Mat segmented3;
     cv::Vec3b hsvMin;
@@ -106,5 +111,5 @@ private:
 
 };
 
-
+}
 #endif

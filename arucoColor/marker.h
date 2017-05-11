@@ -3,6 +3,9 @@
 
 #include <vector>
 
+namespace ac
+{
+    
 struct Marker
 {    
     static std::vector<int> distances;
@@ -40,4 +43,5 @@ struct Marker
 
 };
 
+}
 #endif

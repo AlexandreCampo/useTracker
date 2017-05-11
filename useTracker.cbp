@@ -111,6 +111,7 @@
 			<Add option="-I ./plugins" />
 			<Add option="-I./capture" />
 			<Add option="-I./dialogs" />
+			<Add option="-I./arucoColor" />
 			<Add option="-pipe" />
 			<Add option="-DARUCO" />
 		</Compiler>
@@ -131,6 +132,8 @@
 			<Add option="-lboost_filesystem" />
 			<Add option="-laruco" />
 			<Add option="-lbluetooth" />
+			<Add option="-L ./arucoColor" />
+			<Add option="-larucoColor" />
 		</Linker>
 		<Unit filename="App.cpp" />
 		<Unit filename="App.h" />
@@ -169,6 +172,8 @@
 		<Unit filename="dialogs/DialogAdaptiveThreshold.h" />
 		<Unit filename="dialogs/DialogAruco.cpp" />
 		<Unit filename="dialogs/DialogAruco.h" />
+		<Unit filename="dialogs/DialogArucoColor.cpp" />
+		<Unit filename="dialogs/DialogArucoColor.h" />
 		<Unit filename="dialogs/DialogBackgroundDiffGMG.cpp" />
 		<Unit filename="dialogs/DialogBackgroundDiffGMG.h" />
 		<Unit filename="dialogs/DialogBackgroundDiffMOG.cpp" />
@@ -201,13 +206,12 @@
 		<Unit filename="dialogs/DialogStopwatch.h" />
 		<Unit filename="dialogs/DialogTakeSnapshots.cpp" />
 		<Unit filename="dialogs/DialogTakeSnapshots.h" />
-		<Unit filename="dialogs/DialogArucoColor.cpp" />
-		<Unit filename="dialogs/DialogArucoColor.h" />
 		<Unit filename="dialogs/DialogTracker.cpp" />
 		<Unit filename="dialogs/DialogTracker.h" />
 		<Unit filename="plugins/AdaptiveThreshold.cpp" />
 		<Unit filename="plugins/Aruco.cpp" />
 		<Unit filename="plugins/Aruco.h" />
+		<Unit filename="plugins/ArucoColor.cpp" />
 		<Unit filename="plugins/BackgroundDiffGMG.cpp" />
 		<Unit filename="plugins/BackgroundDiffMOG.cpp" />
 		<Unit filename="plugins/BackgroundDiffMOG2.cpp" />
@@ -229,7 +233,6 @@
 		<Unit filename="plugins/Stopwatch.cpp" />
 		<Unit filename="plugins/Stopwatch.h" />
 		<Unit filename="plugins/TakeSnapshots.cpp" />
-		<Unit filename="plugins/ArucoColor.cpp" />
 		<Unit filename="plugins/Tracker.cpp" />
 		<Unit filename="plugins/ZonesOfInterest.cpp" />
 		<Unit filename="plugins/ZonesOfInterest.h" />
@@ -247,6 +250,7 @@
 		</Unit>
 		<Unit filename="wxsmith/DialogAdaptiveThreshold.wxs" />
 		<Unit filename="wxsmith/DialogAruco.wxs" />
+		<Unit filename="wxsmith/DialogArucoColor.wxs" />
 		<Unit filename="wxsmith/DialogBackgroundDiffGMG.wxs" />
 		<Unit filename="wxsmith/DialogBackgroundDiffMOG.wxs" />
 		<Unit filename="wxsmith/DialogBackgroundDiffMOG2.wxs" />
@@ -264,7 +268,6 @@
 		<Unit filename="wxsmith/DialogStopwatch.wxs" />
 		<Unit filename="wxsmith/DialogTakeSnapshots.wxs" />
 		<Unit filename="wxsmith/DialogTracker.wxs" />
-		<Unit filename="wxsmith/DialogArucoColor.wxs" />
 		<Unit filename="wxsmith/Mainframe.wxs" />
 		<Extensions>
 			<code_completion />

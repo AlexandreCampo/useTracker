@@ -6,6 +6,9 @@
 
 using namespace std;
 
+namespace ac
+{
+
 std::vector<int> Marker::distances;
 std::vector<int> Marker::referenceHues;
 
@@ -176,3 +179,4 @@ int Marker::euclideanDistance (const std::vector<int>& mhues) const
     return d;
 }
 
+}

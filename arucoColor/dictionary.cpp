@@ -10,6 +10,9 @@
 
 using namespace std;
 
+namespace ac
+{
+
 Dictionary::Dictionary(int dimensions, std::vector<int>& referenceHues)
 {
     this->dimensions = dimensions;
@@ -222,4 +225,6 @@ int Dictionary::findBestMarker(const vector<int>& hues, int maxHueDist, int maxM
     
     dist = bestDistance;
     return best;
+}
+
 }

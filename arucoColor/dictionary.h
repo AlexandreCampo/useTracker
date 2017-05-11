@@ -5,6 +5,9 @@
 #include <map>
 #include "marker.h"
 
+namespace ac
+{
+    
 class Dictionary
 {
 public :
@@ -26,5 +29,5 @@ public :
     int findBestMarker(const std::vector<int>& p, int maxHueDist, int maxMarkerDist, int& dist);
 };
 
-
+}
 #endif

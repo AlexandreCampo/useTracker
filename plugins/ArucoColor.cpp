@@ -19,11 +19,44 @@
 
 #include "ArucoColor.h"
 
+#include "ImageProcessingEngine.h"
+
+#include <iostream>
+#include <iomanip>
+
+#include <fstream>
+#include <iomanip>
+#include <sstream>
+#include <stdio.h>
+#include <string>
+
 using namespace cv;
 using namespace std;
 
+    static const int dictMarkerIDs[] = {5880, 5601, 5261, 2411, 1749, 191, 6431, 1530, 3165, 4986, 3597, 4387, 3522, 1069, 316, 5661, 5276, 3843, 2584, 3380, 5815, 6337, 3473, 1345, 6158, 5809, 4024, 5350, 905, 2147, 1401, 4165, 676, 5306, 3135, 3814, 5938, 4858, 3393, 1212, 1142, 2626, 4401, 5334, 6111, 294, 4792, 254, 4678, 3859, 4534, 4636, 481, 3026, 2154, 3021, 3660, 5410, 5773, 6007, 5777, 4590, 1600, 1920, 3808};
+
+    // int referenceHues[] = {17,  28,  42,  65,  94, 107, 120, 139, 175}; // original !!!
+
+    static const int referenceHues[] = {19, 28, 47, 75, 96, 105, 113, 135, 173}; // from histograms...
+
 ArucoColor::ArucoColor () : PipelinePlugin()
 {
+
+    // specify markers
+    libac.setMarkersDimensions(2,2);
+
+    // set hues
+    vector<int> refHues;
+    for (int i = 0; i < 9; i++)
+	refHues.push_back(referenceHues[i]);
+    libac.setReferenceHues(refHues);
+    
+    // set dictionary
+    vector<int> dict;
+    for (int i = 0; i < 65; i++)
+	dict.push_back(dictMarkerIDs[i]);
+    libac.setDictionary(dict);
+
 }
 
 void ArucoColor::Reset()
@@ -65,4 +98,21 @@ void ArucoColor::SetSize (int s)
 
 void ArucoColor::Apply()
 {
+    // find markers
+    vector<ac::ArucoColor::DetectedMarker> detectedMarkers = libac.detect(pipeline->frame);
+
+    libac.segmented.copyTo(pipeline->marked);
+
+}
+
+void ArucoColor::OutputHud (Mat& hud)
+{
+    // output 
+    libac.drawMarkers(hud);
+
+    
+    // for (unsigned int i = 0; i < markers.size(); i++)
+    // {
+    // 	markers[i].draw(hud, Scalar(0,255,0), 2);
+    // }
 }
