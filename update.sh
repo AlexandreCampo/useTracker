@@ -37,6 +37,7 @@ fi
 
 if [ $error -eq 0 ]; then
 echo "# Cleaning sources"; make clean &> update_status.txt
+echo "# Building arucoColor"; cd arucoColor; premake4 gmake &> update_status.txt; make config=release clean &> update_status.txt; make config=release &> update_status.txt; cd ..
 echo "# Building from updated sources"; make release &> update_status.txt
 fi
 ) |
