@@ -40,8 +40,6 @@ public:
     
     std::vector<DetectedMarker>& detect (const cv::Mat& img);
     void drawMarkers(cv::Mat& img);
-
-//    void setParameters
     
     void setMarkersDimensions (int numRows, int numCols);
 
@@ -57,7 +55,7 @@ private:
     int SEGSTHRESHOLD = 60;
     int SEGVTHRESHOLD = 100;
 
-    int MINCONTOURSIZE = 0;
+//    int MINCONTOURSIZE = 0;
 
     int ATBLOCK = 13;
     int ATCONST = -5;
@@ -70,7 +68,7 @@ private:
     int MAXHUEDIST = 25;
     int MAXMARKERDIST = 4;
 
-    int DILATE = 2;
+//    int DILATE = 2;
 
 
     // markers characteristics

@@ -26,6 +26,7 @@
 #include <wx/sizer.h>
 #include <wx/button.h>
 #include <wx/stattext.h>
+#include <wx/textctrl.h>
 //*)
 
 #include "PipelinePlugin.h"
@@ -42,9 +43,31 @@ class DialogArucoColor: public wxDialog
 		virtual ~DialogArucoColor();
 
 		//(*Declarations(DialogArucoColor)
-		wxSpinCtrl* SpinCtrlArucoColorSize;
+		wxSpinCtrl* SpinCtrlMaxMarkerRange;
+		wxSpinCtrl* SpinCtrlAtBlockSize;
 		wxStaticText* StaticText1;
+		wxStaticText* StaticText10;
+		wxSpinCtrl* SpinCtrlMinArea;
+		wxSpinCtrl* SpinCtrlMarkerCols;
+		wxStaticText* StaticText3;
+		wxSpinCtrl* SpinCtrlSaturationThreshold;
 		wxButton* ButtonOk;
+		wxSpinCtrl* SpinCtrlMaxArea;
+		wxStaticText* StaticText8;
+		wxStaticText* StaticText12;
+		wxStaticText* StaticText7;
+		wxSpinCtrl* SpinCtrlValueThreshold;
+		wxStaticText* StaticText4;
+		wxStaticText* StaticText5;
+		wxStaticText* StaticText2;
+		wxStaticText* StaticText6;
+		wxTextCtrl* TextCtrlDictionary;
+		wxTextCtrl* TextCtrlRefHues;
+		wxStaticText* StaticText9;
+		wxSpinCtrl* SpinCtrlAtConstant;
+		wxStaticText* StaticText11;
+		wxSpinCtrl* SpinCtrlMaxHueDeviation;
+		wxSpinCtrl* SpinCtrlMarkerRows;
 		//*)
 
 	protected:
@@ -52,6 +75,28 @@ class DialogArucoColor: public wxDialog
 		//(*Identifiers(DialogArucoColor)
 		static const long ID_STATICTEXT1;
 		static const long ID_SPINCTRL1;
+		static const long ID_STATICTEXT2;
+		static const long ID_SPINCTRL2;
+		static const long ID_STATICTEXT3;
+		static const long ID_TEXTCTRL1;
+		static const long ID_STATICTEXT4;
+		static const long ID_TEXTCTRL2;
+		static const long ID_STATICTEXT5;
+		static const long ID_SPINCTRL4;
+		static const long ID_STATICTEXT6;
+		static const long ID_SPINCTRL3;
+		static const long ID_STATICTEXT7;
+		static const long ID_SPINCTRL5;
+		static const long ID_STATICTEXT8;
+		static const long ID_SPINCTRL6;
+		static const long ID_STATICTEXT9;
+		static const long ID_SPINCTRL7;
+		static const long ID_STATICTEXT10;
+		static const long ID_SPINCTRL8;
+		static const long ID_STATICTEXT11;
+		static const long ID_SPINCTRL9;
+		static const long ID_STATICTEXT12;
+		static const long ID_SPINCTRL10;
 		static const long ID_BUTTON1;
 		//*)
 
