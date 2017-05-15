@@ -111,6 +111,7 @@
 			<Add option="-I ./plugins" />
 			<Add option="-I./capture" />
 			<Add option="-I./dialogs" />
+			<Add option="-I./arucoColor" />
 			<Add option="-pipe" />
 			<Add option="-DARUCO" />
 		</Compiler>
@@ -131,6 +132,8 @@
 			<Add option="-lboost_filesystem" />
 			<Add option="-laruco" />
 			<Add option="-lbluetooth" />
+			<Add option="-L ./arucoColor" />
+			<Add option="-larucoColor" />
 		</Linker>
 		<Unit filename="App.cpp" />
 		<Unit filename="App.h" />
@@ -169,6 +172,8 @@
 		<Unit filename="dialogs/DialogAdaptiveThreshold.h" />
 		<Unit filename="dialogs/DialogAruco.cpp" />
 		<Unit filename="dialogs/DialogAruco.h" />
+		<Unit filename="dialogs/DialogArucoColor.cpp" />
+		<Unit filename="dialogs/DialogArucoColor.h" />
 		<Unit filename="dialogs/DialogBackgroundDiffGMG.cpp" />
 		<Unit filename="dialogs/DialogBackgroundDiffGMG.h" />
 		<Unit filename="dialogs/DialogBackgroundDiffMOG.cpp" />
@@ -206,6 +211,7 @@
 		<Unit filename="plugins/AdaptiveThreshold.cpp" />
 		<Unit filename="plugins/Aruco.cpp" />
 		<Unit filename="plugins/Aruco.h" />
+		<Unit filename="plugins/ArucoColor.cpp" />
 		<Unit filename="plugins/BackgroundDiffGMG.cpp" />
 		<Unit filename="plugins/BackgroundDiffMOG.cpp" />
 		<Unit filename="plugins/BackgroundDiffMOG2.cpp" />
@@ -244,6 +250,7 @@
 		</Unit>
 		<Unit filename="wxsmith/DialogAdaptiveThreshold.wxs" />
 		<Unit filename="wxsmith/DialogAruco.wxs" />
+		<Unit filename="wxsmith/DialogArucoColor.wxs" />
 		<Unit filename="wxsmith/DialogBackgroundDiffGMG.wxs" />
 		<Unit filename="wxsmith/DialogBackgroundDiffMOG.wxs" />
 		<Unit filename="wxsmith/DialogBackgroundDiffMOG2.wxs" />
@@ -289,6 +296,7 @@
 					<wxDialog wxs="wxsmith/DialogAruco.wxs" src="dialogs/DialogAruco.cpp" hdr="dialogs/DialogAruco.h" fwddecl="0" i18n="1" name="DialogAruco" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogStopwatch.wxs" src="dialogs/DialogStopwatch.cpp" hdr="dialogs/DialogStopwatch.h" fwddecl="0" i18n="1" name="DialogStopwatch" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogSimpleTags.wxs" src="dialogs/DialogSimpleTags.cpp" hdr="dialogs/DialogSimpleTags.h" fwddecl="0" i18n="1" name="DialogSimpleTags" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogArucoColor.wxs" src="dialogs/DialogArucoColor.cpp" hdr="dialogs/DialogArucoColor.h" fwddecl="0" i18n="1" name="DialogArucoColor" language="CPP" />
 				</resources>
 			</wxsmith>
 			<debugger />

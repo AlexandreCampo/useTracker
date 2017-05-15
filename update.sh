@@ -26,7 +26,7 @@ wxversion=3.0
 # make sure you all necessary packages installed
 if [ $error -eq 0 ]; then
 zenity --info --text "About to update required package dependencies"
-(echo "# Updating packages..."; pkexec apt-get --yes install build-essential cmake libwxbase$wxversion-dev libopencv-dev libboost-program-options-dev libboost-filesystem-dev libwxgtk$wxversion-dev libwxgtk-media$wxversion-dev freeglut3-dev libva-dev libbz2-dev libx264-dev libbluetooth-dev
+(echo "# Updating packages..."; pkexec apt-get --yes install build-essential cmake premake4 libwxbase$wxversion-dev libopencv-dev libboost-program-options-dev libboost-filesystem-dev libwxgtk$wxversion-dev libwxgtk-media$wxversion-dev freeglut3-dev libva-dev libbz2-dev libx264-dev libbluetooth-dev
 ) |
 zenity --progress \
   --title="Updating package dependencies for USE Tracker" \
@@ -37,6 +37,7 @@ fi
 
 if [ $error -eq 0 ]; then
 echo "# Cleaning sources"; make clean &> update_status.txt
+echo "# Building arucoColor"; cd arucoColor; premake4 gmake &> update_status.txt; make config=release clean &> update_status.txt; make config=release &> update_status.txt; cd ..
 echo "# Building from updated sources"; make release &> update_status.txt
 fi
 ) |

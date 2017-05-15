@@ -63,6 +63,7 @@
 #include "DialogSimpleTags.h"
 #include "DialogAdaptiveThreshold.h"
 #include "DialogTakeSnapshots.h"
+#include "DialogArucoColor.h"
 
 #include "Utils.h"
 #include "Capture.h"
@@ -683,6 +684,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     ListBoxPipelinePlugins->Append("take snapshots");
     ListBoxPipelinePlugins->Append("record pixels");
     ListBoxPipelinePlugins->Append("stopwatch");
+    ListBoxPipelinePlugins->Append("aruco color");
     ListBoxPipelinePlugins->Append("remote control");
 
     #ifdef ARUCO
@@ -702,6 +704,10 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     sliderMoving = false;
     hudVisible = true;
 
+    // set text color
+    textColor = cvScalar(255,178,102,255);
+
+    // init opengl display
     int argc = wxTheApp->argc;
     char** argv = wxTheApp->argv;
     glutInit(&argc, argv);
@@ -824,7 +830,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     if (!ipEngine.capture) ipEngine.capture = new CaptureDefault();
     wxString str = "USE Tracker: ";
     this->SetTitle(str + ipEngine.capture->GetName());
-
+    
     ResetImageProcessingEngine(parameters);
 
     // last step...
@@ -1169,7 +1175,8 @@ void MainFrame::PrintInfoToHud()
 	pos = Point (hudApp.cols - textSize.width - hudApp.cols / 20, textSize.height + hudApp.rows / 20);
 
 	putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 2.0, cvScalar(0,0,0,255), 2, CV_AA);
-	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 2.0, cvScalar(0,255,200,255), 2, CV_AA);
+	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 2.0, textColor, 2, CV_AA);
+//TODO	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 2.0, cvScalar(0,255,200,255), 2, CV_AA);
 
 	// play speed
 	if (playSpeed > 0)
@@ -1180,7 +1187,7 @@ void MainFrame::PrintInfoToHud()
 	    pos.y += textSize.height + hudApp.rows / 20;
 
 	    putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-	    putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,255,200,255), 2, CV_AA);
+	    putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
 	}
 	if (playSpeed < 0)
 	{
@@ -1189,7 +1196,7 @@ void MainFrame::PrintInfoToHud()
 	    pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
 	    pos.y += textSize.height + hudApp.rows / 20;
 	    putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-	    putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,255,200,255), 2, CV_AA);
+	    putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
 	}
 
 	// frame number
@@ -1200,7 +1207,7 @@ void MainFrame::PrintInfoToHud()
 	    pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
 	    pos.y += textSize.height + hudApp.rows / 20;
 	    putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-	    putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,255,200,255), 2, CV_AA);
+	    putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
 	}
     }
     else if (activeTab == ConfigTab)
@@ -1210,7 +1217,7 @@ void MainFrame::PrintInfoToHud()
 	pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
 	pos.y = textSize.height + hudApp.rows / 20;
 	putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,255,200,255), 2, CV_AA);
+	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
     }
     else if (activeTab == BackgroundTab)
     {
@@ -1219,7 +1226,7 @@ void MainFrame::PrintInfoToHud()
 	pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
 	pos.y = textSize.height + hudApp.rows / 20;
 	putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,255,200,255), 2, CV_AA);
+	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
     }
 
     // selection
@@ -1262,11 +1269,11 @@ void MainFrame::PrintInfoToHud()
 	    sprintf (str, "Mouse : %d %d, over zone : %d", pppx, pppy, zone);
 	}
 
-	textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 0.6, 2, &baseline);
+	textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
 	pos.x = hudApp.cols / 100;
 	pos.y = hudApp.rows - textSize.height;
-	putText(hudApp, str, pos+Point(1,1), FONT_HERSHEY_SIMPLEX, 0.6, cvScalar(0,0,0,255), 2, CV_AA);
-	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 0.6, cvScalar(0,255,200,255), 2, CV_AA);
+	putText(hudApp, str, pos+Point(1,1), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
+	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
     }
 }
 
@@ -1974,6 +1981,12 @@ bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool s
     else if (str == "remote control")
     {
 	dlg = nullptr;
+    }
+    else if (str == "aruco color")
+    {
+	DialogArucoColor* dialog = new DialogArucoColor(this);
+	dialog->SetPlugin(pfv);
+	dlg = dialog;
     }
     else
     {

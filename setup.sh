@@ -28,7 +28,7 @@ sudo echo Updating, please wait...
 sudo apt-get -q -y update
 sudo apt-get -q -y upgrade
 echo Installing Dependencies
-sudo apt-get --yes install build-essential cmake libwxbase$wxversion-dev libopencv-dev libboost-program-options-dev libboost-filesystem-dev libwxgtk$wxversion-dev libwxgtk-media$wxversion-dev freeglut3-dev libva-dev libbz2-dev libx264-dev libbluetooth-dev || error '$LINENO: Aborted, could not install the required dependencies.'
+sudo apt-get --yes install build-essential cmake premake4 libwxbase$wxversion-dev libopencv-dev libboost-program-options-dev libboost-filesystem-dev libwxgtk$wxversion-dev libwxgtk-media$wxversion-dev freeglut3-dev libva-dev libbz2-dev libx264-dev libbluetooth-dev || error '$LINENO: Aborted, could not install the required dependencies.'
 
 else
 
@@ -36,7 +36,7 @@ su -c "echo Updating, please wait...;\
 apt-get -q -y update;\
 apt-get -q -y upgrade; \
 echo Installing Dependencies; \
-apt-get --yes install build-essential cmake libwxbase$wxversion-dev libopencv-dev libboost-program-options-dev libboost-filesystem-dev libwxgtk$wxversion-dev libwxgtk-media$wxversion-dev freeglut3-dev libva-dev libbz2-dev libx264-dev libbluetooth-dev || error '$LINENO: Aborted, could not install the required dependencies.' "
+apt-get --yes install build-essential cmake premake4 libwxbase$wxversion-dev libopencv-dev libboost-program-options-dev libboost-filesystem-dev libwxgtk$wxversion-dev libwxgtk-media$wxversion-dev freeglut3-dev libva-dev libbz2-dev libx264-dev libbluetooth-dev || error '$LINENO: Aborted, could not install the required dependencies.' "
 
 fi
 
@@ -45,12 +45,11 @@ fi
 echo
 echo
 echo "Downloading ArUco" $version
-version="$(wget -q -O - http://sourceforge.net/projects/aruco/files/ | egrep -m1 -o '\"[0-9](\.[0-9]+)+' | cut -c2-)"
+#version="$(wget -q -O - http://sourceforge.net/projects/aruco/files/ | egrep -m1 -o '\"[0-9](\.[0-9]+)+' | cut -c2-)"
 version="1.3.0"
 #wget -O aruco-$version.tgz http://sourceforge.net/projects/aruco/files/$version/aruco-"$version".tgz/download
 
 wget -O aruco-$version.tgz https://downloads.sourceforge.net/project/aruco/OldVersions/aruco-1.3.0.tgz
-
 
 echo
 echo
@@ -74,6 +73,16 @@ fi
 
 echo "ArUco" $version "ready to be used"
 cd ..
+
+echo "Building ArUcoColor"
+cd arucoColor
+premake4 gmake
+make config=release clean
+make config=release
+
+echo "ArUcoColor ready to be used"
+cd ..
+
 
 echo
 echo
