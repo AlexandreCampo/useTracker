@@ -426,6 +426,9 @@ private:
     cv::Mat hudApp;
     cv::Mat hud;
 
+    // text color
+    cv::Scalar textColor;
+    
     DECLARE_EVENT_TABLE()
 };
 
