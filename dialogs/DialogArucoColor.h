@@ -22,9 +22,11 @@
 
 //(*Headers(DialogArucoColor)
 #include <wx/spinctrl.h>
+#include <wx/checkbox.h>
 #include <wx/dialog.h>
 #include <wx/sizer.h>
 #include <wx/button.h>
+#include <wx/filepicker.h>
 #include <wx/stattext.h>
 #include <wx/textctrl.h>
 //*)
@@ -45,6 +47,8 @@ class DialogArucoColor: public wxDialog
 		//(*Declarations(DialogArucoColor)
 		wxSpinCtrl* SpinCtrlMaxMarkerRange;
 		wxSpinCtrl* SpinCtrlAtBlockSize;
+		wxCheckBox* CheckBoxOutput;
+		wxButton* ButtonUpdateDictionary;
 		wxStaticText* StaticText1;
 		wxStaticText* StaticText10;
 		wxSpinCtrl* SpinCtrlMinArea;
@@ -63,6 +67,8 @@ class DialogArucoColor: public wxDialog
 		wxStaticText* StaticText6;
 		wxTextCtrl* TextCtrlDictionary;
 		wxTextCtrl* TextCtrlRefHues;
+		wxFilePickerCtrl* FilePickerCtrl1;
+		wxButton* ButtonUpdateRefHues;
 		wxStaticText* StaticText9;
 		wxSpinCtrl* SpinCtrlAtConstant;
 		wxStaticText* StaticText11;
@@ -79,8 +85,10 @@ class DialogArucoColor: public wxDialog
 		static const long ID_SPINCTRL2;
 		static const long ID_STATICTEXT3;
 		static const long ID_TEXTCTRL1;
+		static const long ID_BUTTON2;
 		static const long ID_STATICTEXT4;
 		static const long ID_TEXTCTRL2;
+		static const long ID_BUTTON3;
 		static const long ID_STATICTEXT5;
 		static const long ID_SPINCTRL4;
 		static const long ID_STATICTEXT6;
@@ -97,6 +105,8 @@ class DialogArucoColor: public wxDialog
 		static const long ID_SPINCTRL9;
 		static const long ID_STATICTEXT12;
 		static const long ID_SPINCTRL10;
+		static const long ID_CHECKBOX1;
+		static const long ID_FILEPICKERCTRL1;
 		static const long ID_BUTTON1;
 		//*)
 
@@ -108,6 +118,20 @@ class DialogArucoColor: public wxDialog
 		void OnButtonOkClick(wxCommandEvent& event);
 		void OnSpinCtrlArucoColorSizeChange(wxSpinEvent& event);
 		void OnKeyDown(wxKeyEvent& event);
+		void OnSpinCtrlMarkerColsChange(wxSpinEvent& event);
+		void OnSpinCtrlMarkerRowsChange(wxSpinEvent& event);
+		void OnSpinCtrlAtBlockSizeChange(wxSpinEvent& event);
+		void OnSpinCtrlAtConstantChange(wxSpinEvent& event);
+		void OnSpinCtrlSaturationThresholdChange(wxSpinEvent& event);
+		void OnSpinCtrlValueThresholdChange(wxSpinEvent& event);
+		void OnSpinCtrlMinAreaChange(wxSpinEvent& event);
+		void OnSpinCtrlMaxAreaChange(wxSpinEvent& event);
+		void OnSpinCtrlMaxHueDeviationChange(wxSpinEvent& event);
+		void OnSpinCtrlMaxMarkerRangeChange(wxSpinEvent& event);
+		void OnButtonUpdateRefHuesClick(wxCommandEvent& event);
+		void OnButtonUpdateDictionaryClick(wxCommandEvent& event);
+		void OnCheckBoxOutputClick(wxCommandEvent& event);
+		void OnFilePickerCtrl1FileChanged(wxFileDirPickerEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

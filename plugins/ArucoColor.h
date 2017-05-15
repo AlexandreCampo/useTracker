@@ -26,19 +26,21 @@
 
 #include <arucoColor/arucoColor.h>
 
+#include <string>
+#include <iostream>
+#include <fstream>
 
 class ArucoColor : public PipelinePlugin
 {
 public:
-
-
     
     // instantiate aruco color lib/main object
     ac::ArucoColor libac;
-    
-    int size = 1;
-    cv::Mat structuringElement;
-    cv::Mat result;
+
+    std::string outputFilename;
+    std::fstream outputStream;
+
+
     
     ArucoColor();
 
@@ -46,10 +48,38 @@ public:
     void Apply();
     void LoadXML (cv::FileNode& fn);
     void SaveXML (cv::FileStorage& fs);
+    void OutputStep();
+    void CloseOutput();
+    void OpenOutput();
 
     void OutputHud (cv::Mat& hud);
 
-    void SetSize(int s);
+    void SetMarkerCols(int v);
+    void SetMarkerRows(int v);
+    void SetSaturationThreshold(int v);
+    void SetValueThreshold(int v);
+    void SetAdaptiveThresholdBlockSize(int v);
+    void SetAdaptiveThresholdConstant(int v);
+    void SetMinMarkerArea(int v);
+    void SetMaxMarkerArea(int v);
+    void SetMaxHueDeviation(int v);
+    void SetMaxMarkerRange(int v);
+    void SetDictionaryString(std::string str);
+    void SetReferenceHuesString(std::string str);
+
+    int GetMarkerCols();
+    int GetMarkerRows();
+    int GetSaturationThreshold();
+    int GetValueThreshold();
+    int GetAdaptiveThresholdBlockSize();
+    int GetAdaptiveThresholdConstant();
+    int GetMinMarkerArea();
+    int GetMaxMarkerArea();
+    int GetMaxHueDeviation();
+    int GetMaxMarkerRange();
+    std::string GetDictionaryString();
+    std::string GetReferenceHuesString();
+    
 };
 
 #endif

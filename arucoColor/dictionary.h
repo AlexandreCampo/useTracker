@@ -1,4 +1,3 @@
-
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
@@ -8,26 +7,26 @@
 namespace ac
 {
     
-class Dictionary
-{
-public :
-    
-    int dimensions;
-    
-    std::vector<int> huesToColor;
+    struct Dictionary
+    {
+	std::vector<int> huesToColor;
+	
+	bool updated = false;
+	std::vector<Marker> markers;
+	std::vector<int> codes;    
 
-    bool sorted = false;
-    std::vector<Marker> markers;
-    std::vector<int> codes;    
-
-    Dictionary(int dimensions, std::vector<int>& referenceHues);
-    ~Dictionary();
-
-    void sort();
-    void add(int code, int id);
-    void clear();    
-    int findBestMarker(const std::vector<int>& p, int maxHueDist, int maxMarkerDist, int& dist);
-};
+	std::vector<std::pair<int,int>> originalCodes
+	
+	Dictionary();
+	~Dictionary();
+	
+	void sort();
+	void add(int code, int id);
+	std::vector<std::pair<int,int>> getCodes();
+	void clear();    
+	int findBestMarker(const std::vector<int>& p, int maxHueDist, int maxMarkerDist, int& dist);
+	void refreshHues();
+    };
 
 }
 #endif
