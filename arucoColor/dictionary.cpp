@@ -63,7 +63,7 @@ namespace ac
     {
 	updated = false;
 
-	originalCodes.push_back(pair(code,id))
+	originalCodes.push_back(pair<int,int>(code,id));
 	
 	Marker m (code, id);
 
@@ -98,7 +98,7 @@ namespace ac
 	clear();
 
 	for (auto c : oc)
-	    dictionary.add(c.first(), c.second());
+	    add(c.first, c.second);
 
 	sort();
 	refreshHues();

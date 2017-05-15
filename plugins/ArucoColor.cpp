@@ -260,7 +260,7 @@ string ArucoColor::GetDictionaryString()
        
     vector<int> codes;
     for (auto p : ci)
-	codes.push_back(p.first());
+	codes.push_back(p.first);
     
     // build a string from marker codes
     stringstream ss;

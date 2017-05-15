@@ -77,14 +77,12 @@ DialogArucoColor::DialogArucoColor(wxWindow* parent,wxWindowID id,const wxPoint&
 	wxFlexGridSizer* FlexGridSizer3;
 	wxStaticBoxSizer* StaticBoxSizer4;
 	wxFlexGridSizer* FlexGridSizer5;
-	wxStaticBoxSizer* StaticBoxSizer1;
 
 	Create(parent, wxID_ANY, _("ArucoColor"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE, _T("wxID_ANY"));
 	SetMinSize(wxSize(-1,-1));
 	SetMaxSize(wxSize(-1,-1));
 	SetFocus();
 	FlexGridSizer3 = new wxFlexGridSizer(0, 1, 0, 0);
-	StaticBoxSizer1 = new wxStaticBoxSizer(wxVERTICAL, this, _("ArucoColor"));
 	FlexGridSizer6 = new wxFlexGridSizer(0, 1, 0, 0);
 	FlexGridSizer6->AddGrowableCol(0);
 	StaticBoxSizer2 = new wxStaticBoxSizer(wxHORIZONTAL, this, _("Markers"));
@@ -104,18 +102,18 @@ DialogArucoColor::DialogArucoColor(wxWindow* parent,wxWindowID id,const wxPoint&
 	FlexGridSizer8->Add(FlexGridSizer1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer7 = new wxFlexGridSizer(0, 3, 0, 0);
 	FlexGridSizer7->AddGrowableCol(1);
-	StaticText3 = new wxStaticText(this, ID_STATICTEXT3, _("Reference hues\n (list of hues from 0 to 180)"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE, _T("ID_STATICTEXT3"));
+	StaticText3 = new wxStaticText(this, ID_STATICTEXT3, _("Reference hues\n (list of hues, 0 to 180)"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE, _T("ID_STATICTEXT3"));
 	FlexGridSizer7->Add(StaticText3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	TextCtrlRefHues = new wxTextCtrl(this, ID_TEXTCTRL1, _("0 45 90 135"), wxDefaultPosition, wxSize(200,40), wxTE_AUTO_SCROLL|wxTE_PROCESS_ENTER|wxTE_MULTILINE|wxTE_WORDWRAP, wxDefaultValidator, _T("ID_TEXTCTRL1"));
 	TextCtrlRefHues->SetMinSize(wxSize(-1,-1));
 	TextCtrlRefHues->SetMaxSize(wxSize(-1,-1));
-	FlexGridSizer7->Add(TextCtrlRefHues, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer7->Add(TextCtrlRefHues, 1, wxALL|wxEXPAND, 5);
 	ButtonUpdateRefHues = new wxButton(this, ID_BUTTON2, _("Update"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON2"));
 	FlexGridSizer7->Add(ButtonUpdateRefHues, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticText4 = new wxStaticText(this, ID_STATICTEXT4, _("Dictionary \n(list of codes)"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE, _T("ID_STATICTEXT4"));
 	FlexGridSizer7->Add(StaticText4, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	TextCtrlDictionary = new wxTextCtrl(this, ID_TEXTCTRL2, _("1000 2000"), wxDefaultPosition, wxSize(200,100), wxTE_AUTO_SCROLL|wxTE_PROCESS_ENTER|wxTE_MULTILINE|wxTE_WORDWRAP, wxDefaultValidator, _T("ID_TEXTCTRL2"));
-	FlexGridSizer7->Add(TextCtrlDictionary, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer7->Add(TextCtrlDictionary, 1, wxALL|wxEXPAND, 5);
 	ButtonUpdateDictionary = new wxButton(this, ID_BUTTON3, _("Update"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON3"));
 	FlexGridSizer7->Add(ButtonUpdateDictionary, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer8->Add(FlexGridSizer7, 1, wxALL|wxEXPAND, 5);
@@ -181,8 +179,7 @@ DialogArucoColor::DialogArucoColor(wxWindow* parent,wxWindowID id,const wxPoint&
 	FlexGridSizer9->Add(FilePickerCtrl1, 1, wxALL|wxEXPAND, 5);
 	StaticBoxSizer5->Add(FlexGridSizer9, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer6->Add(StaticBoxSizer5, 1, wxALL|wxEXPAND, 5);
-	StaticBoxSizer1->Add(FlexGridSizer6, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	FlexGridSizer3->Add(StaticBoxSizer1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer3->Add(FlexGridSizer6, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	FlexGridSizer2 = new wxFlexGridSizer(0, 3, 0, 0);
 	ButtonOk = new wxButton(this, ID_BUTTON1, _("OK"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
 	ButtonOk->SetDefault();
@@ -239,7 +236,7 @@ void DialogArucoColor::SetPlugin (std::vector<PipelinePlugin*> pfv)
     TextCtrlRefHues->SetValue(plugin[0]->GetReferenceHuesString());
 
     FilePickerCtrl1->SetPath(plugin[0]->outputFilename);
-    CheckBoxOutput->SetValue(plugin[0]->output);    
+    CheckBoxOutput->SetValue(plugin[0]->output);
 }
 
 void DialogArucoColor::OnButtonCancelClick(wxCommandEvent& event)

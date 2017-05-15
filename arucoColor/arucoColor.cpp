@@ -13,6 +13,7 @@ namespace ac
     
     ArucoColor::ArucoColor()
     {
+	setMarkersDimensions(2,2);
     }
 
     ArucoColor::~ArucoColor()
@@ -56,12 +57,12 @@ namespace ac
 	// some changes such as reference hues, dictionary,
 	// or marker dimensions require rebuilding data
 	Marker::distances.clear();
-	for (int i = 0; i < hues.size(); i++)
+	for (int i = 0; i < Marker::referenceHues.size(); i++)
 	{
-	    if (i <= hues.size() / 2)
+	    if (i <= Marker::referenceHues.size() / 2)
 		Marker::distances.push_back(i);
 	    else
-		Marker::distances.push_back(hues.size() - i);	
+		Marker::distances.push_back(Marker::referenceHues.size() - i);	
 	}
     }
 

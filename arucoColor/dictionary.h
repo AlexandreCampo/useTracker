@@ -15,12 +15,13 @@ namespace ac
 	std::vector<Marker> markers;
 	std::vector<int> codes;    
 
-	std::vector<std::pair<int,int>> originalCodes
+	std::vector<std::pair<int,int>> originalCodes;
 	
 	Dictionary();
 	~Dictionary();
 	
 	void sort();
+	void update();
 	void add(int code, int id);
 	std::vector<std::pair<int,int>> getCodes();
 	void clear();    
