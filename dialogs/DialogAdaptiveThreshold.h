@@ -46,6 +46,7 @@ class DialogAdaptiveThreshold: public wxDialog
 		//(*Declarations(DialogAdaptiveThreshold)
 		wxCheckBox* CheckBoxRestrictToZone;
 		wxStaticText* StaticText1;
+		wxCheckBox* CheckBoxInvert;
 		wxStaticText* StaticText3;
 		wxSpinCtrl* SpinCtrlZone;
 		wxRadioBox* RadioBoxMethod;
@@ -64,6 +65,7 @@ class DialogAdaptiveThreshold: public wxDialog
 		static const long ID_SPINCTRL1;
 		static const long ID_STATICTEXT2;
 		static const long ID_SPINCTRL2;
+		static const long ID_CHECKBOX2;
 		static const long ID_RADIOBOX2;
 		static const long ID_CHECKBOX1;
 		static const long ID_STATICTEXT3;
@@ -82,6 +84,8 @@ class DialogAdaptiveThreshold: public wxDialog
 		void OnSpinCtrlZoneChange(wxSpinEvent& event);
 		void OnCheckBoxRestrictToZoneClick(wxCommandEvent& event);
 		void OnRadioBoxOperatorSelect(wxCommandEvent& event);
+		void OnCheckBox1Click(wxCommandEvent& event);
+		void OnCheckBoxInvertClick(wxCommandEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

@@ -36,7 +36,8 @@ public:
     int zone = 0;
     bool restrictToZone = false;
     bool additive = false;
-
+    bool invert = false;
+    
     cv::Mat diff;
     cv::Mat sum;
     cv::Mat marked2;

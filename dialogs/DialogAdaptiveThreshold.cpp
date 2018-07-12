@@ -32,6 +32,7 @@ const long DialogAdaptiveThreshold::ID_STATICTEXT1 = wxNewId();
 const long DialogAdaptiveThreshold::ID_SPINCTRL1 = wxNewId();
 const long DialogAdaptiveThreshold::ID_STATICTEXT2 = wxNewId();
 const long DialogAdaptiveThreshold::ID_SPINCTRL2 = wxNewId();
+const long DialogAdaptiveThreshold::ID_CHECKBOX2 = wxNewId();
 const long DialogAdaptiveThreshold::ID_RADIOBOX2 = wxNewId();
 const long DialogAdaptiveThreshold::ID_CHECKBOX1 = wxNewId();
 const long DialogAdaptiveThreshold::ID_STATICTEXT3 = wxNewId();
@@ -50,12 +51,12 @@ DialogAdaptiveThreshold::DialogAdaptiveThreshold(wxWindow* parent,wxWindowID id,
 	wxFlexGridSizer* FlexGridSizer1;
 	wxFlexGridSizer* FlexGridSizer2;
 	wxFlexGridSizer* FlexGridSizer4;
+	wxFlexGridSizer* FlexGridSizer6;
 	wxFlexGridSizer* FlexGridSizer3;
+	wxFlexGridSizer* FlexGridSizer5;
 	wxStaticBoxSizer* StaticBoxSizer1;
 
-	Create(parent, id, _("Adaptive background difference"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE, _T("id"));
-	SetClientSize(wxDefaultSize);
-	Move(wxDefaultPosition);
+	Create(parent, wxID_ANY, _("Adaptive background difference"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE, _T("wxID_ANY"));
 	SetMinSize(wxSize(-1,-1));
 	SetMaxSize(wxSize(-1,-1));
 	SetFocus();
@@ -68,7 +69,8 @@ DialogAdaptiveThreshold::DialogAdaptiveThreshold(wxWindow* parent,wxWindowID id,
 	RadioBoxMethod = new wxRadioBox(this, ID_RADIOBOX1, _("Thresholding method"), wxDefaultPosition, wxDefaultSize, 2, __wxRadioBoxChoices_1, 2, 0, wxDefaultValidator, _T("ID_RADIOBOX1"));
 	RadioBoxMethod->SetSelection(0);
 	FlexGridSizer3->Add(RadioBoxMethod, 1, wxALL|wxEXPAND, 5);
-	StaticBoxSizer1 = new wxStaticBoxSizer(wxHORIZONTAL, this, _("Adaptive background difference"));
+	StaticBoxSizer1 = new wxStaticBoxSizer(wxVERTICAL, this, _("Adaptive background difference"));
+	FlexGridSizer5 = new wxFlexGridSizer(2, 1, 0, 0);
 	FlexGridSizer1 = new wxFlexGridSizer(0, 2, 0, 0);
 	StaticText1 = new wxStaticText(this, ID_STATICTEXT1, _("Block size"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT1"));
 	FlexGridSizer1->Add(StaticText1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
@@ -80,7 +82,13 @@ DialogAdaptiveThreshold::DialogAdaptiveThreshold(wxWindow* parent,wxWindowID id,
 	SpinCtrlConstant = new wxSpinCtrl(this, ID_SPINCTRL2, _T("0"), wxDefaultPosition, wxDefaultSize, 0, -255, 255, 0, _T("ID_SPINCTRL2"));
 	SpinCtrlConstant->SetValue(_T("0"));
 	FlexGridSizer1->Add(SpinCtrlConstant, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-	StaticBoxSizer1->Add(FlexGridSizer1, 1, wxALL, 5);
+	FlexGridSizer5->Add(FlexGridSizer1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+	FlexGridSizer6 = new wxFlexGridSizer(0, 3, 0, 0);
+	CheckBoxInvert = new wxCheckBox(this, ID_CHECKBOX2, _("Invert"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_CHECKBOX2"));
+	CheckBoxInvert->SetValue(false);
+	FlexGridSizer6->Add(CheckBoxInvert, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	FlexGridSizer5->Add(FlexGridSizer6, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
+	StaticBoxSizer1->Add(FlexGridSizer5, 1, wxALL|wxEXPAND, 5);
 	FlexGridSizer3->Add(StaticBoxSizer1, 1, wxALL|wxEXPAND, 5);
 	wxString __wxRadioBoxChoices_2[2] =
 	{
@@ -114,6 +122,7 @@ DialogAdaptiveThreshold::DialogAdaptiveThreshold(wxWindow* parent,wxWindowID id,
 	Connect(ID_RADIOBOX1,wxEVT_COMMAND_RADIOBOX_SELECTED,(wxObjectEventFunction)&DialogAdaptiveThreshold::OnRadioBoxMethodSelect);
 	Connect(ID_SPINCTRL1,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogAdaptiveThreshold::OnSpinCtrlBlockSizeChange);
 	Connect(ID_SPINCTRL2,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogAdaptiveThreshold::OnSpinCtrlConstantChange);
+	Connect(ID_CHECKBOX2,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogAdaptiveThreshold::OnCheckBoxInvertClick);
 	Connect(ID_RADIOBOX2,wxEVT_COMMAND_RADIOBOX_SELECTED,(wxObjectEventFunction)&DialogAdaptiveThreshold::OnRadioBoxOperatorSelect);
 	Connect(ID_CHECKBOX1,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogAdaptiveThreshold::OnCheckBoxRestrictToZoneClick);
 	Connect(ID_SPINCTRL_ZONE,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogAdaptiveThreshold::OnSpinCtrlZoneChange);
@@ -145,7 +154,7 @@ void DialogAdaptiveThreshold::SetPlugin (std::vector<PipelinePlugin*> pfv)
 
     SpinCtrlZone->SetValue(plugin[0]->zone);
     RadioBoxOperator->SetSelection(plugin[0]->additive);
-    CheckBoxRestrictToZone->SetValue(plugin[0]->restrictToZone);    
+    CheckBoxRestrictToZone->SetValue(plugin[0]->restrictToZone);
 }
 
 void DialogAdaptiveThreshold::OnButtonOkClick(wxCommandEvent& event)
@@ -187,4 +196,14 @@ void DialogAdaptiveThreshold::OnRadioBoxOperatorSelect(wxCommandEvent& event)
 {
     for (auto f : plugin)
     	f->additive = RadioBoxOperator->GetSelection();
+}
+
+void DialogAdaptiveThreshold::OnCheckBox1Click(wxCommandEvent& event)
+{
+}
+
+void DialogAdaptiveThreshold::OnCheckBoxInvertClick(wxCommandEvent& event)
+{
+    for (auto f : plugin)
+    	f->invert = event.IsChecked();
 }

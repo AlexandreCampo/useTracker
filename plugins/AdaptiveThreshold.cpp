@@ -42,6 +42,9 @@ void AdaptiveThreshold::Apply()
     cvtColor(diff, sum, CV_BGR2GRAY);
     cv::adaptiveThreshold(sum, marked2, 255, thresholdMethod, THRESH_BINARY, blockSize*2+1, constant);
 
+    if (invert)
+        cv::bitwise_not(marked2, marked2);
+    
     if (restrictToZone)
     {
 	cv::inRange(pipeline->zoneMap, zone, zone, marked3);
@@ -84,6 +87,7 @@ void AdaptiveThreshold::LoadXML (FileNode& fn)
 
 	blockSize = (float)fn["BlockSize"];
 	constant = (float)fn["Constant"];
+	invert = (int)fn["Invert"];
 
 	restrictToZone = (int)fn["RestrictToZone"];
 	if (restrictToZone)
@@ -103,6 +107,7 @@ void AdaptiveThreshold::SaveXML (FileStorage& fs)
 	
     fs << "BlockSize" << blockSize;
     fs << "Constant" << constant;
+    fs << "Invert" << invert;
     
     fs << "RestrictToZone" << restrictToZone;
     if (restrictToZone)
