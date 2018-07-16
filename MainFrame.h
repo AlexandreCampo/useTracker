@@ -25,7 +25,6 @@
 #include <wx/statbox.h>
 #include <wx/filepicker.h>
 #include <wx/frame.h>
-#include <wx/tglbtn.h>
 #include <wx/gbsizer.h>
 #include <wx/stattext.h>
 #include <wx/choice.h>
@@ -144,6 +143,7 @@ private:
     void OnCheckBoxConfigStitchAdjustLuminosityClick(wxCommandEvent& event);
     void OnSpinCtrlBgHighThresholdChange(wxSpinEvent& event);
     void OnSpinCtrlBgLowThresholdChange(wxSpinEvent& event);
+    void OnSliderProcessingBlendingCmdSliderUpdated(wxScrollEvent& event);
     //*)
 
     //(*Identifiers(MainFrame)
@@ -157,7 +157,8 @@ private:
     static const long ID_BITMAPBUTTON8;
     static const long ID_SLIDER1;
     static const long ID_BITMAPBUTTON11;
-    static const long ID_TOGGLEBUTTON1;
+    static const long ID_STATICTEXT19;
+    static const long ID_SLIDER3;
     static const long ID_STATICBOX1;
     static const long ID_STATICBOX2;
     static const long ID_SCROLLEDWINDOW1;
@@ -250,7 +251,6 @@ private:
     wxSpinCtrl* SpinCtrlStartTime;
     wxBitmapButton* BitmapButton3;
     wxStaticText* StaticText13;
-    wxToggleButton* ToggleButtonProcessing;
     wxStaticText* StaticText14;
     wxStaticText* StaticText15;
     wxScrolledWindow* ConfigTab;
@@ -314,6 +314,7 @@ private:
     wxMenuItem* MenuOpenCapture;
     wxSpinCtrl* SpinCtrlBgHighThreshold;
     wxMenuItem* MenuLoadSettings;
+    wxStaticText* StaticText19;
     wxCheckBox* CheckBoxCalibFlipVertical;
     wxCheckBox* CheckBoxConfigStitchAdjustLuminosity;
     wxSpinCtrl* SpinCtrlCalibWidth;
@@ -325,6 +326,7 @@ private:
     wxBitmapButton* buttonOutput;
     wxStaticText* StaticText9;
     wxCheckBox* CheckBoxRecalculate;
+    wxSlider* SliderProcessingBlending;
     wxBitmapButton* buttonHud;
     wxStaticText* StaticText11;
     wxMenuItem* MenuSaveCapture;
@@ -384,7 +386,7 @@ private:
     wxScrolledWindow* activeTab;
     std::vector<wxDialog*> pipelineDialogs;
 
-    bool showProcessing = false;
+//    bool showProcessing = false;
 
 
 // main screen
@@ -421,7 +423,8 @@ private:
     bool hudVisible;
 
     int playSpeed = 0;
-
+    float processingBlending = 0.0;
+    
     cv::Mat oglScreen;
     cv::Mat hudApp;
     cv::Mat hud;

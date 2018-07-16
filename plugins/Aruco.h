@@ -30,6 +30,10 @@
 #include <aruco/aruco.h>
 #include <opencv2/imgproc/imgproc.hpp>
 
+#define ARUCO_MASK_SHAPE_NONE 0
+#define ARUCO_MASK_SHAPE_SQUARE 1
+#define ARUCO_MASK_SHAPE_DISC 2
+
 class Aruco : public PipelinePlugin
 {
 public:
@@ -44,6 +48,11 @@ public:
     int thresh1 = 19;
     int thresh2 = 7;
 
+    int maskShape = ARUCO_MASK_SHAPE_NONE;
+    int maskRadius = 1;
+    int maskPerspectiveShift = 0;
+    int maskValue = 0;
+    
     aruco::MarkerDetector::ThresholdMethods thresholdMethod = aruco::MarkerDetector::ADPT_THRES;
 
     std::string outputFilename;
@@ -62,13 +71,16 @@ public:
     void OpenOutput();
     void CloseOutput();
 
-void SetMinSize(double minSize);
-void SetMaxSize(double maxSize);
-void SetThreshold1(int t1);
-void SetThreshold2(int t2);
-void SetThresholdMethod (int m);
-
-//    void SetSize(int s);
+    void SetMinSize(double minSize);
+    void SetMaxSize(double maxSize);
+    void SetThreshold1(int t1);
+    void SetThreshold2(int t2);
+    void SetThresholdMethod (int m);
+    
+    void SetMaskShape(int v);
+    void SetMaskRadius(int v);
+    void SetMaskPerspectiveShift(int v);
+    void SetMaskValue(int v);
 };
 
 

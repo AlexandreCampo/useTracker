@@ -49,15 +49,22 @@ class DialogAruco: public wxDialog
 		//(*Declarations(DialogAruco)
 		wxCheckBox* CheckBoxOutput;
 		wxStaticText* StaticText1;
+		wxSpinCtrl* SpinCtrlMaskPerspectiveShift;
 		wxStaticText* StaticText3;
 		wxSpinCtrl* SpinCtrlMaxSize;
 		wxRadioBox* RadioBoxMethod;
 		wxButton* ButtonOk;
+		wxSpinCtrl* SpinCtrlMaskValue;
 		wxSpinCtrl* SpinCtrlMinSize;
+		wxStaticText* StaticText7;
 		wxStaticText* StaticText4;
+		wxStaticText* StaticText5;
 		wxStaticText* StaticText2;
+		wxStaticText* StaticText6;
+		wxSpinCtrl* SpinCtrlMaskRadius;
 		wxSpinCtrl* SpinCtrlThreshold1;
 		wxFilePickerCtrl* FilePickerCtrl1;
+		wxRadioBox* RadioBoxMaskShape;
 		wxSpinCtrl* SpinCtrlThreshold2;
 		//*)
 
@@ -79,6 +86,13 @@ class DialogAruco: public wxDialog
 		static const long ID_SPINCTRL3;
 		static const long ID_STATICTEXT4;
 		static const long ID_SPINCTRL4;
+		static const long ID_RADIOBOX2;
+		static const long ID_STATICTEXT5;
+		static const long ID_SPINCTRL5;
+		static const long ID_STATICTEXT6;
+		static const long ID_SPINCTRL6;
+		static const long ID_STATICTEXT7;
+		static const long ID_SPINCTRL7;
 		static const long ID_CHECKBOX1;
 		static const long ID_FILEPICKERCTRL1;
 		static const long ID_BUTTON1;
@@ -100,6 +114,10 @@ class DialogAruco: public wxDialog
 		void OnRadioBoxMethodSelect(wxCommandEvent& event);
 		void OnCheckBoxOutputClick(wxCommandEvent& event);
 		void OnFilePickerCtrl1FileChanged(wxFileDirPickerEvent& event);
+		void OnRadioBoxMaskShapeSelect(wxCommandEvent& event);
+		void OnSpinCtrlMaskRadiusChange(wxSpinEvent& event);
+		void OnSpinCtrlMaskPerspectiveShiftChange(wxSpinEvent& event);
+		void OnSpinCtrlMaskValueChange(wxSpinEvent& event);
 		//*)
 
 		DECLARE_EVENT_TABLE()

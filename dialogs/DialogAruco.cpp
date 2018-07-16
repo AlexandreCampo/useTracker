@@ -36,6 +36,13 @@ const long DialogAruco::ID_STATICTEXT3 = wxNewId();
 const long DialogAruco::ID_SPINCTRL3 = wxNewId();
 const long DialogAruco::ID_STATICTEXT4 = wxNewId();
 const long DialogAruco::ID_SPINCTRL4 = wxNewId();
+const long DialogAruco::ID_RADIOBOX2 = wxNewId();
+const long DialogAruco::ID_STATICTEXT5 = wxNewId();
+const long DialogAruco::ID_SPINCTRL5 = wxNewId();
+const long DialogAruco::ID_STATICTEXT6 = wxNewId();
+const long DialogAruco::ID_SPINCTRL6 = wxNewId();
+const long DialogAruco::ID_STATICTEXT7 = wxNewId();
+const long DialogAruco::ID_SPINCTRL7 = wxNewId();
 const long DialogAruco::ID_CHECKBOX1 = wxNewId();
 const long DialogAruco::ID_FILEPICKERCTRL1 = wxNewId();
 const long DialogAruco::ID_BUTTON1 = wxNewId();
@@ -60,7 +67,9 @@ DialogAruco::DialogAruco(wxWindow* parent,wxWindowID id,const wxPoint& pos,const
 	wxFlexGridSizer* FlexGridSizer2;
 	wxFlexGridSizer* FlexGridSizer4;
 	wxStaticBoxSizer* StaticBoxSizer3;
+	wxFlexGridSizer* FlexGridSizer6;
 	wxFlexGridSizer* FlexGridSizer3;
+	wxStaticBoxSizer* StaticBoxSizer4;
 	wxFlexGridSizer* FlexGridSizer5;
 	wxStaticBoxSizer* StaticBoxSizer1;
 
@@ -104,6 +113,35 @@ DialogAruco::DialogAruco(wxWindow* parent,wxWindowID id,const wxPoint& pos,const
 	FlexGridSizer3->Add(SpinCtrlMaxSize, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
 	StaticBoxSizer2->Add(FlexGridSizer3, 1, wxALL|wxEXPAND, 5);
 	FlexGridSizer1->Add(StaticBoxSizer2, 1, wxALL|wxEXPAND, 5);
+	StaticBoxSizer4 = new wxStaticBoxSizer(wxVERTICAL, this, _("Mask detected objects"));
+	FlexGridSizer6 = new wxFlexGridSizer(0, 2, 0, 0);
+	FlexGridSizer6->AddGrowableCol(0);
+	wxString __wxRadioBoxChoices_2[3] =
+	{
+		_("None"),
+		_("Square"),
+		_("Disc")
+	};
+	RadioBoxMaskShape = new wxRadioBox(this, ID_RADIOBOX2, _("Shape"), wxDefaultPosition, wxDefaultSize, 3, __wxRadioBoxChoices_2, 3, 0, wxDefaultValidator, _T("ID_RADIOBOX2"));
+	FlexGridSizer6->Add(RadioBoxMaskShape, 1, wxALL|wxEXPAND, 5);
+	FlexGridSizer6->Add(-1,-1,1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	StaticText5 = new wxStaticText(this, ID_STATICTEXT5, _("Radius (pixels)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT5"));
+	FlexGridSizer6->Add(StaticText5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	SpinCtrlMaskRadius = new wxSpinCtrl(this, ID_SPINCTRL5, _T("1"), wxDefaultPosition, wxDefaultSize, 0, 1, 4096, 1, _T("ID_SPINCTRL5"));
+	SpinCtrlMaskRadius->SetValue(_T("1"));
+	FlexGridSizer6->Add(SpinCtrlMaskRadius, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	StaticText6 = new wxStaticText(this, ID_STATICTEXT6, _("Persp. shift (pixels)"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT6"));
+	FlexGridSizer6->Add(StaticText6, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	SpinCtrlMaskPerspectiveShift = new wxSpinCtrl(this, ID_SPINCTRL6, _T("0"), wxDefaultPosition, wxDefaultSize, 0, -10000, 10000, 0, _T("ID_SPINCTRL6"));
+	SpinCtrlMaskPerspectiveShift->SetValue(_T("0"));
+	FlexGridSizer6->Add(SpinCtrlMaskPerspectiveShift, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	StaticText7 = new wxStaticText(this, ID_STATICTEXT7, _("Mask value"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT7"));
+	FlexGridSizer6->Add(StaticText7, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	SpinCtrlMaskValue = new wxSpinCtrl(this, ID_SPINCTRL7, _T("0"), wxDefaultPosition, wxDefaultSize, 0, 0, 255, 0, _T("ID_SPINCTRL7"));
+	SpinCtrlMaskValue->SetValue(_T("0"));
+	FlexGridSizer6->Add(SpinCtrlMaskValue, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+	StaticBoxSizer4->Add(FlexGridSizer6, 1, wxALL|wxEXPAND, 5);
+	FlexGridSizer1->Add(StaticBoxSizer4, 1, wxALL|wxEXPAND, 5);
 	StaticBoxSizer3 = new wxStaticBoxSizer(wxHORIZONTAL, this, _("Output to file"));
 	FlexGridSizer5 = new wxFlexGridSizer(0, 2, 0, 0);
 	FlexGridSizer5->AddGrowableCol(1);
@@ -128,6 +166,10 @@ DialogAruco::DialogAruco(wxWindow* parent,wxWindowID id,const wxPoint& pos,const
 	Connect(ID_SPINCTRL2,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogAruco::OnSpinCtrlThreshold2Change);
 	Connect(ID_SPINCTRL3,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogAruco::OnSpinCtrlMinSizeChange);
 	Connect(ID_SPINCTRL4,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogAruco::OnSpinCtrlMaxSizeChange);
+	Connect(ID_RADIOBOX2,wxEVT_COMMAND_RADIOBOX_SELECTED,(wxObjectEventFunction)&DialogAruco::OnRadioBoxMaskShapeSelect);
+	Connect(ID_SPINCTRL5,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogAruco::OnSpinCtrlMaskRadiusChange);
+	Connect(ID_SPINCTRL6,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogAruco::OnSpinCtrlMaskPerspectiveShiftChange);
+	Connect(ID_SPINCTRL7,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&DialogAruco::OnSpinCtrlMaskValueChange);
 	Connect(ID_CHECKBOX1,wxEVT_COMMAND_CHECKBOX_CLICKED,(wxObjectEventFunction)&DialogAruco::OnCheckBoxOutputClick);
 	Connect(ID_FILEPICKERCTRL1,wxEVT_COMMAND_FILEPICKER_CHANGED,(wxObjectEventFunction)&DialogAruco::OnFilePickerCtrl1FileChanged);
 	Connect(ID_BUTTON1,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&DialogAruco::OnButtonOkClick);
@@ -174,6 +216,10 @@ void DialogAruco::SetPlugin (vector<PipelinePlugin*> pfv)
     FilePickerCtrl1->SetPath(plugin[0]->outputFilename);
     CheckBoxOutput->SetValue(plugin[0]->output);
 
+    RadioBoxMaskShape->SetSelection(plugin[0]->maskShape);
+    SpinCtrlMaskRadius->SetValue(plugin[0]->maskRadius);
+    SpinCtrlMaskPerspectiveShift->SetValue(plugin[0]->maskPerspectiveShift);
+    SpinCtrlMaskValue->SetValue(plugin[0]->maskValue);
 }
 
 
@@ -248,4 +294,28 @@ void DialogAruco::OnFilePickerCtrl1FileChanged(wxFileDirPickerEvent& event)
 		wxSetWorkingDirectory(path);
 	}
     }
+}
+
+void DialogAruco::OnRadioBoxMaskShapeSelect(wxCommandEvent& event)
+{
+    for (auto f : plugin)
+        f->SetMaskShape(RadioBoxMaskShape->GetSelection());
+}
+
+void DialogAruco::OnSpinCtrlMaskRadiusChange(wxSpinEvent& event)
+{
+    for (auto f : plugin)
+        f->SetMaskRadius(event.GetValue());
+}
+
+void DialogAruco::OnSpinCtrlMaskPerspectiveShiftChange(wxSpinEvent& event)
+{
+    for (auto f : plugin)
+        f->SetMaskPerspectiveShift(event.GetValue());
+}
+
+void DialogAruco::OnSpinCtrlMaskValueChange(wxSpinEvent& event)
+{
+    for (auto f : plugin)
+        f->SetMaskValue(event.GetValue());
 }

@@ -50,7 +50,10 @@ void Aruco::Reset()
 void Aruco::Apply()
 {
     detector.detect(pipeline->frame, markers, cameraParameters, -1);
-    detector.getThresholdedImage().copyTo(pipeline->marked);
+
+    // only draw aruco output to marked buffer if no mask shape is requested
+    if (maskShape == ARUCO_MASK_SHAPE_NONE)
+        detector.getThresholdedImage().copyTo(pipeline->marked);
 
     // clean blobs list
     vector<Blob>& blobs = pipeline->parent->blobs;
@@ -75,13 +78,65 @@ void Aruco::Apply()
 
 	blobs.push_back(b);
     }
+
+    // if needed, draw markers in marked buffer
+    if (maskShape != ARUCO_MASK_SHAPE_NONE)
+    {
+        for (auto m : markers)
+        {
+            if (m.size() != 4) continue;
+
+            Point2f pos = m.getCenter();
+            
+            // calculate perspective shift as a function of distance to image center
+            Point2f center(pipeline->width/2, pipeline->height/2);
+            Point2f vect = pos - center;
+            float dist = norm(vect);
+            float maxDist = norm(center);
+            float shift = (float) maskPerspectiveShift * dist / maxDist;            
+            Point2f drawPos = vect * ((dist - shift) / dist) + center;
+            
+            if (maskShape == ARUCO_MASK_SHAPE_SQUARE)
+            {
+                // calculate square mask
+                Point2f points[4];
+                points[0] = m[0] - pos;
+                points[1] = m[1] - pos;
+                points[2] = m[2] - pos;
+                points[3] = m[3] - pos;
+                float d0 = norm(points[0]);
+                float d1 = norm(points[1]);
+                float d2 = norm(points[2]);
+                float d3 = norm(points[3]);
+                
+                points[0] = points[0] * ((float) maskRadius / d0) + drawPos;
+                points[1] = points[1] * ((float) maskRadius / d1) + drawPos;
+                points[2] = points[2] * ((float) maskRadius / d2) + drawPos;
+                points[3] = points[3] * ((float) maskRadius / d3) + drawPos;
+
+                // convert coordinate to points type
+                Point pts[4];
+                pts[0] = points[0];
+                pts[1] = points[1];
+                pts[2] = points[2];
+                pts[3] = points[3];
+
+                // draw
+                fillConvexPoly(pipeline->marked, pts, 4, maskValue);
+            }
+            else if (maskShape == ARUCO_MASK_SHAPE_DISC)
+            {
+                circle(pipeline->marked, drawPos, maskRadius, maskValue, CV_FILLED);
+            }
+        }
+    }
 }
 
 void Aruco::OutputHud (Mat& hud)
 {
     for (unsigned int i = 0; i < markers.size(); i++)
     {
-	markers[i].draw(hud, Scalar(0,255,0), 2);
+        markers[i].draw(hud, Scalar(0,255,0), 2);
     }
 }
 
@@ -115,6 +170,24 @@ void Aruco::SetThresholdMethod(int m)
     detector.setThresholdMethod(thresholdMethod);
 }
 
+void Aruco::SetMaskShape(int v)
+{
+    this->maskShape = v;
+}
+void Aruco::SetMaskRadius(int v)
+{
+    this->maskRadius = v;
+}
+void Aruco::SetMaskPerspectiveShift(int v)
+{
+    this->maskPerspectiveShift = v;
+}
+void Aruco::SetMaskValue(int v)
+{
+    this->maskValue = v;
+}
+
+
 void Aruco::LoadXML (FileNode& fn)
 {
     if (!fn.empty())
@@ -135,6 +208,11 @@ void Aruco::LoadXML (FileNode& fn)
 	else if (tm == "Canny")
 	    thresholdMethod = aruco::MarkerDetector::CANNY;
 
+	maskShape = (int)fn["MaskShape"];
+	maskRadius = (int)fn["MaskRadius"];
+	maskPerspectiveShift = (int)fn["MaskPerspectiveShift"];
+	maskRadius = (int)fn["MaskRadius"];
+    
 	output = (int)fn["Output"];
 	outputFilename = (string)fn["OutputFilename"];
     }
@@ -156,6 +234,11 @@ void Aruco::SaveXML (FileStorage& fs)
     fs << "Threshold1" << thresh1;
     fs << "Threshold2" << thresh2;
 
+    fs << "MaskShape" << maskShape;
+    fs << "MaskRadius" << maskRadius;
+    fs << "MaskPerspectiveShift" << maskPerspectiveShift;
+    fs << "MaskValue" << maskValue;
+    
     fs << "Output" << output;
     fs << "OutputFilename" << outputFilename;
 }

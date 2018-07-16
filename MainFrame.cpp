@@ -118,7 +118,8 @@ const long MainFrame::ID_BITMAPBUTTON10 = wxNewId();
 const long MainFrame::ID_BITMAPBUTTON8 = wxNewId();
 const long MainFrame::ID_SLIDER1 = wxNewId();
 const long MainFrame::ID_BITMAPBUTTON11 = wxNewId();
-const long MainFrame::ID_TOGGLEBUTTON1 = wxNewId();
+const long MainFrame::ID_STATICTEXT19 = wxNewId();
+const long MainFrame::ID_SLIDER3 = wxNewId();
 const long MainFrame::ID_STATICBOX1 = wxNewId();
 const long MainFrame::ID_STATICBOX2 = wxNewId();
 const long MainFrame::ID_SCROLLEDWINDOW1 = wxNewId();
@@ -206,8 +207,8 @@ const long MainFrame::ID_SPINCTRL13x = wxNewId();
 
 
 BEGIN_EVENT_TABLE(MainFrame,wxFrame)
-    //(*EventTable(MainFrame)
-    //*)
+//(*EventTable(MainFrame)
+//*)
 END_EVENT_TABLE()
 
 
@@ -234,6 +235,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     wxFlexGridSizer* FlexGridSizerCalibMain;
     wxStaticBoxSizer* StaticBoxSizer4;
     wxStaticBoxSizer* StaticBoxSizerCalibSubdevices;
+    wxFlexGridSizer* FlexGridSizer16;
     wxFlexGridSizer* FlexGridSizer10;
     wxFlexGridSizer* FlexGridSizer13;
     wxMenuBar* MenuBar1;
@@ -293,8 +295,13 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     ProcessingTab = new wxScrolledWindow(Notebook1, ID_SCROLLEDWINDOW1, wxDefaultPosition, wxDefaultSize, wxVSCROLL|wxHSCROLL, _T("ID_SCROLLEDWINDOW1"));
     FlexGridSizer11 = new wxFlexGridSizer(0, 1, 0, 0);
     FlexGridSizer11->AddGrowableCol(0);
-    ToggleButtonProcessing = new wxToggleButton(ProcessingTab, ID_TOGGLEBUTTON1, _("Show Processing"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_TOGGLEBUTTON1"));
-    FlexGridSizer11->Add(ToggleButtonProcessing, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    FlexGridSizer16 = new wxFlexGridSizer(0, 2, 0, 0);
+    FlexGridSizer16->AddGrowableCol(1);
+    StaticText19 = new wxStaticText(ProcessingTab, ID_STATICTEXT19, _("Show processing"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICTEXT19"));
+    FlexGridSizer16->Add(StaticText19, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
+    SliderProcessingBlending = new wxSlider(ProcessingTab, ID_SLIDER3, 0, 0, 100, wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_SLIDER3"));
+    FlexGridSizer16->Add(SliderProcessingBlending, 1, wxALL|wxEXPAND, 5);
+    FlexGridSizer11->Add(FlexGridSizer16, 1, wxALL|wxEXPAND, 0);
     StaticBox1 = new wxStaticBox(ProcessingTab, ID_STATICBOX1, _("Processing pipeline"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICBOX1"));
     FlexGridSizer11->Add(StaticBox1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     StaticBox2 = new wxStaticBox(ProcessingTab, ID_STATICBOX2, _("Available functions"), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICBOX2"));
@@ -570,7 +577,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     Connect(ID_SLIDER1,wxEVT_SCROLL_THUMBTRACK,(wxObjectEventFunction)&MainFrame::OnvideoSliderCmdScrollThumbTrack);
     Connect(ID_SLIDER1,wxEVT_SCROLL_CHANGED,(wxObjectEventFunction)&MainFrame::OnvideoSliderCmdScrollChanged);
     Connect(ID_BITMAPBUTTON11,wxEVT_COMMAND_BUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnbuttonHudClick);
-    Connect(ID_TOGGLEBUTTON1,wxEVT_COMMAND_TOGGLEBUTTON_CLICKED,(wxObjectEventFunction)&MainFrame::OnToggleButtonProcessingToggle);
+    Connect(ID_SLIDER3,wxEVT_COMMAND_SLIDER_UPDATED,(wxObjectEventFunction)&MainFrame::OnSliderProcessingBlendingCmdSliderUpdated);
     Connect(ID_SPINCTRL1,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlBgStartChange);
     Connect(ID_SPINCTRL3,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlBgEndChange);
     Connect(ID_SPINCTRL2,wxEVT_COMMAND_SPINCTRL_UPDATED,(wxObjectEventFunction)&MainFrame::OnSpinCtrlBgFramesChange);
@@ -687,9 +694,9 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     ListBoxPipelinePlugins->Append("aruco color");
     ListBoxPipelinePlugins->Append("remote control");
 
-    #ifdef ARUCO
+#ifdef ARUCO
     ListBoxPipelinePlugins->Append("aruco");
-    #endif
+#endif
 
     // connect char events
     ConnectCharEvent();
@@ -718,119 +725,119 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     // load capture source from command line params if possible
     if (!parameters.inputFilename.empty())
     {
-	// check extension
-	wxFileName f (parameters.inputFilename);
-	if (f.GetExt() == "xml")
-	{
-	    // TODO duplicated from dialog open capture. Needs a cleaner solution
-	    std::string filename = parameters.inputFilename;
-	    cv::FileStorage file;
-	    cv::FileNode rootNode;
+        // check extension
+        wxFileName f (parameters.inputFilename);
+        if (f.GetExt() == "xml")
+        {
+            // TODO duplicated from dialog open capture. Needs a cleaner solution
+            std::string filename = parameters.inputFilename;
+            cv::FileStorage file;
+            cv::FileNode rootNode;
 
-	    file.open(filename, cv::FileStorage::READ);
-	    if (file.isOpened())
-	    {
-		rootNode = file["Source"];
+            file.open(filename, cv::FileStorage::READ);
+            if (file.isOpened())
+            {
+                rootNode = file["Source"];
 
-		if (!rootNode.empty())
-		{
-		    string type = (string)rootNode["Type"];
+                if (!rootNode.empty())
+                {
+                    string type = (string)rootNode["Type"];
 
-		    if (type == "multiVideo")
-		    {
-			ipEngine.capture->LoadXML(rootNode);
-		    }
-		    else if (type == "video")
-		    {
-			ipEngine.capture = new CaptureVideo(rootNode);
-		    }
-		    else if (type == "USBcamera")
-		    {
-			ipEngine.capture = new CaptureUSBCamera(rootNode);
-		    }
-		    else if (type == "image")
-		    {
-			ipEngine.capture = new CaptureImage(rootNode);
-		    }
+                    if (type == "multiVideo")
+                    {
+                        ipEngine.capture->LoadXML(rootNode);
+                    }
+                    else if (type == "video")
+                    {
+                        ipEngine.capture = new CaptureVideo(rootNode);
+                    }
+                    else if (type == "USBcamera")
+                    {
+                        ipEngine.capture = new CaptureUSBCamera(rootNode);
+                    }
+                    else if (type == "image")
+                    {
+                        ipEngine.capture = new CaptureImage(rootNode);
+                    }
 #ifdef VIMBA
-		    else if (type == "AVTcamera")
-		    {
-			ipEngine.capture = new CaptureAVTCamera(rootNode);
-		    }
+                    else if (type == "AVTcamera")
+                    {
+                        ipEngine.capture = new CaptureAVTCamera(rootNode);
+                    }
 #endif // VIMBA
-		    else if (type == "multiUSBcamera")
-		    {
-			ipEngine.capture = new CaptureMultiUSBCamera(rootNode);
-		    }
-		}
-	    }
-	}
-	else
-	{
-	    // try to load input as video file
-	    ipEngine.capture = new CaptureVideo (parameters.inputFilename);
+                    else if (type == "multiUSBcamera")
+                    {
+                        ipEngine.capture = new CaptureMultiUSBCamera(rootNode);
+                    }
+                }
+            }
+        }
+        else
+        {
+            // try to load input as video file
+            ipEngine.capture = new CaptureVideo (parameters.inputFilename);
 
-	    // if video not loaded, try image
-	    if (ipEngine.capture->type == Capture::NONE)
-	    {
-		delete ipEngine.capture;
-		ipEngine.capture = new CaptureImage (parameters.inputFilename);
-	    }
-	}
+            // if video not loaded, try image
+            if (ipEngine.capture->type == Capture::NONE)
+            {
+                delete ipEngine.capture;
+                ipEngine.capture = new CaptureImage (parameters.inputFilename);
+            }
+        }
     }
     else if (parameters.usbDevice >= 0)
     {
-	ipEngine.capture = new CaptureUSBCamera (parameters.usbDevice);
+        ipEngine.capture = new CaptureUSBCamera (parameters.usbDevice);
     }
     else if (parameters.avtDevice >= 0)
     {
 #ifdef VIMBA
-	ipEngine.capture = new CaptureAVTCamera (parameters.avtDevice);
+        ipEngine.capture = new CaptureAVTCamera (parameters.avtDevice);
 #endif //VIMBA
     }
     else if (parameters.multiUSBCapture == true)
     {
-	CaptureMultiUSBCamera* mu = new CaptureMultiUSBCamera (parameters.usbDevices);
-	ipEngine.capture = mu;
-	if (mu && !parameters.stitchingFilename.empty())
-	{
-	    cv::FileStorage file (parameters.stitchingFilename, FileStorage::READ);
-	    if (file.isOpened())
-	    {
-		cv::FileNode rootNode = file["Source"];
-		mu->LoadXML(rootNode);
-	    }
-	}
+        CaptureMultiUSBCamera* mu = new CaptureMultiUSBCamera (parameters.usbDevices);
+        ipEngine.capture = mu;
+        if (mu && !parameters.stitchingFilename.empty())
+        {
+            cv::FileStorage file (parameters.stitchingFilename, FileStorage::READ);
+            if (file.isOpened())
+            {
+                cv::FileNode rootNode = file["Source"];
+                mu->LoadXML(rootNode);
+            }
+        }
     }
     else if (parameters.multiVideoCapture == true)
     {
-	CaptureMultiVideo* mv = new CaptureMultiVideo (parameters.inputFilenames);
-	ipEngine.capture = mv;
-	if (mv && !parameters.stitchingFilename.empty())
-	{
-	    cv::FileStorage file (parameters.stitchingFilename, FileStorage::READ);
-	    if (file.isOpened())
-	    {
-		cv::FileNode rootNode = file["Source"];
-		mv->LoadXML(rootNode, true);
-	    }
-	}
+        CaptureMultiVideo* mv = new CaptureMultiVideo (parameters.inputFilenames);
+        ipEngine.capture = mv;
+        if (mv && !parameters.stitchingFilename.empty())
+        {
+            cv::FileStorage file (parameters.stitchingFilename, FileStorage::READ);
+            if (file.isOpened())
+            {
+                cv::FileNode rootNode = file["Source"];
+                mv->LoadXML(rootNode, true);
+            }
+        }
     }
 
     if (ipEngine.capture && !parameters.calibrationFilename.empty())
     {
-	cv::FileStorage file (parameters.calibrationFilename, FileStorage::READ);
-	if (file.isOpened())
-	{
-	    cv::FileNode rootNode = file["Calibration"];
-	    ipEngine.capture->calibration.LoadXML(rootNode);
-	}
+        cv::FileStorage file (parameters.calibrationFilename, FileStorage::READ);
+        if (file.isOpened())
+        {
+            cv::FileNode rootNode = file["Calibration"];
+            ipEngine.capture->calibration.LoadXML(rootNode);
+        }
     }
 
     if (!ipEngine.capture) ipEngine.capture = new CaptureDefault();
     wxString str = "USE Tracker: ";
     this->SetTitle(str + ipEngine.capture->GetName());
-    
+
     ResetImageProcessingEngine(parameters);
 
     // last step...
@@ -860,28 +867,34 @@ void MainFrame::OnAbout(wxCommandEvent& event)
 void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 {
     Mat oglScreenScaled;
+    Mat oglProcessingScaled;
     Mat hudScaled;
 
     // resize oglscreen in case it is too big....
     if (oglScreen.cols >= 4096  || oglScreen.rows >= 4096)
     {
-	Mat tmpScreen;
-	Mat tmpHud;
+        Mat tmpScreen;
+        Mat tmpProcessing;
+        Mat tmpHud;
 
-	float coeff = 1;
-	if (oglScreen.cols > oglScreen.rows)
-	    coeff = oglScreen.cols / 4096.0;
-	else
-	    coeff = oglScreen.rows / 4096.0;
+        float coeff = 1;
+        if (oglScreen.cols > oglScreen.rows)
+            coeff = oglScreen.cols / 4096.0;
+        else
+            coeff = oglScreen.rows / 4096.0;
 
-	Size sz (oglScreen.cols / coeff, oglScreen.rows / coeff);
-	resize (oglScreen, oglScreenScaled, sz);
-	resize (hud, hudScaled, sz);
+        Size sz (oglScreen.cols / coeff, oglScreen.rows / coeff);
+        resize (oglScreen, oglScreenScaled, sz);
+        resize (hud, hudScaled, sz);
+
+        if (activeTab == ProcessingTab)
+            resize (ipEngine.pipelineSnapshot, oglProcessingScaled, sz);
     }
     else
     {
-	oglScreenScaled = oglScreen; // .clone();
-	hudScaled = hud;
+        oglScreenScaled = oglScreen;
+        oglProcessingScaled = ipEngine.pipelineSnapshot;
+        hudScaled = hud;
     }
 
     GLCanvas1->SetCurrent();
@@ -915,10 +928,7 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     // BW
-    if (
-	((activeTab == ProcessingTab) && showProcessing)
-	|| activeTab == ConfigTab
-	)
+    if (activeTab == ConfigTab)
     {
     	glTexImage2D(
     	    GL_TEXTURE_2D,
@@ -934,16 +944,16 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
     // BGR image
     else
     {
-	glTexImage2D(
-	    GL_TEXTURE_2D,
-	    0,
-	    GL_RGB,
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGB,
     	    oglScreenScaled.cols,
     	    oglScreenScaled.rows,
-	    0,
-	    GL_BGR,
-	    GL_UNSIGNED_BYTE,
-	    oglScreenScaled.data);
+            0,
+            GL_BGR,
+            GL_UNSIGNED_BYTE,
+            oglScreenScaled.data);
     }
 
     // Draw a textured quad
@@ -953,59 +963,83 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
     glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(oglScreen.cols, oglScreen.rows);
     glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, oglScreen.rows);
     glEnd();
+    
+    // In processing tab, add pipeline snapshot as overlay
+    if (activeTab == ProcessingTab)
+    {
+    	glTexImage2D(
+    	    GL_TEXTURE_2D,
+    	    0,
+    	    GL_RGB,
+    	    oglProcessingScaled.cols,
+    	    oglProcessingScaled.rows,
+    	    0,
+    	    GL_LUMINANCE,
+    	    GL_UNSIGNED_BYTE,
+    	    oglProcessingScaled.data);
+
+
+        glColor4f (1.0f, 1.0f, 1.0f, processingBlending);
+        glBegin(GL_QUADS);
+        glTexCoord2f(zoomStartX, zoomStartY); glVertex2f(0.0f, 0.0f);
+        glTexCoord2f(zoomEndX, zoomStartY); glVertex2f(oglScreen.cols, 0.0f);
+        glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(oglScreen.cols, oglScreen.rows);
+        glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, oglScreen.rows);
+        glEnd();        
+    }
 
     // Draw HUD stuff
     // --------------
     if (hudVisible)
     {
-	if (activeTab == ProcessingTab)
-	{
-	    // Create Texture
-	    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	    glTexImage2D(
-		GL_TEXTURE_2D,
-		0,
-		GL_RGBA,
-		hudScaled.cols,
-		hudScaled.rows,
-		0,
-		GL_BGRA,
-		GL_UNSIGNED_BYTE,
-		hudScaled.data);
+        if (activeTab == ProcessingTab)
+        {
+            // Create Texture
+            glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+            glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RGBA,
+                hudScaled.cols,
+                hudScaled.rows,
+                0,
+                GL_BGRA,
+                GL_UNSIGNED_BYTE,
+                hudScaled.data);
 
-	    // Draw a textured quad
-	    glColor4f (1.0f, 1.0f, 1.0f, 0.5f);
-	    glBegin(GL_QUADS);
-	    glTexCoord2f(zoomStartX, zoomStartY); glVertex2f(0.0f, 0.0f);
-	    glTexCoord2f(zoomEndX, zoomStartY); glVertex2f(oglScreen.cols, 0.0f);
-	    glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(oglScreen.cols, oglScreen.rows);
-	    glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, oglScreen.rows);
-	    glEnd();
-	}
+            // Draw a textured quad
+            glColor4f (1.0f, 1.0f, 1.0f, 0.5f);
+            glBegin(GL_QUADS);
+            glTexCoord2f(zoomStartX, zoomStartY); glVertex2f(0.0f, 0.0f);
+            glTexCoord2f(zoomEndX, zoomStartY); glVertex2f(oglScreen.cols, 0.0f);
+            glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(oglScreen.cols, oglScreen.rows);
+            glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, oglScreen.rows);
+            glEnd();
+        }
 
-	// Create Texture
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage2D(
-	    GL_TEXTURE_2D,
-	    0,
-	    GL_RGBA,
-	    hudApp.cols,
-	    hudApp.rows,
-	    0,
-	    GL_BGRA,
-	    GL_UNSIGNED_BYTE,
-	    hudApp.data);
+        // Create Texture
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGBA,
+            hudApp.cols,
+            hudApp.rows,
+            0,
+            GL_BGRA,
+            GL_UNSIGNED_BYTE,
+            hudApp.data);
 
-	// Draw a textured quad
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glColor4f (1.0f, 1.0f, 1.0f, 1.0f);
-	glBegin(GL_QUADS);
-	glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0f, 0.0f);
-	glTexCoord2f(1.0f, 0.0f); glVertex2f(oglScreen.cols, 0.0f);
-	glTexCoord2f(1.0f, 1.0f); glVertex2f(oglScreen.cols, oglScreen.rows);
-	glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, oglScreen.rows);
-	glEnd();
+        // Draw a textured quad
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glColor4f (1.0f, 1.0f, 1.0f, 1.0f);
+        glBegin(GL_QUADS);
+        glTexCoord2f(0.0f, 0.0f); glVertex2f(0.0f, 0.0f);
+        glTexCoord2f(1.0f, 0.0f); glVertex2f(oglScreen.cols, 0.0f);
+        glTexCoord2f(1.0f, 1.0f); glVertex2f(oglScreen.cols, oglScreen.rows);
+        glTexCoord2f(0.0f, 1.0f); glVertex2f(0.0f, oglScreen.rows);
+        glEnd();
     }
 
 //    SaveMatToPNG (hud, "debugStitchedHud.png");
@@ -1021,9 +1055,9 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
     // pipeline snapshot position checked
     int psel = ListBoxPipeline->GetSelection();
     if (psel != wxNOT_FOUND)
-	ipEngine.snapshotPos = psel;
+        ipEngine.snapshotPos = psel;
     else
-	ipEngine.snapshotPos = ipEngine.pipelines[0].plugins.size() - 1;
+        ipEngine.snapshotPos = ipEngine.pipelines[0].plugins.size() - 1;
 
     // estimate time to wait before getting next frame
     bool getNextFrame = true;
@@ -1035,33 +1069,33 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
     // wait for next frame / refresh ?
     if (td > 0)
     {
-	// min UI refresh rate
-	if (td < 33000) wxMicroSleep(td.ToLong());
-	else
-	{
-	    wxMicroSleep(33000);
-	    getNextFrame = false;
-	}
+        // min UI refresh rate
+        if (td < 33000) wxMicroSleep(td.ToLong());
+        else
+        {
+            wxMicroSleep(33000);
+            getNextFrame = false;
+        }
     }
 
     // process frames only out of bg tab, config tab & calib tab
     if (activeTab == ProcessingTab)
     {
-	if (play)
-	{
-	    if (getNextFrame)
-	    {
-		bool gotFrame = ipEngine.GetNextFrame();
+        if (play)
+        {
+            if (getNextFrame)
+            {
+                bool gotFrame = ipEngine.GetNextFrame();
 
-		// end of stream ?
-		if (!gotFrame)
-		{
-		    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
-		    buttonPlay->Refresh();
-		    play = false;
-		}
-	    }
-	}
+                // end of stream ?
+                if (!gotFrame)
+                {
+                    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
+                    buttonPlay->Refresh();
+                    play = false;
+                }
+            }
+        }
     }
 
     // print hud
@@ -1070,25 +1104,23 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
 
     if (activeTab == ProcessingTab)
     {
-	ipEngine.Step(hudVisible);
+        ipEngine.Step(hudVisible);
     }
     else if (activeTab == CalibrationTab)
     {
-	ipEngine.capture->Calibrate();
-	ipEngine.capture->CalibrationOutputHud(hud);
+        ipEngine.capture->Calibrate();
+        ipEngine.capture->CalibrationOutputHud(hud);
     }
 
     // draw the main graphics screen
-    if (activeTab == ProcessingTab && showProcessing)
-	oglScreen = ipEngine.pipelineSnapshot;
-    else if (activeTab == ProcessingTab)
-	oglScreen = ipEngine.capture->frame;
+    if (activeTab == ProcessingTab)
+        oglScreen = ipEngine.capture->frame;
     else if (activeTab == ConfigTab)
-	oglScreen = ipEngine.zoneMap;
+        oglScreen = ipEngine.zoneMap;
     else if (activeTab == CalibrationTab)
-	oglScreen = ipEngine.capture->CalibrationGetFrame();
+        oglScreen = ipEngine.capture->CalibrationGetFrame();
     else if (activeTab == BackgroundTab)
-	oglScreen = ipEngine.background;
+        oglScreen = ipEngine.background;
 
     // render ogl + hud with blending
     GLCanvas1->Refresh();
@@ -1099,7 +1131,7 @@ void MainFrame::OnIdle(wxIdleEvent& evt)
     // refresh slider pos and drawing
     if (!sliderMoving)
     {
-	videoSlider->SetValue(ipEngine.capture->GetFrameNumber() * 10000 / (ipEngine.capture->GetFrameCount()+1));
+        videoSlider->SetValue(ipEngine.capture->GetFrameNumber() * 10000 / (ipEngine.capture->GetFrameCount()+1));
     }
 
     evt.RequestMore(); // render continuously, not only once on idle
@@ -1109,50 +1141,50 @@ void MainFrame::DrawTrackerSelection(wxClientDC& dc)
 {
     if (ipEngine.capture->type == Capture::VIDEO || ipEngine.capture->type == Capture::MULTI_VIDEO)
     {
-	if (ListBoxPipeline->GetCount() > 0)
-	{
-	    PipelinePlugin* pp = ipEngine.pipelines[ipEngine.threadsCount].plugins[ipEngine.snapshotPos];
-	    Tracker* tracker = dynamic_cast<Tracker*>(pp);
+        if (ListBoxPipeline->GetCount() > 0)
+        {
+            PipelinePlugin* pp = ipEngine.pipelines[ipEngine.threadsCount].plugins[ipEngine.snapshotPos];
+            Tracker* tracker = dynamic_cast<Tracker*>(pp);
 
-	    if (tracker && tracker->history.size() > 0)
-	    {
-		float hstart = tracker->historyStartFrame;
-		unsigned int hidx = tracker->historyEntries.size();
-		float hlength = 0;
-		if (hidx > 0)
-		    tracker->historyEntries[hidx].frameNumber;
-		float totalFrames = ipEngine.capture->GetFrameCount()+1;
+            if (tracker && tracker->history.size() > 0)
+            {
+                float hstart = tracker->historyStartFrame;
+                unsigned int hidx = tracker->historyEntries.size();
+                float hlength = 0;
+                if (hidx > 0)
+                    tracker->historyEntries[hidx].frameNumber;
+                float totalFrames = ipEngine.capture->GetFrameCount()+1;
 
-		wxPoint pos = videoSlider->GetPosition();
-		wxSize sz = videoSlider->GetSize();
+                wxPoint pos = videoSlider->GetPosition();
+                wxSize sz = videoSlider->GetSize();
 
-		pos.x += 5;
-		sz.x -= 10;
+                pos.x += 5;
+                sz.x -= 10;
 
-		// clear area
-		wxPoint clearpos = pos;
-		wxSize clearsz = sz;
-		clearpos.y += sz.y + 1;
-		clearpos.x -= 9;
-		clearsz.y = 8;
-		clearsz.x += 14;
-		dc.SetPen(wxNullPen);
-		dc.SetBrush(dc.GetBackground());
-		dc.DrawRectangle(clearpos, clearsz);
+                // clear area
+                wxPoint clearpos = pos;
+                wxSize clearsz = sz;
+                clearpos.y += sz.y + 1;
+                clearpos.x -= 9;
+                clearsz.y = 8;
+                clearsz.x += 14;
+                dc.SetPen(wxNullPen);
+                dc.SetBrush(dc.GetBackground());
+                dc.DrawRectangle(clearpos, clearsz);
 
-		int px1 = pos.x + sz.x * hstart / totalFrames;
-		int px2 = pos.x + sz.x * (hstart+hlength) / totalFrames;
+                int px1 = pos.x + sz.x * hstart / totalFrames;
+                int px2 = pos.x + sz.x * (hstart+hlength) / totalFrames;
 
-		dc.SetPen(wxPen(wxColour(255, 100, 100), 2, wxSOLID));
-		dc.SetBrush(wxNullBrush);
-		int py = pos.y + sz.y + 1 + 4;
-		dc.DrawLine(px1, py, px2, py);
-		dc.SetPen(wxPen(wxColour(255, 100, 100), 4, wxSOLID));
-		dc.SetBrush(wxBrush(wxColour(255, 100, 100)));
-		dc.DrawCircle (px1, py, 2);
-		dc.DrawCircle (px2, py, 2);
-	    }
-	}
+                dc.SetPen(wxPen(wxColour(255, 100, 100), 2, wxSOLID));
+                dc.SetBrush(wxNullBrush);
+                int py = pos.y + sz.y + 1 + 4;
+                dc.DrawLine(px1, py, px2, py);
+                dc.SetPen(wxPen(wxColour(255, 100, 100), 4, wxSOLID));
+                dc.SetBrush(wxBrush(wxColour(255, 100, 100)));
+                dc.DrawCircle (px1, py, 2);
+                dc.DrawCircle (px2, py, 2);
+            }
+        }
     }
 }
 
@@ -1165,76 +1197,76 @@ void MainFrame::PrintInfoToHud()
 
     if (activeTab == ProcessingTab)
     {
-	int stotal = ipEngine.capture->GetTime();
-	int h = stotal / 3600;
-	int m = (stotal - h*3600) / 60;
-	int s = stotal - h*3600 - m*60;
-	sprintf (str, "%02d:%02d:%02d", h, m, s);
+        int stotal = ipEngine.capture->GetTime();
+        int h = stotal / 3600;
+        int m = (stotal - h*3600) / 60;
+        int s = stotal - h*3600 - m*60;
+        sprintf (str, "%02d:%02d:%02d", h, m, s);
 
-	textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 2.0, 2, &baseline);
-	pos = Point (hudApp.cols - textSize.width - hudApp.cols / 20, textSize.height + hudApp.rows / 20);
+        textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 2.0, 2, &baseline);
+        pos = Point (hudApp.cols - textSize.width - hudApp.cols / 20, textSize.height + hudApp.rows / 20);
 
-	putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 2.0, cvScalar(0,0,0,255), 2, CV_AA);
-	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 2.0, textColor, 2, CV_AA);
+        putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 2.0, cvScalar(0,0,0,255), 2, CV_AA);
+        putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 2.0, textColor, 2, CV_AA);
 //TODO	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 2.0, cvScalar(0,255,200,255), 2, CV_AA);
 
-	// play speed
-	if (playSpeed > 0)
-	{
-	    sprintf (str, "%dx faster", playSpeed+1);
-	    textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
-	    pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
-	    pos.y += textSize.height + hudApp.rows / 20;
+        // play speed
+        if (playSpeed > 0)
+        {
+            sprintf (str, "%dx faster", playSpeed+1);
+            textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
+            pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
+            pos.y += textSize.height + hudApp.rows / 20;
 
-	    putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-	    putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
-	}
-	if (playSpeed < 0)
-	{
-	    sprintf (str, "%dx slower", -playSpeed+1);
-	    textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
-	    pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
-	    pos.y += textSize.height + hudApp.rows / 20;
-	    putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-	    putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
-	}
+            putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
+            putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
+        }
+        if (playSpeed < 0)
+        {
+            sprintf (str, "%dx slower", -playSpeed+1);
+            textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
+            pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
+            pos.y += textSize.height + hudApp.rows / 20;
+            putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
+            putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
+        }
 
-	// frame number
-	if (manualPlay)
-	{
-	    sprintf (str, "frame number %ld", ipEngine.capture->GetFrameNumber());
-	    textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
-	    pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
-	    pos.y += textSize.height + hudApp.rows / 20;
-	    putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-	    putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
-	}
+        // frame number
+        if (manualPlay)
+        {
+            sprintf (str, "frame number %ld", ipEngine.capture->GetFrameNumber());
+            textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
+            pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
+            pos.y += textSize.height + hudApp.rows / 20;
+            putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
+            putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
+        }
     }
     else if (activeTab == ConfigTab)
     {
-	sprintf (str, "Displaying mask");
-	textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
-	pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
-	pos.y = textSize.height + hudApp.rows / 20;
-	putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
+        sprintf (str, "Displaying mask");
+        textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
+        pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
+        pos.y = textSize.height + hudApp.rows / 20;
+        putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
+        putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
     }
     else if (activeTab == BackgroundTab)
     {
-	sprintf (str, "Displaying background");
-	textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
-	pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
-	pos.y = textSize.height + hudApp.rows / 20;
-	putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
+        sprintf (str, "Displaying background");
+        textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
+        pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
+        pos.y = textSize.height + hudApp.rows / 20;
+        putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
+        putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
     }
 
     // selection
     if (marqueeRegisteredDown && marqueeRegisteredMotion)
     {
-	float coeffX = (float) hudApp.cols / (float) hud.cols;
-	float coeffY = (float) hudApp.rows / (float) hud.rows;
-	rectangle(hudApp, Point(marqueeStart.x * coeffX, marqueeStart.y * coeffY), Point(marqueeEnd.x * coeffX, marqueeEnd.y * coeffY), Scalar (255, 255, 255, 255), 2);
+        float coeffX = (float) hudApp.cols / (float) hud.cols;
+        float coeffY = (float) hudApp.rows / (float) hud.rows;
+        rectangle(hudApp, Point(marqueeStart.x * coeffX, marqueeStart.y * coeffY), Point(marqueeEnd.x * coeffX, marqueeEnd.y * coeffY), Scalar (255, 255, 255, 255), 2);
     }
 
     // mouse coordinates
@@ -1244,36 +1276,36 @@ void MainFrame::PrintInfoToHud()
     // is over displayed image ?
     if (lmp.x >= glPadX && lmp.y >= glPadY && lmp.x < (glCanvasWidth - glPadX) && lmp.y < (glCanvasHeight - glPadY))
     {
-	// then transform to image
-	float px = ((float)lmp.x - glPadX) / (glCanvasWidth - glPadX * 2);
-	float py = ((float)lmp.y - glPadY) / (glCanvasHeight - glPadY * 2);
+        // then transform to image
+        float px = ((float)lmp.x - glPadX) / (glCanvasWidth - glPadX * 2);
+        float py = ((float)lmp.y - glPadY) / (glCanvasHeight - glPadY * 2);
 
-	// transform according to zoom level
-	float ppx = zoomStartX + (zoomEndX - zoomStartX) * px;
-	float ppy = zoomStartY + (zoomEndY - zoomStartY) * py;
+        // transform according to zoom level
+        float ppx = zoomStartX + (zoomEndX - zoomStartX) * px;
+        float ppy = zoomStartY + (zoomEndY - zoomStartY) * py;
 
-	int pppx = ppx * ipEngine.capture->width;
-	int pppy = ppy * ipEngine.capture->height;
+        int pppx = ppx * ipEngine.capture->width;
+        int pppy = ppy * ipEngine.capture->height;
 
-	// float px = zoomStartX + (zoomEndX - zoomStartX) * (float) p.x / (float)oglScreen.cols;
-	// float py = zoomStartY + (zoomEndY - zoomStartY) * (float) p.y / (float)oglScreen.rows;
-	// pp.x = px * ipEngine.capture->width;
-	// pp.y = py * ipEngine.capture->height;
+        // float px = zoomStartX + (zoomEndX - zoomStartX) * (float) p.x / (float)oglScreen.cols;
+        // float py = zoomStartY + (zoomEndY - zoomStartY) * (float) p.y / (float)oglScreen.rows;
+        // pp.x = px * ipEngine.capture->width;
+        // pp.y = py * ipEngine.capture->height;
 
-	// show in hud
-	sprintf (str, "Mouse : %d %d", pppx, pppy);
+        // show in hud
+        sprintf (str, "Mouse : %d %d", pppx, pppy);
 
-	if (activeTab == ConfigTab)
-	{
-	    int zone = ipEngine.zoneMap.at<uchar>(pppy, pppx);
-	    sprintf (str, "Mouse : %d %d, over zone : %d", pppx, pppy, zone);
-	}
+        if (activeTab == ConfigTab)
+        {
+            int zone = ipEngine.zoneMap.at<uchar>(pppy, pppx);
+            sprintf (str, "Mouse : %d %d, over zone : %d", pppx, pppy, zone);
+        }
 
-	textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
-	pos.x = hudApp.cols / 100;
-	pos.y = hudApp.rows - textSize.height;
-	putText(hudApp, str, pos+Point(1,1), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
+        textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
+        pos.x = hudApp.cols / 100;
+        pos.y = hudApp.rows - textSize.height;
+        putText(hudApp, str, pos+Point(1,1), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
+        putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
     }
 }
 
@@ -1281,17 +1313,17 @@ void MainFrame::OnbuttonOutputClick(wxCommandEvent& event)
 {
     if (!output)
     {
-	buttonOutput->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-record-icon active.png"))));
-	buttonOutput->Refresh();
-	ipEngine.OpenOutput();
-	output = true;
+        buttonOutput->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-record-icon active.png"))));
+        buttonOutput->Refresh();
+        ipEngine.OpenOutput();
+        output = true;
     }
     else
     {
-	buttonOutput->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-record-icon inactive.png"))));
-	buttonOutput->Refresh();
-	ipEngine.CloseOutput();
-	output = false;
+        buttonOutput->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-record-icon inactive.png"))));
+        buttonOutput->Refresh();
+        ipEngine.CloseOutput();
+        output = false;
     }
 }
 
@@ -1299,18 +1331,18 @@ void MainFrame::OnbuttonPlayClick(wxCommandEvent& event)
 {
     if (!play)
     {
-	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-pause-icon (1).png"))));
-	buttonPlay->Refresh();
-	play = true;
-	manualPlay = false;
-	ipEngine.capture->Play();
+        buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-pause-icon (1).png"))));
+        buttonPlay->Refresh();
+        play = true;
+        manualPlay = false;
+        ipEngine.capture->Play();
     }
     else
     {
-	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
-	buttonPlay->Refresh();
-	play = false;
-	ipEngine.capture->Pause();
+        buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
+        buttonPlay->Refresh();
+        play = false;
+        ipEngine.capture->Pause();
     }
 }
 
@@ -1325,13 +1357,13 @@ void MainFrame::OnbuttonStopClick(wxCommandEvent& event)
     // clear any tracking history (if tracker plugin is present)
     for (unsigned int i= 0; i < ipEngine.pipelines[0].plugins.size(); i++)
     {
-	PipelinePlugin* pp = ipEngine.pipelines[ipEngine.threadsCount].plugins[i];
+        PipelinePlugin* pp = ipEngine.pipelines[ipEngine.threadsCount].plugins[i];
 
-	Tracker* tracker = dynamic_cast<Tracker*>(pp);
-	if (tracker && !tracker->replay) tracker->ClearHistory();
+        Tracker* tracker = dynamic_cast<Tracker*>(pp);
+        if (tracker && !tracker->replay) tracker->ClearHistory();
 
-	MovingAverage* movingAverage = dynamic_cast<MovingAverage*>(pp);
-	if (movingAverage) movingAverage->ClearHistory();
+        MovingAverage* movingAverage = dynamic_cast<MovingAverage*>(pp);
+        if (movingAverage) movingAverage->ClearHistory();
     }
 }
 
@@ -1339,28 +1371,28 @@ void MainFrame::OnvideoSliderCmdScrollChanged(wxScrollEvent& event)
 {
     if(ipEngine.capture->type == Capture::VIDEO || ipEngine.capture->type == Capture::MULTI_VIDEO)
     {
-	int targetFrame = videoSlider->GetValue() * ipEngine.capture->GetFrameCount() / 10000;
+        int targetFrame = videoSlider->GetValue() * ipEngine.capture->GetFrameCount() / 10000;
 
-	CaptureVideo* capv = dynamic_cast<CaptureVideo*>(ipEngine.capture);
-	if (capv) capv->SetFrameNumber(targetFrame);
+        CaptureVideo* capv = dynamic_cast<CaptureVideo*>(ipEngine.capture);
+        if (capv) capv->SetFrameNumber(targetFrame);
 
-	CaptureMultiVideo* mcapv = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
-	if (mcapv) mcapv->SetFrameNumber(targetFrame);
+        CaptureMultiVideo* mcapv = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
+        if (mcapv) mcapv->SetFrameNumber(targetFrame);
 
-	sliderMoving = false;
-	videoSlider->UnsetToolTip();
+        sliderMoving = false;
+        videoSlider->UnsetToolTip();
 
-	// clear any tracking history (if tracker plugin is present)
-	for (unsigned int i= 0; i < ipEngine.pipelines[0].plugins.size(); i++)
-	{
-	    PipelinePlugin* pp = ipEngine.pipelines[ipEngine.threadsCount].plugins[i];
+        // clear any tracking history (if tracker plugin is present)
+        for (unsigned int i= 0; i < ipEngine.pipelines[0].plugins.size(); i++)
+        {
+            PipelinePlugin* pp = ipEngine.pipelines[ipEngine.threadsCount].plugins[i];
 
-	    Tracker* tracker = dynamic_cast<Tracker*>(pp);
-	    if (tracker && !tracker->replay) tracker->ClearHistory();
+            Tracker* tracker = dynamic_cast<Tracker*>(pp);
+            if (tracker && !tracker->replay) tracker->ClearHistory();
 
-	    MovingAverage* movingAverage = dynamic_cast<MovingAverage*>(pp);
-	    if (movingAverage) movingAverage->ClearHistory();
-	}
+            MovingAverage* movingAverage = dynamic_cast<MovingAverage*>(pp);
+            if (movingAverage) movingAverage->ClearHistory();
+        }
     }
 }
 
@@ -1368,13 +1400,13 @@ void MainFrame::OnvideoSliderCmdScrollThumbTrack(wxScrollEvent& event)
 {
     if (ipEngine.capture->type == Capture::VIDEO || ipEngine.capture->type == Capture::MULTI_VIDEO)
     {
-	wxLongLong s;
-	int targetFrame = videoSlider->GetValue() * ipEngine.capture->GetFrameCount() / 10;
-	s.Assign(targetFrame / ipEngine.capture->fps);
-	wxTimeSpan ts (0,0,0,s);
-	wxString f ("%H:%M:%S");
-	videoSlider->SetToolTip(ts.Format(f));
-	videoSlider->GetToolTip()->SetDelay(50);
+        wxLongLong s;
+        int targetFrame = videoSlider->GetValue() * ipEngine.capture->GetFrameCount() / 10;
+        s.Assign(targetFrame / ipEngine.capture->fps);
+        wxTimeSpan ts (0,0,0,s);
+        wxString f ("%H:%M:%S");
+        videoSlider->SetToolTip(ts.Format(f));
+        videoSlider->GetToolTip()->SetDelay(50);
     }
 
     sliderMoving = true;
@@ -1406,9 +1438,9 @@ void MainFrame::OnbuttonBgRecalculateClick(wxCommandEvent& event)
 {
     Mat newBg;
     if (ipEngine.bgCalcType == ImageProcessingEngine::BG_MEDIAN)
-	newBg = CalculateBackgroundMedian (ipEngine.capture, ipEngine.bgStartTime, ipEngine.bgEndTime, ipEngine.bgFrames, ipEngine.bgLowThreshold, ipEngine.bgHighThreshold);
+        newBg = CalculateBackgroundMedian (ipEngine.capture, ipEngine.bgStartTime, ipEngine.bgEndTime, ipEngine.bgFrames, ipEngine.bgLowThreshold, ipEngine.bgHighThreshold);
     else if (ipEngine.bgCalcType == ImageProcessingEngine::BG_MEAN)
-	newBg = CalculateBackgroundMean (ipEngine.capture, ipEngine.bgStartTime, ipEngine.bgEndTime, ipEngine.bgFrames, ipEngine.bgLowThreshold, ipEngine.bgHighThreshold);
+        newBg = CalculateBackgroundMean (ipEngine.capture, ipEngine.bgStartTime, ipEngine.bgEndTime, ipEngine.bgFrames, ipEngine.bgLowThreshold, ipEngine.bgHighThreshold);
     newBg.copyTo(ipEngine.background);
 
     // wxProgressDialog dialog(wxT(“Progress dialog example”),
@@ -1461,7 +1493,7 @@ void MainFrame::OnbuttonSelectZonesFileClick(wxCommandEvent& event)
 
     if (dialog.ShowModal() == wxID_OK)
     {
-	wxString path = dialog.GetPath();
+        wxString path = dialog.GetPath();
 //	int filterIndex = dialog.GetFilterIndex();
     }
 
@@ -1473,34 +1505,34 @@ void MainFrame::OnNotebook1PageChanged(wxNotebookEvent& event)
 {
     if (Notebook1->GetSelection() == 0)
     {
-	activeTab = ProcessingTab;
-	ipEngine.takeSnapshot = true;
+        activeTab = ProcessingTab;
+        ipEngine.takeSnapshot = true;
     }
     else if (Notebook1->GetSelection() == 1)
     {
-	activeTab = BackgroundTab;
-	ipEngine.takeSnapshot = false;
+        activeTab = BackgroundTab;
+        ipEngine.takeSnapshot = false;
     }
     else if (Notebook1->GetSelection() == 2)
     {
-	activeTab = ConfigTab;
-	ipEngine.takeSnapshot = false;
+        activeTab = ConfigTab;
+        ipEngine.takeSnapshot = false;
     }
     else if (Notebook1->GetSelection() == 3)
     {
-	activeTab = CalibrationTab;
-	ipEngine.takeSnapshot = false;
+        activeTab = CalibrationTab;
+        ipEngine.takeSnapshot = false;
     }
 
     // update viewport as a function of new view
     if (activeTab == CalibrationTab)
     {
-	Size sz = ipEngine.capture->CalibrationGetFrame().size();
-	AdjustOrthoAspectRatio (sz.width, sz.height);
+        Size sz = ipEngine.capture->CalibrationGetFrame().size();
+        AdjustOrthoAspectRatio (sz.width, sz.height);
     }
     else
     {
-	AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+        AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
     }
     UpdateUI();
     GLCanvas1->Refresh();
@@ -1522,24 +1554,24 @@ void MainFrame::OnButtonBgLoadClick(wxCommandEvent& event)
     if (dialog.ShowModal() == wxID_OK)
     {
 //	dialog.Hide();
-	wxString path = dialog.GetPath();
+        wxString path = dialog.GetPath();
 //	int filterIndex = dialog.GetFilterIndex();
 
-	// process data
-	Mat bg = imread (path.ToStdString());
+        // process data
+        Mat bg = imread (path.ToStdString());
 
-	if (bg.cols != ipEngine.capture->width || bg.rows != ipEngine.capture->height)
-	{
+        if (bg.cols != ipEngine.capture->width || bg.rows != ipEngine.capture->height)
+        {
 //	    parameters.bgFilename = path;
-	    cerr << "Background and video dimensions mismatch... please update your background" << std::endl;
+            cerr << "Background and video dimensions mismatch... please update your background" << std::endl;
 
-	    wxMessageBox( wxT("Background picture and video dimensions mismatch."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
-	}
-	else
-	{
-	    bg.copyTo(ipEngine.background);
-	    ipEngine.bgFilename = path.ToStdString();
-	}
+            wxMessageBox( wxT("Background picture and video dimensions mismatch."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
+        }
+        else
+        {
+            bg.copyTo(ipEngine.background);
+            ipEngine.bgFilename = path.ToStdString();
+        }
     }
 }
 
@@ -1553,10 +1585,10 @@ void MainFrame::OnButtonBgSaveClick(wxCommandEvent& event)
 
     if (dialog.ShowModal() == wxID_OK)
     {
-	wxString path = dialog.GetPath();
+        wxString path = dialog.GetPath();
 
-	SaveMatToPNG (ipEngine.background, static_cast<const char*>(path));
-	parameters.bgFilename = path.ToStdString();
+        SaveMatToPNG (ipEngine.background, static_cast<const char*>(path));
+        parameters.bgFilename = path.ToStdString();
     }
 }
 
@@ -1564,17 +1596,17 @@ void MainFrame::OnListBoxPipelinePluginsBeginDrag(wxMouseEvent& event)
 {
     if (event.Dragging())
     {
-	int n = ListBoxPipelinePlugins->HitTest(event.GetPosition());
-	if (n != wxNOT_FOUND)
-	{
-	    wxString text = ListBoxPipelinePlugins->GetString(n);
-	    wxTextDataObject tdo(text);
-	    wxDropSource tds(tdo, ListBoxPipelinePlugins);
+        int n = ListBoxPipelinePlugins->HitTest(event.GetPosition());
+        if (n != wxNOT_FOUND)
+        {
+            wxString text = ListBoxPipelinePlugins->GetString(n);
+            wxTextDataObject tdo(text);
+            wxDropSource tds(tdo, ListBoxPipelinePlugins);
 
-	    ListBoxPipeline->SetDropTarget (new MyTextDropTargetAdd(this));
-	    ListBoxPipelinePlugins->SetDropTarget (NULL);
-	    tds.DoDragDrop(wxDrag_AllowMove);
-	}
+            ListBoxPipeline->SetDropTarget (new MyTextDropTargetAdd(this));
+            ListBoxPipelinePlugins->SetDropTarget (NULL);
+            tds.DoDragDrop(wxDrag_AllowMove);
+        }
     }
 }
 
@@ -1582,34 +1614,34 @@ void MainFrame::OnListBoxPipelineBeginDrag(wxMouseEvent& event)
 {
     if (event.Dragging())
     {
-	int n = ListBoxPipeline->HitTest(event.GetPosition());
-	if (n != wxNOT_FOUND)
-	{
-	    wxString text = ListBoxPipeline->GetString(n);
-	    draggedPipelineItem = n;
-	    bool checked = ListBoxPipeline->IsChecked(n);
+        int n = ListBoxPipeline->HitTest(event.GetPosition());
+        if (n != wxNOT_FOUND)
+        {
+            wxString text = ListBoxPipeline->GetString(n);
+            draggedPipelineItem = n;
+            bool checked = ListBoxPipeline->IsChecked(n);
 
-	    // remove first
-	    ListBoxPipeline->Delete(n);
-	    ListBoxPipeline->Refresh();
+            // remove first
+            ListBoxPipeline->Delete(n);
+            ListBoxPipeline->Refresh();
 
-	    wxTextDataObject tdo(text);
-	    wxDropSource tds(tdo, ListBoxPipeline);
+            wxTextDataObject tdo(text);
+            wxDropSource tds(tdo, ListBoxPipeline);
 
-	    // try to drop
-	    draggedPipelineItemProcessed = false;
-	    ListBoxPipeline->SetDropTarget (new MyTextDropTargetMove(this));
-	    ListBoxPipelinePlugins->SetDropTarget (new MyTextDropTargetRemove(this));
-        tds.DoDragDrop(wxDrag_AllowMove);
+            // try to drop
+            draggedPipelineItemProcessed = false;
+            ListBoxPipeline->SetDropTarget (new MyTextDropTargetMove(this));
+            ListBoxPipelinePlugins->SetDropTarget (new MyTextDropTargetRemove(this));
+            tds.DoDragDrop(wxDrag_AllowMove);
 
-	    // did not process ? restore text
-	    if (!draggedPipelineItemProcessed)
-	    {
-		ListBoxPipeline->Insert(text, n);
-		ListBoxPipeline->SetSelection(n);
-		ListBoxPipeline->Check(n, checked);
-	    }
-	}
+            // did not process ? restore text
+            if (!draggedPipelineItemProcessed)
+            {
+                ListBoxPipeline->Insert(text, n);
+                ListBoxPipeline->SetSelection(n);
+                ListBoxPipeline->Check(n, checked);
+            }
+        }
     }
 }
 
@@ -1638,21 +1670,21 @@ bool MainFrame::OnPipelineMove(wxCoord x, wxCoord y, const wxString& str)
 
     if (sel < 0)
     {
-	int n =	ListBoxPipeline->Append(str);
-	ListBoxPipeline->SetSelection(n);
-	int idx = 0; if (!pfv[idx]) idx = ipEngine.threadsCount;
-	ListBoxPipeline->Check(n, pfv[idx]->active);
-	ipEngine.PushBack(pfv);
-	pipelineDialogs.push_back(dlg);
+        int n =	ListBoxPipeline->Append(str);
+        ListBoxPipeline->SetSelection(n);
+        int idx = 0; if (!pfv[idx]) idx = ipEngine.threadsCount;
+        ListBoxPipeline->Check(n, pfv[idx]->active);
+        ipEngine.PushBack(pfv);
+        pipelineDialogs.push_back(dlg);
     }
     else
     {
-	ListBoxPipeline->Insert (str, sel);
-	ListBoxPipeline->SetSelection (sel);
-	int idx = 0; if (!pfv[idx]) idx = ipEngine.threadsCount;
-	ListBoxPipeline->Check(sel, pfv[idx]->active);
-	ipEngine.Insert(sel, pfv);
-	pipelineDialogs.insert(pipelineDialogs.begin()+sel, dlg);
+        ListBoxPipeline->Insert (str, sel);
+        ListBoxPipeline->SetSelection (sel);
+        int idx = 0; if (!pfv[idx]) idx = ipEngine.threadsCount;
+        ListBoxPipeline->Check(sel, pfv[idx]->active);
+        ipEngine.Insert(sel, pfv);
+        pipelineDialogs.insert(pipelineDialogs.begin()+sel, dlg);
     }
 
     // advertise handling
@@ -1685,7 +1717,7 @@ void MainFrame::OnListBoxPipelineDClick(wxCommandEvent& event)
     wxString str = ListBoxPipeline->GetString(sel);
 
     if (pipelineDialogs[sel])
-	pipelineDialogs[sel]->Show();
+        pipelineDialogs[sel]->Show();
 }
 
 void MainFrame::OnListBoxPipelineCheck(wxCommandEvent& event)
@@ -1711,23 +1743,23 @@ void MainFrame::OnbuttonForwardClick(wxCommandEvent& event)
     CaptureVideo* cap = dynamic_cast<CaptureVideo*> (ipEngine.capture);
     if (cap)
     {
-	playSpeed++;
+        playSpeed++;
 
-	if (playSpeed >= 0)
-	    cap->SetSpeedFaster(playSpeed + 1);
-	else
-	    cap->SetSpeedSlower(-playSpeed + 1);
+        if (playSpeed >= 0)
+            cap->SetSpeedFaster(playSpeed + 1);
+        else
+            cap->SetSpeedSlower(-playSpeed + 1);
     }
 
     CaptureMultiVideo* mcap = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
     if (mcap)
     {
-	playSpeed++;
+        playSpeed++;
 
-	if (playSpeed >= 0)
-	    mcap->SetSpeedFaster(playSpeed + 1);
-	else
-	    mcap->SetSpeedSlower(-playSpeed + 1);
+        if (playSpeed >= 0)
+            mcap->SetSpeedFaster(playSpeed + 1);
+        else
+            mcap->SetSpeedSlower(-playSpeed + 1);
     }
 }
 
@@ -1736,22 +1768,22 @@ void MainFrame::OnbuttonBackwardsClick(wxCommandEvent& event)
     CaptureVideo* cap = dynamic_cast<CaptureVideo*> (ipEngine.capture);
     if (cap)
     {
-	playSpeed--;
+        playSpeed--;
 
-	if (playSpeed >= 0)
-	    cap->SetSpeedFaster(playSpeed + 1);
-	else
-	    cap->SetSpeedSlower(-playSpeed + 1);
+        if (playSpeed >= 0)
+            cap->SetSpeedFaster(playSpeed + 1);
+        else
+            cap->SetSpeedSlower(-playSpeed + 1);
     }
     CaptureMultiVideo* mcap = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
     if (mcap)
     {
-	playSpeed--;
+        playSpeed--;
 
-	if (playSpeed >= 0)
-	    mcap->SetSpeedFaster(playSpeed + 1);
-	else
-	    mcap->SetSpeedSlower(-playSpeed + 1);
+        if (playSpeed >= 0)
+            mcap->SetSpeedFaster(playSpeed + 1);
+        else
+            mcap->SetSpeedSlower(-playSpeed + 1);
     }
 }
 
@@ -1767,10 +1799,10 @@ void MainFrame::OnbuttonStepForwardClick(wxCommandEvent& event)
     // request next frame manually
     if (!ipEngine.GetNextFrame())
     {
-	// did not get a frame, pause
-	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
-	buttonPlay->Refresh();
-	play = false;
+        // did not get a frame, pause
+        buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
+        buttonPlay->Refresh();
+        play = false;
     }
 }
 
@@ -1778,20 +1810,20 @@ void MainFrame::OnbuttonStepBackwardsClick(wxCommandEvent& event)
 {
     if(ipEngine.capture->type == Capture::VIDEO || ipEngine.capture->type == Capture::MULTI_VIDEO)
     {
-	CaptureVideo* capv = dynamic_cast<CaptureVideo*>(ipEngine.capture);
-	CaptureMultiVideo* mcapv = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
+        CaptureVideo* capv = dynamic_cast<CaptureVideo*>(ipEngine.capture);
+        CaptureMultiVideo* mcapv = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
 
-	// disable play as we enter frame by frame
-	buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
-	buttonPlay->Refresh();
-	play = false;
-	manualPlay = true;
-	if (capv) capv->Pause();
-	if (mcapv) mcapv->Pause();
+        // disable play as we enter frame by frame
+        buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
+        buttonPlay->Refresh();
+        play = false;
+        manualPlay = true;
+        if (capv) capv->Pause();
+        if (mcapv) mcapv->Pause();
 
-	// jump video to previous frame...
-	if (capv) capv->GetPreviousFrame();
-	if (mcapv) mcapv->GetPreviousFrame();
+        // jump video to previous frame...
+        if (capv) capv->GetPreviousFrame();
+        if (mcapv) mcapv->GetPreviousFrame();
     }
 }
 
@@ -1799,15 +1831,15 @@ void MainFrame::OnbuttonHudClick(wxCommandEvent& event)
 {
     if (hudVisible == true)
     {
-	buttonHud->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Apps-utilities-system-monitor-icon inactive (1).png"))));
-	buttonPlay->Refresh();
-	hudVisible = false;
+        buttonHud->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Apps-utilities-system-monitor-icon inactive (1).png"))));
+        buttonPlay->Refresh();
+        hudVisible = false;
     }
     else
     {
-	buttonHud->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Apps-utilities-system-monitor-icon active (1).png"))));
-	buttonPlay->Refresh();
-	hudVisible = true;
+        buttonHud->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Apps-utilities-system-monitor-icon active (1).png"))));
+        buttonPlay->Refresh();
+        hudVisible = true;
     }
 }
 
@@ -1821,7 +1853,7 @@ string MainFrame::TextToCamelCase (string text)
     for (unsigned int i = 0; i < text.size(); i++)
     {
         if (isalnum(text[i]))
-	{
+        {
             if (upNext) res += toupper(text[i]);
             else res += text[i];
             upNext = false;
@@ -1837,14 +1869,14 @@ string MainFrame::CamelCaseToText (string text)
 
     for (unsigned int i = 0; i < text.size(); i++)
     {
-	// convert char
-	char c = tolower(text[i]);
+        // convert char
+        char c = tolower(text[i]);
 
-	// if it was a capital and not first char, add space
-	if (c != text[i] && i != 0) res += " ";
+        // if it was a capital and not first char, add space
+        if (c != text[i] && i != 0) res += " ";
 
-	// append char
-	res += c;
+        // append char
+        res += c;
     }
     return res;
 }
@@ -1858,165 +1890,165 @@ bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool s
 
     if (str == "background difference")
     {
-	DialogExtractMotion* dialog = new DialogExtractMotion(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogExtractMotion* dialog = new DialogExtractMotion(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "background diff mog")
     {
-	DialogBackgroundDiffMOG* dialog = new DialogBackgroundDiffMOG(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogBackgroundDiffMOG* dialog = new DialogBackgroundDiffMOG(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "background diff mog2")
     {
-	DialogBackgroundDiffMOG2* dialog = new DialogBackgroundDiffMOG2(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogBackgroundDiffMOG2* dialog = new DialogBackgroundDiffMOG2(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "background diff gmg")
     {
-	DialogBackgroundDiffGMG* dialog = new DialogBackgroundDiffGMG(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogBackgroundDiffGMG* dialog = new DialogBackgroundDiffGMG(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "adaptive threshold")
     {
-	DialogAdaptiveThreshold* dialog = new DialogAdaptiveThreshold(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogAdaptiveThreshold* dialog = new DialogAdaptiveThreshold(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "moving average")
     {
-	DialogMovingAverage* dialog = new DialogMovingAverage(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogMovingAverage* dialog = new DialogMovingAverage(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "color segmentation")
     {
-	DialogColorSegmentation* dialog = new DialogColorSegmentation(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogColorSegmentation* dialog = new DialogColorSegmentation(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "erosion")
     {
-	DialogErosion* dialog = new DialogErosion(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogErosion* dialog = new DialogErosion(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "dilation")
     {
-	DialogDilation* dialog = new DialogDilation(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogDilation* dialog = new DialogDilation(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "extract blobs")
     {
-	DialogExtractBlobs* dialog = new DialogExtractBlobs(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogExtractBlobs* dialog = new DialogExtractBlobs(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "get blobs angles")
     {
-	dlg = nullptr;
+        dlg = nullptr;
     }
     else if (str == "track blobs")
     {
-	DialogTracker* dialog = new DialogTracker(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogTracker* dialog = new DialogTracker(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "safe erosion")
     {
-	DialogSafeErosion* dialog = new DialogSafeErosion(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogSafeErosion* dialog = new DialogSafeErosion(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "frame difference")
     {
-	dlg = nullptr;
+        dlg = nullptr;
     }
     else if (str == "record video")
     {
-	DialogRecordVideo* dialog = new DialogRecordVideo(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogRecordVideo* dialog = new DialogRecordVideo(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "take snapshots")
     {
-	DialogTakeSnapshots* dialog = new DialogTakeSnapshots(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogTakeSnapshots* dialog = new DialogTakeSnapshots(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "record pixels")
     {
-	DialogRecordPixels* dialog = new DialogRecordPixels(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogRecordPixels* dialog = new DialogRecordPixels(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "zones of interest")
     {
-	dlg = nullptr;
+        dlg = nullptr;
     }
-    #ifdef ARUCO
+#ifdef ARUCO
     else if (str == "aruco")
     {
-	DialogAruco* dialog = new DialogAruco(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogAruco* dialog = new DialogAruco(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
-    #endif
+#endif
     else if (str == "simple tags")
     {
-	DialogSimpleTags* dialog = new DialogSimpleTags(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogSimpleTags* dialog = new DialogSimpleTags(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "stopwatch")
     {
-	DialogStopwatch* dialog = new DialogStopwatch(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogStopwatch* dialog = new DialogStopwatch(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else if (str == "remote control")
     {
-	dlg = nullptr;
+        dlg = nullptr;
     }
     else if (str == "aruco color")
     {
-	DialogArucoColor* dialog = new DialogArucoColor(this);
-	dialog->SetPlugin(pfv);
-	dlg = dialog;
+        DialogArucoColor* dialog = new DialogArucoColor(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
     }
     else
     {
-	cerr << "Unknown plugin name..." << endl;
-	return false;
+        cerr << "Unknown plugin name..." << endl;
+        return false;
     }
 
     if (pos < 0)
     {
-	// push right before last text line
-	int n = ListBoxPipeline->Append(str);
-	ListBoxPipeline->SetSelection(n);
-	int idx = 0; if (!pfv[idx]) idx = ipEngine.threadsCount;
-	ListBoxPipeline->Check(n, pfv[idx]->active);
-	ipEngine.PushBack(pfv, true);
-	pipelineDialogs.push_back(dlg);
+        // push right before last text line
+        int n = ListBoxPipeline->Append(str);
+        ListBoxPipeline->SetSelection(n);
+        int idx = 0; if (!pfv[idx]) idx = ipEngine.threadsCount;
+        ListBoxPipeline->Check(n, pfv[idx]->active);
+        ipEngine.PushBack(pfv, true);
+        pipelineDialogs.push_back(dlg);
     }
     else
     {
-	ListBoxPipeline->Insert (str, pos);
-	ListBoxPipeline->SetSelection (pos);
-	int idx = 0; if (!pfv[idx]) idx = ipEngine.threadsCount;
-	ListBoxPipeline->Check(pos, pfv[idx]->active);
-	ipEngine.Insert(pos, pfv, true);
-	pipelineDialogs.insert(pipelineDialogs.begin()+pos, dlg);
+        ListBoxPipeline->Insert (str, pos);
+        ListBoxPipeline->SetSelection (pos);
+        int idx = 0; if (!pfv[idx]) idx = ipEngine.threadsCount;
+        ListBoxPipeline->Check(pos, pfv[idx]->active);
+        ipEngine.Insert(pos, pfv, true);
+        pipelineDialogs.insert(pipelineDialogs.begin()+pos, dlg);
     }
 
     if (showDialog && dlg)
     {
-	dlg->Show();
+        dlg->Show();
     }
 
     return true;
@@ -2032,45 +2064,45 @@ void MainFrame::OnMenuSaveSettingsSelected(wxCommandEvent& event)
 
     if (dialog.ShowModal() == wxID_OK)
     {
-	wxString path = dialog.GetPath();
+        wxString path = dialog.GetPath();
 
-	// open file
-	FileStorage fs(path.ToStdString(), FileStorage::WRITE);
+        // open file
+        FileStorage fs(path.ToStdString(), FileStorage::WRITE);
 
-	if (fs.isOpened())
-	{
-	    fs << "Configuration" << "{";
+        if (fs.isOpened())
+        {
+            fs << "Configuration" << "{";
 
-	    ipEngine.SaveXML(fs);
+            ipEngine.SaveXML(fs);
 
-	    // add pipeline
-	    fs << "Pipeline" << "{";
+            // add pipeline
+            fs << "Pipeline" << "{";
 
-	    // loop through all plugins of the first pipeline (in the gui)
-	    for (unsigned int i = 0; i < ipEngine.pipelines[0].plugins.size(); i++)
-	    {
-		wxString text = ListBoxPipeline->GetString(i);
-		string cc = TextToCamelCase (text.ToStdString());
+            // loop through all plugins of the first pipeline (in the gui)
+            for (unsigned int i = 0; i < ipEngine.pipelines[0].plugins.size(); i++)
+            {
+                wxString text = ListBoxPipeline->GetString(i);
+                string cc = TextToCamelCase (text.ToStdString());
 
-		fs << string("Plugin_") + std::to_string(i) << "{" << cc << "{"; // ugly hack to go around duplicate key bug
+                fs << string("Plugin_") + std::to_string(i) << "{" << cc << "{"; // ugly hack to go around duplicate key bug
 
-		// plugins are nullptr in some pipelines, depending on multithreading...
-		if (ipEngine.pipelines[0].plugins[i])
-		    ipEngine.pipelines[0].plugins[i]->SaveXML(fs);
-		else
-		    ipEngine.pipelines[ipEngine.threadsCount].plugins[i]->SaveXML(fs);
+                // plugins are nullptr in some pipelines, depending on multithreading...
+                if (ipEngine.pipelines[0].plugins[i])
+                    ipEngine.pipelines[0].plugins[i]->SaveXML(fs);
+                else
+                    ipEngine.pipelines[ipEngine.threadsCount].plugins[i]->SaveXML(fs);
 
-		fs << "}" << "}";
-	    }
+                fs << "}" << "}";
+            }
 
-	    fs << "}"; // Pipeline
-	    fs << "}"; // Configuration
-	    fs.release();
-	}
-	else
-	{
-	    wxMessageBox( wxT("Could not open file for saving settings."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
-	}
+            fs << "}"; // Pipeline
+            fs << "}"; // Configuration
+            fs.release();
+        }
+        else
+        {
+            wxMessageBox( wxT("Could not open file for saving settings."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
+        }
     }
 }
 
@@ -2085,27 +2117,27 @@ void MainFrame::OnMenuLoadSettingsSelected(wxCommandEvent& event)
 
     if (dialog.ShowModal() == wxID_OK)
     {
-	wxString path = dialog.GetPath();
+        wxString path = dialog.GetPath();
 
-	parameters.file.release();
-	parameters.file.open(path.ToStdString(), FileStorage::READ);
-	if (parameters.file.isOpened())
-	{
-	    // press stop...
-	    buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
-	    buttonPlay->Refresh();
-	    videoSlider->SetValue(0);
-	    ipEngine.capture->Stop();
-	    play = false;
+        parameters.file.release();
+        parameters.file.open(path.ToStdString(), FileStorage::READ);
+        if (parameters.file.isOpened())
+        {
+            // press stop...
+            buttonPlay->SetBitmap(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-start-icon (1).png"))));
+            buttonPlay->Refresh();
+            videoSlider->SetValue(0);
+            ipEngine.capture->Stop();
+            play = false;
 
-	    parameters.rootNode = parameters.file["Configuration"];
-	    ipEngine.LoadXML (parameters.rootNode);
-	    ResetImageProcessingEngine(parameters);
-	}
-	else
-	{
-	    wxMessageBox( wxT("Could not load settings from this file."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
-	}
+            parameters.rootNode = parameters.file["Configuration"];
+            ipEngine.LoadXML (parameters.rootNode);
+            ResetImageProcessingEngine(parameters);
+        }
+        else
+        {
+            wxMessageBox( wxT("Could not load settings from this file."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
+        }
     }
 }
 
@@ -2141,49 +2173,49 @@ void MainFrame::OnGLCanvas1MouseMove(wxMouseEvent& event)
 {
     if (marqueeRegisteredDown)
     {
-	marqueeEnd = event.GetPosition();
-	ConvertWxCoordinatesToImage(marqueeEnd);
-	marqueeRegisteredMotion = true;
-	AdjustMarqueeAspectRatio();
+        marqueeEnd = event.GetPosition();
+        ConvertWxCoordinatesToImage(marqueeEnd);
+        marqueeRegisteredMotion = true;
+        AdjustMarqueeAspectRatio();
     }
     else if (scrollRegisteredDown)
     {
-	// start scrolling after significant motion
-	wxPoint p = event.GetPosition();
-	scrollRegisteredMotion = true;
-	// if (abs(p.x - scrollStart.x) > 10) scrollRegisteredMotion = true;
-	// if (abs(p.y - scrollStart.y) > 10) scrollRegisteredMotion = true;
+        // start scrolling after significant motion
+        wxPoint p = event.GetPosition();
+        scrollRegisteredMotion = true;
+        // if (abs(p.x - scrollStart.x) > 10) scrollRegisteredMotion = true;
+        // if (abs(p.y - scrollStart.y) > 10) scrollRegisteredMotion = true;
 
-	if (scrollRegisteredMotion)
-	{
-	    // get texture scale motion on screen
-	    float sx = zoomEndX - zoomStartX;
-	    float sy = zoomEndY - zoomStartY;
-	    float dx = scrollStart.x - p.x;
-	    float dy = scrollStart.y - p.y;
+        if (scrollRegisteredMotion)
+        {
+            // get texture scale motion on screen
+            float sx = zoomEndX - zoomStartX;
+            float sy = zoomEndY - zoomStartY;
+            float dx = scrollStart.x - p.x;
+            float dy = scrollStart.y - p.y;
 
-	    // scale motion to fit over texture
-	    dx *= sx / glCanvasWidth;
-	    dy *= sy / glCanvasHeight;
+            // scale motion to fit over texture
+            dx *= sx / glCanvasWidth;
+            dy *= sy / glCanvasHeight;
 
-	    // add motion to zoom
-	    zoomStartX += dx;
-	    zoomStartY += dy;
-	    zoomEndX += dx;
-	    zoomEndY += dy;
+            // add motion to zoom
+            zoomStartX += dx;
+            zoomStartY += dy;
+            zoomEndX += dx;
+            zoomEndY += dy;
 
-	    // check that zoom stays within image boundaries
-	    float d = 0 - zoomStartX;
-	    if (d > 0) {zoomStartX += d; zoomEndX += d;}
-	    d = 0 - zoomStartY;
-	    if (d > 0) {zoomStartY += d; zoomEndY += d;}
-	    d = zoomEndX - 1;
-	    if (d > 0) {zoomStartX -= d; zoomEndX -= d;}
-	    d = zoomEndY - 1;
-	    if (d > 0) {zoomStartY -= d; zoomEndY -= d;}
+            // check that zoom stays within image boundaries
+            float d = 0 - zoomStartX;
+            if (d > 0) {zoomStartX += d; zoomEndX += d;}
+            d = 0 - zoomStartY;
+            if (d > 0) {zoomStartY += d; zoomEndY += d;}
+            d = zoomEndX - 1;
+            if (d > 0) {zoomStartX -= d; zoomEndX -= d;}
+            d = zoomEndY - 1;
+            if (d > 0) {zoomStartY -= d; zoomEndY -= d;}
 
-	    scrollStart = p;
-	}
+            scrollStart = p;
+        }
     }
 }
 
@@ -2192,22 +2224,22 @@ void MainFrame::OnGLCanvas1RightUp(wxMouseEvent& event)
     // zoom if a marquee selection was done
     if (marqueeRegisteredDown)
     {
-	AdjustMarqueeAspectRatio();
+        AdjustMarqueeAspectRatio();
 
-	float zex = zoomEndX;
-	float zey = zoomEndY;
-	float zsx = zoomStartX;
-	float zsy = zoomStartY;
+        float zex = zoomEndX;
+        float zey = zoomEndY;
+        float zsx = zoomStartX;
+        float zsy = zoomStartY;
 
-	// calculate zoom in texture coordinates
-	zoomEndX = zsx + (zex - zsx) * (float) marqueeEnd.x / (float)oglScreen.cols;
-	zoomEndY = zsy + (zey - zsy) * (float) marqueeEnd.y / (float)oglScreen.rows;
-	zoomStartX = zsx + (zex - zsx) * (float) marqueeStart.x / (float)oglScreen.cols;
-	zoomStartY = zsy + (zey - zsy) * (float) marqueeStart.y / (float)oglScreen.rows;
+        // calculate zoom in texture coordinates
+        zoomEndX = zsx + (zex - zsx) * (float) marqueeEnd.x / (float)oglScreen.cols;
+        zoomEndY = zsy + (zey - zsy) * (float) marqueeEnd.y / (float)oglScreen.rows;
+        zoomStartX = zsx + (zex - zsx) * (float) marqueeStart.x / (float)oglScreen.cols;
+        zoomStartY = zsy + (zey - zsy) * (float) marqueeStart.y / (float)oglScreen.rows;
 
-	// rearrange so that rectangle is well oriented
-	if (zoomStartX > zoomEndX) {float tmp = zoomEndX; zoomEndX = zoomStartX; zoomStartX = tmp;}
-	if (zoomStartY > zoomEndY) {float tmp = zoomEndY; zoomEndY = zoomStartY; zoomStartY = tmp;}
+        // rearrange so that rectangle is well oriented
+        if (zoomStartX > zoomEndX) {float tmp = zoomEndX; zoomEndX = zoomStartX; zoomStartX = tmp;}
+        if (zoomStartY > zoomEndY) {float tmp = zoomEndY; zoomEndY = zoomStartY; zoomStartY = tmp;}
     }
 
     // cancel any marquee selection
@@ -2272,13 +2304,13 @@ void MainFrame::AdjustOrthoAspectRatio (int w, int h)
 
     if (iRatio > glRatio)
     {
-	// pad top/bottom
-	orthoPadY = ((float)w / glRatio - (float)h) / 2;
+        // pad top/bottom
+        orthoPadY = ((float)w / glRatio - (float)h) / 2;
     }
     else
     {
-	// pad left/right
-	orthoPadX = ((float)h * glRatio - (float)w) / 2;
+        // pad left/right
+        orthoPadX = ((float)h * glRatio - (float)w) / 2;
     }
     orthoX = -orthoPadX;
     orthoWidth = w + orthoPadX * 2;
@@ -2295,11 +2327,11 @@ void MainFrame::OnGLCanvas1Resize(wxSizeEvent& event)
     GLCanvas1->Refresh();
 }
 
-void MainFrame::OnToggleButtonProcessingToggle(wxCommandEvent& event)
-{
-    showProcessing = ToggleButtonProcessing->GetValue();
-//    ipEngine.takeSnapshot = true; // showProcessing;
-}
+// void MainFrame::OnToggleButtonProcessingToggle(wxCommandEvent& event)
+// {
+//     showProcessing = ToggleButtonProcessing->GetValue();
+// //    ipEngine.takeSnapshot = true; // showProcessing;
+// }
 
 void MainFrame::OnSpinCtrlStartTimeChange(wxSpinEvent& event)
 {
@@ -2360,8 +2392,8 @@ void MainFrame::OnRadioBoxMethodSelect(wxCommandEvent& event)
 
     if (!sel.empty())
     {
-	if (sel == "median") ipEngine.bgCalcType = ImageProcessingEngine::BG_MEDIAN;
-	if (sel == "mean") ipEngine.bgCalcType = ImageProcessingEngine::BG_MEAN;
+        if (sel == "median") ipEngine.bgCalcType = ImageProcessingEngine::BG_MEDIAN;
+        if (sel == "mean") ipEngine.bgCalcType = ImageProcessingEngine::BG_MEAN;
     }
 }
 
@@ -2373,7 +2405,7 @@ void MainFrame::UpdateUI ()
     SpinCtrlBgLowThreshold->SetValue((int)ipEngine.bgLowThreshold);
 
     cout << "just set spinctrl high to " << (int) ipEngine.bgHighThreshold << endl;
-    
+
     SpinCtrlBgHighThreshold->SetValue((int)ipEngine.bgHighThreshold);
     CheckBoxRecalculate->SetValue(ipEngine.bgRecalculate);
     if (ipEngine.bgCalcType == ImageProcessingEngine::BG_MEDIAN) RadioBoxMethod->SetStringSelection("median");
@@ -2386,9 +2418,9 @@ void MainFrame::UpdateUI ()
     CheckBoxUseTimeBounds->SetValue(ipEngine.useTimeBoundaries);
 
     if (!parameters.zonesFilename.empty())
-	FilePickerCtrlZones->SetPath(parameters.zonesFilename);
+        FilePickerCtrlZones->SetPath(parameters.zonesFilename);
     else
-	FilePickerCtrlZones->SetPath(ipEngine.zonesFilename);
+        FilePickerCtrlZones->SetPath(ipEngine.zonesFilename);
 
 
     // calibration tab
@@ -2421,36 +2453,36 @@ void MainFrame::UpdateUI ()
     // fill subdevices names
     if (multi)
     {
-	if (ipEngine.capture->type == Capture::MULTI_USB_CAMERA)
-	{
-	    CaptureMultiUSBCamera* c = dynamic_cast<CaptureMultiUSBCamera*> (ipEngine.capture);
-	    ChoiceCalibSubdevices->Clear();
-	    unsigned int n = c->GetDeviceCount();
-	    for (unsigned int i = 0; i < n; i++)
-	    {
-		ChoiceCalibSubdevices->Append(c->GetDeviceName(i));
-	    }
-	    ChoiceCalibSubdevices->SetSelection(c->GetDeviceToCalibrate());
-	}
-	else if (ipEngine.capture->type == Capture::MULTI_VIDEO)
-	{
-	    CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
-	    ChoiceCalibSubdevices->Clear();
-	    unsigned int n = c->GetDeviceCount();
-	    for (unsigned int i = 0; i < n; i++)
-	    {
-		wxFileName f (c->GetDeviceName(i));
-		wxString n = f.GetName();
-		wxString n2 = n;
-		if (n2.Length() > 23)
-		{
-		    n2 = n.SubString(0,20);
-		    n2 << "...";
-		}
-		ChoiceCalibSubdevices->Append(n2);
-	    }
-	    ChoiceCalibSubdevices->SetSelection(c->GetDeviceToCalibrate());
-	}
+        if (ipEngine.capture->type == Capture::MULTI_USB_CAMERA)
+        {
+            CaptureMultiUSBCamera* c = dynamic_cast<CaptureMultiUSBCamera*> (ipEngine.capture);
+            ChoiceCalibSubdevices->Clear();
+            unsigned int n = c->GetDeviceCount();
+            for (unsigned int i = 0; i < n; i++)
+            {
+                ChoiceCalibSubdevices->Append(c->GetDeviceName(i));
+            }
+            ChoiceCalibSubdevices->SetSelection(c->GetDeviceToCalibrate());
+        }
+        else if (ipEngine.capture->type == Capture::MULTI_VIDEO)
+        {
+            CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
+            ChoiceCalibSubdevices->Clear();
+            unsigned int n = c->GetDeviceCount();
+            for (unsigned int i = 0; i < n; i++)
+            {
+                wxFileName f (c->GetDeviceName(i));
+                wxString n = f.GetName();
+                wxString n2 = n;
+                if (n2.Length() > 23)
+                {
+                    n2 = n.SubString(0,20);
+                    n2 << "...";
+                }
+                ChoiceCalibSubdevices->Append(n2);
+            }
+            ChoiceCalibSubdevices->SetSelection(c->GetDeviceToCalibrate());
+        }
     }
 }
 
@@ -2470,7 +2502,7 @@ void MainFrame::ResetImageProcessingEngine(Parameters& parameters)
     // clean UI pipeline
     for (unsigned int i = 0; i < pipelineDialogs.size(); i++)
     {
-	delete pipelineDialogs[i];
+        delete pipelineDialogs[i];
     }
     pipelineDialogs.clear();
     ListBoxPipeline->Clear();
@@ -2480,13 +2512,13 @@ void MainFrame::ResetImageProcessingEngine(Parameters& parameters)
     FileNode fn = parameters.rootNode["Pipeline"];
     if (!fn.empty())
     {
-	FileNodeIterator it = fn.begin(), it_end = fn.end();
+        FileNodeIterator it = fn.begin(), it_end = fn.end();
         for (; it != it_end; ++it)
-	{
-	    FileNode fn = *((*it).begin()); // ugly hack to go around duplicate key bug
+        {
+            FileNode fn = *((*it).begin()); // ugly hack to go around duplicate key bug
     	    string txt = CamelCaseToText(fn.name());
     	    AddPipelinePlugin (txt, fn);
-	}
+        }
     }
 }
 
@@ -2515,33 +2547,33 @@ void MainFrame::OnMenuOpenCaptureSelected(wxCommandEvent& event)
 
     while (1)
     {
-	// show dialog
-	DialogOpenCapture dialog(this);
-	dialog.previousCapture = ipEngine.capture;
+        // show dialog
+        DialogOpenCapture dialog(this);
+        dialog.previousCapture = ipEngine.capture;
 
-	// use capture if possible
-	if (dialog.ShowModal() == wxID_OK)
-	{
-	    if (dialog.capture->type != Capture::NONE)
-	    {
-		ipEngine.capture = dialog.capture;
-		ResetImageProcessingEngine();
-		AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
-		GLCanvas1->Refresh();
+        // use capture if possible
+        if (dialog.ShowModal() == wxID_OK)
+        {
+            if (dialog.capture->type != Capture::NONE)
+            {
+                ipEngine.capture = dialog.capture;
+                ResetImageProcessingEngine();
+                AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+                GLCanvas1->Refresh();
 
-		wxString str = "USE Tracker: ";
-		this->SetTitle(str + ipEngine.capture->GetName());
-		break;
-	    }
-	    else
-	    {
-		wxMessageBox( wxT("Could not open this source, please select another one."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
+                wxString str = "USE Tracker: ";
+                this->SetTitle(str + ipEngine.capture->GetName());
+                break;
+            }
+            else
+            {
+                wxMessageBox( wxT("Could not open this source, please select another one."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
 
-		// the capture object was created by dialog and won't be deleted there
-		delete dialog.capture;
-	    }
-	}
-	else break;
+                // the capture object was created by dialog and won't be deleted there
+                delete dialog.capture;
+            }
+        }
+        else break;
     }
 }
 
@@ -2551,56 +2583,56 @@ void MainFrame::OnChar(wxKeyEvent& event)
     switch (event.GetKeyCode())
     {
     case WXK_SPACE:
-	OnbuttonPlayClick(e);
-	break;
+        OnbuttonPlayClick(e);
+        break;
 
     case WXK_RIGHT:
-	OnbuttonStepForwardClick(e);
-	break;
+        OnbuttonStepForwardClick(e);
+        break;
 
     case WXK_LEFT:
-	OnbuttonStepBackwardsClick(e);
-	break;
+        OnbuttonStepBackwardsClick(e);
+        break;
 
     case WXK_CONTROL_R:
-	OnbuttonOutputClick(e);
-	break;
+        OnbuttonOutputClick(e);
+        break;
 
     case WXK_CONTROL_O:
-	OnMenuOpenCaptureSelected(e);
-	break;
+        OnMenuOpenCaptureSelected(e);
+        break;
 
     case WXK_CONTROL_L:
-	OnMenuLoadSettingsSelected(e);
-	break;
+        OnMenuLoadSettingsSelected(e);
+        break;
 
     case WXK_CONTROL_S:
-	OnMenuSaveSettingsSelected(e);
-	break;
+        OnMenuSaveSettingsSelected(e);
+        break;
 
     case '+':
     case '=':
-	OnbuttonForwardClick(e);
-	break;
+        OnbuttonForwardClick(e);
+        break;
 
     case '-':
-	OnbuttonBackwardsClick(e);
-	break;
+        OnbuttonBackwardsClick(e);
+        break;
 
     case WXK_BACK:
-	CaptureVideo* cap = dynamic_cast<CaptureVideo*> (ipEngine.capture);
-	if (cap)
-	{
-	    playSpeed = 0;
-	    cap->SetSpeedFaster(1);
-	}
-	CaptureMultiVideo* mcap = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
-	if (mcap)
-	{
-	    playSpeed = 0;
-	    mcap->SetSpeedFaster(1);
-	}
-	break;
+        CaptureVideo* cap = dynamic_cast<CaptureVideo*> (ipEngine.capture);
+        if (cap)
+        {
+            playSpeed = 0;
+            cap->SetSpeedFaster(1);
+        }
+        CaptureMultiVideo* mcap = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
+        if (mcap)
+        {
+            playSpeed = 0;
+            mcap->SetSpeedFaster(1);
+        }
+        break;
     }
 }
 
@@ -2630,25 +2662,25 @@ void MainFrame::RecursiveConnectCharEvent(wxWindow* pclComponent)
 {
     if(pclComponent)
     {
-	wxDialog* dlg = dynamic_cast<wxDialog*> (pclComponent);
+        wxDialog* dlg = dynamic_cast<wxDialog*> (pclComponent);
 
-	if (dlg == nullptr)
-	{
-	    pclComponent->Connect(wxID_ANY,
-				  wxEVT_CHAR,
-				  wxKeyEventHandler(MainFrame::OnChar),
-				  (wxObject*) NULL,
-				  this);
+        if (dlg == nullptr)
+        {
+            pclComponent->Connect(wxID_ANY,
+                                  wxEVT_CHAR,
+                                  wxKeyEventHandler(MainFrame::OnChar),
+                                  (wxObject*) NULL,
+                                  this);
 
-	    wxWindowListNode* pclNode = pclComponent->GetChildren().GetFirst();
-	    while(pclNode)
-	    {
-		wxWindow* pclChild = pclNode->GetData();
-		this->RecursiveConnectCharEvent(pclChild);
+            wxWindowListNode* pclNode = pclComponent->GetChildren().GetFirst();
+            while(pclNode)
+            {
+                wxWindow* pclChild = pclNode->GetData();
+                this->RecursiveConnectCharEvent(pclChild);
 
-		pclNode = pclNode->GetNext();
-	    }
-	}
+                pclNode = pclNode->GetNext();
+            }
+        }
     }
 }
 
@@ -2656,25 +2688,25 @@ void MainFrame::RecursiveDisconnectCharEvent(wxWindow* pclComponent)
 {
     if(pclComponent)
     {
-	wxDialog* dlg = dynamic_cast<wxDialog*> (pclComponent);
+        wxDialog* dlg = dynamic_cast<wxDialog*> (pclComponent);
 
-	if (dlg == nullptr)
-	{
-	    pclComponent->Disconnect(wxID_ANY,
-				     wxEVT_CHAR,
-				     wxKeyEventHandler(MainFrame::OnChar),
-				     (wxObject*) NULL,
-				     this);
+        if (dlg == nullptr)
+        {
+            pclComponent->Disconnect(wxID_ANY,
+                                     wxEVT_CHAR,
+                                     wxKeyEventHandler(MainFrame::OnChar),
+                                     (wxObject*) NULL,
+                                     this);
 
-	    wxWindowListNode* pclNode = pclComponent->GetChildren().GetFirst();
-	    while(pclNode)
-	    {
-		wxWindow* pclChild = pclNode->GetData();
-		this->RecursiveDisconnectCharEvent(pclChild);
+            wxWindowListNode* pclNode = pclComponent->GetChildren().GetFirst();
+            while(pclNode)
+            {
+                wxWindow* pclChild = pclNode->GetData();
+                this->RecursiveDisconnectCharEvent(pclChild);
 
-		pclNode = pclNode->GetNext();
-	    }
-	}
+                pclNode = pclNode->GetNext();
+            }
+        }
     }
 }
 
@@ -2717,24 +2749,24 @@ void MainFrame::OnButtonCalibSaveClick(wxCommandEvent& event)
 
     if (dialog.ShowModal() == wxID_OK)
     {
-	wxString path = dialog.GetPath();
+        wxString path = dialog.GetPath();
 
-	// open file
-	FileStorage fs(path.ToStdString(), FileStorage::WRITE);
+        // open file
+        FileStorage fs(path.ToStdString(), FileStorage::WRITE);
 
-	if (fs.isOpened())
-	{
-	    fs << "Calibration" << "{";
+        if (fs.isOpened())
+        {
+            fs << "Calibration" << "{";
 
-	    ipEngine.capture->CalibrationSaveXML(fs);
+            ipEngine.capture->CalibrationSaveXML(fs);
 
-	    fs << "}";
-	    fs.release();
-	}
-	else
-	{
-	    wxMessageBox( wxT("Could not open file for saving calibration settings."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
-	}
+            fs << "}";
+            fs.release();
+        }
+        else
+        {
+            wxMessageBox( wxT("Could not open file for saving calibration settings."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
+        }
     }
 }
 
@@ -2747,18 +2779,18 @@ void MainFrame::OnButtonCalibLoadClick(wxCommandEvent& event)
 
     if (dialog.ShowModal() == wxID_OK)
     {
-	wxString path = dialog.GetPath();
+        wxString path = dialog.GetPath();
 
-	cv::FileStorage file;
-	cv::FileNode rootNode;
-	file.open(path.ToStdString(), FileStorage::READ);
-	if (file.isOpened())
-	{
-	    rootNode = file["Calibration"];
+        cv::FileStorage file;
+        cv::FileNode rootNode;
+        file.open(path.ToStdString(), FileStorage::READ);
+        if (file.isOpened())
+        {
+            rootNode = file["Calibration"];
 
-	    // process data
-	    ipEngine.capture->CalibrationLoadXML(rootNode);
-	}
+            // process data
+            ipEngine.capture->CalibrationLoadXML(rootNode);
+        }
     }
 }
 
@@ -2830,27 +2862,27 @@ void MainFrame::OnChoiceCalibSubdevicesSelect(wxCommandEvent& event)
 {
     if (ipEngine.capture->type == Capture::MULTI_USB_CAMERA)
     {
-	CaptureMultiUSBCamera* c = dynamic_cast<CaptureMultiUSBCamera*> (ipEngine.capture);
-	c->SetDeviceToCalibrate(event.GetSelection());
+        CaptureMultiUSBCamera* c = dynamic_cast<CaptureMultiUSBCamera*> (ipEngine.capture);
+        c->SetDeviceToCalibrate(event.GetSelection());
 
-	// adjust display to new subcapture
-	Size sz = ipEngine.capture->CalibrationGetFrame().size();
-	AdjustOrthoAspectRatio (sz.width, sz.height);
+        // adjust display to new subcapture
+        Size sz = ipEngine.capture->CalibrationGetFrame().size();
+        AdjustOrthoAspectRatio (sz.width, sz.height);
 
-	// make sure calib tab shows correct settings
-	UpdateUI();
+        // make sure calib tab shows correct settings
+        UpdateUI();
     }
     if (ipEngine.capture->type == Capture::MULTI_VIDEO)
     {
-	CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
-	c->SetDeviceToCalibrate(event.GetSelection());
+        CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
+        c->SetDeviceToCalibrate(event.GetSelection());
 
-	// adjust display to new subcapture
-	Size sz = ipEngine.capture->CalibrationGetFrame().size();
-	AdjustOrthoAspectRatio (sz.width, sz.height);
+        // adjust display to new subcapture
+        Size sz = ipEngine.capture->CalibrationGetFrame().size();
+        AdjustOrthoAspectRatio (sz.width, sz.height);
 
-	// make sure calib tab shows correct settings
-	UpdateUI();
+        // make sure calib tab shows correct settings
+        UpdateUI();
     }
 }
 
@@ -2858,19 +2890,19 @@ void MainFrame::OnButtonConfigStitchClick(wxCommandEvent& event)
 {
     if (ipEngine.capture->type == Capture::MULTI_USB_CAMERA)
     {
-	CaptureMultiUSBCamera* c = dynamic_cast<CaptureMultiUSBCamera*>(ipEngine.capture);
-	c->Stitch();
-	ResetImageProcessingEngine();
-	AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
-	GLCanvas1->Refresh();
+        CaptureMultiUSBCamera* c = dynamic_cast<CaptureMultiUSBCamera*>(ipEngine.capture);
+        c->Stitch();
+        ResetImageProcessingEngine();
+        AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+        GLCanvas1->Refresh();
     }
     if (ipEngine.capture->type == Capture::MULTI_VIDEO)
     {
-	CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
-	c->Stitch();
-	ResetImageProcessingEngine();
-	AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
-	GLCanvas1->Refresh();
+        CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
+        c->Stitch();
+        ResetImageProcessingEngine();
+        AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+        GLCanvas1->Refresh();
     }
 }
 
@@ -2878,19 +2910,19 @@ void MainFrame::OnButtonConfigResetStitchingClick(wxCommandEvent& event)
 {
     if (ipEngine.capture->type == Capture::MULTI_USB_CAMERA)
     {
-	CaptureMultiUSBCamera* c = dynamic_cast<CaptureMultiUSBCamera*>(ipEngine.capture);
-	c->ResetStitching();
-	ResetImageProcessingEngine();
-	AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
-	GLCanvas1->Refresh();
+        CaptureMultiUSBCamera* c = dynamic_cast<CaptureMultiUSBCamera*>(ipEngine.capture);
+        c->ResetStitching();
+        ResetImageProcessingEngine();
+        AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+        GLCanvas1->Refresh();
     }
     if (ipEngine.capture->type == Capture::MULTI_VIDEO)
     {
-	CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
-	c->ResetStitching();
-	ResetImageProcessingEngine();
-	AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
-	GLCanvas1->Refresh();
+        CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
+        c->ResetStitching();
+        ResetImageProcessingEngine();
+        AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+        GLCanvas1->Refresh();
     }
 }
 
@@ -2904,24 +2936,24 @@ void MainFrame::OnMenuSaveCaptureSelected(wxCommandEvent& event)
 
     if (dialog.ShowModal() == wxID_OK)
     {
-	wxString path = dialog.GetPath();
+        wxString path = dialog.GetPath();
 
-	// open file
-	FileStorage fs(path.ToStdString(), FileStorage::WRITE);
+        // open file
+        FileStorage fs(path.ToStdString(), FileStorage::WRITE);
 
-	if (fs.isOpened())
-	{
-	    fs << "Source" << "{";
+        if (fs.isOpened())
+        {
+            fs << "Source" << "{";
 
-	    ipEngine.capture->SaveXML (fs);
+            ipEngine.capture->SaveXML (fs);
 
-	    fs << "}"; // SourceConfiguration
-	    fs.release();
-	}
-	else
-	{
-	    wxMessageBox( wxT("Could not open file for saving settings."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
-	}
+            fs << "}"; // SourceConfiguration
+            fs.release();
+        }
+        else
+        {
+            wxMessageBox( wxT("Could not open file for saving settings."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
+        }
     }
 }
 
@@ -2934,34 +2966,34 @@ void MainFrame::OnButtonConfigLoadStitchingClick(wxCommandEvent& event)
 
     if (dialog.ShowModal() == wxID_OK)
     {
-	wxString path = dialog.GetPath();
+        wxString path = dialog.GetPath();
 
-	cv::FileStorage file;
-	cv::FileNode rootNode;
-	file.open(path.ToStdString(), FileStorage::READ);
-	if (file.isOpened())
-	{
-	    rootNode = file["Source"];
+        cv::FileStorage file;
+        cv::FileNode rootNode;
+        file.open(path.ToStdString(), FileStorage::READ);
+        if (file.isOpened())
+        {
+            rootNode = file["Source"];
 
-	    // try to cast as multi device
-	    CaptureMultiVideo* cv = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
-	    if (cv)
-	    {
-		cv->LoadXML(rootNode, true);
-		ResetImageProcessingEngine();
-		AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
-		GLCanvas1->Refresh();
-	    }
+            // try to cast as multi device
+            CaptureMultiVideo* cv = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
+            if (cv)
+            {
+                cv->LoadXML(rootNode, true);
+                ResetImageProcessingEngine();
+                AdjustOrthoAspectRatio (ipEngine.capture->width, ipEngine.capture->height);
+                GLCanvas1->Refresh();
+            }
 
-	    // TODO ADD MULTI USB
-	    // CaptureMultiVideo* cv = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
-	    // if (cv)
-	    // {
-	    // 	cv->LoadXML(rootNode, true);
-	    // }
+            // TODO ADD MULTI USB
+            // CaptureMultiVideo* cv = dynamic_cast<CaptureMultiVideo*> (ipEngine.capture);
+            // if (cv)
+            // {
+            // 	cv->LoadXML(rootNode, true);
+            // }
 
 
-	}
+        }
     }
 }
 
@@ -2973,24 +3005,24 @@ void MainFrame::OnButtonConfigSaveStitchingClick(wxCommandEvent& event)
 
     if (dialog.ShowModal() == wxID_OK)
     {
-	wxString path = dialog.GetPath();
+        wxString path = dialog.GetPath();
 
-	// open file
-	FileStorage fs(path.ToStdString(), FileStorage::WRITE);
+        // open file
+        FileStorage fs(path.ToStdString(), FileStorage::WRITE);
 
-	if (fs.isOpened())
-	{
-	    fs << "Source" << "{";
+        if (fs.isOpened())
+        {
+            fs << "Source" << "{";
 
-	    ipEngine.capture->SaveXML (fs);
+            ipEngine.capture->SaveXML (fs);
 
-	    fs << "}"; // SourceConfiguration
-	    fs.release();
-	}
-	else
-	{
-	    wxMessageBox( wxT("Could not open file for saving stitching settings."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
-	}
+            fs << "}"; // SourceConfiguration
+            fs.release();
+        }
+        else
+        {
+            wxMessageBox( wxT("Could not open file for saving stitching settings."), wxT("An error was encountered..."), wxOK | wxICON_ERROR);
+        }
     }
 }
 
@@ -2998,7 +3030,7 @@ void MainFrame::OnCheckBoxConfigStitchAdjustLuminosityClick(wxCommandEvent& even
 {
     if (ipEngine.capture->type == Capture::MULTI_VIDEO)
     {
-	// TODO nothing happens here ? 
+        // TODO nothing happens here ?
 //	CaptureMultiVideo* c = dynamic_cast<CaptureMultiVideo*>(ipEngine.capture);
 //	c->ResetStitching();
     }
@@ -3012,4 +3044,9 @@ void MainFrame::OnSpinCtrlBgHighThresholdChange(wxSpinEvent& event)
 void MainFrame::OnSpinCtrlBgLowThresholdChange(wxSpinEvent& event)
 {
     ipEngine.bgLowThreshold = (unsigned char) event.GetPosition();
+}
+
+void MainFrame::OnSliderProcessingBlendingCmdSliderUpdated(wxScrollEvent& event)
+{
+    processingBlending = event.GetPosition() / 100.0;
 }

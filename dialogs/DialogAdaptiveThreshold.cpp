@@ -155,6 +155,8 @@ void DialogAdaptiveThreshold::SetPlugin (std::vector<PipelinePlugin*> pfv)
     SpinCtrlZone->SetValue(plugin[0]->zone);
     RadioBoxOperator->SetSelection(plugin[0]->additive);
     CheckBoxRestrictToZone->SetValue(plugin[0]->restrictToZone);
+
+    CheckBoxInvert->SetValue(plugin[0]->invert);
 }
 
 void DialogAdaptiveThreshold::OnButtonOkClick(wxCommandEvent& event)

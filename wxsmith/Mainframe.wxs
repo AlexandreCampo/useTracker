@@ -149,12 +149,27 @@
 								<cols>1</cols>
 								<growablecols>0</growablecols>
 								<object class="sizeritem">
-									<object class="wxToggleButton" name="ID_TOGGLEBUTTON1" variable="ToggleButtonProcessing" member="yes">
-										<label>Show Processing</label>
-										<handler function="OnToggleButtonProcessingToggle" entry="EVT_TOGGLEBUTTON" />
+									<object class="wxFlexGridSizer" variable="FlexGridSizer16" member="no">
+										<cols>2</cols>
+										<growablecols>1</growablecols>
+										<object class="sizeritem">
+											<object class="wxStaticText" name="ID_STATICTEXT19" variable="StaticText19" member="yes">
+												<label>Show processing</label>
+											</object>
+											<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
+											<border>5</border>
+											<option>1</option>
+										</object>
+										<object class="sizeritem">
+											<object class="wxSlider" name="ID_SLIDER3" variable="SliderProcessingBlending" member="yes">
+												<handler function="OnSliderProcessingBlendingCmdSliderUpdated" entry="EVT_COMMAND_SLIDER_UPDATED" />
+											</object>
+											<flag>wxALL|wxEXPAND</flag>
+											<border>5</border>
+											<option>1</option>
+										</object>
 									</object>
-									<flag>wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL</flag>
-									<border>5</border>
+									<flag>wxALL|wxEXPAND</flag>
 									<option>1</option>
 								</object>
 								<object class="sizeritem">
