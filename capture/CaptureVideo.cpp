@@ -138,13 +138,13 @@ bool CaptureVideo::Open (string filename)
     img_convert_ctx = sws_getContext(width, height, 
 				     //codec_context->pix_fmt,
 				     pixel_format,
-				     width, height, PIX_FMT_BGR24, SWS_FAST_BILINEAR,
+				     width, height, AV_PIX_FMT_BGR24, SWS_FAST_BILINEAR,
 				     NULL, NULL, NULL);
     
     // Assign opencv mat buffer buffer to image planes in frameRGB
     // TODO is frameBGR linesize identical to mat linesize ?
     frame = Mat::zeros (height, width, CV_8UC3); 
-    avpicture_fill((AVPicture *)&frameBGR, frame.data, PIX_FMT_BGR24, width, height);
+    avpicture_fill((AVPicture *)&frameBGR, frame.data, AV_PIX_FMT_BGR24, width, height);
     
     GrabFrame();
     ConvertFrame();
@@ -222,7 +222,7 @@ bool CaptureVideo::ConvertFrame ()
 	img_convert_ctx = sws_getContext(width, height, 
 					 //codec_context->pix_fmt,
 					 pixel_format,
-					 width, height, PIX_FMT_BGR24, SWS_FAST_BILINEAR,
+					 width, height, AV_PIX_FMT_BGR24, SWS_FAST_BILINEAR,
 					 NULL, NULL, NULL);
 
     avpicture_fill( (AVPicture*)&frameBGR, frame.data, AV_PIX_FMT_BGR24, width, height );

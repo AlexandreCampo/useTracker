@@ -94,9 +94,9 @@ void RecordVideo::OpenOutput ()
 
      // color or BW
      if (pipeline->frame.channels() == 3)
-	 input_pix_fmt = PIX_FMT_BGR24;
+	 input_pix_fmt = AV_PIX_FMT_BGR24;
      else
-	 input_pix_fmt = PIX_FMT_GRAY8;
+	 input_pix_fmt = AV_PIX_FMT_GRAY8;
 
      //create video stream
      video_stream = avformat_new_stream(format_context, codec);
@@ -200,10 +200,10 @@ void RecordVideo::OpenOutput ()
     frameBGR=avcodec_alloc_frame();
 #endif
     
-    int numBytes=avpicture_get_size(PIX_FMT_RGB24, pipeline->width, pipeline->height);
+    int numBytes=avpicture_get_size(AV_PIX_FMT_RGB24, pipeline->width, pipeline->height);
     buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
     memset (buffer, 0, numBytes * sizeof(uint8_t));
-    avpicture_fill((AVPicture *)frameBGR, buffer, PIX_FMT_RGB24, pipeline->width, pipeline->height);
+    avpicture_fill((AVPicture *)frameBGR, buffer, AV_PIX_FMT_RGB24, pipeline->width, pipeline->height);
 
     // av_dump_format(format_context, 0, outputFilename.c_str(), 1);
 
@@ -239,7 +239,7 @@ void RecordVideo::OutputStep ()
     if (img_convert_ctx == NULL)
     {
 	img_convert_ctx = sws_getContext(
-	    pipeline->width, pipeline->height, PIX_FMT_BGR24,
+	    pipeline->width, pipeline->height, AV_PIX_FMT_BGR24,
 	    pipeline->width, pipeline->height, codec_context->pix_fmt,
 	    SWS_FAST_BILINEAR, NULL, NULL, NULL);
     }
