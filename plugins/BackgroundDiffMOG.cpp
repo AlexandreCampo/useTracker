@@ -40,12 +40,12 @@ void BackgroundDiffMOG::Reset()
     marked2 = Mat(pipeline->height, pipeline->width, CV_8U);
     marked3 = Mat(pipeline->height, pipeline->width, CV_8U);
 
+#if CV_MAJOR_VERSION == 2
     delete MOG;
     MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
-
-#ifdef CV_VERSION_EPOCH
     MOG->operator()(pipeline->background, marked2);
 #else
+    MOG = makePtr<BackgroundSubtractorMOG>(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->apply(pipeline->background, marked2);
 #endif
 }
@@ -54,12 +54,13 @@ void BackgroundDiffMOG::Reset()
 void BackgroundDiffMOG::SetHistory(int h)
 {
     history = h;
-    
+
+#if CV_MAJOR_VERSION == 2
     delete MOG;
-    MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);    
-#ifdef CV_VERSION_EPOCH
+    MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->operator()(pipeline->background, marked2);
 #else
+    MOG = makePtr<BackgroundSubtractorMOG>(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->apply(pipeline->background, marked2);
 #endif
 }
@@ -67,12 +68,13 @@ void BackgroundDiffMOG::SetHistory(int h)
 void BackgroundDiffMOG::SetNMixtures(int m)
 {
     nMixtures = m;
-    
+
+#if CV_MAJOR_VERSION == 2
     delete MOG;
-    MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);    
-#ifdef CV_VERSION_EPOCH
+    MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->operator()(pipeline->background, marked2);
 #else
+    MOG = makePtr<BackgroundSubtractorMOG>(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->apply(pipeline->background, marked2);
 #endif
 }
@@ -80,12 +82,13 @@ void BackgroundDiffMOG::SetNMixtures(int m)
 void BackgroundDiffMOG::SetBackgroundRatio(double r)
 {
     backgroundRatio = r;
-    
+
+#if CV_MAJOR_VERSION == 2
     delete MOG;
-    MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);    
-#ifdef CV_VERSION_EPOCH
+    MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->operator()(pipeline->background, marked2);
 #else
+    MOG = makePtr<BackgroundSubtractorMOG>(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->apply(pipeline->background, marked2);
 #endif
 }
@@ -94,18 +97,19 @@ void BackgroundDiffMOG::SetNoiseSigma(double s)
 {
     noiseSigma = s;
     
+#if CV_MAJOR_VERSION == 2
     delete MOG;
-    MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);    
-#ifdef CV_VERSION_EPOCH
+    MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->operator()(pipeline->background, marked2);
 #else
+    MOG = makePtr<BackgroundSubtractorMOG>(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->apply(pipeline->background, marked2);
 #endif
 }
 
 void BackgroundDiffMOG::Apply()
 {    
-#ifdef CV_VERSION_EPOCH
+#if CV_MAJOR_VERSION == 2
     MOG->operator()(pipeline->frame, marked2, learningRate);
 #else
     MOG->apply(pipeline->frame, marked2, learningRate);
