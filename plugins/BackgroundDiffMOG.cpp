@@ -22,7 +22,7 @@
 
 using namespace cv;
 
-#if CV_MAJOR_VERSION == 2
+#if CV_MAJOR_VERSION == 3
 using namespace cv::bgsegm;
 #endif
 
