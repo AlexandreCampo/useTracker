@@ -53,7 +53,7 @@ public:
 #if CV_MAJOR_VERSION == 2
     cv::BackgroundSubtractor* MOG = NULL;
 #else
-    cv::Ptr<BackgroundSubtractor> MOG;
+    cv::Ptr<cv::BackgroundSubtractor> MOG;
 #endif   
     
     BackgroundDiffMOG();
