@@ -22,6 +22,10 @@
 
 using namespace cv;
 
+#if CV_MAJOR_VERSION == 2
+using namespace cv::bgsegm;
+#endif
+
 BackgroundDiffMOG::BackgroundDiffMOG() : PipelinePlugin()
 {
     multithreaded = true;
