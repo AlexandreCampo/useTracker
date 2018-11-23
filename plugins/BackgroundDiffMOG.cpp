@@ -22,6 +22,10 @@
 
 using namespace cv;
 
+// todo debug
+#include <iostream>
+using namespace std;
+
 BackgroundDiffMOG::BackgroundDiffMOG() : PipelinePlugin()
 {
     multithreaded = true;
@@ -41,8 +45,13 @@ void BackgroundDiffMOG::Reset()
     marked3 = Mat(pipeline->height, pipeline->width, CV_8U);
 
     delete MOG;
-    MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);    
-    MOG->operator()(pipeline->background, marked2);	
+    MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
+
+#ifdef CV_VERSION_EPOCH
+    MOG->operator()(pipeline->background, marked2);
+#else
+    MOG->apply(pipeline->background, marked2);
+#endif
 }
 
 
@@ -52,7 +61,11 @@ void BackgroundDiffMOG::SetHistory(int h)
     
     delete MOG;
     MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);    
-    MOG->operator()(pipeline->background, marked2);	
+#ifdef CV_VERSION_EPOCH
+    MOG->operator()(pipeline->background, marked2);
+#else
+    MOG->apply(pipeline->background, marked2);
+#endif
 }
 
 void BackgroundDiffMOG::SetNMixtures(int m)
@@ -61,7 +74,11 @@ void BackgroundDiffMOG::SetNMixtures(int m)
     
     delete MOG;
     MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);    
-    MOG->operator()(pipeline->background, marked2);	
+#ifdef CV_VERSION_EPOCH
+    MOG->operator()(pipeline->background, marked2);
+#else
+    MOG->apply(pipeline->background, marked2);
+#endif
 }
 
 void BackgroundDiffMOG::SetBackgroundRatio(double r)
@@ -70,7 +87,11 @@ void BackgroundDiffMOG::SetBackgroundRatio(double r)
     
     delete MOG;
     MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);    
-    MOG->operator()(pipeline->background, marked2);	
+#ifdef CV_VERSION_EPOCH
+    MOG->operator()(pipeline->background, marked2);
+#else
+    MOG->apply(pipeline->background, marked2);
+#endif
 }
 
 void BackgroundDiffMOG::SetNoiseSigma(double s)
@@ -79,12 +100,20 @@ void BackgroundDiffMOG::SetNoiseSigma(double s)
     
     delete MOG;
     MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);    
-    MOG->operator()(pipeline->background, marked2);	
+#ifdef CV_VERSION_EPOCH
+    MOG->operator()(pipeline->background, marked2);
+#else
+    MOG->apply(pipeline->background, marked2);
+#endif
 }
 
 void BackgroundDiffMOG::Apply()
 {    
+#ifdef CV_VERSION_EPOCH
     MOG->operator()(pipeline->frame, marked2, learningRate);
+#else
+    MOG->apply(pipeline->frame, marked2, learningRate);
+#endif
 
     if (restrictToZone)
     {
