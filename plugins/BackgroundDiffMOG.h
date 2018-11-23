@@ -26,7 +26,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/video/background_segm.hpp>
 
-#if CV_MAJOR_VERSION == 3
+#if CV_MAJOR_VERSION != 2
 #include <opencv2/bgsegm.hpp>
 #endif
 
