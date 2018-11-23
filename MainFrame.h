@@ -10,6 +10,8 @@
 #ifndef MAINFRAME_H
 #define MAINFRAME_H
 
+#include <opencv2/opencv.hpp>
+
 //(*Headers(MainFrame)
 #include <wx/bmpbuttn.h>
 #include <wx/glcanvas.h>
@@ -39,7 +41,6 @@
 #include "ImageProcessingEngine.h"
 #include "Parameters.h"
 
-#include <opencv2/opencv.hpp>
 
 
 class MyTextDropTargetAdd;

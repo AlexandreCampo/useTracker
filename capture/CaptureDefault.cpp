@@ -19,6 +19,10 @@
 
 #include "CaptureDefault.h"
 
+#if CV_MAJOR_VERSION != 2
+#include <opencv2/imgproc.hpp>
+#endif
+
 using namespace std;
 using namespace cv;
 

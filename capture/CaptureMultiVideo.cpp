@@ -28,7 +28,12 @@
 
 #include "opencv2/features2d/features2d.hpp"
 #include "opencv2/calib3d/calib3d.hpp"
+
+#if CV_MAJOR_VERSION == 2
 #include <opencv2/stitching/stitcher.hpp>
+#else
+#include <opencv2/stitching.hpp>
+#endif
 
 #include "Utils.h"
 

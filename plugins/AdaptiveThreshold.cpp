@@ -19,7 +19,6 @@
 
 #include "AdaptiveThreshold.h"
 
-
 using namespace cv;
 
 AdaptiveThreshold::AdaptiveThreshold() : PipelinePlugin()
@@ -79,7 +78,7 @@ void AdaptiveThreshold::LoadXML (FileNode& fn)
     {
 	active = (int)fn["Active"];
 
-	string tm = (string)fn["ThresholdMethod"];	
+	std::string tm = (std::string)fn["ThresholdMethod"];	
 	if (tm == "Mean")
 	    thresholdMethod = ADAPTIVE_THRESH_MEAN_C;
 	else if (tm == "Gaussian")
