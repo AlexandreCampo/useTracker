@@ -26,6 +26,10 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/video/background_segm.hpp>
 
+#if CV_MAJOR_VERSION == 3
+#include <opencv2/bgsegm.hpp>
+#endif
+
 
 class BackgroundDiffMOG2 : public PipelinePlugin
 {
@@ -45,7 +49,11 @@ public:
     cv::Mat marked2;
     cv::Mat marked3;
 
+#if CV_MAJOR_VERSION == 2
     cv::BackgroundSubtractor* MOG2 = NULL;
+#else
+    cv::Ptr<cv::BackgroundSubtractor> MOG2;
+#endif   
 
     BackgroundDiffMOG2();
     ~BackgroundDiffMOG2();

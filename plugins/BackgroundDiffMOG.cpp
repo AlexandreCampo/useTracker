@@ -46,7 +46,7 @@ void BackgroundDiffMOG::Reset()
     MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->operator()(pipeline->background, marked2);
 #else
-    MOG = makePtr<BackgroundSubtractorMOG>(history, nMixtures, backgroundRatio, noiseSigma);
+    MOG = createBackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->apply(pipeline->background, marked2);
 #endif
 }
@@ -61,7 +61,7 @@ void BackgroundDiffMOG::SetHistory(int h)
     MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->operator()(pipeline->background, marked2);
 #else
-    MOG = makePtr<BackgroundSubtractorMOG>(history, nMixtures, backgroundRatio, noiseSigma);
+    MOG = createBackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->apply(pipeline->background, marked2);
 #endif
 }
@@ -75,7 +75,7 @@ void BackgroundDiffMOG::SetNMixtures(int m)
     MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->operator()(pipeline->background, marked2);
 #else
-    MOG = makePtr<BackgroundSubtractorMOG>(history, nMixtures, backgroundRatio, noiseSigma);
+    MOG = createBackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->apply(pipeline->background, marked2);
 #endif
 }
@@ -89,7 +89,7 @@ void BackgroundDiffMOG::SetBackgroundRatio(double r)
     MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->operator()(pipeline->background, marked2);
 #else
-    MOG = makePtr<BackgroundSubtractorMOG>(history, nMixtures, backgroundRatio, noiseSigma);
+    MOG = createBackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->apply(pipeline->background, marked2);
 #endif
 }
@@ -103,7 +103,7 @@ void BackgroundDiffMOG::SetNoiseSigma(double s)
     MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->operator()(pipeline->background, marked2);
 #else
-    MOG = makePtr<BackgroundSubtractorMOG>(history, nMixtures, backgroundRatio, noiseSigma);
+    MOG = createBackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->apply(pipeline->background, marked2);
 #endif
 }

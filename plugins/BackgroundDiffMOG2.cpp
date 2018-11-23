@@ -29,8 +29,9 @@ BackgroundDiffMOG2::BackgroundDiffMOG2() : PipelinePlugin()
 
 BackgroundDiffMOG2::~BackgroundDiffMOG2()
 {
+#if CV_MAJOR_VERSION == 2
     delete MOG2;
-    multithreaded = true;
+#endif
 }
 
 void BackgroundDiffMOG2::Reset()
@@ -40,9 +41,14 @@ void BackgroundDiffMOG2::Reset()
     marked2 = Mat(pipeline->height, pipeline->width, CV_8U);
     marked3 = Mat(pipeline->height, pipeline->width, CV_8U);
 
+#if CV_MAJOR_VERSION == 2
     delete MOG2;
     MOG2 = new BackgroundSubtractorMOG2(history, threshold, shadowDetection);    
-    MOG2->operator()(pipeline->background, marked2);	
+    MOG2->operator()(pipeline->background, marked2);
+#else
+    MOG2 = createBackgroundSubtractorMOG2(history, threshold, shadowDetection);
+    MOG2->apply(pipeline->background, marked2);
+#endif
 }
 
 
@@ -50,34 +56,53 @@ void BackgroundDiffMOG2::SetHistory(int h)
 {
     history = h;
     
+#if CV_MAJOR_VERSION == 2
     delete MOG2;
     MOG2 = new BackgroundSubtractorMOG2(history, threshold, shadowDetection);    
-    MOG2->operator()(pipeline->background, marked2);	
+    MOG2->operator()(pipeline->background, marked2);
+#else
+    MOG2 = createBackgroundSubtractorMOG2(history, threshold, shadowDetection);
+    MOG2->apply(pipeline->background, marked2);
+#endif
 }
 
 void BackgroundDiffMOG2::SetThreshold(double t)
 {
     threshold = t;
     
+#if CV_MAJOR_VERSION == 2
     delete MOG2;
     MOG2 = new BackgroundSubtractorMOG2(history, threshold, shadowDetection);    
-    MOG2->operator()(pipeline->background, marked2);	
+    MOG2->operator()(pipeline->background, marked2);
+#else
+    MOG2 = createBackgroundSubtractorMOG2(history, threshold, shadowDetection);
+    MOG2->apply(pipeline->background, marked2);
+#endif
 }
 
 void BackgroundDiffMOG2::SetShadowDetection(bool s)
 {
     shadowDetection = s;
     
+#if CV_MAJOR_VERSION == 2
     delete MOG2;
     MOG2 = new BackgroundSubtractorMOG2(history, threshold, shadowDetection);    
-    MOG2->operator()(pipeline->background, marked2);	
+    MOG2->operator()(pipeline->background, marked2);
+#else
+    MOG2 = createBackgroundSubtractorMOG2(history, threshold, shadowDetection);
+    MOG2->apply(pipeline->background, marked2);
+#endif
 }
 
 
 void BackgroundDiffMOG2::Apply()
 {    
+#if CV_MAJOR_VERSION == 2
     MOG2->operator()(pipeline->frame, marked2, learningRate);
-
+#else
+    MOG2->apply(pipeline->frame, marked2, learningRate);    
+#endif
+    
     if (restrictToZone)
     {
 	cv::inRange(pipeline->zoneMap, zone, zone, marked3);
