@@ -29,8 +29,9 @@ BackgroundDiffMOG::BackgroundDiffMOG() : PipelinePlugin()
 
 BackgroundDiffMOG::~BackgroundDiffMOG()
 {
+#if CV_MAJOR_VERSION == 2
     delete MOG;
-    multithreaded = true;
+#endif
 }
 
 void BackgroundDiffMOG::Reset()
