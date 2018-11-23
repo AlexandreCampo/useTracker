@@ -22,10 +22,6 @@
 
 using namespace cv;
 
-// todo debug
-#include <iostream>
-using namespace std;
-
 BackgroundDiffMOG::BackgroundDiffMOG() : PipelinePlugin()
 {
     multithreaded = true;
