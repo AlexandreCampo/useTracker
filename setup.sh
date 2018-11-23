@@ -56,7 +56,7 @@ echo
 echo "Building ArUco" $version
 tar zxvf aruco-$version.tgz
 cd aruco-$version
-cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release .
+cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DBUILD_UTILS=0 .
 make
 
 echo
