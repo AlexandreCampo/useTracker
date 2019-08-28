@@ -28,6 +28,8 @@
 #include <fstream>
 #include <opencv2/imgproc/imgproc.hpp>
 
+//#include "Munkres.h"
+
 // extern Parameters parameters;
 
 struct Tracker : public PipelinePlugin
@@ -55,7 +57,7 @@ struct Tracker : public PipelinePlugin
 		zone = 1;//ZONE_VISIBLE;
 		lastFrameDetected = -1000;
 		lastFrameNotDetected = 0;
-		linkedEntity = -1;
+		linkedEntity = 0;
 		toforget = false;
 		diffIdx = 0;
 //		ResizeHistory(motionEstimatorLength);
@@ -101,17 +103,36 @@ struct Tracker : public PipelinePlugin
     };
 
     // class members
+	unsigned int lastframeNumber = 0;
     unsigned int entitiesCount = 1;
     std::vector<Entity> entities;
     std::vector<Entity> previousEntities;
     std::fstream outputStream;
     std::string outputFilename;
 
+	float settingfirstframes = 100;	
+	float maxdistsq = 18225;
     float minInterdistance = 5.0;
     float maxMotionPerSecond = 800;
     float extrapolationDecay = 0.8;
     unsigned int motionEstimatorLength = 10;
     float motionEstimatorTimeout = 1.0;
+
+
+	//~ std::vector<float> decayfactor(motionEstimatorLength);
+	//~ float sum_of_elems = 0;
+	
+	//~ for (float it = 0; it < decayfactor.size(); it++)
+	//~ {
+		//~ decayfactor[it]=exp(-it*extrapolationDecay);
+		//~ sum_of_elems += decayfactor[it];
+	//~ }
+	
+	//~ for (float it = 0; it < decayfactor.size(); it++)
+	//~ {
+		//~ decayfactor[it]/=sum_of_elems;
+	//~ }	
+
 
     bool useVirtualEntities = false;
     float virtualEntitiesLifetime = 1.0;

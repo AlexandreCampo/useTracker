@@ -122,10 +122,16 @@ void ExtractBlobs::Apply()
 	    {
 		Segment& ps = (*psegPtr)[psi];
 
-		if (s.max > ps.min)
+		//~ if (s.max+1 >= ps.min)
+		//~ {
+		    //~ if (s.min-1 <= ps.max)
+		    //~ {
+
+		if (s.max >= ps.min)
 		{
-		    if (s.min < ps.max)
+		    if (s.min <= ps.max)
 		    {
+
 			// found a matching segment
 			if (!matched)
 			{
