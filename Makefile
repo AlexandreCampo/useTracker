@@ -19,7 +19,7 @@ LIB =
 LDFLAGS = `wx-config --libs --gl-libs` -lGL -lGLU -lglut -lpthread `pkg-config --libs opencv` `pkg-config --libs libavcodec libavformat libswscale libavutil` -ldl -lva -lbz2 -lz -lm -lpng -lx264 -lboost_program_options -lboost_system -lboost_filesystem -laruco -lbluetooth -L ./arucoColor -larucoColor
 
 INC_DEBUG = $(INC)
-CFLAGS_DEBUG = $(CFLAGS) -pg -g
+CFLAGS_DEBUG = $(CFLAGS) -std=c++11 -pg -g
 RESINC_DEBUG = $(RESINC)
 RCFLAGS_DEBUG = $(RCFLAGS)
 LIBDIR_DEBUG = $(LIBDIR)
@@ -30,23 +30,62 @@ DEP_DEBUG =
 OUT_DEBUG = bin/Debug/useTracker
 
 INC_RELEASE = $(INC)
-CFLAGS_RELEASE = $(CFLAGS) -fomit-frame-pointer -fexpensive-optimizations -O3 -march=native -flto
+CFLAGS_RELEASE = $(CFLAGS) -fomit-frame-pointer -fexpensive-optimizations -flto -O3 -std=c++11 -march=native
 RESINC_RELEASE = $(RESINC)
 RCFLAGS_RELEASE = $(RCFLAGS)
 LIBDIR_RELEASE = $(LIBDIR)
 LIB_RELEASE = $(LIB)
-LDFLAGS_RELEASE =  -s -flto $(LDFLAGS)
+LDFLAGS_RELEASE =  -flto -s $(LDFLAGS)
 OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = bin/Release/useTracker
 
-OBJ_DEBUG = $(OBJDIR_DEBUG)/plugins/BackgroundDiffMOG.o $(OBJDIR_DEBUG)/plugins/SimpleTags.o $(OBJDIR_DEBUG)/plugins/SafeErosion.o $(OBJDIR_DEBUG)/plugins/RemoteControl.o $(OBJDIR_DEBUG)/plugins/RecordVideo.o $(OBJDIR_DEBUG)/plugins/RecordPixels.o $(OBJDIR_DEBUG)/plugins/MovingAverage.o $(OBJDIR_DEBUG)/plugins/GetBlobsAngles.o $(OBJDIR_DEBUG)/plugins/FrameDifference.o $(OBJDIR_DEBUG)/plugins/ExtractMotion.o $(OBJDIR_DEBUG)/plugins/ExtractBlobs.o $(OBJDIR_DEBUG)/plugins/Erosion.o $(OBJDIR_DEBUG)/plugins/Dilation.o $(OBJDIR_DEBUG)/plugins/ColorSegmentation.o $(OBJDIR_DEBUG)/plugins/BackgroundDiffMOG2.o $(OBJDIR_DEBUG)/plugins/BackgroundDiffGMG.o $(OBJDIR_DEBUG)/plugins/ArucoColor.o $(OBJDIR_DEBUG)/plugins/Aruco.o $(OBJDIR_DEBUG)/plugins/AdaptiveThreshold.o $(OBJDIR_DEBUG)/dialogs/DialogTracker.o $(OBJDIR_DEBUG)/dialogs/DialogTakeSnapshots.o $(OBJDIR_DEBUG)/dialogs/DialogStopwatch.o $(OBJDIR_DEBUG)/dialogs/DialogSimpleTags.o $(OBJDIR_DEBUG)/dialogs/DialogSafeErosion.o $(OBJDIR_DEBUG)/plugins/ZonesOfInterest.o $(OBJDIR_DEBUG)/plugins/Tracker.o $(OBJDIR_DEBUG)/plugins/TakeSnapshots.o $(OBJDIR_DEBUG)/plugins/Stopwatch.o $(OBJDIR_DEBUG)/capture/CaptureUSBCamera.o $(OBJDIR_DEBUG)/capture/CaptureMultiVideo.o $(OBJDIR_DEBUG)/capture/CaptureMultiUSBCamera.o $(OBJDIR_DEBUG)/capture/CaptureImage.o $(OBJDIR_DEBUG)/capture/CaptureDefault.o $(OBJDIR_DEBUG)/capture/CaptureAVTCamera.o $(OBJDIR_DEBUG)/Utils.o $(OBJDIR_DEBUG)/capture/CaptureVideo.o $(OBJDIR_DEBUG)/Pipeline.o $(OBJDIR_DEBUG)/Parameters.o $(OBJDIR_DEBUG)/MainFrame.o $(OBJDIR_DEBUG)/ImageProcessingEngine.o $(OBJDIR_DEBUG)/CaptureCalibration.o $(OBJDIR_DEBUG)/Capture.o $(OBJDIR_DEBUG)/Background.o $(OBJDIR_DEBUG)/dialogs/DialogRecordVideo.o $(OBJDIR_DEBUG)/dialogs/DialogRecordPixels.o $(OBJDIR_DEBUG)/dialogs/DialogOpenCapture.o $(OBJDIR_DEBUG)/dialogs/DialogMovingAverage.o $(OBJDIR_DEBUG)/dialogs/DialogExtractMotion.o $(OBJDIR_DEBUG)/dialogs/DialogExtractBlobs.o $(OBJDIR_DEBUG)/dialogs/DialogErosion.o $(OBJDIR_DEBUG)/dialogs/DialogDilation.o $(OBJDIR_DEBUG)/App.o $(OBJDIR_DEBUG)/dialogs/DialogColorSegmentation.o $(OBJDIR_DEBUG)/dialogs/DialogBackgroundDiffMOG2.o $(OBJDIR_DEBUG)/dialogs/DialogBackgroundDiffMOG.o $(OBJDIR_DEBUG)/dialogs/DialogBackgroundDiffGMG.o $(OBJDIR_DEBUG)/dialogs/DialogArucoColor.o $(OBJDIR_DEBUG)/dialogs/DialogAruco.o $(OBJDIR_DEBUG)/dialogs/DialogAdaptiveThreshold.o
+INC_VIMBADEBUG = $(INC)
+CFLAGS_VIMBADEBUG = $(CFLAGS) -g -I $VIMBAPATH/ -DVIMBA=1
+RESINC_VIMBADEBUG = $(RESINC)
+RCFLAGS_VIMBADEBUG = $(RCFLAGS)
+LIBDIR_VIMBADEBUG = $(LIBDIR) -L$VIMBAPATH/VimbaImageTransform/DynamicLib/x86_64bit -L$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit
+LIB_VIMBADEBUG = $(LIB)
+LDFLAGS_VIMBADEBUG =  -lVimbaCPP -lVimbaC -lVimbaImageTransform -Wl,-rpath-link,$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit/ -Wl,-rpath,$VIMBAPATH/VimbaImageTransform/DynamicLib/x86_64bit/ -Wl,-rpath,$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit/ $(LDFLAGS)
+OBJDIR_VIMBADEBUG = obj/VimbaDebug
+DEP_VIMBADEBUG = 
+OUT_VIMBADEBUG = bin/VimbaDebug/useTracker
 
-OBJ_RELEASE = $(OBJDIR_RELEASE)/plugins/BackgroundDiffMOG.o $(OBJDIR_RELEASE)/plugins/SimpleTags.o $(OBJDIR_RELEASE)/plugins/SafeErosion.o $(OBJDIR_RELEASE)/plugins/RemoteControl.o $(OBJDIR_RELEASE)/plugins/RecordVideo.o $(OBJDIR_RELEASE)/plugins/RecordPixels.o $(OBJDIR_RELEASE)/plugins/MovingAverage.o $(OBJDIR_RELEASE)/plugins/GetBlobsAngles.o $(OBJDIR_RELEASE)/plugins/FrameDifference.o $(OBJDIR_RELEASE)/plugins/ExtractMotion.o $(OBJDIR_RELEASE)/plugins/ExtractBlobs.o $(OBJDIR_RELEASE)/plugins/Erosion.o $(OBJDIR_RELEASE)/plugins/Dilation.o $(OBJDIR_RELEASE)/plugins/ColorSegmentation.o $(OBJDIR_RELEASE)/plugins/BackgroundDiffMOG2.o $(OBJDIR_RELEASE)/plugins/BackgroundDiffGMG.o $(OBJDIR_RELEASE)/plugins/ArucoColor.o $(OBJDIR_RELEASE)/plugins/Aruco.o $(OBJDIR_RELEASE)/plugins/AdaptiveThreshold.o $(OBJDIR_RELEASE)/dialogs/DialogTracker.o $(OBJDIR_RELEASE)/dialogs/DialogTakeSnapshots.o $(OBJDIR_RELEASE)/dialogs/DialogStopwatch.o $(OBJDIR_RELEASE)/dialogs/DialogSimpleTags.o $(OBJDIR_RELEASE)/dialogs/DialogSafeErosion.o $(OBJDIR_RELEASE)/plugins/ZonesOfInterest.o $(OBJDIR_RELEASE)/plugins/Tracker.o $(OBJDIR_RELEASE)/plugins/TakeSnapshots.o $(OBJDIR_RELEASE)/plugins/Stopwatch.o $(OBJDIR_RELEASE)/capture/CaptureUSBCamera.o $(OBJDIR_RELEASE)/capture/CaptureMultiVideo.o $(OBJDIR_RELEASE)/capture/CaptureMultiUSBCamera.o $(OBJDIR_RELEASE)/capture/CaptureImage.o $(OBJDIR_RELEASE)/capture/CaptureDefault.o $(OBJDIR_RELEASE)/capture/CaptureAVTCamera.o $(OBJDIR_RELEASE)/Utils.o $(OBJDIR_RELEASE)/capture/CaptureVideo.o $(OBJDIR_RELEASE)/Pipeline.o $(OBJDIR_RELEASE)/Parameters.o $(OBJDIR_RELEASE)/MainFrame.o $(OBJDIR_RELEASE)/ImageProcessingEngine.o $(OBJDIR_RELEASE)/CaptureCalibration.o $(OBJDIR_RELEASE)/Capture.o $(OBJDIR_RELEASE)/Background.o $(OBJDIR_RELEASE)/dialogs/DialogRecordVideo.o $(OBJDIR_RELEASE)/dialogs/DialogRecordPixels.o $(OBJDIR_RELEASE)/dialogs/DialogOpenCapture.o $(OBJDIR_RELEASE)/dialogs/DialogMovingAverage.o $(OBJDIR_RELEASE)/dialogs/DialogExtractMotion.o $(OBJDIR_RELEASE)/dialogs/DialogExtractBlobs.o $(OBJDIR_RELEASE)/dialogs/DialogErosion.o $(OBJDIR_RELEASE)/dialogs/DialogDilation.o $(OBJDIR_RELEASE)/App.o $(OBJDIR_RELEASE)/dialogs/DialogColorSegmentation.o $(OBJDIR_RELEASE)/dialogs/DialogBackgroundDiffMOG2.o $(OBJDIR_RELEASE)/dialogs/DialogBackgroundDiffMOG.o $(OBJDIR_RELEASE)/dialogs/DialogBackgroundDiffGMG.o $(OBJDIR_RELEASE)/dialogs/DialogArucoColor.o $(OBJDIR_RELEASE)/dialogs/DialogAruco.o $(OBJDIR_RELEASE)/dialogs/DialogAdaptiveThreshold.o
+INC_VIMBARELEASE = $(INC)
+CFLAGS_VIMBARELEASE = $(CFLAGS) -march=corei7-avx -fexpensive-optimizations -O3 -march=native -flto -I $VIMBAPATH/ -DVIMBA=1
+RESINC_VIMBARELEASE = $(RESINC)
+RCFLAGS_VIMBARELEASE = $(RCFLAGS)
+LIBDIR_VIMBARELEASE = $(LIBDIR) -L$VIMBAPATH/VimbaImageTransform/DynamicLib/x86_64bit -L$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit
+LIB_VIMBARELEASE = $(LIB)
+LDFLAGS_VIMBARELEASE =  -s -flto -lVimbaCPP -lVimbaC -lVimbaImageTransform -Wl,-rpath-link,$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit/ -Wl,-rpath,$VIMBAPATH/VimbaImageTransform/DynamicLib/x86_64bit/ -Wl,-rpath,$VIMBAPATH/VimbaCPP/DynamicLib/x86_64bit/ $(LDFLAGS)
+OBJDIR_VIMBARELEASE = obj/VimbaRelease
+DEP_VIMBARELEASE = 
+OUT_VIMBARELEASE = bin/VimbaRelease/useTracker
 
-all: debug release
+INC_MACPORTSDEBUG = $(INC)
+CFLAGS_MACPORTSDEBUG = $(CFLAGS) -g
+RESINC_MACPORTSDEBUG = $(RESINC)
+RCFLAGS_MACPORTSDEBUG = $(RCFLAGS)
+LIBDIR_MACPORTSDEBUG = $(LIBDIR)
+LIB_MACPORTSDEBUG = $(LIB)
+LDFLAGS_MACPORTSDEBUG = $(LDFLAGS)
+OBJDIR_MACPORTSDEBUG = obj/MacPortsDebug
+DEP_MACPORTSDEBUG = 
+OUT_MACPORTSDEBUG = bin/MacPortsDebug/useTracker
 
-clean: clean_debug clean_release
+OBJ_DEBUG = $(OBJDIR_DEBUG)/plugins/BackgroundDiffMOG.o $(OBJDIR_DEBUG)/plugins/SimpleTags.o $(OBJDIR_DEBUG)/plugins/SafeErosion.o $(OBJDIR_DEBUG)/plugins/RemoteControl.o $(OBJDIR_DEBUG)/plugins/RecordVideo.o $(OBJDIR_DEBUG)/plugins/RecordPixels.o $(OBJDIR_DEBUG)/plugins/MovingAverage.o $(OBJDIR_DEBUG)/plugins/GetBlobsAngles.o $(OBJDIR_DEBUG)/plugins/FrameDifference.o $(OBJDIR_DEBUG)/plugins/ExtractMotion.o $(OBJDIR_DEBUG)/plugins/ExtractBlobs.o $(OBJDIR_DEBUG)/plugins/Erosion.o $(OBJDIR_DEBUG)/plugins/Dilation.o $(OBJDIR_DEBUG)/plugins/ColorSegmentation.o $(OBJDIR_DEBUG)/plugins/BackgroundDiffMOG2.o $(OBJDIR_DEBUG)/plugins/BackgroundDiffGMG.o $(OBJDIR_DEBUG)/plugins/ArucoColor.o $(OBJDIR_DEBUG)/plugins/Aruco.o $(OBJDIR_DEBUG)/plugins/AdaptiveThreshold.o $(OBJDIR_DEBUG)/dialogs/DialogFrameDifference.o $(OBJDIR_DEBUG)/dialogs/DialogTracker.o $(OBJDIR_DEBUG)/dialogs/DialogTakeSnapshots.o $(OBJDIR_DEBUG)/dialogs/DialogStopwatch.o $(OBJDIR_DEBUG)/dialogs/DialogSimpleTags.o $(OBJDIR_DEBUG)/plugins/ZonesOfInterest.o $(OBJDIR_DEBUG)/plugins/Tracker.o $(OBJDIR_DEBUG)/plugins/TakeSnapshots.o $(OBJDIR_DEBUG)/plugins/Stopwatch.o $(OBJDIR_DEBUG)/capture/CaptureVideo.o $(OBJDIR_DEBUG)/capture/CaptureUSBCamera.o $(OBJDIR_DEBUG)/capture/CaptureMultiVideo.o $(OBJDIR_DEBUG)/capture/CaptureMultiUSBCamera.o $(OBJDIR_DEBUG)/capture/CaptureImage.o $(OBJDIR_DEBUG)/capture/CaptureDefault.o $(OBJDIR_DEBUG)/capture/CaptureAVTCamera.o $(OBJDIR_DEBUG)/Utils.o $(OBJDIR_DEBUG)/Pipeline.o $(OBJDIR_DEBUG)/Parameters.o $(OBJDIR_DEBUG)/MainFrame.o $(OBJDIR_DEBUG)/ImageProcessingEngine.o $(OBJDIR_DEBUG)/CaptureCalibration.o $(OBJDIR_DEBUG)/Capture.o $(OBJDIR_DEBUG)/Background.o $(OBJDIR_DEBUG)/dialogs/DialogSafeErosion.o $(OBJDIR_DEBUG)/dialogs/DialogRecordVideo.o $(OBJDIR_DEBUG)/dialogs/DialogRecordPixels.o $(OBJDIR_DEBUG)/dialogs/DialogOpenCapture.o $(OBJDIR_DEBUG)/dialogs/DialogMovingAverage.o $(OBJDIR_DEBUG)/dialogs/DialogExtractMotion.o $(OBJDIR_DEBUG)/dialogs/DialogExtractBlobs.o $(OBJDIR_DEBUG)/dialogs/DialogErosion.o $(OBJDIR_DEBUG)/App.o $(OBJDIR_DEBUG)/dialogs/DialogDilation.o $(OBJDIR_DEBUG)/dialogs/DialogColorSegmentation.o $(OBJDIR_DEBUG)/dialogs/DialogBackgroundDiffMOG2.o $(OBJDIR_DEBUG)/dialogs/DialogBackgroundDiffMOG.o $(OBJDIR_DEBUG)/dialogs/DialogBackgroundDiffGMG.o $(OBJDIR_DEBUG)/dialogs/DialogArucoColor.o $(OBJDIR_DEBUG)/dialogs/DialogAruco.o $(OBJDIR_DEBUG)/dialogs/DialogAdaptiveThreshold.o
+
+OBJ_RELEASE = $(OBJDIR_RELEASE)/plugins/BackgroundDiffMOG.o $(OBJDIR_RELEASE)/plugins/SimpleTags.o $(OBJDIR_RELEASE)/plugins/SafeErosion.o $(OBJDIR_RELEASE)/plugins/RemoteControl.o $(OBJDIR_RELEASE)/plugins/RecordVideo.o $(OBJDIR_RELEASE)/plugins/RecordPixels.o $(OBJDIR_RELEASE)/plugins/MovingAverage.o $(OBJDIR_RELEASE)/plugins/GetBlobsAngles.o $(OBJDIR_RELEASE)/plugins/FrameDifference.o $(OBJDIR_RELEASE)/plugins/ExtractMotion.o $(OBJDIR_RELEASE)/plugins/ExtractBlobs.o $(OBJDIR_RELEASE)/plugins/Erosion.o $(OBJDIR_RELEASE)/plugins/Dilation.o $(OBJDIR_RELEASE)/plugins/ColorSegmentation.o $(OBJDIR_RELEASE)/plugins/BackgroundDiffMOG2.o $(OBJDIR_RELEASE)/plugins/BackgroundDiffGMG.o $(OBJDIR_RELEASE)/plugins/ArucoColor.o $(OBJDIR_RELEASE)/plugins/Aruco.o $(OBJDIR_RELEASE)/plugins/AdaptiveThreshold.o $(OBJDIR_RELEASE)/dialogs/DialogFrameDifference.o $(OBJDIR_RELEASE)/dialogs/DialogTracker.o $(OBJDIR_RELEASE)/dialogs/DialogTakeSnapshots.o $(OBJDIR_RELEASE)/dialogs/DialogStopwatch.o $(OBJDIR_RELEASE)/dialogs/DialogSimpleTags.o $(OBJDIR_RELEASE)/plugins/ZonesOfInterest.o $(OBJDIR_RELEASE)/plugins/Tracker.o $(OBJDIR_RELEASE)/plugins/TakeSnapshots.o $(OBJDIR_RELEASE)/plugins/Stopwatch.o $(OBJDIR_RELEASE)/capture/CaptureVideo.o $(OBJDIR_RELEASE)/capture/CaptureUSBCamera.o $(OBJDIR_RELEASE)/capture/CaptureMultiVideo.o $(OBJDIR_RELEASE)/capture/CaptureMultiUSBCamera.o $(OBJDIR_RELEASE)/capture/CaptureImage.o $(OBJDIR_RELEASE)/capture/CaptureDefault.o $(OBJDIR_RELEASE)/capture/CaptureAVTCamera.o $(OBJDIR_RELEASE)/Utils.o $(OBJDIR_RELEASE)/Pipeline.o $(OBJDIR_RELEASE)/Parameters.o $(OBJDIR_RELEASE)/MainFrame.o $(OBJDIR_RELEASE)/ImageProcessingEngine.o $(OBJDIR_RELEASE)/CaptureCalibration.o $(OBJDIR_RELEASE)/Capture.o $(OBJDIR_RELEASE)/Background.o $(OBJDIR_RELEASE)/dialogs/DialogSafeErosion.o $(OBJDIR_RELEASE)/dialogs/DialogRecordVideo.o $(OBJDIR_RELEASE)/dialogs/DialogRecordPixels.o $(OBJDIR_RELEASE)/dialogs/DialogOpenCapture.o $(OBJDIR_RELEASE)/dialogs/DialogMovingAverage.o $(OBJDIR_RELEASE)/dialogs/DialogExtractMotion.o $(OBJDIR_RELEASE)/dialogs/DialogExtractBlobs.o $(OBJDIR_RELEASE)/dialogs/DialogErosion.o $(OBJDIR_RELEASE)/App.o $(OBJDIR_RELEASE)/dialogs/DialogDilation.o $(OBJDIR_RELEASE)/dialogs/DialogColorSegmentation.o $(OBJDIR_RELEASE)/dialogs/DialogBackgroundDiffMOG2.o $(OBJDIR_RELEASE)/dialogs/DialogBackgroundDiffMOG.o $(OBJDIR_RELEASE)/dialogs/DialogBackgroundDiffGMG.o $(OBJDIR_RELEASE)/dialogs/DialogArucoColor.o $(OBJDIR_RELEASE)/dialogs/DialogAruco.o $(OBJDIR_RELEASE)/dialogs/DialogAdaptiveThreshold.o
+
+OBJ_VIMBADEBUG = $(OBJDIR_VIMBADEBUG)/plugins/BackgroundDiffMOG.o $(OBJDIR_VIMBADEBUG)/plugins/SimpleTags.o $(OBJDIR_VIMBADEBUG)/plugins/SafeErosion.o $(OBJDIR_VIMBADEBUG)/plugins/RemoteControl.o $(OBJDIR_VIMBADEBUG)/plugins/RecordVideo.o $(OBJDIR_VIMBADEBUG)/plugins/RecordPixels.o $(OBJDIR_VIMBADEBUG)/plugins/MovingAverage.o $(OBJDIR_VIMBADEBUG)/plugins/GetBlobsAngles.o $(OBJDIR_VIMBADEBUG)/plugins/FrameDifference.o $(OBJDIR_VIMBADEBUG)/plugins/ExtractMotion.o $(OBJDIR_VIMBADEBUG)/plugins/ExtractBlobs.o $(OBJDIR_VIMBADEBUG)/plugins/Erosion.o $(OBJDIR_VIMBADEBUG)/plugins/Dilation.o $(OBJDIR_VIMBADEBUG)/plugins/ColorSegmentation.o $(OBJDIR_VIMBADEBUG)/plugins/BackgroundDiffMOG2.o $(OBJDIR_VIMBADEBUG)/plugins/BackgroundDiffGMG.o $(OBJDIR_VIMBADEBUG)/plugins/ArucoColor.o $(OBJDIR_VIMBADEBUG)/plugins/Aruco.o $(OBJDIR_VIMBADEBUG)/plugins/AdaptiveThreshold.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogFrameDifference.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogTracker.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogTakeSnapshots.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogStopwatch.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogSimpleTags.o $(OBJDIR_VIMBADEBUG)/vimba/FrameObserver.o $(OBJDIR_VIMBADEBUG)/vimba/CameraObserver.o $(OBJDIR_VIMBADEBUG)/vimba/ApiController.o $(OBJDIR_VIMBADEBUG)/plugins/ZonesOfInterest.o $(OBJDIR_VIMBADEBUG)/plugins/Tracker.o $(OBJDIR_VIMBADEBUG)/plugins/TakeSnapshots.o $(OBJDIR_VIMBADEBUG)/plugins/Stopwatch.o $(OBJDIR_VIMBADEBUG)/capture/CaptureVideo.o $(OBJDIR_VIMBADEBUG)/capture/CaptureUSBCamera.o $(OBJDIR_VIMBADEBUG)/capture/CaptureMultiVideo.o $(OBJDIR_VIMBADEBUG)/capture/CaptureMultiUSBCamera.o $(OBJDIR_VIMBADEBUG)/capture/CaptureImage.o $(OBJDIR_VIMBADEBUG)/capture/CaptureDefault.o $(OBJDIR_VIMBADEBUG)/capture/CaptureAVTCamera.o $(OBJDIR_VIMBADEBUG)/Utils.o $(OBJDIR_VIMBADEBUG)/Pipeline.o $(OBJDIR_VIMBADEBUG)/Parameters.o $(OBJDIR_VIMBADEBUG)/MainFrame.o $(OBJDIR_VIMBADEBUG)/ImageProcessingEngine.o $(OBJDIR_VIMBADEBUG)/CaptureCalibration.o $(OBJDIR_VIMBADEBUG)/Capture.o $(OBJDIR_VIMBADEBUG)/Background.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogSafeErosion.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogRecordVideo.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogRecordPixels.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogOpenCapture.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogMovingAverage.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogExtractMotion.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogExtractBlobs.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogErosion.o $(OBJDIR_VIMBADEBUG)/App.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogDilation.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogColorSegmentation.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogBackgroundDiffMOG2.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogBackgroundDiffMOG.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogBackgroundDiffGMG.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogArucoColor.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogAruco.o $(OBJDIR_VIMBADEBUG)/dialogs/DialogAdaptiveThreshold.o
+
+OBJ_VIMBARELEASE = $(OBJDIR_VIMBARELEASE)/plugins/BackgroundDiffMOG.o $(OBJDIR_VIMBARELEASE)/plugins/SimpleTags.o $(OBJDIR_VIMBARELEASE)/plugins/SafeErosion.o $(OBJDIR_VIMBARELEASE)/plugins/RemoteControl.o $(OBJDIR_VIMBARELEASE)/plugins/RecordVideo.o $(OBJDIR_VIMBARELEASE)/plugins/RecordPixels.o $(OBJDIR_VIMBARELEASE)/plugins/MovingAverage.o $(OBJDIR_VIMBARELEASE)/plugins/GetBlobsAngles.o $(OBJDIR_VIMBARELEASE)/plugins/FrameDifference.o $(OBJDIR_VIMBARELEASE)/plugins/ExtractMotion.o $(OBJDIR_VIMBARELEASE)/plugins/ExtractBlobs.o $(OBJDIR_VIMBARELEASE)/plugins/Erosion.o $(OBJDIR_VIMBARELEASE)/plugins/Dilation.o $(OBJDIR_VIMBARELEASE)/plugins/ColorSegmentation.o $(OBJDIR_VIMBARELEASE)/plugins/BackgroundDiffMOG2.o $(OBJDIR_VIMBARELEASE)/plugins/BackgroundDiffGMG.o $(OBJDIR_VIMBARELEASE)/plugins/ArucoColor.o $(OBJDIR_VIMBARELEASE)/plugins/Aruco.o $(OBJDIR_VIMBARELEASE)/plugins/AdaptiveThreshold.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogFrameDifference.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogTracker.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogTakeSnapshots.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogStopwatch.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogSimpleTags.o $(OBJDIR_VIMBARELEASE)/vimba/FrameObserver.o $(OBJDIR_VIMBARELEASE)/vimba/CameraObserver.o $(OBJDIR_VIMBARELEASE)/vimba/ApiController.o $(OBJDIR_VIMBARELEASE)/plugins/ZonesOfInterest.o $(OBJDIR_VIMBARELEASE)/plugins/Tracker.o $(OBJDIR_VIMBARELEASE)/plugins/TakeSnapshots.o $(OBJDIR_VIMBARELEASE)/plugins/Stopwatch.o $(OBJDIR_VIMBARELEASE)/capture/CaptureVideo.o $(OBJDIR_VIMBARELEASE)/capture/CaptureUSBCamera.o $(OBJDIR_VIMBARELEASE)/capture/CaptureMultiVideo.o $(OBJDIR_VIMBARELEASE)/capture/CaptureMultiUSBCamera.o $(OBJDIR_VIMBARELEASE)/capture/CaptureImage.o $(OBJDIR_VIMBARELEASE)/capture/CaptureDefault.o $(OBJDIR_VIMBARELEASE)/capture/CaptureAVTCamera.o $(OBJDIR_VIMBARELEASE)/Utils.o $(OBJDIR_VIMBARELEASE)/Pipeline.o $(OBJDIR_VIMBARELEASE)/Parameters.o $(OBJDIR_VIMBARELEASE)/MainFrame.o $(OBJDIR_VIMBARELEASE)/ImageProcessingEngine.o $(OBJDIR_VIMBARELEASE)/CaptureCalibration.o $(OBJDIR_VIMBARELEASE)/Capture.o $(OBJDIR_VIMBARELEASE)/Background.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogSafeErosion.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogRecordVideo.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogRecordPixels.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogOpenCapture.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogMovingAverage.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogExtractMotion.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogExtractBlobs.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogErosion.o $(OBJDIR_VIMBARELEASE)/App.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogDilation.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogColorSegmentation.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogBackgroundDiffMOG2.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogBackgroundDiffMOG.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogBackgroundDiffGMG.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogArucoColor.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogAruco.o $(OBJDIR_VIMBARELEASE)/dialogs/DialogAdaptiveThreshold.o
+
+OBJ_MACPORTSDEBUG = $(OBJDIR_MACPORTSDEBUG)/plugins/BackgroundDiffMOG.o $(OBJDIR_MACPORTSDEBUG)/plugins/SimpleTags.o $(OBJDIR_MACPORTSDEBUG)/plugins/SafeErosion.o $(OBJDIR_MACPORTSDEBUG)/plugins/RemoteControl.o $(OBJDIR_MACPORTSDEBUG)/plugins/RecordVideo.o $(OBJDIR_MACPORTSDEBUG)/plugins/RecordPixels.o $(OBJDIR_MACPORTSDEBUG)/plugins/MovingAverage.o $(OBJDIR_MACPORTSDEBUG)/plugins/GetBlobsAngles.o $(OBJDIR_MACPORTSDEBUG)/plugins/FrameDifference.o $(OBJDIR_MACPORTSDEBUG)/plugins/ExtractMotion.o $(OBJDIR_MACPORTSDEBUG)/plugins/ExtractBlobs.o $(OBJDIR_MACPORTSDEBUG)/plugins/Erosion.o $(OBJDIR_MACPORTSDEBUG)/plugins/Dilation.o $(OBJDIR_MACPORTSDEBUG)/plugins/ColorSegmentation.o $(OBJDIR_MACPORTSDEBUG)/plugins/BackgroundDiffMOG2.o $(OBJDIR_MACPORTSDEBUG)/plugins/BackgroundDiffGMG.o $(OBJDIR_MACPORTSDEBUG)/plugins/ArucoColor.o $(OBJDIR_MACPORTSDEBUG)/plugins/Aruco.o $(OBJDIR_MACPORTSDEBUG)/plugins/AdaptiveThreshold.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogFrameDifference.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogTracker.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogTakeSnapshots.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogStopwatch.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogSimpleTags.o $(OBJDIR_MACPORTSDEBUG)/plugins/ZonesOfInterest.o $(OBJDIR_MACPORTSDEBUG)/plugins/Tracker.o $(OBJDIR_MACPORTSDEBUG)/plugins/TakeSnapshots.o $(OBJDIR_MACPORTSDEBUG)/plugins/Stopwatch.o $(OBJDIR_MACPORTSDEBUG)/capture/CaptureVideo.o $(OBJDIR_MACPORTSDEBUG)/capture/CaptureUSBCamera.o $(OBJDIR_MACPORTSDEBUG)/capture/CaptureMultiVideo.o $(OBJDIR_MACPORTSDEBUG)/capture/CaptureMultiUSBCamera.o $(OBJDIR_MACPORTSDEBUG)/capture/CaptureImage.o $(OBJDIR_MACPORTSDEBUG)/capture/CaptureDefault.o $(OBJDIR_MACPORTSDEBUG)/capture/CaptureAVTCamera.o $(OBJDIR_MACPORTSDEBUG)/Utils.o $(OBJDIR_MACPORTSDEBUG)/Pipeline.o $(OBJDIR_MACPORTSDEBUG)/Parameters.o $(OBJDIR_MACPORTSDEBUG)/MainFrame.o $(OBJDIR_MACPORTSDEBUG)/ImageProcessingEngine.o $(OBJDIR_MACPORTSDEBUG)/CaptureCalibration.o $(OBJDIR_MACPORTSDEBUG)/Capture.o $(OBJDIR_MACPORTSDEBUG)/Background.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogSafeErosion.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogRecordVideo.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogRecordPixels.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogOpenCapture.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogMovingAverage.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogExtractMotion.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogExtractBlobs.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogErosion.o $(OBJDIR_MACPORTSDEBUG)/App.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogDilation.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogColorSegmentation.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogBackgroundDiffMOG2.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogBackgroundDiffMOG.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogBackgroundDiffGMG.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogArucoColor.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogAruco.o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogAdaptiveThreshold.o
+
+all: debug release vimbadebug vimbarelease macportsdebug
+
+clean: clean_debug clean_release clean_vimbadebug clean_vimbarelease clean_macportsdebug
 
 before_debug: 
 	test -d bin/Debug || mkdir -p bin/Debug
@@ -119,6 +158,9 @@ $(OBJDIR_DEBUG)/plugins/Aruco.o: plugins/Aruco.cpp
 $(OBJDIR_DEBUG)/plugins/AdaptiveThreshold.o: plugins/AdaptiveThreshold.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c plugins/AdaptiveThreshold.cpp -o $(OBJDIR_DEBUG)/plugins/AdaptiveThreshold.o
 
+$(OBJDIR_DEBUG)/dialogs/DialogFrameDifference.o: dialogs/DialogFrameDifference.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogFrameDifference.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogFrameDifference.o
+
 $(OBJDIR_DEBUG)/dialogs/DialogTracker.o: dialogs/DialogTracker.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogTracker.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogTracker.o
 
@@ -131,9 +173,6 @@ $(OBJDIR_DEBUG)/dialogs/DialogStopwatch.o: dialogs/DialogStopwatch.cpp
 $(OBJDIR_DEBUG)/dialogs/DialogSimpleTags.o: dialogs/DialogSimpleTags.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogSimpleTags.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogSimpleTags.o
 
-$(OBJDIR_DEBUG)/dialogs/DialogSafeErosion.o: dialogs/DialogSafeErosion.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogSafeErosion.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogSafeErosion.o
-
 $(OBJDIR_DEBUG)/plugins/ZonesOfInterest.o: plugins/ZonesOfInterest.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c plugins/ZonesOfInterest.cpp -o $(OBJDIR_DEBUG)/plugins/ZonesOfInterest.o
 
@@ -145,6 +184,9 @@ $(OBJDIR_DEBUG)/plugins/TakeSnapshots.o: plugins/TakeSnapshots.cpp
 
 $(OBJDIR_DEBUG)/plugins/Stopwatch.o: plugins/Stopwatch.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c plugins/Stopwatch.cpp -o $(OBJDIR_DEBUG)/plugins/Stopwatch.o
+
+$(OBJDIR_DEBUG)/capture/CaptureVideo.o: capture/CaptureVideo.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c capture/CaptureVideo.cpp -o $(OBJDIR_DEBUG)/capture/CaptureVideo.o
 
 $(OBJDIR_DEBUG)/capture/CaptureUSBCamera.o: capture/CaptureUSBCamera.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c capture/CaptureUSBCamera.cpp -o $(OBJDIR_DEBUG)/capture/CaptureUSBCamera.o
@@ -167,9 +209,6 @@ $(OBJDIR_DEBUG)/capture/CaptureAVTCamera.o: capture/CaptureAVTCamera.cpp
 $(OBJDIR_DEBUG)/Utils.o: Utils.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c Utils.cpp -o $(OBJDIR_DEBUG)/Utils.o
 
-$(OBJDIR_DEBUG)/capture/CaptureVideo.o: capture/CaptureVideo.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c capture/CaptureVideo.cpp -o $(OBJDIR_DEBUG)/capture/CaptureVideo.o
-
 $(OBJDIR_DEBUG)/Pipeline.o: Pipeline.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c Pipeline.cpp -o $(OBJDIR_DEBUG)/Pipeline.o
 
@@ -190,6 +229,9 @@ $(OBJDIR_DEBUG)/Capture.o: Capture.cpp
 
 $(OBJDIR_DEBUG)/Background.o: Background.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c Background.cpp -o $(OBJDIR_DEBUG)/Background.o
+
+$(OBJDIR_DEBUG)/dialogs/DialogSafeErosion.o: dialogs/DialogSafeErosion.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogSafeErosion.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogSafeErosion.o
 
 $(OBJDIR_DEBUG)/dialogs/DialogRecordVideo.o: dialogs/DialogRecordVideo.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogRecordVideo.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogRecordVideo.o
@@ -212,11 +254,11 @@ $(OBJDIR_DEBUG)/dialogs/DialogExtractBlobs.o: dialogs/DialogExtractBlobs.cpp
 $(OBJDIR_DEBUG)/dialogs/DialogErosion.o: dialogs/DialogErosion.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogErosion.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogErosion.o
 
-$(OBJDIR_DEBUG)/dialogs/DialogDilation.o: dialogs/DialogDilation.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogDilation.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogDilation.o
-
 $(OBJDIR_DEBUG)/App.o: App.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c App.cpp -o $(OBJDIR_DEBUG)/App.o
+
+$(OBJDIR_DEBUG)/dialogs/DialogDilation.o: dialogs/DialogDilation.cpp
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogDilation.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogDilation.o
 
 $(OBJDIR_DEBUG)/dialogs/DialogColorSegmentation.o: dialogs/DialogColorSegmentation.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c dialogs/DialogColorSegmentation.cpp -o $(OBJDIR_DEBUG)/dialogs/DialogColorSegmentation.o
@@ -318,6 +360,9 @@ $(OBJDIR_RELEASE)/plugins/Aruco.o: plugins/Aruco.cpp
 $(OBJDIR_RELEASE)/plugins/AdaptiveThreshold.o: plugins/AdaptiveThreshold.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c plugins/AdaptiveThreshold.cpp -o $(OBJDIR_RELEASE)/plugins/AdaptiveThreshold.o
 
+$(OBJDIR_RELEASE)/dialogs/DialogFrameDifference.o: dialogs/DialogFrameDifference.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogFrameDifference.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogFrameDifference.o
+
 $(OBJDIR_RELEASE)/dialogs/DialogTracker.o: dialogs/DialogTracker.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogTracker.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogTracker.o
 
@@ -330,9 +375,6 @@ $(OBJDIR_RELEASE)/dialogs/DialogStopwatch.o: dialogs/DialogStopwatch.cpp
 $(OBJDIR_RELEASE)/dialogs/DialogSimpleTags.o: dialogs/DialogSimpleTags.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogSimpleTags.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogSimpleTags.o
 
-$(OBJDIR_RELEASE)/dialogs/DialogSafeErosion.o: dialogs/DialogSafeErosion.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogSafeErosion.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogSafeErosion.o
-
 $(OBJDIR_RELEASE)/plugins/ZonesOfInterest.o: plugins/ZonesOfInterest.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c plugins/ZonesOfInterest.cpp -o $(OBJDIR_RELEASE)/plugins/ZonesOfInterest.o
 
@@ -344,6 +386,9 @@ $(OBJDIR_RELEASE)/plugins/TakeSnapshots.o: plugins/TakeSnapshots.cpp
 
 $(OBJDIR_RELEASE)/plugins/Stopwatch.o: plugins/Stopwatch.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c plugins/Stopwatch.cpp -o $(OBJDIR_RELEASE)/plugins/Stopwatch.o
+
+$(OBJDIR_RELEASE)/capture/CaptureVideo.o: capture/CaptureVideo.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c capture/CaptureVideo.cpp -o $(OBJDIR_RELEASE)/capture/CaptureVideo.o
 
 $(OBJDIR_RELEASE)/capture/CaptureUSBCamera.o: capture/CaptureUSBCamera.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c capture/CaptureUSBCamera.cpp -o $(OBJDIR_RELEASE)/capture/CaptureUSBCamera.o
@@ -366,9 +411,6 @@ $(OBJDIR_RELEASE)/capture/CaptureAVTCamera.o: capture/CaptureAVTCamera.cpp
 $(OBJDIR_RELEASE)/Utils.o: Utils.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c Utils.cpp -o $(OBJDIR_RELEASE)/Utils.o
 
-$(OBJDIR_RELEASE)/capture/CaptureVideo.o: capture/CaptureVideo.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c capture/CaptureVideo.cpp -o $(OBJDIR_RELEASE)/capture/CaptureVideo.o
-
 $(OBJDIR_RELEASE)/Pipeline.o: Pipeline.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c Pipeline.cpp -o $(OBJDIR_RELEASE)/Pipeline.o
 
@@ -389,6 +431,9 @@ $(OBJDIR_RELEASE)/Capture.o: Capture.cpp
 
 $(OBJDIR_RELEASE)/Background.o: Background.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c Background.cpp -o $(OBJDIR_RELEASE)/Background.o
+
+$(OBJDIR_RELEASE)/dialogs/DialogSafeErosion.o: dialogs/DialogSafeErosion.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogSafeErosion.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogSafeErosion.o
 
 $(OBJDIR_RELEASE)/dialogs/DialogRecordVideo.o: dialogs/DialogRecordVideo.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogRecordVideo.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogRecordVideo.o
@@ -411,11 +456,11 @@ $(OBJDIR_RELEASE)/dialogs/DialogExtractBlobs.o: dialogs/DialogExtractBlobs.cpp
 $(OBJDIR_RELEASE)/dialogs/DialogErosion.o: dialogs/DialogErosion.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogErosion.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogErosion.o
 
-$(OBJDIR_RELEASE)/dialogs/DialogDilation.o: dialogs/DialogDilation.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogDilation.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogDilation.o
-
 $(OBJDIR_RELEASE)/App.o: App.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c App.cpp -o $(OBJDIR_RELEASE)/App.o
+
+$(OBJDIR_RELEASE)/dialogs/DialogDilation.o: dialogs/DialogDilation.cpp
+	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogDilation.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogDilation.o
 
 $(OBJDIR_RELEASE)/dialogs/DialogColorSegmentation.o: dialogs/DialogColorSegmentation.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c dialogs/DialogColorSegmentation.cpp -o $(OBJDIR_RELEASE)/dialogs/DialogColorSegmentation.o
@@ -446,5 +491,633 @@ clean_release:
 	rm -rf $(OBJDIR_RELEASE)/capture
 	rm -rf $(OBJDIR_RELEASE)
 
-.PHONY: before_debug after_debug clean_debug before_release after_release clean_release
+before_vimbadebug: 
+	test -d bin/VimbaDebug || mkdir -p bin/VimbaDebug
+	test -d $(OBJDIR_VIMBADEBUG)/plugins || mkdir -p $(OBJDIR_VIMBADEBUG)/plugins
+	test -d $(OBJDIR_VIMBADEBUG)/dialogs || mkdir -p $(OBJDIR_VIMBADEBUG)/dialogs
+	test -d $(OBJDIR_VIMBADEBUG)/vimba || mkdir -p $(OBJDIR_VIMBADEBUG)/vimba
+	test -d $(OBJDIR_VIMBADEBUG)/capture || mkdir -p $(OBJDIR_VIMBADEBUG)/capture
+	test -d $(OBJDIR_VIMBADEBUG) || mkdir -p $(OBJDIR_VIMBADEBUG)
+
+after_vimbadebug: 
+
+vimbadebug: before_vimbadebug out_vimbadebug after_vimbadebug
+
+out_vimbadebug: before_vimbadebug $(OBJ_VIMBADEBUG) $(DEP_VIMBADEBUG)
+	$(LD) $(LIBDIR_VIMBADEBUG) -o $(OUT_VIMBADEBUG) $(OBJ_VIMBADEBUG)  $(LDFLAGS_VIMBADEBUG) $(LIB_VIMBADEBUG)
+
+$(OBJDIR_VIMBADEBUG)/plugins/BackgroundDiffMOG.o: plugins/BackgroundDiffMOG.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/BackgroundDiffMOG.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/BackgroundDiffMOG.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/SimpleTags.o: plugins/SimpleTags.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/SimpleTags.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/SimpleTags.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/SafeErosion.o: plugins/SafeErosion.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/SafeErosion.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/SafeErosion.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/RemoteControl.o: plugins/RemoteControl.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/RemoteControl.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/RemoteControl.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/RecordVideo.o: plugins/RecordVideo.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/RecordVideo.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/RecordVideo.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/RecordPixels.o: plugins/RecordPixels.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/RecordPixels.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/RecordPixels.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/MovingAverage.o: plugins/MovingAverage.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/MovingAverage.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/MovingAverage.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/GetBlobsAngles.o: plugins/GetBlobsAngles.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/GetBlobsAngles.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/GetBlobsAngles.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/FrameDifference.o: plugins/FrameDifference.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/FrameDifference.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/FrameDifference.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/ExtractMotion.o: plugins/ExtractMotion.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/ExtractMotion.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/ExtractMotion.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/ExtractBlobs.o: plugins/ExtractBlobs.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/ExtractBlobs.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/ExtractBlobs.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/Erosion.o: plugins/Erosion.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/Erosion.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/Erosion.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/Dilation.o: plugins/Dilation.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/Dilation.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/Dilation.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/ColorSegmentation.o: plugins/ColorSegmentation.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/ColorSegmentation.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/ColorSegmentation.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/BackgroundDiffMOG2.o: plugins/BackgroundDiffMOG2.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/BackgroundDiffMOG2.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/BackgroundDiffMOG2.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/BackgroundDiffGMG.o: plugins/BackgroundDiffGMG.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/BackgroundDiffGMG.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/BackgroundDiffGMG.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/ArucoColor.o: plugins/ArucoColor.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/ArucoColor.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/ArucoColor.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/Aruco.o: plugins/Aruco.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/Aruco.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/Aruco.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/AdaptiveThreshold.o: plugins/AdaptiveThreshold.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/AdaptiveThreshold.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/AdaptiveThreshold.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogFrameDifference.o: dialogs/DialogFrameDifference.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogFrameDifference.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogFrameDifference.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogTracker.o: dialogs/DialogTracker.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogTracker.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogTracker.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogTakeSnapshots.o: dialogs/DialogTakeSnapshots.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogTakeSnapshots.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogTakeSnapshots.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogStopwatch.o: dialogs/DialogStopwatch.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogStopwatch.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogStopwatch.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogSimpleTags.o: dialogs/DialogSimpleTags.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogSimpleTags.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogSimpleTags.o
+
+$(OBJDIR_VIMBADEBUG)/vimba/FrameObserver.o: vimba/FrameObserver.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c vimba/FrameObserver.cpp -o $(OBJDIR_VIMBADEBUG)/vimba/FrameObserver.o
+
+$(OBJDIR_VIMBADEBUG)/vimba/CameraObserver.o: vimba/CameraObserver.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c vimba/CameraObserver.cpp -o $(OBJDIR_VIMBADEBUG)/vimba/CameraObserver.o
+
+$(OBJDIR_VIMBADEBUG)/vimba/ApiController.o: vimba/ApiController.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c vimba/ApiController.cpp -o $(OBJDIR_VIMBADEBUG)/vimba/ApiController.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/ZonesOfInterest.o: plugins/ZonesOfInterest.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/ZonesOfInterest.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/ZonesOfInterest.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/Tracker.o: plugins/Tracker.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/Tracker.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/Tracker.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/TakeSnapshots.o: plugins/TakeSnapshots.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/TakeSnapshots.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/TakeSnapshots.o
+
+$(OBJDIR_VIMBADEBUG)/plugins/Stopwatch.o: plugins/Stopwatch.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c plugins/Stopwatch.cpp -o $(OBJDIR_VIMBADEBUG)/plugins/Stopwatch.o
+
+$(OBJDIR_VIMBADEBUG)/capture/CaptureVideo.o: capture/CaptureVideo.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c capture/CaptureVideo.cpp -o $(OBJDIR_VIMBADEBUG)/capture/CaptureVideo.o
+
+$(OBJDIR_VIMBADEBUG)/capture/CaptureUSBCamera.o: capture/CaptureUSBCamera.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c capture/CaptureUSBCamera.cpp -o $(OBJDIR_VIMBADEBUG)/capture/CaptureUSBCamera.o
+
+$(OBJDIR_VIMBADEBUG)/capture/CaptureMultiVideo.o: capture/CaptureMultiVideo.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c capture/CaptureMultiVideo.cpp -o $(OBJDIR_VIMBADEBUG)/capture/CaptureMultiVideo.o
+
+$(OBJDIR_VIMBADEBUG)/capture/CaptureMultiUSBCamera.o: capture/CaptureMultiUSBCamera.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c capture/CaptureMultiUSBCamera.cpp -o $(OBJDIR_VIMBADEBUG)/capture/CaptureMultiUSBCamera.o
+
+$(OBJDIR_VIMBADEBUG)/capture/CaptureImage.o: capture/CaptureImage.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c capture/CaptureImage.cpp -o $(OBJDIR_VIMBADEBUG)/capture/CaptureImage.o
+
+$(OBJDIR_VIMBADEBUG)/capture/CaptureDefault.o: capture/CaptureDefault.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c capture/CaptureDefault.cpp -o $(OBJDIR_VIMBADEBUG)/capture/CaptureDefault.o
+
+$(OBJDIR_VIMBADEBUG)/capture/CaptureAVTCamera.o: capture/CaptureAVTCamera.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c capture/CaptureAVTCamera.cpp -o $(OBJDIR_VIMBADEBUG)/capture/CaptureAVTCamera.o
+
+$(OBJDIR_VIMBADEBUG)/Utils.o: Utils.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c Utils.cpp -o $(OBJDIR_VIMBADEBUG)/Utils.o
+
+$(OBJDIR_VIMBADEBUG)/Pipeline.o: Pipeline.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c Pipeline.cpp -o $(OBJDIR_VIMBADEBUG)/Pipeline.o
+
+$(OBJDIR_VIMBADEBUG)/Parameters.o: Parameters.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c Parameters.cpp -o $(OBJDIR_VIMBADEBUG)/Parameters.o
+
+$(OBJDIR_VIMBADEBUG)/MainFrame.o: MainFrame.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c MainFrame.cpp -o $(OBJDIR_VIMBADEBUG)/MainFrame.o
+
+$(OBJDIR_VIMBADEBUG)/ImageProcessingEngine.o: ImageProcessingEngine.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c ImageProcessingEngine.cpp -o $(OBJDIR_VIMBADEBUG)/ImageProcessingEngine.o
+
+$(OBJDIR_VIMBADEBUG)/CaptureCalibration.o: CaptureCalibration.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c CaptureCalibration.cpp -o $(OBJDIR_VIMBADEBUG)/CaptureCalibration.o
+
+$(OBJDIR_VIMBADEBUG)/Capture.o: Capture.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c Capture.cpp -o $(OBJDIR_VIMBADEBUG)/Capture.o
+
+$(OBJDIR_VIMBADEBUG)/Background.o: Background.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c Background.cpp -o $(OBJDIR_VIMBADEBUG)/Background.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogSafeErosion.o: dialogs/DialogSafeErosion.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogSafeErosion.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogSafeErosion.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogRecordVideo.o: dialogs/DialogRecordVideo.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogRecordVideo.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogRecordVideo.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogRecordPixels.o: dialogs/DialogRecordPixels.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogRecordPixels.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogRecordPixels.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogOpenCapture.o: dialogs/DialogOpenCapture.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogOpenCapture.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogOpenCapture.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogMovingAverage.o: dialogs/DialogMovingAverage.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogMovingAverage.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogMovingAverage.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogExtractMotion.o: dialogs/DialogExtractMotion.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogExtractMotion.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogExtractMotion.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogExtractBlobs.o: dialogs/DialogExtractBlobs.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogExtractBlobs.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogExtractBlobs.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogErosion.o: dialogs/DialogErosion.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogErosion.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogErosion.o
+
+$(OBJDIR_VIMBADEBUG)/App.o: App.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c App.cpp -o $(OBJDIR_VIMBADEBUG)/App.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogDilation.o: dialogs/DialogDilation.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogDilation.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogDilation.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogColorSegmentation.o: dialogs/DialogColorSegmentation.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogColorSegmentation.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogColorSegmentation.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogBackgroundDiffMOG2.o: dialogs/DialogBackgroundDiffMOG2.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogBackgroundDiffMOG2.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogBackgroundDiffMOG2.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogBackgroundDiffMOG.o: dialogs/DialogBackgroundDiffMOG.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogBackgroundDiffMOG.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogBackgroundDiffMOG.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogBackgroundDiffGMG.o: dialogs/DialogBackgroundDiffGMG.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogBackgroundDiffGMG.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogBackgroundDiffGMG.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogArucoColor.o: dialogs/DialogArucoColor.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogArucoColor.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogArucoColor.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogAruco.o: dialogs/DialogAruco.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogAruco.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogAruco.o
+
+$(OBJDIR_VIMBADEBUG)/dialogs/DialogAdaptiveThreshold.o: dialogs/DialogAdaptiveThreshold.cpp
+	$(CXX) $(CFLAGS_VIMBADEBUG) $(INC_VIMBADEBUG) -c dialogs/DialogAdaptiveThreshold.cpp -o $(OBJDIR_VIMBADEBUG)/dialogs/DialogAdaptiveThreshold.o
+
+clean_vimbadebug: 
+	rm -f $(OBJ_VIMBADEBUG) $(OUT_VIMBADEBUG)
+	rm -rf bin/VimbaDebug
+	rm -rf $(OBJDIR_VIMBADEBUG)/plugins
+	rm -rf $(OBJDIR_VIMBADEBUG)/dialogs
+	rm -rf $(OBJDIR_VIMBADEBUG)/vimba
+	rm -rf $(OBJDIR_VIMBADEBUG)/capture
+	rm -rf $(OBJDIR_VIMBADEBUG)
+
+before_vimbarelease: 
+	test -d bin/VimbaRelease || mkdir -p bin/VimbaRelease
+	test -d $(OBJDIR_VIMBARELEASE)/plugins || mkdir -p $(OBJDIR_VIMBARELEASE)/plugins
+	test -d $(OBJDIR_VIMBARELEASE)/dialogs || mkdir -p $(OBJDIR_VIMBARELEASE)/dialogs
+	test -d $(OBJDIR_VIMBARELEASE)/vimba || mkdir -p $(OBJDIR_VIMBARELEASE)/vimba
+	test -d $(OBJDIR_VIMBARELEASE)/capture || mkdir -p $(OBJDIR_VIMBARELEASE)/capture
+	test -d $(OBJDIR_VIMBARELEASE) || mkdir -p $(OBJDIR_VIMBARELEASE)
+
+after_vimbarelease: 
+
+vimbarelease: before_vimbarelease out_vimbarelease after_vimbarelease
+
+out_vimbarelease: before_vimbarelease $(OBJ_VIMBARELEASE) $(DEP_VIMBARELEASE)
+	$(LD) $(LIBDIR_VIMBARELEASE) -o $(OUT_VIMBARELEASE) $(OBJ_VIMBARELEASE)  $(LDFLAGS_VIMBARELEASE) $(LIB_VIMBARELEASE)
+
+$(OBJDIR_VIMBARELEASE)/plugins/BackgroundDiffMOG.o: plugins/BackgroundDiffMOG.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/BackgroundDiffMOG.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/BackgroundDiffMOG.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/SimpleTags.o: plugins/SimpleTags.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/SimpleTags.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/SimpleTags.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/SafeErosion.o: plugins/SafeErosion.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/SafeErosion.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/SafeErosion.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/RemoteControl.o: plugins/RemoteControl.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/RemoteControl.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/RemoteControl.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/RecordVideo.o: plugins/RecordVideo.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/RecordVideo.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/RecordVideo.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/RecordPixels.o: plugins/RecordPixels.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/RecordPixels.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/RecordPixels.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/MovingAverage.o: plugins/MovingAverage.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/MovingAverage.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/MovingAverage.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/GetBlobsAngles.o: plugins/GetBlobsAngles.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/GetBlobsAngles.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/GetBlobsAngles.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/FrameDifference.o: plugins/FrameDifference.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/FrameDifference.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/FrameDifference.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/ExtractMotion.o: plugins/ExtractMotion.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/ExtractMotion.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/ExtractMotion.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/ExtractBlobs.o: plugins/ExtractBlobs.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/ExtractBlobs.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/ExtractBlobs.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/Erosion.o: plugins/Erosion.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/Erosion.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/Erosion.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/Dilation.o: plugins/Dilation.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/Dilation.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/Dilation.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/ColorSegmentation.o: plugins/ColorSegmentation.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/ColorSegmentation.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/ColorSegmentation.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/BackgroundDiffMOG2.o: plugins/BackgroundDiffMOG2.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/BackgroundDiffMOG2.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/BackgroundDiffMOG2.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/BackgroundDiffGMG.o: plugins/BackgroundDiffGMG.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/BackgroundDiffGMG.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/BackgroundDiffGMG.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/ArucoColor.o: plugins/ArucoColor.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/ArucoColor.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/ArucoColor.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/Aruco.o: plugins/Aruco.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/Aruco.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/Aruco.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/AdaptiveThreshold.o: plugins/AdaptiveThreshold.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/AdaptiveThreshold.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/AdaptiveThreshold.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogFrameDifference.o: dialogs/DialogFrameDifference.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogFrameDifference.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogFrameDifference.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogTracker.o: dialogs/DialogTracker.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogTracker.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogTracker.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogTakeSnapshots.o: dialogs/DialogTakeSnapshots.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogTakeSnapshots.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogTakeSnapshots.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogStopwatch.o: dialogs/DialogStopwatch.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogStopwatch.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogStopwatch.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogSimpleTags.o: dialogs/DialogSimpleTags.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogSimpleTags.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogSimpleTags.o
+
+$(OBJDIR_VIMBARELEASE)/vimba/FrameObserver.o: vimba/FrameObserver.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c vimba/FrameObserver.cpp -o $(OBJDIR_VIMBARELEASE)/vimba/FrameObserver.o
+
+$(OBJDIR_VIMBARELEASE)/vimba/CameraObserver.o: vimba/CameraObserver.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c vimba/CameraObserver.cpp -o $(OBJDIR_VIMBARELEASE)/vimba/CameraObserver.o
+
+$(OBJDIR_VIMBARELEASE)/vimba/ApiController.o: vimba/ApiController.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c vimba/ApiController.cpp -o $(OBJDIR_VIMBARELEASE)/vimba/ApiController.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/ZonesOfInterest.o: plugins/ZonesOfInterest.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/ZonesOfInterest.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/ZonesOfInterest.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/Tracker.o: plugins/Tracker.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/Tracker.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/Tracker.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/TakeSnapshots.o: plugins/TakeSnapshots.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/TakeSnapshots.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/TakeSnapshots.o
+
+$(OBJDIR_VIMBARELEASE)/plugins/Stopwatch.o: plugins/Stopwatch.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c plugins/Stopwatch.cpp -o $(OBJDIR_VIMBARELEASE)/plugins/Stopwatch.o
+
+$(OBJDIR_VIMBARELEASE)/capture/CaptureVideo.o: capture/CaptureVideo.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c capture/CaptureVideo.cpp -o $(OBJDIR_VIMBARELEASE)/capture/CaptureVideo.o
+
+$(OBJDIR_VIMBARELEASE)/capture/CaptureUSBCamera.o: capture/CaptureUSBCamera.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c capture/CaptureUSBCamera.cpp -o $(OBJDIR_VIMBARELEASE)/capture/CaptureUSBCamera.o
+
+$(OBJDIR_VIMBARELEASE)/capture/CaptureMultiVideo.o: capture/CaptureMultiVideo.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c capture/CaptureMultiVideo.cpp -o $(OBJDIR_VIMBARELEASE)/capture/CaptureMultiVideo.o
+
+$(OBJDIR_VIMBARELEASE)/capture/CaptureMultiUSBCamera.o: capture/CaptureMultiUSBCamera.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c capture/CaptureMultiUSBCamera.cpp -o $(OBJDIR_VIMBARELEASE)/capture/CaptureMultiUSBCamera.o
+
+$(OBJDIR_VIMBARELEASE)/capture/CaptureImage.o: capture/CaptureImage.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c capture/CaptureImage.cpp -o $(OBJDIR_VIMBARELEASE)/capture/CaptureImage.o
+
+$(OBJDIR_VIMBARELEASE)/capture/CaptureDefault.o: capture/CaptureDefault.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c capture/CaptureDefault.cpp -o $(OBJDIR_VIMBARELEASE)/capture/CaptureDefault.o
+
+$(OBJDIR_VIMBARELEASE)/capture/CaptureAVTCamera.o: capture/CaptureAVTCamera.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c capture/CaptureAVTCamera.cpp -o $(OBJDIR_VIMBARELEASE)/capture/CaptureAVTCamera.o
+
+$(OBJDIR_VIMBARELEASE)/Utils.o: Utils.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c Utils.cpp -o $(OBJDIR_VIMBARELEASE)/Utils.o
+
+$(OBJDIR_VIMBARELEASE)/Pipeline.o: Pipeline.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c Pipeline.cpp -o $(OBJDIR_VIMBARELEASE)/Pipeline.o
+
+$(OBJDIR_VIMBARELEASE)/Parameters.o: Parameters.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c Parameters.cpp -o $(OBJDIR_VIMBARELEASE)/Parameters.o
+
+$(OBJDIR_VIMBARELEASE)/MainFrame.o: MainFrame.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c MainFrame.cpp -o $(OBJDIR_VIMBARELEASE)/MainFrame.o
+
+$(OBJDIR_VIMBARELEASE)/ImageProcessingEngine.o: ImageProcessingEngine.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c ImageProcessingEngine.cpp -o $(OBJDIR_VIMBARELEASE)/ImageProcessingEngine.o
+
+$(OBJDIR_VIMBARELEASE)/CaptureCalibration.o: CaptureCalibration.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c CaptureCalibration.cpp -o $(OBJDIR_VIMBARELEASE)/CaptureCalibration.o
+
+$(OBJDIR_VIMBARELEASE)/Capture.o: Capture.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c Capture.cpp -o $(OBJDIR_VIMBARELEASE)/Capture.o
+
+$(OBJDIR_VIMBARELEASE)/Background.o: Background.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c Background.cpp -o $(OBJDIR_VIMBARELEASE)/Background.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogSafeErosion.o: dialogs/DialogSafeErosion.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogSafeErosion.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogSafeErosion.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogRecordVideo.o: dialogs/DialogRecordVideo.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogRecordVideo.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogRecordVideo.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogRecordPixels.o: dialogs/DialogRecordPixels.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogRecordPixels.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogRecordPixels.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogOpenCapture.o: dialogs/DialogOpenCapture.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogOpenCapture.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogOpenCapture.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogMovingAverage.o: dialogs/DialogMovingAverage.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogMovingAverage.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogMovingAverage.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogExtractMotion.o: dialogs/DialogExtractMotion.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogExtractMotion.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogExtractMotion.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogExtractBlobs.o: dialogs/DialogExtractBlobs.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogExtractBlobs.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogExtractBlobs.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogErosion.o: dialogs/DialogErosion.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogErosion.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogErosion.o
+
+$(OBJDIR_VIMBARELEASE)/App.o: App.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c App.cpp -o $(OBJDIR_VIMBARELEASE)/App.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogDilation.o: dialogs/DialogDilation.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogDilation.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogDilation.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogColorSegmentation.o: dialogs/DialogColorSegmentation.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogColorSegmentation.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogColorSegmentation.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogBackgroundDiffMOG2.o: dialogs/DialogBackgroundDiffMOG2.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogBackgroundDiffMOG2.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogBackgroundDiffMOG2.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogBackgroundDiffMOG.o: dialogs/DialogBackgroundDiffMOG.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogBackgroundDiffMOG.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogBackgroundDiffMOG.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogBackgroundDiffGMG.o: dialogs/DialogBackgroundDiffGMG.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogBackgroundDiffGMG.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogBackgroundDiffGMG.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogArucoColor.o: dialogs/DialogArucoColor.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogArucoColor.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogArucoColor.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogAruco.o: dialogs/DialogAruco.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogAruco.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogAruco.o
+
+$(OBJDIR_VIMBARELEASE)/dialogs/DialogAdaptiveThreshold.o: dialogs/DialogAdaptiveThreshold.cpp
+	$(CXX) $(CFLAGS_VIMBARELEASE) $(INC_VIMBARELEASE) -c dialogs/DialogAdaptiveThreshold.cpp -o $(OBJDIR_VIMBARELEASE)/dialogs/DialogAdaptiveThreshold.o
+
+clean_vimbarelease: 
+	rm -f $(OBJ_VIMBARELEASE) $(OUT_VIMBARELEASE)
+	rm -rf bin/VimbaRelease
+	rm -rf $(OBJDIR_VIMBARELEASE)/plugins
+	rm -rf $(OBJDIR_VIMBARELEASE)/dialogs
+	rm -rf $(OBJDIR_VIMBARELEASE)/vimba
+	rm -rf $(OBJDIR_VIMBARELEASE)/capture
+	rm -rf $(OBJDIR_VIMBARELEASE)
+
+before_macportsdebug: 
+	test -d bin/MacPortsDebug || mkdir -p bin/MacPortsDebug
+	test -d $(OBJDIR_MACPORTSDEBUG)/plugins || mkdir -p $(OBJDIR_MACPORTSDEBUG)/plugins
+	test -d $(OBJDIR_MACPORTSDEBUG)/dialogs || mkdir -p $(OBJDIR_MACPORTSDEBUG)/dialogs
+	test -d $(OBJDIR_MACPORTSDEBUG)/capture || mkdir -p $(OBJDIR_MACPORTSDEBUG)/capture
+	test -d $(OBJDIR_MACPORTSDEBUG) || mkdir -p $(OBJDIR_MACPORTSDEBUG)
+
+after_macportsdebug: 
+
+macportsdebug: before_macportsdebug out_macportsdebug after_macportsdebug
+
+out_macportsdebug: before_macportsdebug $(OBJ_MACPORTSDEBUG) $(DEP_MACPORTSDEBUG)
+	$(LD) $(LIBDIR_MACPORTSDEBUG) -o $(OUT_MACPORTSDEBUG) $(OBJ_MACPORTSDEBUG)  $(LDFLAGS_MACPORTSDEBUG) $(LIB_MACPORTSDEBUG)
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/BackgroundDiffMOG.o: plugins/BackgroundDiffMOG.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/BackgroundDiffMOG.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/BackgroundDiffMOG.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/SimpleTags.o: plugins/SimpleTags.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/SimpleTags.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/SimpleTags.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/SafeErosion.o: plugins/SafeErosion.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/SafeErosion.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/SafeErosion.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/RemoteControl.o: plugins/RemoteControl.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/RemoteControl.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/RemoteControl.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/RecordVideo.o: plugins/RecordVideo.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/RecordVideo.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/RecordVideo.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/RecordPixels.o: plugins/RecordPixels.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/RecordPixels.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/RecordPixels.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/MovingAverage.o: plugins/MovingAverage.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/MovingAverage.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/MovingAverage.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/GetBlobsAngles.o: plugins/GetBlobsAngles.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/GetBlobsAngles.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/GetBlobsAngles.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/FrameDifference.o: plugins/FrameDifference.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/FrameDifference.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/FrameDifference.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/ExtractMotion.o: plugins/ExtractMotion.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/ExtractMotion.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/ExtractMotion.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/ExtractBlobs.o: plugins/ExtractBlobs.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/ExtractBlobs.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/ExtractBlobs.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/Erosion.o: plugins/Erosion.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/Erosion.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/Erosion.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/Dilation.o: plugins/Dilation.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/Dilation.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/Dilation.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/ColorSegmentation.o: plugins/ColorSegmentation.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/ColorSegmentation.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/ColorSegmentation.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/BackgroundDiffMOG2.o: plugins/BackgroundDiffMOG2.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/BackgroundDiffMOG2.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/BackgroundDiffMOG2.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/BackgroundDiffGMG.o: plugins/BackgroundDiffGMG.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/BackgroundDiffGMG.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/BackgroundDiffGMG.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/ArucoColor.o: plugins/ArucoColor.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/ArucoColor.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/ArucoColor.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/Aruco.o: plugins/Aruco.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/Aruco.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/Aruco.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/AdaptiveThreshold.o: plugins/AdaptiveThreshold.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/AdaptiveThreshold.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/AdaptiveThreshold.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogFrameDifference.o: dialogs/DialogFrameDifference.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogFrameDifference.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogFrameDifference.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogTracker.o: dialogs/DialogTracker.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogTracker.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogTracker.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogTakeSnapshots.o: dialogs/DialogTakeSnapshots.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogTakeSnapshots.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogTakeSnapshots.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogStopwatch.o: dialogs/DialogStopwatch.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogStopwatch.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogStopwatch.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogSimpleTags.o: dialogs/DialogSimpleTags.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogSimpleTags.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogSimpleTags.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/ZonesOfInterest.o: plugins/ZonesOfInterest.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/ZonesOfInterest.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/ZonesOfInterest.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/Tracker.o: plugins/Tracker.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/Tracker.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/Tracker.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/TakeSnapshots.o: plugins/TakeSnapshots.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/TakeSnapshots.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/TakeSnapshots.o
+
+$(OBJDIR_MACPORTSDEBUG)/plugins/Stopwatch.o: plugins/Stopwatch.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c plugins/Stopwatch.cpp -o $(OBJDIR_MACPORTSDEBUG)/plugins/Stopwatch.o
+
+$(OBJDIR_MACPORTSDEBUG)/capture/CaptureVideo.o: capture/CaptureVideo.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c capture/CaptureVideo.cpp -o $(OBJDIR_MACPORTSDEBUG)/capture/CaptureVideo.o
+
+$(OBJDIR_MACPORTSDEBUG)/capture/CaptureUSBCamera.o: capture/CaptureUSBCamera.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c capture/CaptureUSBCamera.cpp -o $(OBJDIR_MACPORTSDEBUG)/capture/CaptureUSBCamera.o
+
+$(OBJDIR_MACPORTSDEBUG)/capture/CaptureMultiVideo.o: capture/CaptureMultiVideo.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c capture/CaptureMultiVideo.cpp -o $(OBJDIR_MACPORTSDEBUG)/capture/CaptureMultiVideo.o
+
+$(OBJDIR_MACPORTSDEBUG)/capture/CaptureMultiUSBCamera.o: capture/CaptureMultiUSBCamera.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c capture/CaptureMultiUSBCamera.cpp -o $(OBJDIR_MACPORTSDEBUG)/capture/CaptureMultiUSBCamera.o
+
+$(OBJDIR_MACPORTSDEBUG)/capture/CaptureImage.o: capture/CaptureImage.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c capture/CaptureImage.cpp -o $(OBJDIR_MACPORTSDEBUG)/capture/CaptureImage.o
+
+$(OBJDIR_MACPORTSDEBUG)/capture/CaptureDefault.o: capture/CaptureDefault.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c capture/CaptureDefault.cpp -o $(OBJDIR_MACPORTSDEBUG)/capture/CaptureDefault.o
+
+$(OBJDIR_MACPORTSDEBUG)/capture/CaptureAVTCamera.o: capture/CaptureAVTCamera.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c capture/CaptureAVTCamera.cpp -o $(OBJDIR_MACPORTSDEBUG)/capture/CaptureAVTCamera.o
+
+$(OBJDIR_MACPORTSDEBUG)/Utils.o: Utils.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c Utils.cpp -o $(OBJDIR_MACPORTSDEBUG)/Utils.o
+
+$(OBJDIR_MACPORTSDEBUG)/Pipeline.o: Pipeline.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c Pipeline.cpp -o $(OBJDIR_MACPORTSDEBUG)/Pipeline.o
+
+$(OBJDIR_MACPORTSDEBUG)/Parameters.o: Parameters.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c Parameters.cpp -o $(OBJDIR_MACPORTSDEBUG)/Parameters.o
+
+$(OBJDIR_MACPORTSDEBUG)/MainFrame.o: MainFrame.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c MainFrame.cpp -o $(OBJDIR_MACPORTSDEBUG)/MainFrame.o
+
+$(OBJDIR_MACPORTSDEBUG)/ImageProcessingEngine.o: ImageProcessingEngine.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c ImageProcessingEngine.cpp -o $(OBJDIR_MACPORTSDEBUG)/ImageProcessingEngine.o
+
+$(OBJDIR_MACPORTSDEBUG)/CaptureCalibration.o: CaptureCalibration.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c CaptureCalibration.cpp -o $(OBJDIR_MACPORTSDEBUG)/CaptureCalibration.o
+
+$(OBJDIR_MACPORTSDEBUG)/Capture.o: Capture.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c Capture.cpp -o $(OBJDIR_MACPORTSDEBUG)/Capture.o
+
+$(OBJDIR_MACPORTSDEBUG)/Background.o: Background.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c Background.cpp -o $(OBJDIR_MACPORTSDEBUG)/Background.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogSafeErosion.o: dialogs/DialogSafeErosion.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogSafeErosion.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogSafeErosion.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogRecordVideo.o: dialogs/DialogRecordVideo.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogRecordVideo.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogRecordVideo.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogRecordPixels.o: dialogs/DialogRecordPixels.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogRecordPixels.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogRecordPixels.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogOpenCapture.o: dialogs/DialogOpenCapture.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogOpenCapture.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogOpenCapture.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogMovingAverage.o: dialogs/DialogMovingAverage.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogMovingAverage.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogMovingAverage.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogExtractMotion.o: dialogs/DialogExtractMotion.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogExtractMotion.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogExtractMotion.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogExtractBlobs.o: dialogs/DialogExtractBlobs.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogExtractBlobs.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogExtractBlobs.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogErosion.o: dialogs/DialogErosion.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogErosion.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogErosion.o
+
+$(OBJDIR_MACPORTSDEBUG)/App.o: App.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c App.cpp -o $(OBJDIR_MACPORTSDEBUG)/App.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogDilation.o: dialogs/DialogDilation.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogDilation.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogDilation.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogColorSegmentation.o: dialogs/DialogColorSegmentation.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogColorSegmentation.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogColorSegmentation.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogBackgroundDiffMOG2.o: dialogs/DialogBackgroundDiffMOG2.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogBackgroundDiffMOG2.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogBackgroundDiffMOG2.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogBackgroundDiffMOG.o: dialogs/DialogBackgroundDiffMOG.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogBackgroundDiffMOG.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogBackgroundDiffMOG.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogBackgroundDiffGMG.o: dialogs/DialogBackgroundDiffGMG.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogBackgroundDiffGMG.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogBackgroundDiffGMG.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogArucoColor.o: dialogs/DialogArucoColor.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogArucoColor.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogArucoColor.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogAruco.o: dialogs/DialogAruco.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogAruco.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogAruco.o
+
+$(OBJDIR_MACPORTSDEBUG)/dialogs/DialogAdaptiveThreshold.o: dialogs/DialogAdaptiveThreshold.cpp
+	$(CXX) $(CFLAGS_MACPORTSDEBUG) $(INC_MACPORTSDEBUG) -c dialogs/DialogAdaptiveThreshold.cpp -o $(OBJDIR_MACPORTSDEBUG)/dialogs/DialogAdaptiveThreshold.o
+
+clean_macportsdebug: 
+	rm -f $(OBJ_MACPORTSDEBUG) $(OUT_MACPORTSDEBUG)
+	rm -rf bin/MacPortsDebug
+	rm -rf $(OBJDIR_MACPORTSDEBUG)/plugins
+	rm -rf $(OBJDIR_MACPORTSDEBUG)/dialogs
+	rm -rf $(OBJDIR_MACPORTSDEBUG)/capture
+	rm -rf $(OBJDIR_MACPORTSDEBUG)
+
+.PHONY: before_debug after_debug clean_debug before_release after_release clean_release before_vimbadebug after_vimbadebug clean_vimbadebug before_vimbarelease after_vimbarelease clean_vimbarelease before_macportsdebug after_macportsdebug clean_macportsdebug
 

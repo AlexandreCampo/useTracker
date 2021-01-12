@@ -14,6 +14,7 @@
 				<Option parameters="-i ../movie.avi -b ../f_bg.png -m ../mask2.png -p ../params.xml" />
 				<Option projectLinkerOptionsRelation="2" />
 				<Compiler>
+					<Add option="-std=c++11" />
 					<Add option="-pg" />
 					<Add option="-g" />
 				</Compiler>
@@ -30,13 +31,14 @@
 				<Compiler>
 					<Add option="-fomit-frame-pointer" />
 					<Add option="-fexpensive-optimizations" />
-					<Add option="-O3" />
-					<Add option="-march=native" />
 					<Add option="-flto" />
+					<Add option="-O3" />
+					<Add option="-std=c++11" />
+					<Add option="-march=native" />
 				</Compiler>
 				<Linker>
-					<Add option="-s" />
 					<Add option="-flto" />
+					<Add option="-s" />
 				</Linker>
 			</Target>
 			<Target title="VimbaDebug">
@@ -106,7 +108,7 @@
 			<Add option="-Wall" />
 			<Add option="-std=c++11" />
 			<Add option="`wx-config --cflags all`" />
-			<Add option="`pkg-config --cflags opencv`" />
+			<Add option="`pkg-config --cflags opencv4`" />
 			<Add option="-I ./" />
 			<Add option="-I ./plugins" />
 			<Add option="-I./capture" />
@@ -118,7 +120,7 @@
 		<Linker>
 			<Add option="`wx-config --libs --gl-libs` -lGL -lGLU -lglut" />
 			<Add option="-lpthread" />
-			<Add option="`pkg-config --libs opencv`" />
+			<Add option="`pkg-config --libs opencv4`" />
 			<Add option="`pkg-config --libs libavcodec libavformat libswscale libavutil`" />
 			<Add option="-ldl" />
 			<Add option="-lva" />
@@ -132,7 +134,7 @@
 			<Add option="-lboost_filesystem" />
 			<Add option="-laruco" />
 			<Add option="-lbluetooth" />
-			<Add option="-L ./arucoColor" />
+			<Add option="-L ./arucoColor/bin/release" />
 			<Add option="-larucoColor" />
 		</Linker>
 		<Unit filename="App.cpp" />
@@ -208,6 +210,8 @@
 		<Unit filename="dialogs/DialogTakeSnapshots.h" />
 		<Unit filename="dialogs/DialogTracker.cpp" />
 		<Unit filename="dialogs/DialogTracker.h" />
+		<Unit filename="dialogs/DialogFrameDifference.cpp" />
+		<Unit filename="dialogs/DialogFrameDifference.h" />
 		<Unit filename="plugins/AdaptiveThreshold.cpp" />
 		<Unit filename="plugins/Aruco.cpp" />
 		<Unit filename="plugins/Aruco.h" />
@@ -268,10 +272,9 @@
 		<Unit filename="wxsmith/DialogStopwatch.wxs" />
 		<Unit filename="wxsmith/DialogTakeSnapshots.wxs" />
 		<Unit filename="wxsmith/DialogTracker.wxs" />
+		<Unit filename="wxsmith/DialogFrameDifference.wxs" />
 		<Unit filename="wxsmith/Mainframe.wxs" />
 		<Extensions>
-			<code_completion />
-			<envvars />
 			<lib_finder disable_auto="1" />
 			<wxsmith version="1">
 				<gui name="wxWidgets" src="App.cpp" main="MainFrame" init_handlers="always" language="CPP" />
@@ -297,9 +300,9 @@
 					<wxDialog wxs="wxsmith/DialogStopwatch.wxs" src="dialogs/DialogStopwatch.cpp" hdr="dialogs/DialogStopwatch.h" fwddecl="0" i18n="1" name="DialogStopwatch" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogSimpleTags.wxs" src="dialogs/DialogSimpleTags.cpp" hdr="dialogs/DialogSimpleTags.h" fwddecl="0" i18n="1" name="DialogSimpleTags" language="CPP" />
 					<wxDialog wxs="wxsmith/DialogArucoColor.wxs" src="dialogs/DialogArucoColor.cpp" hdr="dialogs/DialogArucoColor.h" fwddecl="0" i18n="1" name="DialogArucoColor" language="CPP" />
+					<wxDialog wxs="wxsmith/DialogFrameDifference.wxs" src="dialogs/DialogFrameDifference.cpp" hdr="dialogs/DialogFrameDifference.h" fwddecl="0" i18n="1" name="DialogFrameDifference" language="CPP" />
 				</resources>
 			</wxsmith>
-			<debugger />
 		</Extensions>
 	</Project>
 </CodeBlocks_project_file>

@@ -22,10 +22,10 @@
 #include <wx/msgdlg.h>
 
 //(*InternalHeaders(MainFrame)
-#include <wx/string.h>
-#include <wx/intl.h>
 #include <wx/bitmap.h>
 #include <wx/image.h>
+#include <wx/intl.h>
+#include <wx/string.h>
 //*)
 
 #include <GL/glut.h>
@@ -44,7 +44,7 @@
 #include<opencv2/highgui/highgui.hpp>
 
 #include "DialogSafeErosion.h"
-//#include "DialogFrameDifference.h"
+#include "DialogFrameDifference.h"
 #include "DialogErosion.h"
 #include "DialogMovingAverage.h"
 #include "DialogDilation.h"
@@ -215,35 +215,35 @@ END_EVENT_TABLE()
 MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
 {
     //(*Initialize(MainFrame)
-    wxMenuItem* MenuItem2;
-    wxStaticBoxSizer* StaticBoxSizer2;
-    wxMenuItem* MenuItem1;
-    wxFlexGridSizer* FlexGridSizer8;
+    wxFlexGridSizer* FlexGridSizer10;
+    wxFlexGridSizer* FlexGridSizer11;
+    wxFlexGridSizer* FlexGridSizer12;
+    wxFlexGridSizer* FlexGridSizer13;
+    wxFlexGridSizer* FlexGridSizer14;
+    wxFlexGridSizer* FlexGridSizer15;
+    wxFlexGridSizer* FlexGridSizer16;
     wxFlexGridSizer* FlexGridSizer1;
     wxFlexGridSizer* FlexGridSizer2;
-    wxFlexGridSizer* FlexGridSizer15;
-    wxMenu* Menu1;
-    wxFlexGridSizer* FlexGridSizer11;
-    wxFlexGridSizer* FlexGridSizer7;
-    wxStaticBoxSizer* StaticBoxSizerConfigMultiSource;
-    wxFlexGridSizer* FlexGridSizer4;
-    wxFlexGridSizer* FlexGridSizer9;
-    wxStaticBoxSizer* StaticBoxSizer3;
-    wxFlexGridSizer* FlexGridSizer14;
-    wxFlexGridSizer* FlexGridSizer6;
     wxFlexGridSizer* FlexGridSizer3;
+    wxFlexGridSizer* FlexGridSizer4;
+    wxFlexGridSizer* FlexGridSizer5;
+    wxFlexGridSizer* FlexGridSizer6;
+    wxFlexGridSizer* FlexGridSizer7;
+    wxFlexGridSizer* FlexGridSizer8;
+    wxFlexGridSizer* FlexGridSizer9;
     wxFlexGridSizer* FlexGridSizerCalibMain;
+    wxGridBagSizer* GridBagSizer1;
+    wxMenu* Menu1;
+    wxMenu* Menu2;
+    wxMenuBar* MenuBar1;
+    wxMenuItem* MenuItem1;
+    wxMenuItem* MenuItem2;
+    wxStaticBoxSizer* StaticBoxSizer1;
+    wxStaticBoxSizer* StaticBoxSizer2;
+    wxStaticBoxSizer* StaticBoxSizer3;
     wxStaticBoxSizer* StaticBoxSizer4;
     wxStaticBoxSizer* StaticBoxSizerCalibSubdevices;
-    wxFlexGridSizer* FlexGridSizer16;
-    wxFlexGridSizer* FlexGridSizer10;
-    wxFlexGridSizer* FlexGridSizer13;
-    wxMenuBar* MenuBar1;
-    wxGridBagSizer* GridBagSizer1;
-    wxFlexGridSizer* FlexGridSizer12;
-    wxMenu* Menu2;
-    wxFlexGridSizer* FlexGridSizer5;
-    wxStaticBoxSizer* StaticBoxSizer1;
+    wxStaticBoxSizer* StaticBoxSizerConfigMultiSource;
 
     Create(parent, wxID_ANY, _("USE Tracker"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_FRAME_STYLE, _T("wxID_ANY"));
     SetMinSize(wxSize(-1,-1));
@@ -260,7 +260,11 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     	WX_GL_DEPTH_SIZE,      16,
     	WX_GL_STENCIL_SIZE,    0,
     	0, 0 };
-    GLCanvas1 = new wxGLCanvas(this, ID_GLCANVAS1, wxDefaultPosition, wxSize(900,675), 0, _T("ID_GLCANVAS1"), GLCanvasAttributes_1);
+    #if wxCHECK_VERSION(3,0,0)
+    	GLCanvas1 = new wxGLCanvas(this, ID_GLCANVAS1, GLCanvasAttributes_1, wxDefaultPosition, wxSize(900,675), 0, _T("ID_GLCANVAS1"));
+    #else
+    	GLCanvas1 = new wxGLCanvas(this, ID_GLCANVAS1, wxDefaultPosition, wxSize(900,675), 0, _T("ID_GLCANVAS1"), GLCanvasAttributes_1);
+    #endif // wxCHECK_VERSION
     GLCanvas1->SetMinSize(wxSize(-1,-1));
     GLCanvas1->SetMaxSize(wxSize(-1,-1));
     GLCanvas1->SetFocus();
@@ -269,24 +273,24 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FlexGridSizer2->AddGrowableCol(7);
     buttonOutput = new wxBitmapButton(this, ID_BITMAPBUTTON1, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-record-icon inactive.png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW, wxDefaultValidator, _T("ID_BITMAPBUTTON1"));
     FlexGridSizer2->Add(buttonOutput, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonStop = new wxBitmapButton(this, ID_BITMAPBUTTON3, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-stop-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON3"));
+    buttonStop = new wxBitmapButton(this, ID_BITMAPBUTTON3, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-stop-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxBORDER_NONE, wxDefaultValidator, _T("ID_BITMAPBUTTON3"));
     FlexGridSizer2->Add(buttonStop, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonBackwards = new wxBitmapButton(this, ID_BITMAPBUTTON4, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-seek-backward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON4"));
+    buttonBackwards = new wxBitmapButton(this, ID_BITMAPBUTTON4, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-seek-backward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxBORDER_NONE, wxDefaultValidator, _T("ID_BITMAPBUTTON4"));
     FlexGridSizer2->Add(buttonBackwards, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonStepBackwards = new wxBitmapButton(this, ID_BITMAPBUTTON9, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-skip-backward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON9"));
+    buttonStepBackwards = new wxBitmapButton(this, ID_BITMAPBUTTON9, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-skip-backward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxBORDER_NONE, wxDefaultValidator, _T("ID_BITMAPBUTTON9"));
     FlexGridSizer2->Add(buttonStepBackwards, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonPlay = new wxBitmapButton(this, ID_BITMAPBUTTON2, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-start-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON2"));
+    buttonPlay = new wxBitmapButton(this, ID_BITMAPBUTTON2, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-start-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxBORDER_NONE, wxDefaultValidator, _T("ID_BITMAPBUTTON2"));
     buttonPlay->SetBitmapSelected(wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-playback-pause-icon (1).png"))));
     FlexGridSizer2->Add(buttonPlay, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonStepForward = new wxBitmapButton(this, ID_BITMAPBUTTON10, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-skip-forward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON10"));
+    buttonStepForward = new wxBitmapButton(this, ID_BITMAPBUTTON10, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-skip-forward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxBORDER_NONE, wxDefaultValidator, _T("ID_BITMAPBUTTON10"));
     FlexGridSizer2->Add(buttonStepForward, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
-    buttonForward = new wxBitmapButton(this, ID_BITMAPBUTTON8, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-seek-forward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON8"));
+    buttonForward = new wxBitmapButton(this, ID_BITMAPBUTTON8, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-media-seek-forward-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxBORDER_NONE, wxDefaultValidator, _T("ID_BITMAPBUTTON8"));
     FlexGridSizer2->Add(buttonForward, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     videoSlider = new wxSlider(this, ID_SLIDER1, 0, 0, 10000, wxDefaultPosition, wxSize(-1,-1), 0, wxDefaultValidator, _T("ID_SLIDER1"));
     videoSlider->SetMinSize(wxSize(-1,-1));
     videoSlider->SetMaxSize(wxSize(-1,-1));
     FlexGridSizer2->Add(videoSlider, 1, wxALL|wxEXPAND, 12);
-    buttonHud = new wxBitmapButton(this, ID_BITMAPBUTTON11, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Apps-utilities-system-monitor-icon active (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON11"));
+    buttonHud = new wxBitmapButton(this, ID_BITMAPBUTTON11, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Apps-utilities-system-monitor-icon active (1).png"))), wxDefaultPosition, wxDefaultSize, wxBU_AUTODRAW|wxBORDER_NONE, wxDefaultValidator, _T("ID_BITMAPBUTTON11"));
     FlexGridSizer2->Add(buttonHud, 1, wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     FlexGridSizer6->Add(FlexGridSizer2, 1, wxALL|wxEXPAND, 5);
     FlexGridSizer1->Add(FlexGridSizer6, 1, wxALL|wxEXPAND, 5);
@@ -356,15 +360,15 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FlexGridSizer5->Add(CheckBoxRecalculate, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     StaticBoxSizer2->Add(FlexGridSizer5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer4 = new wxFlexGridSizer(0, 2, 0, 0);
-    StaticBitmap1 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP1, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Categories-applications-system-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP1"));
+    StaticBitmap1 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP1, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Categories-applications-system-icon (1).png"))), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICBITMAP1"));
     FlexGridSizer4->Add(StaticBitmap1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonBgRecalculate = new wxButton(BackgroundTab, ID_BUTTON1, _("Recalculate"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON1"));
     FlexGridSizer4->Add(ButtonBgRecalculate, 1, wxALL|wxEXPAND, 5);
-    StaticBitmap2 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP2, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-open-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP2"));
+    StaticBitmap2 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP2, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-open-icon (1).png"))), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICBITMAP2"));
     FlexGridSizer4->Add(StaticBitmap2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonBgLoad = new wxButton(BackgroundTab, ID_BUTTON3, _("Load background"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON3"));
     FlexGridSizer4->Add(ButtonBgLoad, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
-    StaticBitmap3 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP3, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-save-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP3"));
+    StaticBitmap3 = new wxStaticBitmap(BackgroundTab, ID_STATICBITMAP3, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-save-icon (1).png"))), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICBITMAP3"));
     FlexGridSizer4->Add(StaticBitmap3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonBgSave = new wxButton(BackgroundTab, ID_BUTTON4, _("Save background"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON4"));
     FlexGridSizer4->Add(ButtonBgSave, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
@@ -411,11 +415,11 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     CheckBoxConfigStitchAdjustLuminosity->SetValue(false);
     FlexGridSizer15->Add(CheckBoxConfigStitchAdjustLuminosity, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     FlexGridSizer13 = new wxFlexGridSizer(0, 2, 0, 0);
-    StaticBitmap4 = new wxStaticBitmap(ConfigTab, ID_STATICBITMAP4, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Apps-plasmagik-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP4"));
+    StaticBitmap4 = new wxStaticBitmap(ConfigTab, ID_STATICBITMAP4, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Apps-plasmagik-icon (1).png"))), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICBITMAP4"));
     FlexGridSizer13->Add(StaticBitmap4, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonConfigStitch = new wxButton(ConfigTab, ID_BUTTON9, _("Stitch images"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON9"));
     FlexGridSizer13->Add(ButtonConfigStitch, 1, wxALL|wxEXPAND, 5);
-    StaticBitmap5 = new wxStaticBitmap(ConfigTab, ID_STATICBITMAP5, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-edit-delete-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxSIMPLE_BORDER, _T("ID_STATICBITMAP5"));
+    StaticBitmap5 = new wxStaticBitmap(ConfigTab, ID_STATICBITMAP5, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-edit-delete-icon (1).png"))), wxDefaultPosition, wxDefaultSize, 0, _T("ID_STATICBITMAP5"));
     FlexGridSizer13->Add(StaticBitmap5, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 5);
     ButtonConfigResetStitching = new wxButton(ConfigTab, ID_BUTTON10, _("Reset stitching"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON10"));
     FlexGridSizer13->Add(ButtonConfigResetStitching, 1, wxALL|wxEXPAND, 5);
@@ -506,19 +510,19 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     FlexGridSizer14->Add(CheckBoxCalibFlipVertical, 1, wxALL|wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL, 0);
     FlexGridSizerCalibMain->Add(FlexGridSizer14, 1, wxALL|wxEXPAND, 1);
     FlexGridSizer12 = new wxFlexGridSizer(0, 2, 0, 0);
-    BitmapButton1 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON5, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Categories-applications-system-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON5"));
+    BitmapButton1 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON5, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Categories-applications-system-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, _T("ID_BITMAPBUTTON5"));
     FlexGridSizer12->Add(BitmapButton1, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     ButtonCalibCalculate = new wxButton(CalibrationTab, ID_BUTTON2, _("Calibrate"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON2"));
     FlexGridSizer12->Add(ButtonCalibCalculate, 1, wxALL|wxEXPAND, 0);
-    BitmapButton4 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON12, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-edit-delete-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON12"));
+    BitmapButton4 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON12, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-edit-delete-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, _T("ID_BITMAPBUTTON12"));
     FlexGridSizer12->Add(BitmapButton4, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     ButtonCalibReset = new wxButton(CalibrationTab, ID_BUTTON7, _("Reset"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON7"));
     FlexGridSizer12->Add(ButtonCalibReset, 1, wxALL|wxEXPAND, 0);
-    BitmapButton2 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON6, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-open-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON6"));
+    BitmapButton2 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON6, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-open-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, _T("ID_BITMAPBUTTON6"));
     FlexGridSizer12->Add(BitmapButton2, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     ButtonCalibLoad = new wxButton(CalibrationTab, ID_BUTTON5, _("Load calibration"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON5"));
     FlexGridSizer12->Add(ButtonCalibLoad, 1, wxALL|wxEXPAND, 0);
-    BitmapButton3 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON7, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-save-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxNO_BORDER, wxDefaultValidator, _T("ID_BITMAPBUTTON7"));
+    BitmapButton3 = new wxBitmapButton(CalibrationTab, ID_BITMAPBUTTON7, wxBitmap(wxImage(_T("/usr/share/useTracker/images/Actions-document-save-icon (1).png"))), wxDefaultPosition, wxDefaultSize, wxBORDER_NONE, wxDefaultValidator, _T("ID_BITMAPBUTTON7"));
     FlexGridSizer12->Add(BitmapButton3, 1, wxALL|wxALIGN_CENTER_HORIZONTAL|wxALIGN_CENTER_VERTICAL, 0);
     ButtonCalibSave = new wxButton(CalibrationTab, ID_BUTTON6, _("Save calibration"), wxDefaultPosition, wxDefaultSize, 0, wxDefaultValidator, _T("ID_BUTTON6"));
     FlexGridSizer12->Add(ButtonCalibSave, 1, wxALL|wxEXPAND, 0);
@@ -624,6 +628,10 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
 
     // end of codeblocks generated code... now comes some customization.
 
+    // GLCanvas1 = new wxGLCanvas(this, ID_GLCANVAS1, GLCanvasAttributes_1, wxDefaultPosition, wxSize(900,675), 0, _T("ID_GLCANVAS1"), wxNullPalette);
+
+    GLContext1 = new wxGLContext(GLCanvas1);
+
     // disable AVT menu if not compiled with VIMBA
     //#ifndef VIMBA
     //Menu1->Enable (ID_MENUITEM2, false);
@@ -712,7 +720,7 @@ MainFrame::MainFrame(wxWindow* parent,wxWindowID id)
     hudVisible = true;
 
     // set text color
-    textColor = cvScalar(255,178,102,255);
+    textColor = cv::Scalar(255,178,102,255);
 
     // init opengl display
     int argc = wxTheApp->argc;
@@ -866,6 +874,8 @@ void MainFrame::OnAbout(wxCommandEvent& event)
 
 void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 {
+//    return; 
+
     Mat oglScreenScaled;
     Mat oglProcessingScaled;
     Mat hudScaled;
@@ -897,7 +907,8 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
         hudScaled = hud;
     }
 
-    GLCanvas1->SetCurrent();
+//    GLCanvas1->SetCurrent();
+    GLCanvas1->SetCurrent(*GLContext1);
     wxPaintDC(this);
 
     glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -963,7 +974,7 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
     glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(oglScreen.cols, oglScreen.rows);
     glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, oglScreen.rows);
     glEnd();
-    
+
     // In processing tab, add pipeline snapshot as overlay
     if (activeTab == ProcessingTab)
     {
@@ -985,7 +996,7 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
         glTexCoord2f(zoomEndX, zoomStartY); glVertex2f(oglScreen.cols, 0.0f);
         glTexCoord2f(zoomEndX, zoomEndY); glVertex2f(oglScreen.cols, oglScreen.rows);
         glTexCoord2f(zoomStartX, zoomEndY); glVertex2f(0.0f, oglScreen.rows);
-        glEnd();        
+        glEnd();
     }
 
     // Draw HUD stuff
@@ -1044,6 +1055,7 @@ void MainFrame::OnGLCanvas1Paint(wxPaintEvent& event)
 
 //    SaveMatToPNG (hud, "debugStitchedHud.png");
 
+// todo issues...
     glFlush();
     GLCanvas1->SwapBuffers();
 }
@@ -1206,9 +1218,9 @@ void MainFrame::PrintInfoToHud()
         textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 2.0, 2, &baseline);
         pos = Point (hudApp.cols - textSize.width - hudApp.cols / 20, textSize.height + hudApp.rows / 20);
 
-        putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 2.0, cvScalar(0,0,0,255), 2, CV_AA);
-        putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 2.0, textColor, 2, CV_AA);
-//TODO	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 2.0, cvScalar(0,255,200,255), 2, CV_AA);
+        putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 2.0, cv::Scalar(0,0,0,255), 2, LINE_AA);
+        putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 2.0, textColor, 2, LINE_AA);
+//TODO	putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 2.0, cv::Scalar(0,255,200,255), 2, LINE_AA);
 
         // play speed
         if (playSpeed > 0)
@@ -1218,8 +1230,8 @@ void MainFrame::PrintInfoToHud()
             pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
             pos.y += textSize.height + hudApp.rows / 20;
 
-            putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-            putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
+            putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,0,255), 2, LINE_AA);
+            putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, LINE_AA);
         }
         if (playSpeed < 0)
         {
@@ -1227,8 +1239,8 @@ void MainFrame::PrintInfoToHud()
             textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
             pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
             pos.y += textSize.height + hudApp.rows / 20;
-            putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-            putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
+            putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,0,255), 2, LINE_AA);
+            putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, LINE_AA);
         }
 
         // frame number
@@ -1238,8 +1250,8 @@ void MainFrame::PrintInfoToHud()
             textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
             pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
             pos.y += textSize.height + hudApp.rows / 20;
-            putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-            putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
+            putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,0,255), 2, LINE_AA);
+            putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, LINE_AA);
         }
     }
     else if (activeTab == ConfigTab)
@@ -1248,8 +1260,8 @@ void MainFrame::PrintInfoToHud()
         textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
         pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
         pos.y = textSize.height + hudApp.rows / 20;
-        putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-        putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
+        putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,0,255), 2, LINE_AA);
+        putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, LINE_AA);
     }
     else if (activeTab == BackgroundTab)
     {
@@ -1257,8 +1269,8 @@ void MainFrame::PrintInfoToHud()
         textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
         pos.x =  hudApp.cols - textSize.width - hudApp.cols / 20;
         pos.y = textSize.height + hudApp.rows / 20;
-        putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-        putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
+        putText(hudApp, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,0,255), 2, LINE_AA);
+        putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, LINE_AA);
     }
 
     // selection
@@ -1304,8 +1316,8 @@ void MainFrame::PrintInfoToHud()
         textSize = getTextSize(str, FONT_HERSHEY_SIMPLEX, 1, 2, &baseline);
         pos.x = hudApp.cols / 100;
         pos.y = hudApp.rows - textSize.height;
-        putText(hudApp, str, pos+Point(1,1), FONT_HERSHEY_SIMPLEX, 1, cvScalar(0,0,0,255), 2, CV_AA);
-        putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, CV_AA);
+        putText(hudApp, str, pos+Point(1,1), FONT_HERSHEY_SIMPLEX, 1, cv::Scalar(0,0,0,255), 2, LINE_AA);
+        putText(hudApp, str, pos, FONT_HERSHEY_SIMPLEX, 1, textColor, 2, LINE_AA);
     }
 }
 
@@ -1966,7 +1978,10 @@ bool MainFrame::AddPipelinePlugin (string str, cv::FileNode& fn, int pos, bool s
     }
     else if (str == "frame difference")
     {
-        dlg = nullptr;
+        DialogFrameDifference* dialog = new DialogFrameDifference(this);
+        dialog->SetPlugin(pfv);
+        dlg = dialog;
+//        dlg = nullptr;
     }
     else if (str == "record video")
     {
@@ -2353,7 +2368,7 @@ void MainFrame::OnFilePickerCtrlZonesFileChanged(wxFileDirPickerEvent& event)
 	wxString path = event.GetPath();
 
 	// process data
-	Mat zones = imread (path.ToStdString(), CV_LOAD_IMAGE_GRAYSCALE);
+	Mat zones = imread (path.ToStdString(), cv::IMREAD_GRAYSCALE);
 
 	if (zones.cols != ipEngine.capture->width || zones.rows != ipEngine.capture->height)
 	{

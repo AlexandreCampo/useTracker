@@ -30,13 +30,27 @@
 class FrameDifference : public PipelinePlugin
 {
 public:
-    cv::Mat previousMarked;
-    cv::Mat diffMarked;
-    std::fstream outputStream;
-    std::string outputFilename;
 
+    bool usePipeline = true;
+    int threshold = 1;
+
+    int zone = 0;
+    bool restrictToZone = false;
+    bool additive = false;
+    bool invert = false;
+
+    cv::Mat previousFrame;
+    cv::Mat diffFrame;
+    cv::Mat sumFrame;
+    cv::Mat previousMarked;
+    cv::Mat currentMarked;
+    cv::Mat marked2;
+    cv::Mat marked3;
 
     FrameDifference();
+
+    void SetUsePipeline(bool up);
+    void SetThreshold(int t);
 
     void Apply();
     void Reset();

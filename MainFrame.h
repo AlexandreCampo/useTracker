@@ -14,24 +14,24 @@
 
 //(*Headers(MainFrame)
 #include <wx/bmpbuttn.h>
-#include <wx/glcanvas.h>
-#include <wx/spinctrl.h>
-#include <wx/checkbox.h>
-#include <wx/sizer.h>
-#include <wx/notebook.h>
 #include <wx/button.h>
-#include <wx/menu.h>
+#include <wx/checkbox.h>
+#include <wx/choice.h>
 #include <wx/filedlg.h>
-#include <wx/scrolwin.h>
-#include <wx/slider.h>
-#include <wx/statbox.h>
 #include <wx/filepicker.h>
 #include <wx/frame.h>
 #include <wx/gbsizer.h>
-#include <wx/stattext.h>
-#include <wx/choice.h>
+#include <wx/glcanvas.h>
+#include <wx/menu.h>
+#include <wx/notebook.h>
 #include <wx/radiobox.h>
+#include <wx/scrolwin.h>
+#include <wx/sizer.h>
+#include <wx/slider.h>
+#include <wx/spinctrl.h>
 #include <wx/statbmp.h>
+#include <wx/statbox.h>
+#include <wx/stattext.h>
 //*)
 
 #include <wx/dcclient.h>
@@ -245,95 +245,95 @@ private:
     static const long ID_SPINCTRL13x;
 
     //(*Declarations(MainFrame)
+    wxBitmapButton* BitmapButton1;
     wxBitmapButton* BitmapButton2;
-    wxButton* ButtonBgSave;
-    wxSpinCtrl* SpinCtrlCalibSquareSize;
-    wxBitmapButton* buttonStop;
-    wxSpinCtrl* SpinCtrlStartTime;
     wxBitmapButton* BitmapButton3;
+    wxBitmapButton* BitmapButton4;
+    wxBitmapButton* BitmapButton5;
+    wxBitmapButton* BitmapButton6;
+    wxBitmapButton* buttonBackwards;
+    wxBitmapButton* buttonForward;
+    wxBitmapButton* buttonHud;
+    wxBitmapButton* buttonOutput;
+    wxBitmapButton* buttonPlay;
+    wxBitmapButton* buttonStepBackwards;
+    wxBitmapButton* buttonStepForward;
+    wxBitmapButton* buttonStop;
+    wxButton* ButtonBgLoad;
+    wxButton* ButtonBgRecalculate;
+    wxButton* ButtonBgSave;
+    wxButton* ButtonCalibCalculate;
+    wxButton* ButtonCalibLoad;
+    wxButton* ButtonCalibReset;
+    wxButton* ButtonCalibSave;
+    wxButton* ButtonConfigLoadStitching;
+    wxButton* ButtonConfigResetStitching;
+    wxButton* ButtonConfigSaveStitching;
+    wxButton* ButtonConfigStitch;
+    wxCheckBox* CheckBoxCalibFixPrincipalPoint;
+    wxCheckBox* CheckBoxCalibFlipVertical;
+    wxCheckBox* CheckBoxCalibZeroTangentDist;
+    wxCheckBox* CheckBoxConfigStitchAdjustLuminosity;
+    wxCheckBox* CheckBoxRecalculate;
+    wxCheckBox* CheckBoxUseTimeBounds;
+    wxChoice* ChoiceCalibSubdevices;
+    wxFileDialog* FileDialog1;
+    wxFilePickerCtrl* FilePickerCtrlZones;
+    wxGLCanvas* GLCanvas1;
+    wxMenuItem* MenuLoadSettings;
+    wxMenuItem* MenuOpenCapture;
+    wxMenuItem* MenuSaveCapture;
+    wxMenuItem* MenuSaveSettings;
+    wxNotebook* Notebook1;
+    wxRadioBox* RadioBoxCalibBoardType;
+    wxRadioBox* RadioBoxMethod;
+    wxScrolledWindow* BackgroundTab;
+    wxScrolledWindow* CalibrationTab;
+    wxScrolledWindow* ConfigTab;
+    wxScrolledWindow* ProcessingTab;
+    wxSlider* SliderProcessingBlending;
+    wxSlider* videoSlider;
+    wxSpinCtrl* SpinCtrlBgEnd;
+    wxSpinCtrl* SpinCtrlBgFrames;
+    wxSpinCtrl* SpinCtrlBgHighThreshold;
+    wxSpinCtrl* SpinCtrlBgLowThreshold;
+    wxSpinCtrl* SpinCtrlBgStart;
+    wxSpinCtrl* SpinCtrlCalibAspectDen;
+    wxSpinCtrl* SpinCtrlCalibAspectNum;
+    wxSpinCtrl* SpinCtrlCalibFrameDelay;
+    wxSpinCtrl* SpinCtrlCalibFramesCount;
+    wxSpinCtrl* SpinCtrlCalibHeight;
+    wxSpinCtrl* SpinCtrlCalibSquareSize;
+    wxSpinCtrl* SpinCtrlCalibWidth;
+    wxSpinCtrl* SpinCtrlDuration;
+    wxSpinCtrl* SpinCtrlStartTime;
+    wxSpinCtrl* SpinCtrlTimestep;
+    wxStaticBitmap* StaticBitmap1;
+    wxStaticBitmap* StaticBitmap2;
+    wxStaticBitmap* StaticBitmap3;
+    wxStaticBitmap* StaticBitmap4;
+    wxStaticBitmap* StaticBitmap5;
+    wxStaticBox* StaticBox1;
+    wxStaticBox* StaticBox2;
+    wxStaticText* StaticText10;
+    wxStaticText* StaticText11;
+    wxStaticText* StaticText12;
     wxStaticText* StaticText13;
     wxStaticText* StaticText14;
     wxStaticText* StaticText15;
-    wxScrolledWindow* ConfigTab;
-    wxSpinCtrl* SpinCtrlDuration;
-    wxBitmapButton* buttonPlay;
-    wxSpinCtrl* SpinCtrlCalibAspectDen;
-    wxStaticText* StaticText17;
-    wxButton* ButtonCalibCalculate;
-    wxBitmapButton* buttonForward;
-    wxButton* ButtonBgRecalculate;
-    wxStaticBitmap* StaticBitmap5;
-    wxSpinCtrl* SpinCtrlCalibFramesCount;
-    wxMenuItem* MenuSaveSettings;
-    wxBitmapButton* buttonStepBackwards;
-    wxButton* ButtonConfigLoadStitching;
-    wxCheckBox* CheckBoxCalibZeroTangentDist;
-    wxStaticText* StaticText18;
-    wxScrolledWindow* BackgroundTab;
-    wxStaticText* StaticText1;
-    wxScrolledWindow* CalibrationTab;
-    wxStaticText* StaticText10;
     wxStaticText* StaticText16;
-    wxSlider* videoSlider;
-    wxStaticBox* StaticBox2;
-    wxCheckBox* CheckBoxCalibFixPrincipalPoint;
-    wxSpinCtrl* SpinCtrlTimestep;
-    wxStaticText* StaticText3;
-    wxButton* ButtonBgLoad;
-    wxChoice* ChoiceCalibSubdevices;
-    wxButton* ButtonConfigSaveStitching;
-    wxButton* ButtonConfigStitch;
-    wxButton* ButtonCalibSave;
-    wxRadioBox* RadioBoxMethod;
-    wxCheckBox* CheckBoxUseTimeBounds;
-    wxGLCanvas* GLCanvas1;
-    wxButton* ButtonConfigResetStitching;
-    wxBitmapButton* buttonStepForward;
-    wxStaticText* StaticText8;
-    wxStaticText* StaticText12;
-    wxBitmapButton* BitmapButton5;
-    wxBitmapButton* BitmapButton4;
-    wxFileDialog* FileDialog1;
-    wxStaticBox* StaticBox1;
-    wxBitmapButton* buttonBackwards;
-    wxSpinCtrl* SpinCtrlCalibAspectNum;
-    wxStaticText* StaticText7;
-    wxSpinCtrl* SpinCtrlBgEnd;
-    wxScrolledWindow* ProcessingTab;
-    wxStaticText* StaticText4;
-    wxSpinCtrl* SpinCtrlBgStart;
-    wxStaticText* StaticText5;
-    wxSpinCtrl* SpinCtrlBgFrames;
-    wxStaticText* StaticText2;
-    wxSpinCtrl* SpinCtrlBgLowThreshold;
-    wxNotebook* Notebook1;
-    wxStaticBitmap* StaticBitmap3;
-    wxStaticBitmap* StaticBitmap1;
-    wxSpinCtrl* SpinCtrlCalibFrameDelay;
-    wxStaticBitmap* StaticBitmap4;
-    wxStaticText* StaticText6;
-    wxMenuItem* MenuOpenCapture;
-    wxSpinCtrl* SpinCtrlBgHighThreshold;
-    wxMenuItem* MenuLoadSettings;
+    wxStaticText* StaticText17;
+    wxStaticText* StaticText18;
     wxStaticText* StaticText19;
-    wxCheckBox* CheckBoxCalibFlipVertical;
-    wxCheckBox* CheckBoxConfigStitchAdjustLuminosity;
-    wxSpinCtrl* SpinCtrlCalibWidth;
-    wxFilePickerCtrl* FilePickerCtrlZones;
-    wxButton* ButtonCalibReset;
-    wxBitmapButton* BitmapButton1;
-    wxSpinCtrl* SpinCtrlCalibHeight;
-    wxRadioBox* RadioBoxCalibBoardType;
-    wxBitmapButton* buttonOutput;
+    wxStaticText* StaticText1;
+    wxStaticText* StaticText2;
+    wxStaticText* StaticText3;
+    wxStaticText* StaticText4;
+    wxStaticText* StaticText5;
+    wxStaticText* StaticText6;
+    wxStaticText* StaticText7;
+    wxStaticText* StaticText8;
     wxStaticText* StaticText9;
-    wxCheckBox* CheckBoxRecalculate;
-    wxSlider* SliderProcessingBlending;
-    wxBitmapButton* buttonHud;
-    wxStaticText* StaticText11;
-    wxMenuItem* MenuSaveCapture;
-    wxButton* ButtonCalibLoad;
-    wxBitmapButton* BitmapButton6;
-    wxStaticBitmap* StaticBitmap2;
     //*)
 
     wxSpinCtrlDouble* SpinCtrlTimestepDouble;
@@ -387,6 +387,8 @@ private:
     wxScrolledWindow* activeTab;
     std::vector<wxDialog*> pipelineDialogs;
 
+    wxGLContext* GLContext1;
+
 //    bool showProcessing = false;
 
 
@@ -432,6 +434,7 @@ private:
 
     // text color
     cv::Scalar textColor;
+
     
     DECLARE_EVENT_TABLE()
 };

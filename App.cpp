@@ -97,9 +97,9 @@ int main(int argc, char **argv)
     NewPipelinePluginVector["TakeSnapshots"] = &CreatePipelinePluginVector<TakeSnapshots>;
     NewPipelinePluginVector["ArucoColor"] = &CreatePipelinePluginVector<ArucoColor>;
 
-    #ifdef ARUCO
+#ifdef ARUCO
     NewPipelinePluginVector["Aruco"] = &CreatePipelinePluginVector<Aruco>;
-    #endif
+#endif
 
     // read command line, load parameters
     parameters.parseCommandLine (argc, argv);
@@ -108,122 +108,128 @@ int main(int argc, char **argv)
     {
         ImageProcessingEngine ipEngine;
 	
-	ipEngine.LoadXML (parameters.rootNode);
+        ipEngine.LoadXML (parameters.rootNode);
 
-	// TODO this whole part duplicated from MainFrame.cpp
-	// load capture source from command line params if possible
-	if (!parameters.inputFilename.empty())
-	{
-	    // check extension
-	    wxFileName f (parameters.inputFilename);
-	    if (f.GetExt() == "xml")
-	    {
-		// TODO duplicated from dialog open capture. Needs a cleaner solution
-		std::string filename = parameters.inputFilename;	    
-		cv::FileStorage file;
-		cv::FileNode rootNode;
+        // TODO this whole part duplicated from MainFrame.cpp
+        // load capture source from command line params if possible
+        if (!parameters.inputFilename.empty())
+        {
+            // check extension
+            wxFileName f (parameters.inputFilename);
+            if (f.GetExt() == "xml")
+            {
+                // TODO duplicated from dialog open capture. Needs a cleaner solution
+                std::string filename = parameters.inputFilename;	    
+                cv::FileStorage file;
+                cv::FileNode rootNode;
 		
-		file.open(filename, cv::FileStorage::READ);
-		if (file.isOpened())
-		{
-		    rootNode = file["Source"];
+                file.open(filename, cv::FileStorage::READ);
+                if (file.isOpened())
+                {
+                    rootNode = file["Source"];
 		    
-		    if (!rootNode.empty())
-		    {
-			string type = (string)rootNode["Type"];
+                    if (!rootNode.empty())
+                    {
+                        string type = (string)rootNode["Type"];
 			
-			if (type == "multiVideo") 
-			{
-			    ipEngine.capture->LoadXML(rootNode);
-			}
-			else if (type == "video")
-			{
-			    ipEngine.capture = new CaptureVideo(rootNode);
-			}
-			else if (type == "USBcamera")
-			{
-			    ipEngine.capture = new CaptureUSBCamera(rootNode);
-			}
-			else if (type == "image")
-			{
-			    ipEngine.capture = new CaptureImage(rootNode);
-			}
+                        if (type == "multiVideo") 
+                        {
+                            ipEngine.capture->LoadXML(rootNode);
+                        }
+                        else if (type == "video")
+                        {
+                            ipEngine.capture = new CaptureVideo(rootNode);
+                        }
+                        else if (type == "USBcamera")
+                        {
+                            ipEngine.capture = new CaptureUSBCamera(rootNode);
+                        }
+                        else if (type == "image")
+                        {
+                            ipEngine.capture = new CaptureImage(rootNode);
+                        }
 #ifdef VIMBA
-			else if (type == "AVTcamera")
-			{
-			    ipEngine.capture = new CaptureAVTCamera(rootNode);
-			}
+                        else if (type == "AVTcamera")
+                        {
+                            ipEngine.capture = new CaptureAVTCamera(rootNode);
+                        }
 #endif // VIMBA
-			else if (type == "multiUSBcamera")
-			{
-			    ipEngine.capture = new CaptureMultiUSBCamera(rootNode);
-			}
-		    }
-		}	       
-	    }
-	    else
-	    {
-		// try to load input as video file
-		ipEngine.capture = new CaptureVideo (parameters.inputFilename);
+                        else if (type == "multiUSBcamera")
+                        {
+                            ipEngine.capture = new CaptureMultiUSBCamera(rootNode);
+                        }
+                    }
+                }	       
+            }
+            else
+            {
+                // try to load input as video file
+                ipEngine.capture = new CaptureVideo (parameters.inputFilename);
 		
-		// if video not loaded, try image
-		if (ipEngine.capture->type == Capture::NONE)
-		{
-		    delete ipEngine.capture;
-		    ipEngine.capture = new CaptureImage (parameters.inputFilename);
-		}
-	    }
-	}
-	else if (parameters.usbDevice >= 0)
-	{
-	ipEngine.capture = new CaptureUSBCamera (parameters.usbDevice);
-	}
-	else if (parameters.avtDevice >= 0)
-	{
+                // if video not loaded, try image
+                if (ipEngine.capture->type == Capture::NONE)
+                {
+                    delete ipEngine.capture;
+                    ipEngine.capture = new CaptureImage (parameters.inputFilename);
+                }
+            }
+        }
+        else if (parameters.usbDevice >= 0)
+        {
+            ipEngine.capture = new CaptureUSBCamera (parameters.usbDevice);
+        }
+        else if (parameters.avtDevice >= 0)
+        {
 #ifdef VIMBA
-	    ipEngine.capture = new CaptureAVTCamera (parameters.avtDevice);
+            ipEngine.capture = new CaptureAVTCamera (parameters.avtDevice);
 #endif //VIMBA
-	}
-	else if (parameters.multiUSBCapture == true)
-	{
-	    CaptureMultiUSBCamera* mu = new CaptureMultiUSBCamera (parameters.usbDevices);
-	    ipEngine.capture = mu;
-	    if (mu && !parameters.stitchingFilename.empty())
-	    {
-		cv::FileStorage file (parameters.stitchingFilename, FileStorage::READ);
-		if (file.isOpened())
-		{
-		    cv::FileNode rootNode = file["Source"];
-		    mu->LoadXML(rootNode);
-		}
-	    }
-	}
-	else if (parameters.multiVideoCapture == true)
-	{
-	    CaptureMultiVideo* mv = new CaptureMultiVideo (parameters.inputFilenames);
-	    ipEngine.capture = mv;
-	    if (mv && !parameters.stitchingFilename.empty())
-	    {
-		cv::FileStorage file (parameters.stitchingFilename, FileStorage::READ);
-		if (file.isOpened())
-		{
-		    cv::FileNode rootNode = file["Source"];
-		    mv->LoadXML(rootNode, true);
-		}
-	    }
-	}
-	
-	if (ipEngine.capture && !parameters.calibrationFilename.empty())
-	{
-	    cv::FileStorage file (parameters.calibrationFilename, FileStorage::READ);
-	    if (file.isOpened())
-	    {
-		cv::FileNode rootNode = file["Calibration"];
-		ipEngine.capture->calibration.LoadXML(rootNode);
-	    }
-	}
-	
-	
+        }
+        else if (parameters.multiUSBCapture == true)
+        {
+            CaptureMultiUSBCamera* mu = new CaptureMultiUSBCamera (parameters.usbDevices);
+            ipEngine.capture = mu;
+            if (mu && !parameters.stitchingFilename.empty())
+            {
+                cv::FileStorage file (parameters.stitchingFilename, FileStorage::READ);
+                if (file.isOpened())
+                {
+                    cv::FileNode rootNode = file["Source"];
+                    mu->LoadXML(rootNode);
+                }
+            }
+        }
+        else if (parameters.multiVideoCapture == true)
+        {
+            CaptureMultiVideo* mv = new CaptureMultiVideo (parameters.inputFilenames);
+            ipEngine.capture = mv;
+            if (mv && !parameters.stitchingFilename.empty())
+            {
+                cv::FileStorage file (parameters.stitchingFilename, FileStorage::READ);
+                if (file.isOpened())
+                {
+                    cv::FileNode rootNode = file["Source"];
+                    mv->LoadXML(rootNode, true);
+                }
+            }
+        }
+
+        // if capture not loaded, return error
+        if (ipEngine.capture->type == Capture::NONE)
+        {
+            cerr << "Error : Could not open source" << endl;
+            return false;
+        }
+        
+        if (ipEngine.capture && !parameters.calibrationFilename.empty())
+        {
+            cv::FileStorage file (parameters.calibrationFilename, FileStorage::READ);
+            if (file.isOpened())
+            {
+                cv::FileNode rootNode = file["Calibration"];
+                ipEngine.capture->calibration.LoadXML(rootNode);
+            }
+        }
+	        
 
 // 	// load capture source from command line params if possible
 // 	if (!parameters.inputFilename.empty())
@@ -249,67 +255,68 @@ int main(int argc, char **argv)
 // #endif //VIMBA
 // 	}
 	
-	ipEngine.Reset(parameters);
+        ipEngine.Reset(parameters);
 	
-	// load pipeline's XML
-	FileNode fn = parameters.rootNode["Pipeline"];
-	if (!fn.empty())
-	{
-	    FileNodeIterator it = fn.begin(), it_end = fn.end();
-	    for (; it != it_end; ++it)
-	    {
-		FileNode fn2 = *((*it).begin()); // ugly hack to go around duplicate key bug
-		auto pfv = NewPipelinePluginVector[fn2.name()] (fn2, ipEngine.threadsCount);
+        // load pipeline's XML
+        FileNode fn = parameters.rootNode["Pipeline"];
+        if (!fn.empty())
+        {
+            FileNodeIterator it = fn.begin(), it_end = fn.end();
+            for (; it != it_end; ++it)
+            {
+                FileNode fn2 = *((*it).begin()); // ugly hack to go around duplicate key bug
+                auto pfv = NewPipelinePluginVector[fn2.name()] (fn2, ipEngine.threadsCount);
 		
-		ipEngine.PushBack(pfv, true);
-	    }
-	}
+                ipEngine.PushBack(pfv, true);
+            }
+        }
 
-	// run the engine
-	ipEngine.OpenOutput();
-	ipEngine.capture->Play();
+        // run the engine
+        ipEngine.OpenOutput();
+        ipEngine.capture->Play();
 	
-	long totalFrames = ipEngine.capture->GetFrameCount();
-	if (ipEngine.useTimeBoundaries && ipEngine.durationTime > 0.0000001)
-	{
-	    // this maybe an approximation if fps is not accurate
-	    totalFrames = (ipEngine.startTime + ipEngine.durationTime) * ipEngine.capture->fps;
-	}
+        long totalFrames = ipEngine.capture->GetFrameCount();
+        if (ipEngine.useTimeBoundaries && ipEngine.durationTime > 0.0000001)
+        {
+            // this maybe an approximation if fps is not accurate
+            totalFrames = (ipEngine.startTime + ipEngine.durationTime) * ipEngine.capture->fps;
+        }
 	
-	long progress = 0;
-	long startFrame = ipEngine.startTime * ipEngine.capture->fps;
-	while (ipEngine.GetNextFrame())
-	{
-	    // respect timestep if it is set
-	    // todo...
-	    if (ipEngine.timestep < 0.00001 || ipEngine.capture->GetTime() >= ipEngine.nextStepTime)
-		ipEngine.Step();
+        long progress = 0;
+        long startFrame = ipEngine.startTime * ipEngine.capture->fps;
+        do 
+        {
+            // respect timestep if it is set
+            // todo...
+            if (ipEngine.timestep < 0.00001 || ipEngine.capture->GetTime() >= ipEngine.nextStepTime)
+                ipEngine.Step();
 	    
-	    long frameNumber = ipEngine.capture->GetFrameNumber();
-	    long newProgress = ((frameNumber - startFrame) * 100) / totalFrames;
-	    if (newProgress > progress)
-	    {
-		progress = newProgress;
-		if (progress > 100) progress = 100;
+            long frameNumber = ipEngine.capture->GetFrameNumber();
+            long newProgress = ((frameNumber - startFrame) * 100) / totalFrames;
+            if (newProgress > progress)
+            {
+                progress = newProgress;
+                if (progress > 100) progress = 100;
 		
-		std::cout << "Progress : " << progress  << "% | frame " << frameNumber << "/" << totalFrames << " | time " << ipEngine.capture->GetTime() << "s" <<  std::endl;
-	    }
+                std::cout << "Progress : " << progress  << "% | frame " << frameNumber << "/" << totalFrames << " | time " << ipEngine.capture->GetTime() << "s" <<  std::endl;
+            }
 
-	    // end if outside time boundaries
-	    if (ipEngine.useTimeBoundaries && ipEngine.durationTime > 0.0000001)
-		if (ipEngine.capture->GetTime() > ipEngine.startTime + ipEngine.durationTime)
-		    break;
-	}
+            // end if outside time boundaries
+            if (ipEngine.useTimeBoundaries && ipEngine.durationTime > 0.0000001)
+                if (ipEngine.capture->GetTime() > ipEngine.startTime + ipEngine.durationTime)
+                    break;            
+        }
+        while (ipEngine.GetNextFrame());
 
-	ipEngine.CloseOutput();
+        ipEngine.CloseOutput();
 
-	// end
-	return false;
+        // end
+        return false;
     }
     else
     {
-	wxDISABLE_DEBUG_SUPPORT();
-	return wxEntry(argc, argv);
+        wxDISABLE_DEBUG_SUPPORT();
+        return wxEntry(argc, argv);
     }
 }
 
