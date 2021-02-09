@@ -59,7 +59,7 @@ void TakeSnapshots::OutputStep()
 	tmp << std::setw(9) << std::setfill('0') << pipeline->parent->frameNumber;
 	string fname ((parent / stem).string() + "_" + tmp.str() + extension.string());
 
-	imwrite(fname, pipeline->marked);
+	imwrite(fname, min(pipeline->zoneMap, pipeline->marked));
     }
 }
 
