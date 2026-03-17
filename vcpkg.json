@@ -1,0 +1,20 @@
+{
+    "name": "usetracker",
+    "version-string": "2.0.0",
+    "description": "Real-time image processing and blob tracking application",
+    "dependencies": [
+        {
+            "name": "opencv4",
+            "features": ["contrib"]
+        },
+        "sdl2",
+        "imgui",
+        {
+            "name": "imgui",
+            "features": ["sdl2-binding", "opengl3-binding"]
+        },
+        "cli11",
+        "portable-file-dialogs",
+        "ffmpeg"
+    ]
+}

@@ -2,8 +2,6 @@
 #ifndef PARAMETERS_H
 #define PARAMETERS_H
 
-#include <boost/program_options.hpp>
-
 #include "opencv2/opencv.hpp"
 
 class PipelineFunction;
@@ -22,14 +20,13 @@ public:
     std::string inputFilename;
     std::string zonesFilename;
     int usbDevice = -1;
-    int avtDevice = -1;
     std::vector<int> usbDevices;
     std::vector<std::string> inputFilenames;
 
     std::string stitchingFilename;
     std::string calibrationFilename;
 
-    
+
     double startTime = -1;
     double durationTime = -1;
 

@@ -1,6 +1,5 @@
 
-#include<opencv2/highgui/highgui.hpp>
-using namespace cv;
+#include <opencv2/highgui.hpp>
 
 #include "Capture.h"
 #include "Parameters.h"
@@ -9,5 +8,5 @@ using namespace cv;
 #include <iostream>
 
 
-Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime, unsigned int framesCount, unsigned char lowThreshold, unsigned char highThreshold);
-Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, unsigned int framesCount, unsigned char lowThreshold, unsigned char highThreshold);
+cv::Mat CalculateBackgroundMedian (Capture* capture, float startTime, float endTime, unsigned int framesCount, unsigned char lowThreshold, unsigned char highThreshold);
+cv::Mat CalculateBackgroundMean (Capture* capture, float startTime, float endTime, unsigned int framesCount, unsigned char lowThreshold, unsigned char highThreshold);

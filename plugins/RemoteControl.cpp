@@ -20,12 +20,14 @@
 #include "RemoteControl.h"
 
 #include <stdio.h>
+#include <iostream>
+
+#ifdef USE_BLUETOOTH
 #include <unistd.h>
 #include <sys/socket.h>
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
-
-#include <iostream>
+#endif
 
 #include "ImageProcessingEngine.h"
 #include "Blob.h"
@@ -40,15 +42,15 @@ RemoteControl::RemoteControl () : PipelinePlugin()
 
 RemoteControl::~RemoteControl()
 {
+#ifdef USE_BLUETOOTH
     if (btStatus > 0)
 	close (btSocket);
+#endif
 }
 
 void RemoteControl::Reset()
 {
-//    multithreaded = true;
-//    SetSize(size);
-
+#ifdef USE_BLUETOOTH
     btAddress = string("00:07:80:80:19:6C");
 
     // allocate a socket
@@ -71,16 +73,14 @@ void RemoteControl::Reset()
     }
 
     if (btStatus < 0) std::cout << "Looks like bt connection failed..." << std::endl;
+#else
+    std::cout << "RemoteControl: Bluetooth support not compiled in." << std::endl;
+#endif
 }
 
 void RemoteControl::Apply()
 {
-    /// Apply the dilation operation
-    // erode (pipeline->marked, result, structuringElement);
-    // result.copyTo(pipeline->marked);
-
-//    cout << "In apply method " << btStatus << endl;
-
+#ifdef USE_BLUETOOTH
     // if we are connected
     if (btStatus > 0)
     {
@@ -103,7 +103,7 @@ void RemoteControl::Apply()
 	int fr = 0, fl = 0;
 
 	if (perceived)
-	{	
+	{
 	    // try to drive it from one corner to the other. Switch when close enough (d < 100)
 	    int cx, cy;
 	    if (corner == 0)
@@ -122,14 +122,14 @@ void RemoteControl::Apply()
 	    {
 		cx = 200; cy = 880;
 	    }
-	    
+
 	    // get distance to current corner
 	    int dx = cx - x;
 	    int dy = cy - y;
 	    float d = sqrt (dx*dx + dy*dy);
-	    
-	    
-	    if (d < 100) 
+
+
+	    if (d < 100)
 	    {
 		corner++;
 		if (corner >= 4) corner = 0;
@@ -138,14 +138,14 @@ void RemoteControl::Apply()
 	    {
 		// get relative angle to corner
 		float absAngle = atan2 (dy, dx);
-		
+
 		// go forward speed 30;
 		float speed = 50;
 		float relativeAngle = absAngle - angle;
-		
+
 		if (relativeAngle > M_PI) relativeAngle -= 2.0 * M_PI;
 		if (relativeAngle <= -M_PI) relativeAngle += 2.0 * M_PI;
-	
+
 		speed *= cos (relativeAngle);
 
 		if (fabs(speed) < 15)
@@ -165,12 +165,12 @@ void RemoteControl::Apply()
 		    if (relativeAngle > 15.0 * M_PI / 180.0) {fr -= 10; fl += 10;}
 		    else if (relativeAngle < 15.0 * M_PI / 180.0) {fr += 10; fl -= 10;}
 		}
-		
+
 		fr += speed;
 		fl += speed;
-		
+
 		cout << "Current force " << fr << " " << fl << " | speed " << speed << " angle " << angle * 180.0 / M_PI << " relangle " << relativeAngle * 180.0 / M_PI << endl;
-		
+
 	    }
 	}
 
@@ -179,6 +179,7 @@ void RemoteControl::Apply()
 	sprintf (str, "[=%d,%d]\n\0", fr, fl);
 	btStatus = write(btSocket, str, strlen(str));
     }
+#endif
 }
 
 void RemoteControl::OutputHud (Mat& hud)
@@ -195,11 +196,11 @@ void RemoteControl::OutputHud (Mat& hud)
 	    pos2.x = b->x + cos(b->angle) * sqlen;
 	    pos2.y = b->y + sin(b->angle) * sqlen;
 
-	    line(hud, pos, pos2, cvScalar(255, 0, 127,255), 1);
+	    line(hud, pos, pos2, Scalar(255, 0, 127,255), 1);
 
 	    string str (".RC");
-	    putText(hud, str.c_str(), pos+Point(4,4), FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,0,0,255), 2, CV_AA);
-	    putText(hud, str.c_str(), pos, FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,255,200,255), 2, CV_AA);
+	    putText(hud, str.c_str(), pos+Point(4,4), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,0,0,255), 2, cv::LINE_AA);
+	    putText(hud, str.c_str(), pos, FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,255,200,255), 2, cv::LINE_AA);
 
 	    int cx, cy;
 	    if (corner == 0)
@@ -223,8 +224,8 @@ void RemoteControl::OutputHud (Mat& hud)
 	    pos.y = cy;
 
 	    str = string (".Goal");
-	    putText(hud, str.c_str(), pos+Point(4,4), FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,0,0,255), 2, CV_AA);
-	    putText(hud, str.c_str(), pos, FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,255,200,255), 2, CV_AA);
+	    putText(hud, str.c_str(), pos+Point(4,4), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,0,0,255), 2, cv::LINE_AA);
+	    putText(hud, str.c_str(), pos, FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,255,200,255), 2, cv::LINE_AA);
 
 	}
     }
@@ -244,4 +245,3 @@ void RemoteControl::SaveXML (FileStorage& fs)
     fs << "Active" << active;
     fs << "btAddress" << btAddress;
 }
-

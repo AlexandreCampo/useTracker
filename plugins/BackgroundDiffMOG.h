@@ -22,13 +22,10 @@
 
 #include "PipelinePlugin.h"
 
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/core.hpp>
 #include <opencv2/video/background_segm.hpp>
-
-#if CV_MAJOR_VERSION != 2
 #include <opencv2/bgsegm.hpp>
-#endif
 
 
 class BackgroundDiffMOG : public PipelinePlugin
@@ -40,7 +37,7 @@ public:
     double backgroundRatio = 0.7;
     double noiseSigma = 15.0;
     double learningRate = 0.05;
-    
+
     int zone = 0;
     bool restrictToZone = false;
     bool additive = false;
@@ -50,12 +47,8 @@ public:
     cv::Mat marked2;
     cv::Mat marked3;
 
-#if CV_MAJOR_VERSION == 2
-    cv::BackgroundSubtractor* MOG = NULL;
-#else
     cv::Ptr<cv::BackgroundSubtractor> MOG;
-#endif   
-    
+
     BackgroundDiffMOG();
     ~BackgroundDiffMOG();
     void Apply();

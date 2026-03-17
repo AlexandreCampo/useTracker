@@ -213,9 +213,9 @@ void SimpleTags::OutputHud(Mat& hud)
 	    pos2.x = b->x + cos(b->angle) * sqlen;
 	    pos2.y = b->y + sin(b->angle) * sqlen;
 
-	    line(hud, pos, pos2, cvScalar(255, 0, 127,255), 1);
-	    putText(hud, str, pos+Point(4,4), FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,0,0,255), 2, CV_AA);
-	    putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,255,200,255), 2, CV_AA);
+	    line(hud, pos, pos2, Scalar(255, 0, 127,255), 1);
+	    putText(hud, str, pos+Point(4,4), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,0,0,255), 2, cv::LINE_AA);
+	    putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,255,200,255), 2, cv::LINE_AA);
 	}
     }
 
@@ -243,7 +243,7 @@ void SimpleTags::OutputHud(Mat& hud)
 
 
     // Mat pattern3;
-    // cvtColor (pattern2, pattern3, CV_GRAY2BGR);
+    // cvtColor (pattern2, pattern3, cv::COLOR_GRAY2BGR);
     // pattern3.copyTo(hud(Rect(50, 50, pattern3.cols, pattern3.rows)));
 
 

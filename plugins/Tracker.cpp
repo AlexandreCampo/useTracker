@@ -28,7 +28,6 @@
 //using namespace dlib;
 
 using namespace std;
-using namespace cv;
 
 
 Tracker::~Tracker()
@@ -313,18 +312,18 @@ void Tracker::Track()
     }
 }
 
-void Tracker::OutputHud (Mat& hud)
+void Tracker::OutputHud (cv::Mat& hud)
 {
     char str[8];
-    Point pos;
+    cv::Point pos;
 
     // draw a trail if history available
     // first, draw past positions
-    vector<Point> last;
+    vector<cv::Point> last;
 
     for (unsigned int i = 0; i < entitiesCount; i++)
     {
-	last.push_back(Point(-1,-1));
+	last.push_back(cv::Point(-1,-1));
     }
 
     // draw past trail if possible (data available)
@@ -342,7 +341,7 @@ void Tracker::OutputHud (Mat& hud)
 
 		    if (last[e].x >= 0)
 		    {
-			line(hud, pos, last[e], cvScalar(32,32,32,255), 2, CV_AA);
+			cv::line(hud, pos, last[e], cv::Scalar(32,32,32,255), 2, cv::LINE_AA);
 		    }
 		    last[e] = pos;
 		}
@@ -366,7 +365,7 @@ void Tracker::OutputHud (Mat& hud)
 
 		    if (last[e].x >= 0)
 		    {
-			line(hud, pos, last[e], cvScalar(255,255,255,255), 2, CV_AA);
+			cv::line(hud, pos, last[e], cv::Scalar(255,255,255,255), 2, cv::LINE_AA);
 		    }
 		    last[e] = pos;
 		}
@@ -384,8 +383,8 @@ void Tracker::OutputHud (Mat& hud)
 	    sprintf (str, "%d", e);
 	    pos.x = entities[e].x;
 	    pos.y = entities[e].y;
-	    putText(hud, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,0,0,255), 2, CV_AA);
-	    putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,255,200,255), 2, CV_AA);
+	    cv::putText(hud, str, pos+cv::Point(2,2), cv::FONT_HERSHEY_SIMPLEX, 0.65, cv::Scalar(0,0,0,255), 2, cv::LINE_AA);
+	    cv::putText(hud, str, pos, cv::FONT_HERSHEY_SIMPLEX, 0.65, cv::Scalar(0,255,200,255), 2, cv::LINE_AA);
 	}
 //    }
 }
@@ -432,7 +431,7 @@ void Tracker::CloseOutput()
     if (outputStream.is_open()) outputStream.close();
 }
 
-void Tracker::LoadXML (FileNode& fn)
+void Tracker::LoadXML (cv::FileNode& fn)
 {
     if (!fn.empty())
     {
@@ -450,7 +449,7 @@ void Tracker::LoadXML (FileNode& fn)
 
 	trailLength = (int)fn["HistoryTrailLength"];
 
-	FileNode fn2 = fn["VirtualEntities"];
+	cv::FileNode fn2 = fn["VirtualEntities"];
 
 	if (!fn2.empty())
 	{
@@ -464,7 +463,7 @@ void Tracker::LoadXML (FileNode& fn)
    }
 }
 
-void Tracker::SaveXML (FileStorage& fs)
+void Tracker::SaveXML (cv::FileStorage& fs)
 {
     fs << "Active" << active;
     fs << "Output" << output;

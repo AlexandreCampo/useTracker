@@ -244,9 +244,9 @@ void ExtractBlobs::OutputHud (Mat& hud)
 	    pos.x = b.x;
 	    pos.y = b.y;
 	    int sqlen = sqrt(b.size) / 2;
-	    rectangle(hud, pos-Point(sqlen,sqlen), pos+Point(sqlen,sqlen), cvScalar(127, 127, 127, 255), CV_FILLED);
-	    putText(hud, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,0,0, 255), 2, CV_AA);
-	    putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, cvScalar(0,255,200, 255), 2, CV_AA);
+	    rectangle(hud, pos-Point(sqlen,sqlen), pos+Point(sqlen,sqlen), Scalar(127, 127, 127, 255), cv::FILLED);
+	    putText(hud, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,0,0, 255), 2, cv::LINE_AA);
+	    putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,255,200, 255), 2, cv::LINE_AA);
 	}
     }
 }

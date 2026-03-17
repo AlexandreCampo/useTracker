@@ -19,8 +19,6 @@
 
 #include "App.h"
 
-//#include <tinyxml2.h>
-
 #include "ImageProcessingEngine.h"
 
 #include "SafeErosion.h"
@@ -52,25 +50,16 @@
 #include "CaptureMultiUSBCamera.h"
 #include "CaptureMultiVideo.h"
 #include "CaptureImage.h"
-#ifdef VIMBA
-#include "CaptureAVTCamera.h"
-#endif
 
 #include "Parameters.h"
+#include "AppGui.h"
 
-#include <opencv2/core/core.hpp>
-
-//(*AppHeaders
-#include "MainFrame.h"
-#include <wx/xrc/xmlres.h>
-#include <wx/image.h>
-//*)
-
-
-wxIMPLEMENT_WX_THEME_SUPPORT
+#include <opencv2/core.hpp>
+#include <filesystem>
+#include <iostream>
 
 extern Parameters parameters;
-std::map<std::string, vector<PipelinePlugin*> (*)(cv::FileNode&, unsigned int)> NewPipelinePluginVector;
+std::map<std::string, std::vector<PipelinePlugin*> (*)(cv::FileNode&, unsigned int)> NewPipelinePluginVector;
 
 int main(int argc, char **argv)
 {
@@ -96,10 +85,7 @@ int main(int argc, char **argv)
     NewPipelinePluginVector["AdaptiveThreshold"] = &CreatePipelinePluginVector<AdaptiveThreshold>;
     NewPipelinePluginVector["TakeSnapshots"] = &CreatePipelinePluginVector<TakeSnapshots>;
     NewPipelinePluginVector["ArucoColor"] = &CreatePipelinePluginVector<ArucoColor>;
-
-#ifdef ARUCO
     NewPipelinePluginVector["Aruco"] = &CreatePipelinePluginVector<Aruco>;
-#endif
 
     // read command line, load parameters
     parameters.parseCommandLine (argc, argv);
@@ -107,32 +93,30 @@ int main(int argc, char **argv)
     if (parameters.nogui)
     {
         ImageProcessingEngine ipEngine;
-	
+
         ipEngine.LoadXML (parameters.rootNode);
 
-        // TODO this whole part duplicated from MainFrame.cpp
         // load capture source from command line params if possible
         if (!parameters.inputFilename.empty())
         {
             // check extension
-            wxFileName f (parameters.inputFilename);
-            if (f.GetExt() == "xml")
+            std::filesystem::path fpath(parameters.inputFilename);
+            if (fpath.extension() == ".xml")
             {
-                // TODO duplicated from dialog open capture. Needs a cleaner solution
-                std::string filename = parameters.inputFilename;	    
+                std::string filename = parameters.inputFilename;
                 cv::FileStorage file;
                 cv::FileNode rootNode;
-		
+
                 file.open(filename, cv::FileStorage::READ);
                 if (file.isOpened())
                 {
                     rootNode = file["Source"];
-		    
+
                     if (!rootNode.empty())
                     {
-                        string type = (string)rootNode["Type"];
-			
-                        if (type == "multiVideo") 
+                        std::string type = (std::string)rootNode["Type"];
+
+                        if (type == "multiVideo")
                         {
                             ipEngine.capture->LoadXML(rootNode);
                         }
@@ -148,24 +132,18 @@ int main(int argc, char **argv)
                         {
                             ipEngine.capture = new CaptureImage(rootNode);
                         }
-#ifdef VIMBA
-                        else if (type == "AVTcamera")
-                        {
-                            ipEngine.capture = new CaptureAVTCamera(rootNode);
-                        }
-#endif // VIMBA
                         else if (type == "multiUSBcamera")
                         {
                             ipEngine.capture = new CaptureMultiUSBCamera(rootNode);
                         }
                     }
-                }	       
+                }
             }
             else
             {
                 // try to load input as video file
                 ipEngine.capture = new CaptureVideo (parameters.inputFilename);
-		
+
                 // if video not loaded, try image
                 if (ipEngine.capture->type == Capture::NONE)
                 {
@@ -178,19 +156,13 @@ int main(int argc, char **argv)
         {
             ipEngine.capture = new CaptureUSBCamera (parameters.usbDevice);
         }
-        else if (parameters.avtDevice >= 0)
-        {
-#ifdef VIMBA
-            ipEngine.capture = new CaptureAVTCamera (parameters.avtDevice);
-#endif //VIMBA
-        }
         else if (parameters.multiUSBCapture == true)
         {
             CaptureMultiUSBCamera* mu = new CaptureMultiUSBCamera (parameters.usbDevices);
             ipEngine.capture = mu;
             if (mu && !parameters.stitchingFilename.empty())
             {
-                cv::FileStorage file (parameters.stitchingFilename, FileStorage::READ);
+                cv::FileStorage file (parameters.stitchingFilename, cv::FileStorage::READ);
                 if (file.isOpened())
                 {
                     cv::FileNode rootNode = file["Source"];
@@ -204,7 +176,7 @@ int main(int argc, char **argv)
             ipEngine.capture = mv;
             if (mv && !parameters.stitchingFilename.empty())
             {
-                cv::FileStorage file (parameters.stitchingFilename, FileStorage::READ);
+                cv::FileStorage file (parameters.stitchingFilename, cv::FileStorage::READ);
                 if (file.isOpened())
                 {
                     cv::FileNode rootNode = file["Source"];
@@ -214,59 +186,34 @@ int main(int argc, char **argv)
         }
 
         // if capture not loaded, return error
-        if (ipEngine.capture->type == Capture::NONE)
+        if (!ipEngine.capture || ipEngine.capture->type == Capture::NONE)
         {
-            cerr << "Error : Could not open source" << endl;
-            return false;
+            std::cerr << "Error : Could not open source" << std::endl;
+            return 1;
         }
-        
+
         if (ipEngine.capture && !parameters.calibrationFilename.empty())
         {
-            cv::FileStorage file (parameters.calibrationFilename, FileStorage::READ);
+            cv::FileStorage file (parameters.calibrationFilename, cv::FileStorage::READ);
             if (file.isOpened())
             {
                 cv::FileNode rootNode = file["Calibration"];
                 ipEngine.capture->calibration.LoadXML(rootNode);
             }
         }
-	        
 
-// 	// load capture source from command line params if possible
-// 	if (!parameters.inputFilename.empty())
-// 	{
-// 	    // try to load input as video
-// 	    ipEngine.capture = new CaptureVideo (parameters.inputFilename);
-	    
-// 	    // if video not loaded, try image
-// 	    if (ipEngine.capture->type == Capture::NONE)
-// 	    {
-// 		delete ipEngine.capture;
-// 		ipEngine.capture = new CaptureImage (parameters.inputFilename);
-// 	    }
-// 	}
-// 	else if (parameters.usbDevice >= 0)
-// 	{
-// 	    ipEngine.capture = new CaptureUSBCamera (parameters.usbDevice);
-// 	}
-// 	else if (parameters.avtDevice >= 0)
-// 	{
-// #ifdef VIMBA
-// 	    ipEngine.capture = new CaptureAVTCamera (parameters.avtDevice);
-// #endif //VIMBA
-// 	}
-	
         ipEngine.Reset(parameters);
-	
+
         // load pipeline's XML
-        FileNode fn = parameters.rootNode["Pipeline"];
+        cv::FileNode fn = parameters.rootNode["Pipeline"];
         if (!fn.empty())
         {
-            FileNodeIterator it = fn.begin(), it_end = fn.end();
+            cv::FileNodeIterator it = fn.begin(), it_end = fn.end();
             for (; it != it_end; ++it)
             {
-                FileNode fn2 = *((*it).begin()); // ugly hack to go around duplicate key bug
+                cv::FileNode fn2 = *((*it).begin()); // ugly hack to go around duplicate key bug
                 auto pfv = NewPipelinePluginVector[fn2.name()] (fn2, ipEngine.threadsCount);
-		
+
                 ipEngine.PushBack(pfv, true);
             }
         }
@@ -274,80 +221,44 @@ int main(int argc, char **argv)
         // run the engine
         ipEngine.OpenOutput();
         ipEngine.capture->Play();
-	
+
         long totalFrames = ipEngine.capture->GetFrameCount();
         if (ipEngine.useTimeBoundaries && ipEngine.durationTime > 0.0000001)
         {
-            // this maybe an approximation if fps is not accurate
-            totalFrames = (ipEngine.startTime + ipEngine.durationTime) * ipEngine.capture->fps;
+            totalFrames = (long)((ipEngine.startTime + ipEngine.durationTime) * ipEngine.capture->fps);
         }
-	
+
         long progress = 0;
-        long startFrame = ipEngine.startTime * ipEngine.capture->fps;
-        do 
+        long startFrame = (long)(ipEngine.startTime * ipEngine.capture->fps);
+        do
         {
-            // respect timestep if it is set
-            // todo...
             if (ipEngine.timestep < 0.00001 || ipEngine.capture->GetTime() >= ipEngine.nextStepTime)
                 ipEngine.Step();
-	    
+
             long frameNumber = ipEngine.capture->GetFrameNumber();
             long newProgress = ((frameNumber - startFrame) * 100) / totalFrames;
             if (newProgress > progress)
             {
                 progress = newProgress;
                 if (progress > 100) progress = 100;
-		
+
                 std::cout << "Progress : " << progress  << "% | frame " << frameNumber << "/" << totalFrames << " | time " << ipEngine.capture->GetTime() << "s" <<  std::endl;
             }
 
             // end if outside time boundaries
             if (ipEngine.useTimeBoundaries && ipEngine.durationTime > 0.0000001)
                 if (ipEngine.capture->GetTime() > ipEngine.startTime + ipEngine.durationTime)
-                    break;            
+                    break;
         }
         while (ipEngine.GetNextFrame());
 
         ipEngine.CloseOutput();
 
-        // end
-        return false;
+        return 0;
     }
     else
     {
-        wxDISABLE_DEBUG_SUPPORT();
-        return wxEntry(argc, argv);
+        AppGui gui;
+        return gui.Run();
     }
-}
-
-App& wxGetApp()
-{
-    return *static_cast<App*>(wxApp::GetInstance());
-}
-
-wxAppConsole *wxCreateApp()
-{
-    wxAppConsole::CheckBuildOptions(WX_BUILD_OPTIONS_SIGNATURE, "useTracker");
-    return new App;
-}
-
-wxAppInitializer wxTheAppInitializer((wxAppInitializerFunction) wxCreateApp);
-
-
-
-bool App::OnInit()
-{
-
-    //(*AppInitialize
-    bool wxsOK = true;
-    wxInitAllImageHandlers();
-    wxXmlResource::Get()->InitAllHandlers();
-    if ( wxsOK )
-    {
-    	MainFrame* Frame = new MainFrame(0);
-    	Frame->Show();
-    	SetTopWindow(Frame);
-    }
-    //*)
-    return wxsOK;
 }

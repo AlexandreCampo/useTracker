@@ -3,17 +3,26 @@
 
 #include <iostream>
 #include <string>
-#include <opencv2/highgui/highgui.hpp>
-#include <wx/time.h>
+#include <chrono>
+#include <cstdint>
+#include <opencv2/highgui.hpp>
 
 #include "CaptureCalibration.h"
+
+// Replacement for wxGetUTCTimeUSec()
+inline int64_t GetUTCTimeUSec()
+{
+    using namespace std::chrono;
+    return duration_cast<microseconds>(
+        steady_clock::now().time_since_epoch()).count();
+}
 
 struct Capture
 {
     // members
     // ------------------------------------
 
-    enum Type {NONE, IMAGE, VIDEO, USB_CAMERA, AVT_CAMERA, MULTI_USB_CAMERA, MULTI_VIDEO};
+    enum Type {NONE, IMAGE, VIDEO, USB_CAMERA, MULTI_USB_CAMERA, MULTI_VIDEO};
     Type type = NONE;
 
     // properties
@@ -38,8 +47,7 @@ struct Capture
     virtual ~Capture() {};
 
     virtual bool GetNextFrame () = 0;
-//    virtual bool ConvertFrame ();
-    virtual wxLongLong GetNextFrameSystemTime () = 0;
+    virtual int64_t GetNextFrameSystemTime () = 0;
     virtual bool GetFrame (double time) = 0;
 
     virtual void Close () = 0;
@@ -60,9 +68,6 @@ struct Capture
     virtual void SaveXML (cv::FileStorage& fs) = 0;
 
     virtual std::string GetName() = 0;
-
-    /* virtual unsigned int GetDeviceCount(); */
-    /* virtual std::string GetDeviceName(unsigned int d); */
 
     // calibration methods
     virtual void CalibrationLoadXML (cv::FileNode& fn);
@@ -95,7 +100,7 @@ struct Capture
     virtual bool CalibrationGetZeroTangentDist();
     virtual bool CalibrationGetFixPrincipalPoint();
     virtual bool CalibrationGetFlipVertical();
-    
+
 };
 
 

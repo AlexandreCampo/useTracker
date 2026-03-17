@@ -24,15 +24,6 @@
 
 extern "C"
 {
-#ifdef __cplusplus
-#define __STDC_CONSTANT_MACROS
-#ifdef _STDINT_H
-#undef _STDINT_H
-#endif
-# include <stdint.h>
-#endif
-
-
 #include <libavutil/common.h>
 #include <libavutil/avutil.h>
 #include <libavutil/imgutils.h>
@@ -46,15 +37,12 @@ extern "C"
 struct CaptureVideo : Capture
 {
     std::string filename;
-//    cv::VideoCapture source;
-//    cv::Mat frame;
 
     long frameNumber = 0;
-    wxLongLong startTime = 0;
-    wxLongLong nextFrameTime = 0;
-//    wxLongLong playTimestep = 0;
-    wxLongLong time = 0;
-    wxLongLong playSpeed;
+    int64_t startTime = 0;
+    int64_t nextFrameTime = 0;
+    int64_t time = 0;
+    int64_t playSpeed = 1;
 
 
     CaptureVideo(std::string filename);
@@ -66,11 +54,10 @@ struct CaptureVideo : Capture
 
     bool GetNextFrame ();
     bool GetPreviousFrame();
-    wxLongLong GetNextFrameSystemTime();
+    int64_t GetNextFrameSystemTime();
 
     bool GetFrame (double time);
 
-//    void Start();
     void Stop();
 
     void Play();
@@ -92,52 +79,29 @@ struct CaptureVideo : Capture
     std::string GetName();
 
     // internal libav
-    AVFormatContext* format_context = NULL;
-    AVCodecContext* codec_context = NULL;
-    AVCodec* codec = NULL;
-    AVStream* video_stream = NULL;
+    AVFormatContext* format_context = nullptr;
+    AVCodecContext* codec_context = nullptr;
+    const AVCodec* codec = nullptr;
+    AVStream* video_stream = nullptr;
     int video_stream_idx = -1;
     AVPixelFormat  pixel_format;
-    
-    struct SwsContext* img_convert_ctx = NULL;
 
-//    AVOutputFormat* output_format = NULL;
+    struct SwsContext* img_convert_ctx = nullptr;
 
-    AVFrame* avframe = NULL;
-    AVPacket avpacket;
+    AVFrame* avframe = nullptr;
+    AVPacket* avpacket = nullptr;
 
     int ret;
 
-    AVFrame frameBGR;
+    AVFrame* frameBGR = nullptr;
     int numBytes;
-    uint8_t* buffer = NULL;
+    uint8_t* buffer = nullptr;
 
-    /* int width; */
-    /* int height; */
-    /* float fps; */
-    /* double fpsi; // internal fps, counts can be weird and is specific to the encoded file */
-    
-//    int frameCount;
-    unsigned char endcode[4] = {0, 0, 1, 0xb7};
-
-    /* long faultyPtsCount = 0; */
-    /* long faultyDtsCount = 0; */
     long firstPts = 0;
     long nextPts = 0;
     long currentPts = 0;
-//    long lastPts = 0;
     long deltaPts = 0;
-    wxLongLong frameDelay;
-//    long lastDtsi = LONG_MIN;
-//    double currentFrameDelay = 0.0;
-//    double nextFrameDelay = 0.0;
-//    double lastDts = 0.0;
-//    double predictedNextPts = 0.0;
-//    double currentPts = 0.0;
-    //double nextPts = 0.0;
-    
-
-//    int verbose;
+    int64_t frameDelay = 0;
 
     bool GrabFrame();
     bool ConvertFrame();

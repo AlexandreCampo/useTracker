@@ -19,7 +19,7 @@
 
 #include "ColorSegmentation.h"
 
-#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgproc.hpp>
 #include <vector>
 
 #include "Pipeline.h"
@@ -49,7 +49,7 @@ void ColorSegmentation::Apply()
     if (type == HSV)
     {
 	// convert BGR frame to HSV
-	cvtColor (pipeline->frame, frameHSV, CV_BGR2HSV);
+	cvtColor (pipeline->frame, frameHSV, cv::COLOR_BGR2HSV);
 
 	// threshold to retain only desired pixels
 	if (minHSV[0] <= maxHSV[0])

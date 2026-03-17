@@ -28,6 +28,7 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+#include <iterator>
 #include <stdio.h>
 #include <string>
 

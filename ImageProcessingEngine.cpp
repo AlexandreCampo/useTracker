@@ -19,17 +19,7 @@
 
 #include "ImageProcessingEngine.h"
 
-#include <GL/glut.h>
 #include <iostream>
-
-
-#include <stdio.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include <stdarg.h>
-#include <math.h>
-#include <libgen.h>
 
 #include <algorithm>
 #include <vector>
@@ -39,11 +29,6 @@
 #include <thread>
 
 using namespace std;
-
-#ifdef VIMBA
-#include <VimbaCPP/Include/VimbaCPP.h>
-#include "vimba/ApiController.h"
-#endif // VIMBA
 
 #include "Parameters.h"
 #include "Utils.h"
@@ -57,9 +42,6 @@ using namespace std;
 #include "CaptureImage.h"
 #include "CaptureUSBCamera.h"
 #include "CaptureDefault.h"
-#ifdef VIMBA
-#include "CaptureAVTCamera.h"
-#endif // VIMBA
 
 
 ImageProcessingEngine::ImageProcessingEngine ()
@@ -108,46 +90,46 @@ void ImageProcessingEngine::Reset(Parameters& parameters)
 	else
 	{
 	    cerr << "Unknown background calculation type..." << std::endl;
-	    background = Mat::zeros(capture->height, capture->width, CV_8UC3);
+	    background = cv::Mat::zeros(capture->height, capture->width, CV_8UC3);
 	}
     }
     else if (!bgFilename.empty() || !parameters.bgFilename.empty())
     {
 	if (!parameters.bgFilename.empty())
-	    background = imread (parameters.bgFilename.c_str());
+	    background = cv::imread (parameters.bgFilename.c_str());
 	else
-	    background = imread (bgFilename.c_str());
+	    background = cv::imread (bgFilename.c_str());
 
 
 	if (background.cols != capture->width || background.rows != capture->height)
 	{
 	    cerr << "Background and video dimensions mismatch... please update your background" << std::endl;
-	    background = Mat::zeros(capture->height, capture->width, CV_8UC3);
+	    background = cv::Mat::zeros(capture->height, capture->width, CV_8UC3);
 	}
     }
     else
     {
-	background = Mat::zeros(capture->height, capture->width, CV_8UC3);
+	background = cv::Mat::zeros(capture->height, capture->width, CV_8UC3);
     }
 
     // if provided, load png of mask
     if (!zonesFilename.empty() || !parameters.zonesFilename.empty())
     {
 	if (!parameters.zonesFilename.empty())
-	    zoneMap = imread (parameters.zonesFilename.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
+	    zoneMap = cv::imread (parameters.zonesFilename.c_str(), cv::IMREAD_GRAYSCALE);
 	else
-	    zoneMap = imread (zonesFilename.c_str(), CV_LOAD_IMAGE_GRAYSCALE);
+	    zoneMap = cv::imread (zonesFilename.c_str(), cv::IMREAD_GRAYSCALE);
 
 	if (zoneMap.cols != capture->width || zoneMap.rows != capture->height)
 	{
 	    cerr << "Zones mask image and video dimensions mismatch... please update your mask" << std::endl;
-	    zoneMap = Mat::ones(capture->height, capture->width, CV_8U);
+	    zoneMap = cv::Mat::ones(capture->height, capture->width, CV_8U);
 	}
     }
     // no mask provided, generate a blank one
     else
     {
-	zoneMap = Mat::ones(capture->height, capture->width, CV_8U);
+	zoneMap = cv::Mat::ones(capture->height, capture->width, CV_8U);
     }
 
     // pipeline data
@@ -178,7 +160,7 @@ void ImageProcessingEngine::Reset(Parameters& parameters)
 
     // just in case...
     if (startTime < 0) startTime = 0;
-    
+
     // if specific start time was asked, seek there
     if (parameters.startTime >= 0 || useTimeBoundaries)
     {
@@ -192,7 +174,7 @@ void ImageProcessingEngine::Reset(Parameters& parameters)
 	    CaptureMultiVideo* capv = dynamic_cast<CaptureMultiVideo*>(capture);
 	    if (capv) capv->SetTime(startTime);
 	}
-    }   
+    }
 
     std::cerr << "Tracker core has been reset and is ready" << std::endl;
 }
@@ -210,14 +192,14 @@ void ImageProcessingEngine::Reset()
     if (background.cols != capture->width || background.rows != capture->height)
     {
 	cerr << "Background and video dimensions mismatch... please update your background" << std::endl;
-	background = Mat::zeros(capture->height, capture->width, CV_8UC3);
+	background = cv::Mat::zeros(capture->height, capture->width, CV_8UC3);
     }
 
     // if provided, load png of mask
     if (zoneMap.cols != capture->width || zoneMap.rows != capture->height)
     {
 	cerr << "Zones mask image and video dimensions mismatch... please update your mask" << std::endl;
-	zoneMap = Mat::ones(capture->height, capture->width, CV_8U);
+	zoneMap = cv::Mat::ones(capture->height, capture->width, CV_8U);
     }
 
     // pipeline data
@@ -236,68 +218,21 @@ void ImageProcessingEngine::Reset()
     for (unsigned int i = 0; i < threadsCount; i++)
     {
 	if (i == threadsCount - 1) sliceHeight = capture->height - y;
-	pipelines[i].Reset(Rect(0, y, capture->width, sliceHeight));
+	pipelines[i].Reset(cv::Rect(0, y, capture->width, sliceHeight));
 	y += sliceHeight;
     }
-    pipelines[threadsCount].Reset(Rect(0, 0, capture->width, capture->height));
-   
+    pipelines[threadsCount].Reset(cv::Rect(0, 0, capture->width, capture->height));
+
     std::cerr << "Tracker core has been reset and is ready" << std::endl;
 }
 
 
 
-void ImageProcessingEngine::LoadXML(FileNode& fn)
+void ImageProcessingEngine::LoadXML(cv::FileNode& fn)
 {
-//     // reset capture
-//     if (capture) delete capture;
-//     capture = nullptr;
-
-//     // priority to cmdline params
-//     if (!parameters.inputVideoFilename.empty())
-//     {
-// 	capture = new CaptureVideo (parameters.inputVideoFilename);
-//     }
-//     else if (parameters.usbDevice >= 0)
-//     {
-// 	capture = new CaptureUSBCamera (parameters.usbDevice);
-//     }
-//     else if (parameters.avtDevice >= 0)
-//     {
-// #ifdef VIMBA
-// 	capture = new CaptureAVTCamera (parameters.avtDevice);
-// 	#endif //VIMBA
-//     }
-
      // read xml file
      if (!fn.empty())
      {
-// 	if (!capture)
-// 	{
-// 	    FileNode fn2 = fn["Source"];
-// 	    if (!fn2.empty())
-// 	    {
-// 		string type = (string)fn2["Type"];
-// 		if (type == "video")
-// 		{
-// 		    capture = new CaptureVideo(fn2);
-// 		}
-// 		else if (type == "USBcamera")
-// 		{
-// 		capture = new CaptureUSBCamera(fn2);
-// 		}
-// 		else if (type == "image")
-// 		{
-// 		    capture = new CaptureImage(fn2);
-// 		}
-// #ifdef VIMBA
-// 		else if (type == "AVTcamera")
-// 		{
-// 		    capture = new CaptureAVTCamera(fn2);
-// 		}
-// #endif // VIMBA
-// 	    }
-// 	}
-
 	threadsCount = (int)fn["Threads"];
 	startTime = (float)fn["StartTime"];
 	durationTime = (float)fn["DurationTime"];
@@ -319,11 +254,8 @@ void ImageProcessingEngine::LoadXML(FileNode& fn)
     }
 }
 
-void ImageProcessingEngine::SaveXML(FileStorage& fs)
+void ImageProcessingEngine::SaveXML(cv::FileStorage& fs)
 {
-//    capture->SaveXML(fs);
-
-//    fs << "Threads" << (int)threadsCount;
     fs << "StartTime" << startTime;
     fs << "DurationTime" << durationTime;
     fs << "Timestep" << timestep;
@@ -479,11 +411,11 @@ void ImageProcessingEngine::SetupThreads ()
     for (unsigned int i = 0; i < threadsCount; i++)
     {
 	if (i == threadsCount - 1) sliceHeight = capture->height - y;
-	pipelines.push_back(Pipeline(this, Rect(0, y, capture->width, sliceHeight)));
+	pipelines.push_back(Pipeline(this, cv::Rect(0, y, capture->width, sliceHeight)));
 	y += sliceHeight;
     }
     // this is the pipeline for the non multithreaded plugins
-    pipelines.push_back(Pipeline(this, Rect(0, 0, capture->width, capture->height)));
+    pipelines.push_back(Pipeline(this, cv::Rect(0, 0, capture->width, capture->height)));
 
     // spawn new threads, including special thread, also allocate new mutexes
     for (unsigned int i = 0; i <= threadsCount; i++)
@@ -663,11 +595,6 @@ void ImageProcessingEngine::Step(bool drawHud)
 	    if (durationTime > 0.0000001 && ctime > (startTime + durationTime))
 		return;
 	}
-
-	// // finally respect timestep if it is set
-	// removed as it prevents online visualization of param change
-	// if (timestep > 0.00001 && ctime < nextStepTime)
-	//     return;
     }
 
     // passed all tests, proceed to image analysis
@@ -699,7 +626,7 @@ void ImageProcessingEngine::Step(bool drawHud)
     // take snapshot if needed
     if (takeSnapshot)
     {
-	threshold(pipelineSnapshotMarked, pipelineSnapshot, 0, 255, THRESH_BINARY);
+	cv::threshold(pipelineSnapshotMarked, pipelineSnapshot, 0, 255, cv::THRESH_BINARY);
     }
 }
 
@@ -707,19 +634,11 @@ bool ImageProcessingEngine::GetNextFrame()
 {
     bool capres = capture->GetNextFrame();
     double ctime = capture->GetTime();
-        
+
     // respect time bounds (not implementing forward jump...)
     if (useTimeBoundaries && durationTime > 0.0000001)
     	if (ctime > (startTime + durationTime))
     	    return false;
 
-    // // finally respect timestep if it is set
-    // if (timestep > 0.00001 && ctime < nextStepTime)
-    // 	return capres;
-
-    // // else finish frame conversion if needed
-    // capture->ConvertFrame();
-    
     return capres;
 }
-

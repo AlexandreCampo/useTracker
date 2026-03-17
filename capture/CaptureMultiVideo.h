@@ -1,22 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*    Copyright (C) 2015 Alexandre Campo                                      */
-/*                                                                            */
-/*    This file is part of USE Tracker.                                       */
-/*                                                                            */
-/*    USE Tracker is free software: you can redistribute it and/or modify     */
-/*    it under the terms of the GNU General Public License as published by    */
-/*    the Free Software Foundation, either version 3 of the License, or       */
-/*    (at your option) any later version.                                     */
-/*                                                                            */
-/*    USE Tracker is distributed in the hope that it will be useful,          */
-/*    but WITHOUT ANY WARRANTY; without even the implied warranty of          */
-/*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           */
-/*    GNU General Public License for more details.                            */
-/*                                                                            */
-/*    You should have received a copy of the GNU General Public License       */
-/*    along with USE Tracker.  If not, see <http://www.gnu.org/licenses/>.    */
-/*----------------------------------------------------------------------------*/
-
 #ifndef CAPTURE_MULTI_VIDEO_H
 #define CAPTURE_MULTI_VIDEO_H
 
@@ -41,7 +22,6 @@ struct CaptureMultiVideo : public Capture
     bool adjustBrightness;
     std::vector<cv::Scalar> targetBrightness;
 
-    // methods
     CaptureMultiVideo(std::vector<std::string> filenames);
     CaptureMultiVideo(cv::FileNode& fn);
     ~CaptureMultiVideo();
@@ -59,12 +39,11 @@ struct CaptureMultiVideo : public Capture
 
     bool GetNextFrame ();
     bool GetPreviousFrame();
-    wxLongLong GetNextFrameSystemTime();
+    int64_t GetNextFrameSystemTime();
     bool GetFrame (double time);
     double GetTime();
 
     void SetTime(double time);
-
 
     long GetFrameNumber();
     long GetFrameCount();
@@ -76,7 +55,6 @@ struct CaptureMultiVideo : public Capture
 
     std::string GetName();
 
-    // calibration methods
     void SetDeviceToCalibrate(int d);
     int GetDeviceToCalibrate();
 
@@ -123,6 +101,5 @@ struct CaptureMultiVideo : public Capture
 
     void Merge();
 };
-
 
 #endif //CAPTURE_MULTI_VIDEO_H

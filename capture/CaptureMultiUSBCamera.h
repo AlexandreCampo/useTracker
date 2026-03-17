@@ -1,22 +1,3 @@
-/*----------------------------------------------------------------------------*/
-/*    Copyright (C) 2015 Alexandre Campo                                      */
-/*                                                                            */
-/*    This file is part of USE Tracker.                                       */
-/*                                                                            */
-/*    USE Tracker is free software: you can redistribute it and/or modify     */
-/*    it under the terms of the GNU General Public License as published by    */
-/*    the Free Software Foundation, either version 3 of the License, or       */
-/*    (at your option) any later version.                                     */
-/*                                                                            */
-/*    USE Tracker is distributed in the hope that it will be useful,          */
-/*    but WITHOUT ANY WARRANTY; without even the implied warranty of          */
-/*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           */
-/*    GNU General Public License for more details.                            */
-/*                                                                            */
-/*    You should have received a copy of the GNU General Public License       */
-/*    along with USE Tracker.  If not, see <http://www.gnu.org/licenses/>.    */
-/*----------------------------------------------------------------------------*/
-
 #ifndef CAPTURE_MULTI_USB_CAMERA_H
 #define CAPTURE_MULTI_USB_CAMERA_H
 
@@ -37,7 +18,6 @@ struct CaptureMultiUSBCamera : public Capture
     bool stitched;
     bool stitching;
 
-    // methods
     CaptureMultiUSBCamera(std::vector<int> devices);
     CaptureMultiUSBCamera(cv::FileNode& fn);
     ~CaptureMultiUSBCamera();
@@ -51,10 +31,10 @@ struct CaptureMultiUSBCamera : public Capture
     void Stop();
 
     bool GetNextFrame ();
-    wxLongLong GetNextFrameSystemTime();
+    int64_t GetNextFrameSystemTime();
     bool GetFrame (double time);
     double GetTime();
-    wxLongLong InternalGetTime();
+    int64_t InternalGetTime();
 
     long GetFrameNumber();
     long GetFrameCount();
@@ -63,8 +43,6 @@ struct CaptureMultiUSBCamera : public Capture
     void SaveXML (cv::FileStorage& fs);
 
     std::string GetName();
-
-    // calibration methods
 
     void SetDeviceToCalibrate(int d);
     int GetDeviceToCalibrate();
@@ -106,8 +84,5 @@ struct CaptureMultiUSBCamera : public Capture
     bool Stitch();
     bool TryToStitch();
 };
-
-
-
 
 #endif //CAPTURE_MULTI_USB_CAMERA_H

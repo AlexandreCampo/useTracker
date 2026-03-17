@@ -96,7 +96,7 @@ namespace ac
     void ArucoColor::segmentImage (const Mat& img)
     {    
 	// adaptive threshold for segmentation
-	cvtColor(img, grey, CV_BGR2GRAY);
+	cvtColor(img, grey, cv::COLOR_BGR2GRAY);
 	adaptiveThreshold(grey, segmented, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, adaptiveThresholdBlockSize*2+1, adaptiveThresholdConstant);
 
 	// // use negative version for better detection
@@ -121,7 +121,7 @@ namespace ac
     {
 	// now extract contours
 	vector<vector<Point> > contours;
-	findContours(seg, contours, CV_RETR_LIST, CV_CHAIN_APPROX_NONE);
+	findContours(seg, contours, cv::RETR_LIST, cv::CHAIN_APPROX_NONE);
     
 	// Find the convex hull object for each contour
 	hulls.clear();
@@ -251,7 +251,7 @@ namespace ac
 	    std::ostringstream str;
 	    str << m.id;			    
 	    Point pt = m.corners[0];
-	    cv::putText(img, str.str(), pt, CV_FONT_HERSHEY_PLAIN, 5, Scalar (0,0,250, 255), 3, CV_AA);		    
+	    cv::putText(img, str.str(), pt, cv::FONT_HERSHEY_PLAIN, 5, Scalar (0,0,250, 255), 3, cv::LINE_AA);		    
 	    i++;
 	}
     }
@@ -272,7 +272,7 @@ namespace ac
 	    warp(img, markerImage, markerImage.size(), hulls[i]);
 
 	    // convert marker image to hsv
-	    cvtColor(markerImage, markerImage, CV_BGR2HSV);
+	    cvtColor(markerImage, markerImage, cv::COLOR_BGR2HSV);
 
 	
 	    Marker candidate;

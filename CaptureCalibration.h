@@ -3,7 +3,7 @@
 #define CAPTURE_CALIBRATION_H
 
 #include <string>
-#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/highgui.hpp>
 
 class Capture;
 

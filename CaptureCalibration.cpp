@@ -2,9 +2,9 @@
 #include "CaptureCalibration.h"
 
 #include <iostream>
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/calib3d/calib3d.hpp>
+#include <opencv2/core.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/calib3d.hpp>
 
 #include "Capture.h"
 
@@ -64,7 +64,7 @@ void CaptureCalibration::SaveXML(FileStorage& fs)
     fs << "ImageWidth" << capture->width;
     fs << "ImageHeight" << capture->height;
 
-    if( flags & CV_CALIB_FIX_ASPECT_RATIO )
+    if( flags & cv::CALIB_FIX_ASPECT_RATIO )
         fs << "FixAspectRatio" << aspectRatio;
 
     fs << "CameraMatrix" << cameraMatrix;
@@ -261,7 +261,7 @@ void CaptureCalibration::Calibrate ()
     switch( pattern ) // Find feature points on the input format
     {
     case CHESSBOARD:
-	boardFound = findChessboardCorners( viewScaled, boardSize, pointBuf, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+	boardFound = findChessboardCorners( viewScaled, boardSize, pointBuf, cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FAST_CHECK | cv::CALIB_CB_NORMALIZE_IMAGE);
 	break;
     case CIRCLES_GRID:
 	boardFound = findCirclesGrid( viewScaled, boardSize, pointBuf );
@@ -289,7 +289,7 @@ void CaptureCalibration::Calibrate ()
 	{
 	    Mat viewGray;
 	    cvtColor(view, viewGray, COLOR_BGR2GRAY);
-	    cornerSubPix( viewGray, pointBuf, Size(11,11), Size(-1,-1), TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ));
+	    cornerSubPix( viewGray, pointBuf, Size(11,11), Size(-1,-1), TermCriteria( cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1 ));
 	}
 	imagePoints.push_back(pointBuf);
     }
@@ -329,7 +329,7 @@ bool CaptureCalibration::CalculateCalibration()
 {
     cameraMatrix = Mat::eye(3, 3, CV_64F);
 
-    if ( flags & CV_CALIB_FIX_ASPECT_RATIO )
+    if ( flags & cv::CALIB_FIX_ASPECT_RATIO )
         cameraMatrix.at<double>(0,0) = 1.0;
 
     distCoeffs = Mat::zeros(8, 1, CV_64F);
@@ -340,7 +340,7 @@ bool CaptureCalibration::CalculateCalibration()
     objectPoints.resize(imagePoints.size(),objectPoints[0]);
 
     //Find intrinsic and extrinsic camera parameters
-    double rms = calibrateCamera(objectPoints, imagePoints, capture->frame.size(), cameraMatrix, distCoeffs, rvecs, tvecs, flags | CV_CALIB_FIX_K4 | CV_CALIB_FIX_K5);
+    double rms = calibrateCamera(objectPoints, imagePoints, capture->frame.size(), cameraMatrix, distCoeffs, rvecs, tvecs, flags | cv::CALIB_FIX_K4 | cv::CALIB_FIX_K5);
 
 //    cout << "Re-projection error reported by calibrateCamera: "<< rms << endl;
 
@@ -394,7 +394,7 @@ double CaptureCalibration::ComputeReprojectionErrors( const vector<vector<Point3
     {
         projectPoints( Mat(objectPoints[i]), rvecs[i], tvecs[i], cameraMatrix,
                        distCoeffs, imagePoints2);
-        err = norm(Mat(imagePoints[i]), Mat(imagePoints2), CV_L2);
+        err = norm(Mat(imagePoints[i]), Mat(imagePoints2), cv::NORM_L2);
 
         int n = (int)objectPoints[i].size();
         reprojErrs[i] = (float) std::sqrt(err*err/n);
@@ -423,7 +423,7 @@ void CaptureCalibration::Reset()
 void CaptureCalibration::UpdateFlags()
 {
     flags = 0;
-    if(fixPrincipalPoint) flags |= CV_CALIB_FIX_PRINCIPAL_POINT;
-    if(zeroTangentDist)   flags |= CV_CALIB_ZERO_TANGENT_DIST;
-    if(aspectRatio)       flags |= CV_CALIB_FIX_ASPECT_RATIO;
+    if(fixPrincipalPoint) flags |= cv::CALIB_FIX_PRINCIPAL_POINT;
+    if(zeroTangentDist)   flags |= cv::CALIB_ZERO_TANGENT_DIST;
+    if(aspectRatio)       flags |= cv::CALIB_FIX_ASPECT_RATIO;
 }

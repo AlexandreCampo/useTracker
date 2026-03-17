@@ -22,18 +22,10 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
-#include <unistd.h>
 
-#include <wx/time.h>
-
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
-
-#if CV_MAJOR_VERSION == 2
-#include <opencv2/stitching/stitcher.hpp>
-#else
+#include "opencv2/features2d.hpp"
+#include "opencv2/calib3d.hpp"
 #include <opencv2/stitching.hpp>
-#endif
 
 #include "Utils.h"
 
@@ -77,7 +69,7 @@ string CaptureMultiVideo::GetName()
 
 bool CaptureMultiVideo::Open (vector<string> filenames)
 {
-    if (filenames.size() == 0) 
+    if (filenames.size() == 0)
 	return false;
 
     for (unsigned int i = 0; i < filenames.size(); i++)
@@ -110,7 +102,7 @@ bool CaptureMultiVideo::Open ()
 
     stitchPoints.resize(subcaptures.size());
     bool frameEmpty = false;
-   
+
     if (!stitched)
     {
 	ResetStitching();
@@ -161,7 +153,7 @@ bool CaptureMultiVideo::GetNextFrame ()
     return !frameEmpty;
 }
 
-wxLongLong CaptureMultiVideo::GetNextFrameSystemTime()
+int64_t CaptureMultiVideo::GetNextFrameSystemTime()
 {
     return subcaptures[masterDevice]->GetNextFrameSystemTime();
 }
@@ -290,7 +282,7 @@ void CaptureMultiVideo::SaveXML(FileStorage& fs)
     for (unsigned int i = 0; i < subcaptures.size(); i++)
     {
 	fs << std::string("Subdevice_") + std::to_string(i) << "{";
-		
+
 	subcaptures[i]->SaveXML(fs);
 
 	fs << "}";
@@ -305,7 +297,7 @@ void CaptureMultiVideo::SaveXML(FileStorage& fs)
 	for (unsigned int i = 0; i < subcaptures.size(); i++)
 	{
 	    vector<int> compression_params;
-	    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+	    compression_params.push_back(cv::IMWRITE_PNG_COMPRESSION);
 	    compression_params.push_back(9);
 	    vector <unsigned char> buffer;
 	    imencode (".png", stitchMasks[i], buffer, compression_params);
@@ -341,7 +333,7 @@ void CaptureMultiVideo::LoadXML(FileNode& fn, bool stitchingOnly)
 		    if (!calibNode.empty())
 		    {
 			subcaptures[sc]->calibration.LoadXML (calibNode);
-		    }		
+		    }
 		    sc++;
 		}
 		else
@@ -631,9 +623,9 @@ bool CaptureMultiVideo::Stitch()
 	Mat tmp;
 	if (frame0.cols > frame0.rows)
 	    coeff0 = frame0.cols / 1000.0;
-	else 
+	else
 	    coeff0 = frame0.rows / 1000.0;
-	
+
 	Size sz (frame0.cols / coeff0, frame0.rows / coeff0);
 	resize (frame0, tmp, sz);
 	frame0Scaled = tmp;
@@ -647,16 +639,16 @@ bool CaptureMultiVideo::Stitch()
 	Mat tmp;
 	if (frame1.cols > frame1.rows)
 	    coeff1 = frame1.cols / 1000.0;
-	else 
+	else
 	    coeff1 = frame1.rows / 1000.0;
-	
+
 	Size sz (frame1.cols / coeff1, frame1.rows / coeff1);
 	resize (frame1, tmp, sz);
 	frame1Scaled = tmp;
     }
 
-    boardFound0 = findChessboardCorners( frame0Scaled, subcaptures[0]->calibration.boardSize, points0, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
-    boardFound1 = findChessboardCorners( frame1Scaled, subcaptures[0]->calibration.boardSize, points1, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+    boardFound0 = findChessboardCorners( frame0Scaled, subcaptures[0]->calibration.boardSize, points0, cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FAST_CHECK | cv::CALIB_CB_NORMALIZE_IMAGE);
+    boardFound1 = findChessboardCorners( frame1Scaled, subcaptures[0]->calibration.boardSize, points1, cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FAST_CHECK | cv::CALIB_CB_NORMALIZE_IMAGE);
 
     if (!boardFound0 || !boardFound1)
     {
@@ -679,11 +671,11 @@ bool CaptureMultiVideo::Stitch()
     // improve the found corners' coordinate accuracy for chessboard
     Mat viewGray0;
     cvtColor(subcaptures[0]->frame, viewGray0, COLOR_BGR2GRAY);
-    cornerSubPix( viewGray0, points0, Size(11,11), Size(-1,-1), TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ));
+    cornerSubPix( viewGray0, points0, Size(11,11), Size(-1,-1), TermCriteria( cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1 ));
 
     Mat viewGray1;
     cvtColor(subcaptures[1]->frame, viewGray1, COLOR_BGR2GRAY);
-    cornerSubPix( viewGray1, points1, Size(11,11), Size(-1,-1), TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ));
+    cornerSubPix( viewGray1, points1, Size(11,11), Size(-1,-1), TermCriteria( cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1 ));
 
     // reorder points if they don't go left to right, top to bottom (findChessBoardCorners bug in opencv ?)
     unsigned int bwidth = subcaptures[0]->calibration.boardSize.width;
@@ -715,10 +707,10 @@ bool CaptureMultiVideo::Stitch()
 
     //-- Get the corners from the image_1 ( the object to be "detected" )
     std::vector<Point2f> corners(4);
-    corners[0] = cvPoint(0,0);
-    corners[1] = cvPoint( subcaptures[1]->frame.cols, 0 );
-    corners[2] = cvPoint( subcaptures[1]->frame.cols, subcaptures[1]->frame.rows );
-    corners[3] = cvPoint( 0, subcaptures[1]->frame.rows );
+    corners[0] = cv::Point2f(0,0);
+    corners[1] = cv::Point2f( subcaptures[1]->frame.cols, 0 );
+    corners[2] = cv::Point2f( subcaptures[1]->frame.cols, subcaptures[1]->frame.rows );
+    corners[3] = cv::Point2f( 0, subcaptures[1]->frame.rows );
     std::vector<Point2f> warpedCorners(4);
 
     perspectiveTransform( corners, warpedCorners, H);
@@ -942,7 +934,7 @@ void CaptureMultiVideo::AdjustBrightness (int sc)
     // calculate average brightness
     cv::Scalar brightness = cv::sum(capture->frame);
     brightness = brightness / (double)(capture->width * capture->height);
-    
+
     // get difference to target
     cv::Scalar diff = targetBrightness[sc] - brightness;
 

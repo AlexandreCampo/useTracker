@@ -17,8 +17,6 @@
 /*    along with USE Tracker.  If not, see <http://www.gnu.org/licenses/>.    */
 /*----------------------------------------------------------------------------*/
 
-#ifdef ARUCO
-
 #ifndef ARUCO_H
 #define ARUCO_H
 
@@ -26,9 +24,10 @@
 
 #include <iostream>
 #include <fstream>
+#include <memory>
 
-#include <aruco/aruco.h>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgproc.hpp>
+#include <opencv2/objdetect/aruco_detector.hpp>
 
 #define ARUCO_MASK_SHAPE_NONE 0
 #define ARUCO_MASK_SHAPE_SQUARE 1
@@ -38,9 +37,12 @@ class Aruco : public PipelinePlugin
 {
 public:
 
-    aruco::MarkerDetector detector;
-    std::vector<aruco::Marker> markers;
-    aruco::CameraParameters cameraParameters;
+    cv::aruco::Dictionary dictionary;
+    cv::aruco::DetectorParameters detectorParams;
+    std::unique_ptr<cv::aruco::ArucoDetector> detector;
+
+    std::vector<std::vector<cv::Point2f>> markerCorners;
+    std::vector<int> markerIds;
 
     double minSize = 0.001;
     double maxSize = 0.1;
@@ -52,8 +54,6 @@ public:
     int maskRadius = 1;
     int maskPerspectiveShift = 0;
     int maskValue = 0;
-    
-    aruco::MarkerDetector::ThresholdMethods thresholdMethod = aruco::MarkerDetector::ADPT_THRES;
 
     std::string outputFilename;
     std::fstream outputStream;
@@ -75,16 +75,14 @@ public:
     void SetMaxSize(double maxSize);
     void SetThreshold1(int t1);
     void SetThreshold2(int t2);
-    void SetThresholdMethod (int m);
-    
+
     void SetMaskShape(int v);
     void SetMaskRadius(int v);
     void SetMaskPerspectiveShift(int v);
     void SetMaskValue(int v);
+
+private:
+    void RebuildDetector();
 };
-
-
-
-#endif
 
 #endif

@@ -10,13 +10,14 @@
 #include <string>
 #include <vector>
 #include <algorithm>
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/highgui/highgui.hpp"
+#include <opencv2/imgproc.hpp>
+#include <opencv2/highgui.hpp>
 
 #include "marker.h"
 
-using namespace cv; 
-using namespace std; 
+using namespace cv;
+using namespace std;
+using namespace ac;
 
 int hues[] = {20,  30,  40,  65,  85,  95, 125, 140, 165};
 
@@ -84,13 +85,13 @@ int main(int argc, char** argv)
 		
 		int ppx = px - borderWidth - borderSeparation;
 		int ppy = py - borderWidth - borderSeparation;
-		rectangle(img, Point(ppx, ppy),  Point(ppx+markerWidth, ppy+borderWidth), noir, CV_FILLED);
-		rectangle(img, Point(ppx, ppy),  Point(ppx+borderWidth, ppy+markerWidth), noir, CV_FILLED);
+		rectangle(img, Point(ppx, ppy),  Point(ppx+markerWidth, ppy+borderWidth), noir, cv::FILLED);
+		rectangle(img, Point(ppx, ppy),  Point(ppx+borderWidth, ppy+markerWidth), noir, cv::FILLED);
 
 		ppx += markerWidth ;
 		ppy += markerWidth;
-		rectangle(img, Point(ppx, ppy),  Point(ppx-markerWidth, ppy-borderWidth), noir, CV_FILLED);
-		rectangle(img, Point(ppx, ppy),  Point(ppx-borderWidth, ppy-markerWidth), noir, CV_FILLED);
+		rectangle(img, Point(ppx, ppy),  Point(ppx-markerWidth, ppy-borderWidth), noir, cv::FILLED);
+		rectangle(img, Point(ppx, ppy),  Point(ppx-borderWidth, ppy-markerWidth), noir, cv::FILLED);
 		
 		int xinc = colorWidth + colorSeparation;
 		int linec = 0;
@@ -100,7 +101,7 @@ int main(int argc, char** argv)
 			Scalar col (hues[m.pixels[c]], 255, 255);
 			Point p1 (px, py);
 			Point p2 (px + colorWidth, py + colorWidth);
-			rectangle(img, p1, p2, col, CV_FILLED);
+			rectangle(img, p1, p2, col, cv::FILLED);
 
 			++linec;
 			if (linec == 2)
@@ -124,7 +125,7 @@ int main(int argc, char** argv)
 
     // convert pic to BGR
     Mat img2;
-    cvtColor(img, img2, CV_HSV2BGR);
+    cvtColor(img, img2, cv::COLOR_HSV2BGR);
     
     imwrite("markers.png", img2);
    

@@ -10,6 +10,7 @@
 #include <iostream>
 
 using namespace std;
+using namespace ac;
 
 #define MAXFAILS 50000
 

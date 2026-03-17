@@ -19,12 +19,8 @@
 
 #include "BackgroundDiffMOG.h"
 
-
 using namespace cv;
-
-#if CV_MAJOR_VERSION != 2
 using namespace cv::bgsegm;
-#endif
 
 BackgroundDiffMOG::BackgroundDiffMOG() : PipelinePlugin()
 {
@@ -33,9 +29,6 @@ BackgroundDiffMOG::BackgroundDiffMOG() : PipelinePlugin()
 
 BackgroundDiffMOG::~BackgroundDiffMOG()
 {
-#if CV_MAJOR_VERSION == 2
-    delete MOG;
-#endif
 }
 
 void BackgroundDiffMOG::Reset()
@@ -45,14 +38,8 @@ void BackgroundDiffMOG::Reset()
     marked2 = Mat(pipeline->height, pipeline->width, CV_8U);
     marked3 = Mat(pipeline->height, pipeline->width, CV_8U);
 
-#if CV_MAJOR_VERSION == 2
-    delete MOG;
-    MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
-    MOG->operator()(pipeline->background, marked2);
-#else
     MOG = createBackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->apply(pipeline->background, marked2);
-#endif
 }
 
 
@@ -60,73 +47,45 @@ void BackgroundDiffMOG::SetHistory(int h)
 {
     history = h;
 
-#if CV_MAJOR_VERSION == 2
-    delete MOG;
-    MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
-    MOG->operator()(pipeline->background, marked2);
-#else
     MOG = createBackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->apply(pipeline->background, marked2);
-#endif
 }
 
 void BackgroundDiffMOG::SetNMixtures(int m)
 {
     nMixtures = m;
 
-#if CV_MAJOR_VERSION == 2
-    delete MOG;
-    MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
-    MOG->operator()(pipeline->background, marked2);
-#else
     MOG = createBackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->apply(pipeline->background, marked2);
-#endif
 }
 
 void BackgroundDiffMOG::SetBackgroundRatio(double r)
 {
     backgroundRatio = r;
 
-#if CV_MAJOR_VERSION == 2
-    delete MOG;
-    MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
-    MOG->operator()(pipeline->background, marked2);
-#else
     MOG = createBackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->apply(pipeline->background, marked2);
-#endif
 }
 
 void BackgroundDiffMOG::SetNoiseSigma(double s)
 {
     noiseSigma = s;
-    
-#if CV_MAJOR_VERSION == 2
-    delete MOG;
-    MOG = new BackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
-    MOG->operator()(pipeline->background, marked2);
-#else
+
     MOG = createBackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
     MOG->apply(pipeline->background, marked2);
-#endif
 }
 
 void BackgroundDiffMOG::Apply()
-{    
-#if CV_MAJOR_VERSION == 2
-    MOG->operator()(pipeline->frame, marked2, learningRate);
-#else
+{
     MOG->apply(pipeline->frame, marked2, learningRate);
-#endif
 
     if (restrictToZone)
     {
 	cv::inRange(pipeline->zoneMap, zone, zone, marked3);
-	marked2 &= marked3;	    
+	marked2 &= marked3;
     }
-    
-    if (additive)	
+
+    if (additive)
 	pipeline->marked |= (marked2 & pipeline->zoneMap);
     else
 	pipeline->marked &= marked2;
@@ -164,4 +123,3 @@ void BackgroundDiffMOG::SaveXML (FileStorage& fs)
 	fs << "Zone" << zone;
     fs << "Additive" << additive;
 }
-

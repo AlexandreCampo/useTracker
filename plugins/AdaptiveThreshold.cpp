@@ -38,7 +38,7 @@ void AdaptiveThreshold::Reset()
 void AdaptiveThreshold::Apply()
 {
     absdiff (pipeline->frame, pipeline->background, diff);
-    cvtColor(diff, sum, CV_BGR2GRAY);
+    cvtColor(diff, sum, cv::COLOR_BGR2GRAY);
     cv::adaptiveThreshold(sum, marked2, 255, thresholdMethod, THRESH_BINARY, blockSize*2+1, constant);
 
     if (invert)

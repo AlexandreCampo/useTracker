@@ -2,8 +2,7 @@
 #define PIPELINE_H
 
 
-// the elements may be relocalized inside plugins
-#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/highgui.hpp>
 
 
 class ImageProcessingEngine;

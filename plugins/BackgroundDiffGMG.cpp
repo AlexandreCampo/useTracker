@@ -19,12 +19,8 @@
 
 #include "BackgroundDiffGMG.h"
 
-
 using namespace cv;
-
-#if CV_MAJOR_VERSION != 2
 using namespace cv::bgsegm;
-#endif
 
 BackgroundDiffGMG::BackgroundDiffGMG() : PipelinePlugin()
 {
@@ -33,9 +29,6 @@ BackgroundDiffGMG::BackgroundDiffGMG() : PipelinePlugin()
 
 BackgroundDiffGMG::~BackgroundDiffGMG()
 {
-#if CV_MAJOR_VERSION == 2
-    delete GMG;
-#endif
 }
 
 void BackgroundDiffGMG::Reset()
@@ -45,32 +38,22 @@ void BackgroundDiffGMG::Reset()
     marked2 = Mat(pipeline->height, pipeline->width, CV_8U);
     marked3 = Mat(pipeline->height, pipeline->width, CV_8U);
 
-#if CV_MAJOR_VERSION == 2
-    delete GMG;
-    GMG = new BackgroundSubtractorGMG();    
-    GMG->operator()(pipeline->background, marked2);	
-#else
     GMG = createBackgroundSubtractorGMG();
     GMG->apply(pipeline->background, marked2);
-#endif
 }
 
 
 void BackgroundDiffGMG::Apply()
-{    
-#if CV_MAJOR_VERSION == 2
-    GMG->operator()(pipeline->frame, marked2, learningRate);
-#else
+{
     GMG->apply(pipeline->frame, marked2, learningRate);
-#endif
-    
+
     if (restrictToZone)
     {
 	cv::inRange(pipeline->zoneMap, zone, zone, marked3);
-	marked2 &= marked3;	    
+	marked2 &= marked3;
     }
-    
-    if (additive)	
+
+    if (additive)
 	pipeline->marked |= (marked2 & pipeline->zoneMap);
     else
 	pipeline->marked &= marked2;
@@ -100,4 +83,3 @@ void BackgroundDiffGMG::SaveXML (FileStorage& fs)
 	fs << "Zone" << zone;
     fs << "Additive" << additive;
 }
-

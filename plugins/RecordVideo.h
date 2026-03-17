@@ -22,18 +22,10 @@
 
 #include "PipelinePlugin.h"
 
-#include <opencv2/imgproc/imgproc.hpp>
+#include <opencv2/imgproc.hpp>
 
-extern "C" 
+extern "C"
 {
-#ifdef __cplusplus
-#define __STDC_CONSTANT_MACROS
-#ifdef _STDINT_H
-#undef _STDINT_H
-#endif
-# include <stdint.h>
-#endif
-
 #include <libavutil/common.h>
 #include <libavutil/imgutils.h>
 #include <libavutil/samplefmt.h>
@@ -43,7 +35,6 @@ extern "C"
 #include <libavutil/opt.h>
 #include <libavutil/avutil.h>
 #include <libavutil/mathematics.h>
-//#include <libavutil/frame.h>
 }
 
 
@@ -55,17 +46,17 @@ public:
     unsigned char endcode[4] = { 0, 0, 1, 0xb7 };
 
     AVFormatContext* format_context;
-    AVOutputFormat* output_format;
+    const AVOutputFormat* output_format;
     AVCodecContext* codec_context;
-    AVCodec* codec;
+    const AVCodec* codec;
     AVStream* video_stream;
     int video_stream_idx;
     int input_pix_fmt;
 
     AVFrame* frameBGR;
     uint8_t* buffer;
+    AVPacket* pkt = nullptr;
 
-    FILE* file;
     int frameCount;
 
     std::string outputFilename;

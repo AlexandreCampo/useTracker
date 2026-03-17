@@ -44,7 +44,7 @@ void ExtractMotion::Reset()
 void ExtractMotion::Apply()
 {
     absdiff (pipeline->frame, pipeline->background, diff);
-    cvtColor(diff, sum, CV_BGR2GRAY);
+    cvtColor(diff, sum, cv::COLOR_BGR2GRAY);
     cv::threshold(sum, marked2, threshold, 255, THRESH_BINARY);
 
     if (restrictToZone)

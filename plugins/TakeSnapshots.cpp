@@ -24,11 +24,11 @@
 #include <string>
 #include <sstream>
 #include <iomanip>
-#include <boost/filesystem.hpp>
+#include <filesystem>
 
-using namespace boost::filesystem;
 using namespace cv;
 using namespace std;
+namespace fs = std::filesystem;
 
 TakeSnapshots::~TakeSnapshots()
 {
@@ -44,15 +44,15 @@ void TakeSnapshots::OutputStep()
     if (openOutput)
     {
 	// figure the filename to write snapshot
-	path fullpath (outputFilename);
-	path parent = fullpath.parent_path();
-	path stem = fullpath.stem();
+	fs::path fullpath (outputFilename);
+	fs::path parent = fullpath.parent_path();
+	fs::path stem = fullpath.stem();
 
-	path extension;
+	fs::path extension;
 	if (fullpath.has_extension())
 	    extension = fullpath.extension();
 	else
-	    extension = path(".png");
+	    extension = fs::path(".png");
 
 	// ok now append frame number
 	std::ostringstream tmp;

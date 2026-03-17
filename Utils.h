@@ -3,16 +3,13 @@
 #define UTILS_H
 
 
-#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/highgui.hpp>
 
 
-using namespace cv;
-using namespace std;
-
-void SaveMatToPNG (Mat& mat, const char* filename);
-void SeedFill (Mat& marked, Mat& map, Mat& mask, int x, int y, unsigned char target);
-void EqualizeToRGB (Mat& src, Mat& dst);
-void EqualizeBW (Mat& src, Mat& dst);
+void SaveMatToPNG (cv::Mat& mat, const char* filename);
+void SeedFill (cv::Mat& marked, cv::Mat& map, cv::Mat& mask, int x, int y, unsigned char target);
+void EqualizeToRGB (cv::Mat& src, cv::Mat& dst);
+void EqualizeBW (cv::Mat& src, cv::Mat& dst);
 
 void Thinning(const cv::Mat& src, cv::Mat& dst);
 void ThinningIteration(cv::Mat& img, int iter);

@@ -10,12 +10,8 @@
 #ifndef APP_H
 #define APP_H
 
-#include <wx/app.h>
-
 #include "PipelinePlugin.h"
 #include <opencv2/opencv.hpp>
-
-//vector<PipelinePlugin*> CreatePipelinePlugin (string str, cv::FileNode& fn, unsigned int threadsCount);
 
 template<typename T>
 std::vector<PipelinePlugin*> CreatePipelinePluginVector(cv::FileNode& fn, unsigned int threadsCount)
@@ -40,15 +36,5 @@ std::vector<PipelinePlugin*> CreatePipelinePluginVector(cv::FileNode& fn, unsign
 }
 
 extern std::map<std::string, std::vector<PipelinePlugin*> (*)(cv::FileNode&, unsigned int)> NewPipelinePluginVector;
-
-class MainFrame;
-
-class App : public wxApp
-{
-public:
-    MainFrame* mainFrame = nullptr;
-        
-    virtual bool OnInit();
-};
 
 #endif // APP_H

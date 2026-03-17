@@ -22,18 +22,10 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
-#include <unistd.h>
 
-#include <wx/time.h>
-
-#include "opencv2/features2d/features2d.hpp"
-#include "opencv2/calib3d/calib3d.hpp"
-
-#if CV_MAJOR_VERSION == 2
-#include <opencv2/stitching/stitcher.hpp>
-#else
+#include "opencv2/features2d.hpp"
+#include "opencv2/calib3d.hpp"
 #include <opencv2/stitching.hpp>
-#endif
 
 #include "Utils.h"
 
@@ -115,16 +107,16 @@ bool CaptureMultiUSBCamera::Open ()
 
     stitchPoints.resize(subcaptures.size());
     bool frameEmpty = false;
-	
+
     if (!stitched)
     {
 	ResetStitching();
-	
+
 	for (unsigned int i = 0; i < subcaptures.size(); i++)
 	{
 	    frameEmpty = frameEmpty || subcaptures[i]->frame.empty();
 	}
-	
+
 	// produce first frame
 	if (!frameEmpty)
 	{
@@ -139,10 +131,10 @@ bool CaptureMultiUSBCamera::Open ()
 	for (int j = subcaptures.size() - 1; j >= 0; j--)
 	{
 	    unsigned int i = (unsigned int) j;
-	    
+
 	    bool available = subcaptures[i]->GetNextFrame();
 	    frameEmpty = frameEmpty || !available;
-	
+
 	    Mat tmp;
 	    warpPerspective(subcaptures[i]->frame, tmp, homographies[i], frame.size());
 	    tmp.copyTo(frame, stitchMasks[i]);
@@ -184,7 +176,7 @@ bool CaptureMultiUSBCamera::GetNextFrame ()
     return !frameEmpty;
 }
 
-wxLongLong CaptureMultiUSBCamera::GetNextFrameSystemTime()
+int64_t CaptureMultiUSBCamera::GetNextFrameSystemTime()
 {
     return subcaptures[masterDevice]->GetNextFrameSystemTime();
 }
@@ -212,7 +204,7 @@ bool CaptureMultiUSBCamera::GetFrame (double time)
     while (InternalGetTime() < time) this_thread::sleep_for(chrono::milliseconds(10));
 
     // take several frames otherwise we get an old buffered frame
-    bool available[subcaptures.size()];
+    std::vector<bool> available(subcaptures.size());
     for (int j = 0; j < 4; j++)
     {
 	for (unsigned int i = 0; i < subcaptures.size(); i++)
@@ -257,7 +249,7 @@ double CaptureMultiUSBCamera::GetTime()
     return subcaptures[masterDevice]->GetTime();
 }
 
-wxLongLong CaptureMultiUSBCamera::InternalGetTime()
+int64_t CaptureMultiUSBCamera::InternalGetTime()
 {
     return subcaptures[masterDevice]->InternalGetTime();
 }
@@ -285,7 +277,7 @@ void CaptureMultiUSBCamera::SaveXML(FileStorage& fs)
 	for (unsigned int i = 0; i < subcaptures.size(); i++)
 	{
 	    vector<int> compression_params;
-	    compression_params.push_back(CV_IMWRITE_PNG_COMPRESSION);
+	    compression_params.push_back(cv::IMWRITE_PNG_COMPRESSION);
 	    compression_params.push_back(9);
 	    vector <unsigned char> buffer;
 	    imencode (".png", stitchMasks[i], buffer, compression_params);
@@ -540,7 +532,7 @@ void CaptureMultiUSBCamera::ResetStitching()
 	int h = subcaptures[i]->height;
 
 	rects.push_back(Rect(width, 0, w, h));
-	
+
 	// calculate merged frame -> assemble side by side
 	if (h > height) height = h;
 	width += w;
@@ -561,8 +553,8 @@ bool CaptureMultiUSBCamera::Stitch()
     std::vector<cv::Point2f> points0;
     std::vector<cv::Point2f> points1;
 
-    boardFound0 = findChessboardCorners( subcaptures[0]->frame, subcaptures[0]->calibration.boardSize, points0, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
-    boardFound1 = findChessboardCorners( subcaptures[1]->frame, subcaptures[0]->calibration.boardSize, points1, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+    boardFound0 = findChessboardCorners( subcaptures[0]->frame, subcaptures[0]->calibration.boardSize, points0, cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FAST_CHECK | cv::CALIB_CB_NORMALIZE_IMAGE);
+    boardFound1 = findChessboardCorners( subcaptures[1]->frame, subcaptures[0]->calibration.boardSize, points1, cv::CALIB_CB_ADAPTIVE_THRESH | cv::CALIB_CB_FAST_CHECK | cv::CALIB_CB_NORMALIZE_IMAGE);
 
     if (!boardFound0 || !boardFound1)
     {
@@ -573,11 +565,11 @@ bool CaptureMultiUSBCamera::Stitch()
     // improve the found corners' coordinate accuracy for chessboard
     Mat viewGray0;
     cvtColor(subcaptures[0]->frame, viewGray0, COLOR_BGR2GRAY);
-    cornerSubPix( viewGray0, points0, Size(11,11), Size(-1,-1), TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ));
+    cornerSubPix( viewGray0, points0, Size(11,11), Size(-1,-1), TermCriteria( cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1 ));
 
     Mat viewGray1;
     cvtColor(subcaptures[1]->frame, viewGray1, COLOR_BGR2GRAY);
-    cornerSubPix( viewGray1, points1, Size(11,11), Size(-1,-1), TermCriteria( CV_TERMCRIT_EPS+CV_TERMCRIT_ITER, 30, 0.1 ));
+    cornerSubPix( viewGray1, points1, Size(11,11), Size(-1,-1), TermCriteria( cv::TermCriteria::EPS + cv::TermCriteria::COUNT, 30, 0.1 ));
 
     // now calculate matching
     homographies.clear();
@@ -592,15 +584,15 @@ bool CaptureMultiUSBCamera::Stitch()
     stitchPoints[0].insert(stitchPoints[0].end(), points0.begin(), points0.end());
     stitchPoints[1].insert(stitchPoints[1].end(), points1.begin(), points1.end());
 
-    H = findHomography( stitchPoints[1], stitchPoints[0], CV_RANSAC );
+    H = findHomography( stitchPoints[1], stitchPoints[0], cv::RANSAC );
     homographies.push_back(H);
 
     //-- Get the corners from the image_1 ( the object to be "detected" )
     std::vector<Point2f> corners(4);
-    corners[0] = cvPoint(0,0);
-    corners[1] = cvPoint( subcaptures[1]->frame.cols, 0 );
-    corners[2] = cvPoint( subcaptures[1]->frame.cols, subcaptures[1]->frame.rows );
-    corners[3] = cvPoint( 0, subcaptures[1]->frame.rows );
+    corners[0] = cv::Point2f(0,0);
+    corners[1] = cv::Point2f( subcaptures[1]->frame.cols, 0 );
+    corners[2] = cv::Point2f( subcaptures[1]->frame.cols, subcaptures[1]->frame.rows );
+    corners[3] = cv::Point2f( 0, subcaptures[1]->frame.rows );
     std::vector<Point2f> warpedCorners(4);
 
     perspectiveTransform( corners, warpedCorners, H);
@@ -647,7 +639,7 @@ bool CaptureMultiUSBCamera::Stitch()
     // now calculate copy masks
     std::vector<cv::Mat> masks;
     masks.resize(2);
-    
+
     // 1 create a mask of the first image
     masks[0] = Mat::zeros(frame.size(), CV_8U);
     Mat tmp0 = Mat::ones(subcaptures[0]->frame.size(), CV_8U);
@@ -659,15 +651,15 @@ bool CaptureMultiUSBCamera::Stitch()
     Mat tmp1 = Mat::ones(subcaptures[1]->frame.size(), CV_8U);
     subcaptures[1]->calibration.Undistort(tmp1);
     warpPerspective(tmp1, masks[1], homographies[1], masks[1].size());
-    
+
     // 3 create new accumulator and add the 2 masks so as to have different zones
     Mat accu = masks[0].clone();
     accu += masks[1];
-    
+
     // 4 keep only intersection
     Mat overlap;
     threshold (accu, overlap, 1, 1, THRESH_BINARY);
-    
+
     // 5 find overlap bounding box and center of mass
     long int cx = 0;
     long int cy = 0;
@@ -691,33 +683,33 @@ bool CaptureMultiUSBCamera::Stitch()
     cx /= n;
     cy /= n;
     Rect box = boundingRect(pts);
-    
+
     // 5 define a separation line based on center of masses
     Point c0;
     c0.x = rect0.x - shiftx + rect0.width / 2;
     c0.y = rect0.y - shifty + rect0.height / 2;
-    
+
     Point c1;
     c1 = warpedCorners[0] + warpedCorners[1] + warpedCorners[2] + warpedCorners[3];
     c1.x /= 4;
     c1.y /= 4;
-    
+
     Point diff = c1 - c0;
-    
+
     float A, B;
-    
+
     // separation line has a slope != infinity
     if (diff.y != 0)
     {
 	A = float(-diff.x) / float(diff.y);
 	B = float(cy) - A * float(cx);
-	
+
 	// 6 scan overlap region and assign pixels to masks
 	bool maskAbove = true;
-	
+
 	if (c0.y < c0.x * A + B)
 	    maskAbove = false;
-	
+
 	Mat region = overlap (box);
 	for (int y = 0; y < region.rows; y++)
 	{
@@ -732,7 +724,7 @@ bool CaptureMultiUSBCamera::Stitch()
 		    int py = y + box.y;
 		    if (py < px * A + B)
 			pixelAbove = false;
-		    
+
 		    if (maskAbove != pixelAbove)
 			masks[0].at<unsigned char> (py, px) = 0;
 		}
@@ -745,10 +737,10 @@ bool CaptureMultiUSBCamera::Stitch()
     {
 	// 6 scan overlap region and assign pixels to masks
 	bool maskLeft = true;
-	
+
 	if (c0.x > cx)
 	    maskLeft = false;
-	
+
 	Mat region = overlap (box);
 	for (int y = 0; y < region.rows; y++)
 	{
@@ -761,7 +753,7 @@ bool CaptureMultiUSBCamera::Stitch()
 		    bool pixelLeft = true;
 		    if (x + box.x > cx)
 			pixelLeft = false;
-		    
+
 		    if (maskLeft != pixelLeft)
 			masks[0].at<unsigned char> (y + box.y, x + box.x) = 0;
 		}
@@ -769,9 +761,9 @@ bool CaptureMultiUSBCamera::Stitch()
 	    }
 	}
     }
-    
-    stitchMasks = masks; 
+
+    stitchMasks = masks;
     stitched = true;
-    
+
     return true;
 }

@@ -20,17 +20,13 @@
 #include "RecordVideo.h"
 
 
-#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/highgui.hpp>
 #include "ImageProcessingEngine.h"
 
 #include <iostream>
 
-using namespace cv;
-using namespace std;
-
 RecordVideo::RecordVideo() : PipelinePlugin()
 {
-    av_register_all();
 }
 
 RecordVideo::~RecordVideo()
@@ -47,48 +43,30 @@ void RecordVideo::OpenOutput ()
     frameCount = 0;
 
     av_log_set_level(AV_LOG_FATAL);
-//    av_log_set_level(AV_LOG_VERBOSE);
 
-
-    output_format = av_guess_format(NULL, outputFilename.c_str(), NULL);
+    const AVOutputFormat* output_format = av_guess_format(NULL, outputFilename.c_str(), NULL);
     if (!output_format) {
-	cerr << "Could not deduce output format from file extension: using MPEG." << endl;
-//        printf("Could not deduce output format from file extension: using MPEG.\n");
+	std::cerr << "Could not deduce output format from file extension: using MPEG." << std::endl;
         output_format = av_guess_format("mpeg", NULL, NULL);
     }
     if (!output_format) {
-	cerr << "Could not find suitable output format" << endl;
+	std::cerr << "Could not find suitable output format" << std::endl;
         return;
     }
+    this->output_format = output_format;
+
     /* Allocate the output media context. */
     format_context = avformat_alloc_context();
     if (!format_context) {
-        cerr << "Memory error" << endl;
+        std::cerr << "Memory error" << std::endl;
         return;
     }
     format_context->oformat = output_format;
 
-
-    // FFMPEG STYLE
-    // create output context
-    // avformat_alloc_output_context2(&format_context, NULL, NULL, outputFilename.c_str());
-    // if (!format_context) {
-    // 	cerr << "Could not deduce output format from file extension: using MPEG." << endl;
-    // 	avformat_alloc_output_context2(&format_context, NULL, "mpeg", outputFilename.c_str());
-    // }
-
-//////    avformat_open_input(&format_context, outputFilename.c_str(), NULL, NULL);
-    // if (!format_context)
-    // {
-    // 	cerr << "Could not create a format context" << endl;
-    // 	return;
-    // }
-    // output_format = format_context->oformat;
-
     /* find the video encoder */
     codec = avcodec_find_encoder(AV_CODEC_ID_H264);
     if (!codec) {
-    	cerr << "H264 codec not found\n" << endl;
+    	std::cerr << "H264 codec not found" << std::endl;
     	return;
     }
 
@@ -101,12 +79,18 @@ void RecordVideo::OpenOutput ()
      //create video stream
      video_stream = avformat_new_stream(format_context, codec);
      if (!video_stream) {
-	 cerr << "Could not allocate stream" << endl;
+	 std::cerr << "Could not allocate stream" << std::endl;
 	 return;
      }
      video_stream->id = format_context->nb_streams-1;
      video_stream->start_time = 0;
-     codec_context = video_stream->codec;
+
+     // create a separate codec context
+     codec_context = avcodec_alloc_context3(codec);
+     if (!codec_context) {
+	 std::cerr << "Could not allocate codec context" << std::endl;
+	 return;
+     }
 
      // video stream
      codec_context->codec_id = AV_CODEC_ID_H264;
@@ -121,9 +105,7 @@ void RecordVideo::OpenOutput ()
     codec_context->height = pipeline->height;
 
     /* frames per second */
-//    codec_context->gop_size = 120; /* emit one intra frame every X frames */
     codec_context->pix_fmt = AV_PIX_FMT_YUV420P;
-
 
     /* time base: this is the fundamental unit of time (in seconds) in terms
        of which frame timestamps are represented. for fixed-fps content,
@@ -139,84 +121,83 @@ void RecordVideo::OpenOutput ()
     codec_context->time_base.num = frame_rate_base;
     video_stream->time_base = codec_context->time_base;
     /* adjust time base for supported framerates */
-    if(codec && codec->supported_framerates)
+    if(codec)
     {
-        const AVRational *p= codec->supported_framerates;
-        AVRational req = {frame_rate, frame_rate_base};
-        const AVRational *best=NULL;
-        AVRational best_error= {INT_MAX, 1};
-        for(; p->den!=0; p++)
-    	{
-            AVRational error= av_sub_q(req, *p);
-            if(error.num <0) error.num *= -1;
-            if(av_cmp_q(error, best_error) < 0)
-    	    {
-                best_error= error;
-                best= p;
+        const AVRational *p = NULL;
+        int count = 0;
+        if (avcodec_get_supported_config(codec_context, codec,
+                AV_CODEC_CONFIG_FRAME_RATE, 0,
+                (const void **)&p, &count) == 0 && p && count > 0)
+        {
+            AVRational req = {frame_rate, frame_rate_base};
+            const AVRational *best = NULL;
+            AVRational best_error = {INT_MAX, 1};
+            for(int i = 0; i < count; i++)
+            {
+                AVRational error = av_sub_q(req, p[i]);
+                if(error.num < 0) error.num *= -1;
+                if(av_cmp_q(error, best_error) < 0)
+                {
+                    best_error = error;
+                    best = &p[i];
+                }
+            }
+            if (best)
+            {
+                codec_context->time_base.den = best->num;
+                codec_context->time_base.num = best->den;
+                video_stream->time_base = codec_context->time_base;
             }
         }
-        codec_context->time_base.den= best->num;
-        codec_context->time_base.num= best->den;
-	video_stream->time_base = codec_context->time_base;
     }
 
     /* Some formats want stream headers to be separate. */
     if (format_context->oformat->flags & AVFMT_GLOBALHEADER)
-    	codec_context->flags |= CODEC_FLAG_GLOBAL_HEADER;
+    	codec_context->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     /* open it */
     if (avcodec_open2(codec_context, codec, NULL) < 0) {
-    	fprintf(stderr, "Could not open codec\n");
-    	exit(1);
+    	std::cerr << "Could not open codec" << std::endl;
+    	return;
     }
 
-    //frame = alloc_picture(codec_context->pix_fmt, pipeline->width, pipeline->height);
+    /* copy codec parameters to the stream */
+    avcodec_parameters_from_context(video_stream->codecpar, codec_context);
 
-    // FFMPEG STYLE
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
     frame = av_frame_alloc();
-#else
-    frame = avcodec_alloc_frame();
-#endif
-    
     frame->format = codec_context->pix_fmt;
     frame->width  = pipeline->width;
     frame->height = pipeline->height;
     frame->pts = 0;
-    frame->pkt_pts = 0;
-    frame->pkt_dts = 0;
 
     /* the image can be allocated by any means and av_image_alloc() is
      * just the most convenient way if av_malloc() is to be used */
     int ret = av_image_alloc(frame->data, frame->linesize, pipeline->width, pipeline->height, codec_context->pix_fmt, 32);
     if (ret < 0) {
-    	cerr << "Could not allocate raw picture buffer" << endl;
+    	std::cerr << "Could not allocate raw picture buffer" << std::endl;
     	return;
     }
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
-    frameBGR=av_frame_alloc();
-#else
-    frameBGR=avcodec_alloc_frame();
-#endif
-    
-    int numBytes=avpicture_get_size(AV_PIX_FMT_RGB24, pipeline->width, pipeline->height);
-    buffer=(uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
+    frameBGR = av_frame_alloc();
+    int numBytes = av_image_get_buffer_size(AV_PIX_FMT_RGB24, pipeline->width, pipeline->height, 1);
+    buffer = (uint8_t *)av_malloc(numBytes*sizeof(uint8_t));
     memset (buffer, 0, numBytes * sizeof(uint8_t));
-    avpicture_fill((AVPicture *)frameBGR, buffer, AV_PIX_FMT_RGB24, pipeline->width, pipeline->height);
-
-    // av_dump_format(format_context, 0, outputFilename.c_str(), 1);
+    av_image_fill_arrays(frameBGR->data, frameBGR->linesize, buffer, AV_PIX_FMT_RGB24, pipeline->width, pipeline->height, 1);
 
     /* open the output file, if needed */
     if (!(output_format->flags & AVFMT_NOFILE)) {
         if (avio_open(&format_context->pb, outputFilename.c_str(), AVIO_FLAG_WRITE) < 0) {
-            cerr << "Could not open video output file " << outputFilename << endl;
+            std::cerr << "Could not open video output file " << outputFilename << std::endl;
             return;
         }
     }
 
     /* Write the stream header, if any. */
-    avformat_write_header(format_context, NULL);
+    int ret2 = avformat_write_header(format_context, NULL);
+    if (ret2 < 0) {
+        std::cerr << "Could not write video header" << std::endl;
+        return;
+    }
 
     outputOpened = true;
 }
@@ -245,18 +226,12 @@ void RecordVideo::OutputStep ()
     }
     sws_scale(img_convert_ctx, frameBGR->data, frameBGR->linesize, 0, pipeline->height, frame->data, frame->linesize);
 
-    AVPacket packet;
-    av_init_packet(&packet);
-    packet.data = NULL;    // packet data will be allocated by the encoder
-    packet.size = 0;
-
     // PTS calculation
     double pts = pipeline->parent->capture->GetTime() * pipeline->parent->capture->fps;
     int lpts = round(pts);
 
     if (lpts > frameCount)
     {
-//	cout << "Skipping a frame, from/to : " << frameCount << " " << lpts << endl;
 	frameCount = lpts;
     }
 
@@ -264,28 +239,33 @@ void RecordVideo::OutputStep ()
     frameCount++;
 
     /* encode the image */
-    int got_output;
-    int ret = avcodec_encode_video2(codec_context, &packet, frame, &got_output);
-    if (ret < 0) {
-	cerr << "Error encoding frame" << endl;
-	return;
+    AVPacket* pkt = av_packet_alloc();
+    int ret = avcodec_send_frame(codec_context, frame);
+    while (ret >= 0) {
+	ret = avcodec_receive_packet(codec_context, pkt);
+	if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) break;
+	if (ret < 0) { std::cerr << "Error encoding frame" << std::endl; break; }
+	av_packet_rescale_ts(pkt, codec_context->time_base, video_stream->time_base);
+	av_interleaved_write_frame(format_context, pkt);
+	av_packet_unref(pkt);
     }
-
-    if (got_output)
-    {
-	packet.pts = av_rescale_q(packet.pts, codec_context->time_base, video_stream->time_base);
-	packet.dts = av_rescale_q(packet.dts, codec_context->time_base, video_stream->time_base);
-
-	// FFMPEG STYLE
-//	av_packet_rescale_ts(&packet, codec_context->time_base, video_stream->time_base);
-	ret = av_interleaved_write_frame(format_context, &packet);
-    }
+    av_packet_free(&pkt);
 }
 
 
 void RecordVideo::CloseOutput ()
 {
     if (!outputOpened) return;
+
+    // flush encoder by sending NULL frame
+    avcodec_send_frame(codec_context, nullptr);
+    AVPacket* pkt = av_packet_alloc();
+    while (avcodec_receive_packet(codec_context, pkt) == 0) {
+	av_packet_rescale_ts(pkt, codec_context->time_base, video_stream->time_base);
+	av_interleaved_write_frame(format_context, pkt);
+	av_packet_unref(pkt);
+    }
+    av_packet_free(&pkt);
 
     av_write_trailer(format_context);
 
@@ -295,34 +275,18 @@ void RecordVideo::CloseOutput ()
     	avio_close(format_context->pb);
     }
 
-    /* free the streams */
-    for(unsigned int i = 0; i < format_context->nb_streams; i++) {
-    	av_freep(&format_context->streams[i]->codec);
-    	av_freep(&format_context->streams[i]);
-    }
+    /* free the format context and its streams */
+    avformat_free_context(format_context);
 
-    /* free the stream */
-    av_free(format_context);
+    /* free the codec context */
+    avcodec_free_context(&codec_context);
 
     // free the frame
     av_freep(&frame->data[0]);
-
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
     av_frame_free(&frame);
-#else
-    avcodec_free_frame(&frame);
-#endif
-    
-    av_freep(&frameBGR->data[0]);
 
-    
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
+    av_freep(&frameBGR->data[0]);
     av_frame_free(&frameBGR);
-#else    
-    avcodec_free_frame(&frameBGR);
-#endif
-    
-//    av_free(buffer);
 
     outputOpened = false;
 }
@@ -330,7 +294,6 @@ void RecordVideo::CloseOutput ()
 
 void RecordVideo::Reset()
 {
-//    if (output) OpenOutput();
 }
 
 
@@ -338,19 +301,19 @@ void RecordVideo::Apply()
 {
 }
 
-void RecordVideo::LoadXML (FileNode& fn)
+void RecordVideo::LoadXML (cv::FileNode& fn)
 {
     if (!fn.empty())
     {
 	active = (int)fn["Active"];
 	output = (int)fn["Output"];
-	outputFilename = (string)fn["OutputFilename"];
-	preset = (string)fn["Preset"];
+	outputFilename = (std::string)fn["OutputFilename"];
+	preset = (std::string)fn["Preset"];
 	bitrate = (int)fn["Bitrate"];
     }
 }
 
-void RecordVideo::SaveXML (FileStorage& fs)
+void RecordVideo::SaveXML (cv::FileStorage& fs)
 {
     fs << "Active" << active;
     fs << "Output" << output;
@@ -358,6 +321,3 @@ void RecordVideo::SaveXML (FileStorage& fs)
     fs << "Preset" << preset;
     fs << "Bitrate" << (int)bitrate;
 }
-
-
-

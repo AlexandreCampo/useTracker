@@ -20,7 +20,6 @@
 #include "CaptureVideo.h"
 
 #include <iostream>
-#include <wx/time.h>
 #include <cmath>
 
 using namespace std;
@@ -55,74 +54,76 @@ bool CaptureVideo::Open (string filename)
     // open the video file
     this->filename = filename;
 
-    memset(&avpacket, 0, sizeof(avpacket));
-    av_init_packet (&avpacket);
-    av_register_all();
-	    	    
+    avpacket = av_packet_alloc();
+
     av_log_set_level(AV_LOG_VERBOSE);
-    
+
     // Open video file
     if (avformat_open_input(&format_context, filename.c_str(), NULL, NULL) < 0)
     {
 	cerr << "Error : Could not open video file " << filename << endl;
 	return 0;
     }
-    
+
     // Retrieve stream information
-    if (avformat_find_stream_info(format_context, NULL) < 0) 
+    if (avformat_find_stream_info(format_context, NULL) < 0)
     {
 	cerr << "Error : Could not find stream information in video file " << filename << endl;
 	return 0;
     }
-  
+
     video_stream_idx = av_find_best_stream(format_context, AVMEDIA_TYPE_VIDEO, -1, -1, NULL, 0);
-    if (video_stream_idx < 0) 
+    if (video_stream_idx < 0)
 	return 0;
 
     video_stream = format_context->streams[video_stream_idx];
-    if (!video_stream) 
+    if (!video_stream)
     {
-	cerr << "Error : Could not find video stream in the input, aborting" << endl; 
+	cerr << "Error : Could not find video stream in the input, aborting" << endl;
 	return 0;
     }
 
     /* find decoder for the stream */
-    codec_context = video_stream->codec;
-    codec = avcodec_find_decoder(codec_context->codec_id);
-    if (!codec) 
+    codec = avcodec_find_decoder(video_stream->codecpar->codec_id);
+    if (!codec)
     {
 	cerr << "Error : Failed to find codec" << endl;
 	return 0;
     }
-    if ((ret = avcodec_open2(codec_context, codec, NULL)) < 0) 
+
+    codec_context = avcodec_alloc_context3(codec);
+    if (!codec_context)
+    {
+	cerr << "Error : Failed to allocate codec context" << endl;
+	return 0;
+    }
+
+    if (avcodec_parameters_to_context(codec_context, video_stream->codecpar) < 0)
+    {
+	cerr << "Error : Failed to copy codec parameters to context" << endl;
+	return 0;
+    }
+
+    if ((ret = avcodec_open2(codec_context, codec, NULL)) < 0)
     {
 	cerr << "Error : Failed to open codec" << endl;
 	return 0;
     }
-    
-    // av_dump_format(format_context, 0, filename.c_str(), 0);
 
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
     avframe = av_frame_alloc();
-#else
-    avframe = avcodec_alloc_frame();
-#endif
-    
+
     if (video_stream->avg_frame_rate.den > 0)
 	fps = av_q2d(video_stream->avg_frame_rate);
-    else 
+    else
 	fps = av_q2d(video_stream->r_frame_rate);
-    
+
     // Determine required buffer size and allocate buffer
     width = codec_context->width;
     height = codec_context->height;
 
     cout << "detected w/h/fps " << width << " " << height << " " << fps << std::endl;
 
-    memset( &frameBGR, 0, sizeof(frameBGR) );
-
-    
-    switch (codec_context->pix_fmt) 
+    switch (codec_context->pix_fmt)
     {
     case AV_PIX_FMT_YUVJ420P : pixel_format = AV_PIX_FMT_YUV420P; break;
     case AV_PIX_FMT_YUVJ422P : pixel_format = AV_PIX_FMT_YUV422P; break;
@@ -133,83 +134,79 @@ bool CaptureVideo::Open (string filename)
         break;
     }
 
-    
     // prepare context for conversion to opencv Mat
-    img_convert_ctx = sws_getContext(width, height, 
-				     //codec_context->pix_fmt,
+    img_convert_ctx = sws_getContext(width, height,
 				     pixel_format,
 				     width, height, AV_PIX_FMT_BGR24, SWS_FAST_BILINEAR,
 				     NULL, NULL, NULL);
-    
-    // Assign opencv mat buffer buffer to image planes in frameRGB
-    // TODO is frameBGR linesize identical to mat linesize ?
-    frame = Mat::zeros (height, width, CV_8UC3); 
-    avpicture_fill((AVPicture *)&frameBGR, frame.data, AV_PIX_FMT_BGR24, width, height);
-    
+
+    // Assign opencv mat buffer to image planes in frameBGR
+    frame = Mat::zeros (height, width, CV_8UC3);
+    frameBGR = av_frame_alloc();
+    av_image_fill_arrays(frameBGR->data, frameBGR->linesize,
+                         frame.data, AV_PIX_FMT_BGR24, width, height, 1);
+
     GrabFrame();
     ConvertFrame();
     calibration.Undistort(frame);
 
-    deltaPts = 1.0 / fps / av_q2d(video_stream->time_base) + 0.5; // initial approximation
-    frameDelay.Assign (deltaPts * av_q2d(video_stream->time_base) * 1000000.0);
+    deltaPts = (int64_t)(1.0 / fps / av_q2d(video_stream->time_base) + 0.5); // initial approximation
+    frameDelay = (int64_t)(deltaPts * av_q2d(video_stream->time_base) * 1000000.0);
     currentPts = nextPts;
-    firstPts = nextPts;    
+    firstPts = nextPts;
     frameNumber = 0;
-    playSpeed.Assign(1.0);
+    playSpeed = 1;
     isPaused = true;
-    nextFrameTime = wxGetUTCTimeUSec();
-
-//    cout << "Opened video : start_time " << video_stream->start_time << " firstPts " << firstPts << " fps " << fps << " nb_frames " << video_stream->nb_frames << " duration1 " << (double)format_context->duration / (double)AV_TIME_BASE << " duration2 " <<  video_stream->duration * av_q2d(video_stream->time_base) << " d() = " << GetDuration() << " tb " << video_stream->time_base.num << ":" << video_stream->time_base.den << " ctb " << video_stream->codec->time_base.num << ":" << video_stream->codec->time_base.den << " init time " << GetTime() << endl;
+    nextFrameTime = GetUTCTimeUSec();
 
     return true;
 }
 
 void CaptureVideo::Close ()
 {
-    // Free the YUV and BGR frames
-#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(55,28,1)
-    av_frame_free(&avframe);
-#else
-    av_free(avframe);
-#endif
-    
-    // Close the codec
-    if (codec_context) avcodec_close(codec_context);
+    // Free the frames
+    if (avframe) av_frame_free(&avframe);
+    if (frameBGR) av_frame_free(&frameBGR);
+
+    // Free the packet
+    if (avpacket) av_packet_free(&avpacket);
+
+    // Close the codec context
+    if (codec_context) avcodec_free_context(&codec_context);
 
     // close convert context
-    if( img_convert_ctx ) sws_freeContext(img_convert_ctx);
+    if (img_convert_ctx) sws_freeContext(img_convert_ctx);
+    img_convert_ctx = nullptr;
 
     // Close the video file
-    avformat_close_input(&format_context);
+    if (format_context) avformat_close_input(&format_context);
 }
 
 bool CaptureVideo::GrabFrame ()
 {
-    int frameFinished; 
-        
-    while (1) 
+    while (1)
     {
-	// free packet if previously allocated 
-	av_free_packet (&avpacket);
-
 	// get next packet
-	int ret = av_read_frame(format_context, &avpacket);
+	av_packet_unref(avpacket);
+	int ret = av_read_frame(format_context, avpacket);
 
 	if (ret < 0) break;
         if (ret == AVERROR(EAGAIN)) continue;
-	
+
 	// Is this a packet from the video stream?
-	if(avpacket.stream_index == video_stream_idx) 
+	if(avpacket->stream_index == video_stream_idx)
 	{
-	    // Decode video frame
-	    avcodec_decode_video2(codec_context, avframe, &frameFinished, &avpacket);
-	    
-	    // Did we get a video frame?
-	    if(frameFinished) 
-	    {
-		EstimateFrameTimings();
-		return true;
-	    }
+	    // Send packet to decoder
+	    ret = avcodec_send_packet(codec_context, avpacket);
+	    if (ret < 0) break;
+
+	    // Receive decoded frame
+	    ret = avcodec_receive_frame(codec_context, avframe);
+	    if (ret == AVERROR(EAGAIN)) continue;
+	    if (ret < 0) break;
+
+	    EstimateFrameTimings();
+	    return true;
 	}
     }
     return false;
@@ -219,17 +216,17 @@ bool CaptureVideo::ConvertFrame ()
 {
     // prepare context for conversion to opencv Mat
     if (img_convert_ctx == NULL)
-	img_convert_ctx = sws_getContext(width, height, 
-					 //codec_context->pix_fmt,
+	img_convert_ctx = sws_getContext(width, height,
 					 pixel_format,
 					 width, height, AV_PIX_FMT_BGR24, SWS_FAST_BILINEAR,
 					 NULL, NULL, NULL);
 
-    avpicture_fill( (AVPicture*)&frameBGR, frame.data, AV_PIX_FMT_BGR24, width, height );
+    av_image_fill_arrays(frameBGR->data, frameBGR->linesize,
+                         frame.data, AV_PIX_FMT_BGR24, width, height, 1);
 
     // Convert the image from its native format to BGR opencv Mat
-    sws_scale(img_convert_ctx, avframe->data, avframe->linesize, 0, height, frameBGR.data, frameBGR.linesize);
-  
+    sws_scale(img_convert_ctx, avframe->data, avframe->linesize, 0, height, frameBGR->data, frameBGR->linesize);
+
     return true;
 }
 
@@ -243,9 +240,9 @@ void CaptureVideo::EstimateFrameTimings()
     {
 	nextPts = avframe->pkt_dts;
     }
-    else if (avframe->pkt_pts != AV_NOPTS_VALUE)
+    else if (avframe->pts != AV_NOPTS_VALUE)
     {
-	nextPts = avframe->pkt_pts;
+	nextPts = avframe->pts;
     }
     // no valid pts found, make a prediction instead
     else
@@ -254,7 +251,7 @@ void CaptureVideo::EstimateFrameTimings()
     }
 
     deltaPts = nextPts - currentPts;
-    frameDelay.Assign (deltaPts * av_q2d(video_stream->time_base) * 1000000.0);
+    frameDelay = (int64_t)(deltaPts * av_q2d(video_stream->time_base) * 1000000.0);
 }
 
 bool CaptureVideo::GetNextFrame ()
@@ -265,8 +262,6 @@ bool CaptureVideo::GetNextFrame ()
     if (!GrabFrame ())
 	return false;
 
-//    cout << "GetNextFrame : " << " pts:dts " << avframe->pkt_pts << ":" << avframe->pkt_dts << " tb " << video_stream->time_base.num << ":" << video_stream->time_base.den << endl;
-    
     calibration.Undistort(frame);
 
     nextFrameTime += frameDelay * playSpeed;
@@ -274,7 +269,7 @@ bool CaptureVideo::GetNextFrame ()
     return true;
 }
 
-wxLongLong CaptureVideo::GetNextFrameSystemTime()
+int64_t CaptureVideo::GetNextFrameSystemTime()
 {
     return nextFrameTime;
 }
@@ -290,7 +285,7 @@ void CaptureVideo::Play()
     // restart timing
     if (isPaused || isStopped)
     {
-	nextFrameTime = wxGetUTCTimeUSec() + frameDelay * playSpeed;
+	nextFrameTime = GetUTCTimeUSec() + frameDelay * playSpeed;
 
 	isPaused = false;
 	isStopped = false;
@@ -324,10 +319,10 @@ void CaptureVideo::Rewind ()
     long d = deltaPts;
 
     GrabFrame();
-    
+
     // we jumped frames back or forward, but we try to maintain same playback
     deltaPts = d;
-    frameDelay.Assign (deltaPts * av_q2d(video_stream->time_base) * 1000000.0);
+    frameDelay = (int64_t)(deltaPts * av_q2d(video_stream->time_base) * 1000000.0);
 
     ConvertFrame();
     frameNumber = 0;
@@ -335,10 +330,10 @@ void CaptureVideo::Rewind ()
 
 
 bool CaptureVideo::GetFrame (double desiredTime)
-{       
+{
     long targetPts = firstPts + desiredTime / av_q2d(video_stream->time_base);
     SeekTimestamp(targetPts);
-    
+
     return true;
 }
 
@@ -348,14 +343,12 @@ void CaptureVideo::SetTime (double desiredTime)
 }
 
 void CaptureVideo::SeekTimestamp (long targetPts)
-{    
+{
     if (targetPts == currentPts) return;
 
     if (targetPts < firstPts) targetPts = firstPts;
 
     long previousDeltaPts = deltaPts;
-
-//    cout << "Seek 0 : " << " going from pts " << currentPts << " to pts " << targetPts << endl;
 
     // get closer from target frame, seeking to non keyframes
     av_seek_frame(format_context, video_stream_idx, targetPts, AVSEEK_FLAG_ANY);
@@ -363,62 +356,44 @@ void CaptureVideo::SeekTimestamp (long targetPts)
     ConvertFrame();
     GrabFrame();
 
-//    cout << "Seek 0.5 : " << " now at pts " << nextPts << endl;
-
-//    int flags = AVSEEK_FLAG_FRAME | AVSEEK_FLAG_BACKWARD;
-//    if (targetPts < currentPts) flags |= AVSEEK_FLAG_BACKWARD;
-
     // seek frame
     int attempts = 0;
     long t = targetPts;
-    long step = 1.0 / fps / av_q2d(video_stream->time_base) + 0.5;
+    long step = (long)(1.0 / fps / av_q2d(video_stream->time_base) + 0.5);
     do
     {
 	av_seek_frame(format_context, video_stream_idx, t, AVSEEK_FLAG_BACKWARD);
 	avcodec_flush_buffers(codec_context);
 	ConvertFrame();
 	GrabFrame();
-//	cout << "Seek 1a : is now at pts " << nextPts << " requested " << t << endl;
-	t -= step;	
+	t -= step;
     }	while (nextPts > targetPts && attempts++ < 30);
 
-//    cout << "Seek 1b : is now at pts " << nextPts << endl;
-
     // still ahead of desired frame ? then rewind
-    if (nextPts > targetPts) 
+    if (nextPts > targetPts)
     {
 	av_seek_frame(format_context, video_stream_idx, firstPts, AVSEEK_FLAG_BACKWARD | AVSEEK_FLAG_ANY);
 	avcodec_flush_buffers(codec_context);
 	ConvertFrame();
 	GrabFrame();
-    }    
-
-//    cout << "Seek 2 : is now at pts " << nextPts << endl;
-
-//    cout << "Seek 3 : ";
+    }
 
     // now go forward until desired frame is reached
-//    long step = 1.0 / fps / av_q2d(video_stream->time_base) + 0.5;
     while (nextPts <= targetPts)
     {
 	// convert only the final 5 frames
-	if (targetPts - nextPts <= step * 5) 
+	if (targetPts - nextPts <= step * 5)
 	    ConvertFrame();
 
 	if (!GrabFrame())
 	    break;
-
-//	cout << nextPts << " ";
     }
-//    cout << endl;
 
     // we jumped frames back or forward, but we try to maintain same playback
     deltaPts = previousDeltaPts;
-    frameDelay.Assign (deltaPts * av_q2d(video_stream->time_base) * 1000000.0);
+    frameDelay = (int64_t)(deltaPts * av_q2d(video_stream->time_base) * 1000000.0);
 
     frameNumber = RecalculateFrameNumberFromTimestamp();
-    
-//    cout << "Seek 4 : is now at pts " << nextPts << " deltaPts " << deltaPts << " frameDelay " << frameDelay.ToDouble() / 1000000.0 << " frame " << frameNumber << endl;
 
     calibration.Undistort(frame);
 
@@ -428,7 +403,7 @@ void CaptureVideo::SeekTimestamp (long targetPts)
 
 bool CaptureVideo::GetPreviousFrame()
 {
-    long step = 1.0 / fps / av_q2d(video_stream->time_base) + 0.5;
+    long step = (long)(1.0 / fps / av_q2d(video_stream->time_base) + 0.5);
     SeekTimestamp(currentPts - step);
 
     return true;
@@ -478,21 +453,22 @@ double CaptureVideo::GetDuration()
 void CaptureVideo::SetSpeedFaster(int speed)
 {
     if (speed > 1)
-	playSpeed.Assign(1.0 / (double)speed); 
-    else 
-	playSpeed.Assign (1.0);
+	playSpeed = (int64_t)(1000000.0 / (double)speed);
+    else
+	playSpeed = 1;
 
-    nextFrameTime = wxGetUTCTimeUSec() + frameDelay * playSpeed;
+    // recalculate using frame delay in microseconds
+    nextFrameTime = GetUTCTimeUSec() + frameDelay / (speed > 1 ? speed : 1);
 }
 
 void CaptureVideo::SetSpeedSlower(int speed)
 {
     if (speed > 1)
-	playSpeed.Assign(speed); 
-    else 
-	playSpeed.Assign(1.0);
+	playSpeed = speed;
+    else
+	playSpeed = 1;
 
-    nextFrameTime = wxGetUTCTimeUSec() + frameDelay * playSpeed;
+    nextFrameTime = GetUTCTimeUSec() + frameDelay * playSpeed;
 }
 
 void CaptureVideo::SaveXML(FileStorage& fs)
