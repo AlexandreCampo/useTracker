@@ -1652,38 +1652,39 @@ void AppGui::DrawPluginDialog(int index)
         ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
         if (p->restrictToZone)
             ImGui::InputInt("Zone", &p->zone);
+
+        // Sync to all thread instances
+        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+            if (auto* tp = dynamic_cast<AdaptiveThreshold*>(ipEngine.pipelines[t].plugins[index]))
+            {
+                tp->SetBlockSize(p->blockSize);
+                tp->SetConstant(p->constant);
+                tp->SetThresholdMethod(p->thresholdMethod);
+                tp->additive = p->additive;
+                tp->invert = p->invert;
+                tp->restrictToZone = p->restrictToZone;
+                tp->zone = p->zone;
+            }
     }
 
     // --- ExtractMotion (background difference) ---
     else if (ExtractMotion* p = dynamic_cast<ExtractMotion*>(pp))
     {
-        if (ImGui::InputInt("Threshold", &p->threshold))
-        {
-            for (unsigned int t = 0; t < ipEngine.threadsCount; t++)
-                if (auto* tp = dynamic_cast<ExtractMotion*>(ipEngine.pipelines[t].plugins[index]))
-                    tp->threshold = p->threshold;
-        }
-        if (ImGui::Checkbox("Additive", &p->additive))
-        {
-            for (unsigned int t = 0; t < ipEngine.threadsCount; t++)
-                if (auto* tp = dynamic_cast<ExtractMotion*>(ipEngine.pipelines[t].plugins[index]))
-                    tp->additive = p->additive;
-        }
-        if (ImGui::Checkbox("Restrict to Zone", &p->restrictToZone))
-        {
-            for (unsigned int t = 0; t < ipEngine.threadsCount; t++)
-                if (auto* tp = dynamic_cast<ExtractMotion*>(ipEngine.pipelines[t].plugins[index]))
-                    tp->restrictToZone = p->restrictToZone;
-        }
+        ImGui::InputInt("Threshold", &p->threshold);
+        ImGui::Checkbox("Additive", &p->additive);
+        ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
         if (p->restrictToZone)
-        {
-            if (ImGui::InputInt("Zone", &p->zone))
+            ImGui::InputInt("Zone", &p->zone);
+
+        // Sync to all thread instances
+        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+            if (auto* tp = dynamic_cast<ExtractMotion*>(ipEngine.pipelines[t].plugins[index]))
             {
-                for (unsigned int t = 0; t < ipEngine.threadsCount; t++)
-                    if (auto* tp = dynamic_cast<ExtractMotion*>(ipEngine.pipelines[t].plugins[index]))
-                        tp->zone = p->zone;
+                tp->threshold = p->threshold;
+                tp->additive = p->additive;
+                tp->restrictToZone = p->restrictToZone;
+                tp->zone = p->zone;
             }
-        }
     }
 
     // --- BackgroundDiffMOG ---
@@ -1715,6 +1716,20 @@ void AppGui::DrawPluginDialog(int index)
         ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
         if (p->restrictToZone)
             ImGui::InputInt("Zone", &p->zone);
+
+        // Sync to all thread instances
+        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+            if (auto* tp = dynamic_cast<BackgroundDiffMOG*>(ipEngine.pipelines[t].plugins[index]))
+            {
+                tp->SetHistory(p->history);
+                tp->SetNMixtures(p->nMixtures);
+                tp->SetBackgroundRatio(p->backgroundRatio);
+                tp->SetNoiseSigma(p->noiseSigma);
+                tp->learningRate = p->learningRate;
+                tp->additive = p->additive;
+                tp->restrictToZone = p->restrictToZone;
+                tp->zone = p->zone;
+            }
     }
 
     // --- BackgroundDiffMOG2 ---
@@ -1740,6 +1755,19 @@ void AppGui::DrawPluginDialog(int index)
         ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
         if (p->restrictToZone)
             ImGui::InputInt("Zone", &p->zone);
+
+        // Sync to all thread instances
+        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+            if (auto* tp = dynamic_cast<BackgroundDiffMOG2*>(ipEngine.pipelines[t].plugins[index]))
+            {
+                tp->SetHistory(p->history);
+                tp->SetThreshold(p->threshold);
+                tp->SetShadowDetection(p->shadowDetection);
+                tp->learningRate = p->learningRate;
+                tp->additive = p->additive;
+                tp->restrictToZone = p->restrictToZone;
+                tp->zone = p->zone;
+            }
     }
 
     // --- BackgroundDiffGMG ---
@@ -1753,6 +1781,16 @@ void AppGui::DrawPluginDialog(int index)
         ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
         if (p->restrictToZone)
             ImGui::InputInt("Zone", &p->zone);
+
+        // Sync to all thread instances
+        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+            if (auto* tp = dynamic_cast<BackgroundDiffGMG*>(ipEngine.pipelines[t].plugins[index]))
+            {
+                tp->learningRate = p->learningRate;
+                tp->additive = p->additive;
+                tp->restrictToZone = p->restrictToZone;
+                tp->zone = p->zone;
+            }
     }
 
     // --- ColorSegmentation ---
@@ -1798,6 +1836,20 @@ void AppGui::DrawPluginDialog(int index)
         ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
         if (p->restrictToZone)
             ImGui::InputInt("Zone", &p->zone);
+
+        // Sync to all thread instances
+        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+            if (auto* tp = dynamic_cast<ColorSegmentation*>(ipEngine.pipelines[t].plugins[index]))
+            {
+                tp->type = p->type;
+                tp->minHSV = p->minHSV;
+                tp->maxHSV = p->maxHSV;
+                tp->minBGR = p->minBGR;
+                tp->maxBGR = p->maxBGR;
+                tp->additive = p->additive;
+                tp->restrictToZone = p->restrictToZone;
+                tp->zone = p->zone;
+            }
     }
 
     // --- Dilation ---
@@ -1867,6 +1919,18 @@ void AppGui::DrawPluginDialog(int index)
         ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
         if (p->restrictToZone)
             ImGui::InputInt("Zone", &p->zone);
+
+        // Sync to all thread instances
+        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+            if (auto* tp = dynamic_cast<FrameDifference*>(ipEngine.pipelines[t].plugins[index]))
+            {
+                tp->SetThreshold(p->threshold);
+                tp->SetUsePipeline(p->usePipeline);
+                tp->additive = p->additive;
+                tp->invert = p->invert;
+                tp->restrictToZone = p->restrictToZone;
+                tp->zone = p->zone;
+            }
     }
 
     // --- MovingAverage ---
@@ -1881,7 +1945,20 @@ void AppGui::DrawPluginDialog(int index)
             p->SetThreshold((unsigned int)std::max(0, threshold));
 
         if (ImGui::Button("Clear History"))
+        {
             p->ClearHistory();
+            for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+                if (auto* tp = dynamic_cast<MovingAverage*>(ipEngine.pipelines[t].plugins[index]))
+                    tp->ClearHistory();
+        }
+
+        // Sync to all thread instances
+        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+            if (auto* tp = dynamic_cast<MovingAverage*>(ipEngine.pipelines[t].plugins[index]))
+            {
+                tp->SetLength(p->length);
+                tp->SetThreshold(p->threshold);
+            }
     }
 
     // --- Tracker ---
