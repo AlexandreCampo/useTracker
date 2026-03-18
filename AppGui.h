@@ -45,6 +45,7 @@ private:
     SDL_GLContext gl_context = nullptr;
     int windowWidth = 1280;
     int windowHeight = 800;
+    float dpiScale = 1.0f;
 
     // Video texture
     GLuint videoTexture = 0;
@@ -63,6 +64,7 @@ private:
     float processingBlending = 0.0f;
     float videoSliderPos = 0.0f;
     bool sliderMoving = false;
+    bool pendingScaleChange = false;
 
     // Zoom/pan
     float zoomStartX = 0.0f;
@@ -91,6 +93,7 @@ private:
     // Methods
     bool InitSDL();
     bool InitImGui();
+    void ApplyUIScale();
     void Cleanup();
 
     void UpdateEngine();

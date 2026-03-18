@@ -56,12 +56,15 @@ bool CaptureVideo::Open (string filename)
 
     avpacket = av_packet_alloc();
 
-    av_log_set_level(AV_LOG_VERBOSE);
+    av_log_set_level(AV_LOG_WARNING);
 
     // Open video file
-    if (avformat_open_input(&format_context, filename.c_str(), NULL, NULL) < 0)
+    int err = avformat_open_input(&format_context, filename.c_str(), NULL, NULL);
+    if (err < 0)
     {
-	cerr << "Error : Could not open video file " << filename << endl;
+	char errbuf[AV_ERROR_MAX_STRING_SIZE];
+	av_strerror(err, errbuf, sizeof(errbuf));
+	cerr << "Error : Could not open video file " << filename << " (" << errbuf << ")" << endl;
 	return 0;
     }
 

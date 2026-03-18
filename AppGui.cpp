@@ -115,6 +115,16 @@ AppGui::~AppGui()
 
 bool AppGui::InitSDL()
 {
+    // Check for display environment before SDL_Init (which may crash without one)
+    const char* display = getenv("DISPLAY");
+    const char* wayland = getenv("WAYLAND_DISPLAY");
+    if (!display && !wayland)
+    {
+        std::cerr << "Error: No display server found (DISPLAY/WAYLAND_DISPLAY not set). "
+                  << "Use -n/--nogui for headless mode." << std::endl;
+        return false;
+    }
+
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
     {
         std::cerr << "SDL_Init error: " << SDL_GetError() << std::endl;
@@ -130,6 +140,15 @@ bool AppGui::InitSDL()
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+    // Detect display size
+    SDL_DisplayMode dm;
+    if (SDL_GetCurrentDisplayMode(0, &dm) == 0)
+    {
+        // Size window to 80% of the display
+        windowWidth = (int)(dm.w * 0.8f);
+        windowHeight = (int)(dm.h * 0.8f);
+    }
 
     Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
     window = SDL_CreateWindow(
@@ -170,16 +189,60 @@ bool AppGui::InitImGui()
 
     ImGui::StyleColorsDark();
 
-    // Adjust style slightly
-    ImGuiStyle& style = ImGui::GetStyle();
-    style.FrameRounding = 4.0f;
-    style.GrabRounding = 4.0f;
-    style.WindowRounding = 6.0f;
+    // Detect DPI scale
+    // Method 1: framebuffer vs window size ratio (works for HiDPI/Retina)
+    int ww, wh, fw, fh;
+    SDL_GetWindowSize(window, &ww, &wh);
+    SDL_GL_GetDrawableSize(window, &fw, &fh);
+    float detectedScale = (ww > 0) ? (float)fw / (float)ww : 1.0f;
+
+    // Method 2: SDL display DPI (works for high-res monitors with OS scaling)
+    if (detectedScale <= 1.0f)
+    {
+        float ddpi = 0.0f;
+        if (SDL_GetDisplayDPI(0, &ddpi, nullptr, nullptr) == 0 && ddpi > 0)
+            detectedScale = ddpi / 96.0f;
+    }
+
+    if (detectedScale < 1.0f) detectedScale = 1.0f;
+    dpiScale = detectedScale;
 
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
     ImGui_ImplOpenGL3_Init("#version 150");
 
+    ApplyUIScale();
+
     return true;
+}
+
+// ============================================================================
+// ApplyUIScale — rebuild font and style for current dpiScale
+// ============================================================================
+
+void AppGui::ApplyUIScale()
+{
+    ImGuiIO& io = ImGui::GetIO();
+
+    // Rebuild font at the new scale
+    io.Fonts->Clear();
+    ImFontConfig fontCfg;
+    fontCfg.SizePixels = 13.0f * dpiScale;
+    fontCfg.OversampleH = 2;
+    fontCfg.OversampleV = 2;
+    io.Fonts->AddFontDefault(&fontCfg);
+    io.FontGlobalScale = 1.0f;
+    io.Fonts->Build();
+    ImGui_ImplOpenGL3_DestroyFontsTexture();
+    ImGui_ImplOpenGL3_CreateFontsTexture();
+
+    // Reset ALL style values to defaults (StyleColorsDark only resets colors, not sizes)
+    ImGui::GetStyle() = ImGuiStyle();
+    ImGui::StyleColorsDark();
+    ImGuiStyle& style = ImGui::GetStyle();
+    style.FrameRounding = 4.0f;
+    style.GrabRounding = 4.0f;
+    style.WindowRounding = 6.0f;
+    style.ScaleAllSizes(dpiScale);
 }
 
 // ============================================================================
@@ -201,9 +264,12 @@ void AppGui::Cleanup()
     }
     icons.clear();
 
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplSDL2_Shutdown();
-    ImGui::DestroyContext();
+    if (ImGui::GetCurrentContext())
+    {
+        ImGui_ImplOpenGL3_Shutdown();
+        ImGui_ImplSDL2_Shutdown();
+        ImGui::DestroyContext();
+    }
 
     if (gl_context)
     {
@@ -215,7 +281,8 @@ void AppGui::Cleanup()
         SDL_DestroyWindow(window);
         window = nullptr;
     }
-    SDL_Quit();
+    if (SDL_WasInit(0))
+        SDL_Quit();
 }
 
 // ============================================================================
@@ -321,7 +388,27 @@ int AppGui::Run()
         {
             // Try opening as video
             CaptureVideo* cv_cap = new CaptureVideo(parameters.inputFilename);
-            ipEngine.capture = cv_cap;
+            if (cv_cap->type != Capture::NONE)
+            {
+                ipEngine.capture = cv_cap;
+            }
+            else
+            {
+                // Video failed, try as image
+                delete cv_cap;
+                CaptureImage* img_cap = new CaptureImage(parameters.inputFilename);
+                if (img_cap->type != Capture::NONE)
+                {
+                    ipEngine.capture = img_cap;
+                }
+                else
+                {
+                    delete img_cap;
+                    std::cerr << "Warning: Could not open " << parameters.inputFilename
+                              << ", starting with empty capture" << std::endl;
+                    ipEngine.capture = new CaptureDefault();
+                }
+            }
         }
         else if (parameters.usbDevice >= 0)
         {
@@ -370,6 +457,7 @@ int AppGui::Run()
             // Keyboard shortcuts
             if (event.type == SDL_KEYDOWN && !ImGui::GetIO().WantCaptureKeyboard)
             {
+                bool ctrl = (event.key.keysym.mod & KMOD_CTRL) != 0;
                 switch (event.key.keysym.sym)
                 {
                 case SDLK_SPACE:
@@ -379,9 +467,94 @@ int AppGui::Run()
                     else
                         ipEngine.capture->Pause();
                     break;
+
+                case SDLK_RIGHT:
+                    // Step forward one frame
+                    ipEngine.GetNextFrame();
+                    ipEngine.Step(hudVisible);
+                    break;
+
+                case SDLK_LEFT:
+                    // Step backward one frame
+                    if (ipEngine.capture && ipEngine.capture->GetFrameCount() > 0)
+                    {
+                        double t = ipEngine.capture->GetTime();
+                        double fps = ipEngine.capture->GetFPS();
+                        if (fps > 0)
+                        {
+                            ipEngine.capture->GetFrame(t - 1.0 / fps);
+                            ipEngine.Step(hudVisible);
+                        }
+                    }
+                    break;
+
+                case SDLK_EQUALS:  // + or = key
+                case SDLK_PLUS:
+                case SDLK_KP_PLUS:
+                    // Fast forward — skip 10 frames
+                    for (int i = 0; i < 10; i++)
+                    {
+                        if (!ipEngine.GetNextFrame()) break;
+                    }
+                    ipEngine.Step(hudVisible);
+                    break;
+
+                case SDLK_MINUS:
+                case SDLK_KP_MINUS:
+                    // Rewind — jump back ~10 frames
+                    if (ipEngine.capture && ipEngine.capture->GetFrameCount() > 0)
+                    {
+                        double t = ipEngine.capture->GetTime();
+                        double fps = ipEngine.capture->GetFPS();
+                        if (fps > 0)
+                        {
+                            ipEngine.capture->GetFrame(std::max(0.0, t - 10.0 / fps));
+                            ipEngine.Step(hudVisible);
+                        }
+                    }
+                    break;
+
+                case SDLK_BACKSPACE:
+                    // Reset to beginning
+                    if (ipEngine.capture)
+                    {
+                        ipEngine.capture->Stop();
+                        ipEngine.capture->GetNextFrame();
+                        play = false;
+                    }
+                    break;
+
+                case SDLK_r:
+                    if (ctrl)
+                    {
+                        // Toggle recording/output
+                        output = !output;
+                        if (output)
+                            ipEngine.OpenOutput();
+                        else
+                            ipEngine.CloseOutput();
+                    }
+                    break;
+
+                case SDLK_o:
+                    if (ctrl)
+                        OpenSource();
+                    break;
+
+                case SDLK_l:
+                    if (ctrl)
+                        LoadSettings();
+                    break;
+
+                case SDLK_s:
+                    if (ctrl)
+                        SaveSettings();
+                    break;
+
                 case SDLK_ESCAPE:
                     running = false;
                     break;
+
                 default:
                     break;
                 }
@@ -484,6 +657,12 @@ void AppGui::UpdateEngine()
 
 void AppGui::RenderFrame()
 {
+    if (pendingScaleChange)
+    {
+        ApplyUIScale();
+        pendingScaleChange = false;
+    }
+
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
@@ -503,7 +682,7 @@ void AppGui::RenderFrame()
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4, 4));
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4*dpiScale, 4*dpiScale));
 
     ImGui::Begin("##MainWindow", nullptr, hostFlags);
     ImGui::PopStyleVar(3);
@@ -512,7 +691,7 @@ void AppGui::RenderFrame()
     DrawToolbar();
 
     // Split: left = video, right = tabs
-    float panelWidth = 380.0f;
+    float panelWidth = 380.0f * dpiScale;
     ImVec2 contentRegion = ImGui::GetContentRegionAvail();
 
     // Video display on the left
@@ -534,6 +713,49 @@ void AppGui::RenderFrame()
     {
         if (pipelineDialogOpen[i])
             DrawPluginDialog(i);
+    }
+
+    // UI Scale buttons — bottom right corner
+    {
+        ImGuiViewport* vp = ImGui::GetMainViewport();
+        float btnW = 28 * dpiScale;
+        float btnH = 22 * dpiScale;
+        float pad = 4 * dpiScale;
+        char scaleBuf[16];
+        snprintf(scaleBuf, sizeof(scaleBuf), "%.0f%%", dpiScale * 100.0f);
+        float labelW = ImGui::CalcTextSize(scaleBuf).x + pad * 2;
+        float totalW = btnW * 2 + labelW + pad * 2;
+        ImGui::SetNextWindowPos(ImVec2(vp->WorkPos.x + vp->WorkSize.x - totalW - pad,
+                                        vp->WorkPos.y + vp->WorkSize.y - btnH - pad));
+        ImGui::SetNextWindowSize(ImVec2(totalW, btnH));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(0, 0));
+        if (ImGui::Begin("##UIScale", nullptr,
+            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
+            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            if (ImGui::Button("-##scale", ImVec2(btnW, btnH)))
+            {
+                float oldScale = dpiScale;
+                dpiScale = std::max(0.5f, dpiScale * 0.9f);
+                std::cerr << "Scale -: " << oldScale << " -> " << dpiScale << std::endl;
+                pendingScaleChange = true;
+            }
+            ImGui::SameLine(0, pad);
+            ImGui::AlignTextToFramePadding();
+            ImGui::Text("%s", scaleBuf);
+            ImGui::SameLine(0, pad);
+            if (ImGui::Button("+##scale", ImVec2(btnW, btnH)))
+            {
+                float oldScale = dpiScale;
+                dpiScale = std::min(4.0f, dpiScale * 1.1f);
+                std::cerr << "Scale +: " << oldScale << " -> " << dpiScale << std::endl;
+                pendingScaleChange = true;
+            }
+        }
+        ImGui::End();
+        ImGui::PopStyleVar(2);
     }
 
     // Render
@@ -592,7 +814,7 @@ void AppGui::DrawMenuBar()
         ImGui::Text("Copyright (C) 2015 Alexandre Campo");
         ImGui::Text("Licensed under GNU GPL v3");
         ImGui::Separator();
-        if (ImGui::Button("OK", ImVec2(120, 0)))
+        if (ImGui::Button("OK", ImVec2(120*dpiScale, 0)))
             ImGui::CloseCurrentPopup();
         ImGui::EndPopup();
     }
@@ -604,13 +826,13 @@ void AppGui::DrawMenuBar()
 
 void AppGui::DrawToolbar()
 {
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 4));
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4*dpiScale, 4*dpiScale));
 
     // Record button
     bool isOutputting = output;
     if (isOutputting)
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
-    if (ImGui::Button(isOutputting ? "REC*" : "REC", ImVec2(40, 24)))
+    if (ImGui::Button(isOutputting ? "REC*" : "REC", ImVec2(40*dpiScale, 24*dpiScale)))
     {
         output = !output;
         if (output)
@@ -624,7 +846,7 @@ void AppGui::DrawToolbar()
     ImGui::SameLine();
 
     // Stop
-    if (ImGui::Button("Stop", ImVec2(40, 24)))
+    if (ImGui::Button("Stop", ImVec2(40*dpiScale, 24*dpiScale)))
     {
         ipEngine.capture->Stop();
         play = false;
@@ -635,7 +857,7 @@ void AppGui::DrawToolbar()
     ImGui::SameLine();
 
     // Rewind
-    if (ImGui::Button("|<", ImVec2(30, 24)))
+    if (ImGui::Button("|<", ImVec2(30*dpiScale, 24*dpiScale)))
     {
         ipEngine.capture->Stop();
         ipEngine.capture->GetNextFrame();
@@ -645,7 +867,7 @@ void AppGui::DrawToolbar()
     ImGui::SameLine();
 
     // Step backward
-    if (ImGui::Button("<", ImVec2(24, 24)))
+    if (ImGui::Button("<", ImVec2(24*dpiScale, 24*dpiScale)))
     {
         if (ipEngine.capture->GetFrameCount() > 0)
         {
@@ -663,7 +885,7 @@ void AppGui::DrawToolbar()
 
     // Play/Pause
     const char* playLabel = play ? "||" : ">";
-    if (ImGui::Button(playLabel, ImVec2(30, 24)))
+    if (ImGui::Button(playLabel, ImVec2(30*dpiScale, 24*dpiScale)))
     {
         play = !play;
         if (play)
@@ -675,7 +897,7 @@ void AppGui::DrawToolbar()
     ImGui::SameLine();
 
     // Step forward
-    if (ImGui::Button(">", ImVec2(24, 24)))
+    if (ImGui::Button(">", ImVec2(24*dpiScale, 24*dpiScale)))
     {
         ipEngine.GetNextFrame();
         ipEngine.Step(hudVisible);
@@ -684,7 +906,7 @@ void AppGui::DrawToolbar()
     ImGui::SameLine();
 
     // Fast forward
-    if (ImGui::Button(">|", ImVec2(30, 24)))
+    if (ImGui::Button(">|", ImVec2(30*dpiScale, 24*dpiScale)))
     {
         // Jump forward (skip 10 frames)
         for (int i = 0; i < 10; i++)
@@ -959,7 +1181,7 @@ void AppGui::DrawProcessingTab()
     if (!ipEngine.pipelines.empty())
         pipelineSize = (int)ipEngine.pipelines[0].plugins.size();
 
-    ImGui::BeginChild("PipelineList", ImVec2(0, 200), true);
+    ImGui::BeginChild("PipelineList", ImVec2(0, 200*dpiScale), true);
     for (int i = 0; i < pipelineSize; i++)
     {
         // Get the plugin pointer (may be null in threaded pipeline, use single-threaded)
@@ -1057,7 +1279,7 @@ void AppGui::DrawProcessingTab()
     ImGui::Text("Available Plugins");
 
     // Available plugins list
-    ImGui::BeginChild("AvailablePlugins", ImVec2(0, 150), true);
+    ImGui::BeginChild("AvailablePlugins", ImVec2(0, 150*dpiScale), true);
     for (int i = 0; i < (int)availablePluginNames.size(); i++)
     {
         std::string displayName = CamelCaseToText(availablePluginNames[i]);
@@ -1375,7 +1597,7 @@ void AppGui::DrawPluginDialog(int index)
                         " [" + std::to_string(index) + "]###PluginDlg" + std::to_string(index);
     bool open = pipelineDialogOpen[index];
 
-    ImGui::SetNextWindowSize(ImVec2(400, 350), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(400*dpiScale, 350*dpiScale), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin(title.c_str(), &open))
     {
         pipelineDialogOpen[index] = open;
@@ -1435,11 +1657,33 @@ void AppGui::DrawPluginDialog(int index)
     // --- ExtractMotion (background difference) ---
     else if (ExtractMotion* p = dynamic_cast<ExtractMotion*>(pp))
     {
-        ImGui::InputInt("Threshold", &p->threshold);
-        ImGui::Checkbox("Additive", &p->additive);
-        ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
+        if (ImGui::InputInt("Threshold", &p->threshold))
+        {
+            for (unsigned int t = 0; t < ipEngine.threadsCount; t++)
+                if (auto* tp = dynamic_cast<ExtractMotion*>(ipEngine.pipelines[t].plugins[index]))
+                    tp->threshold = p->threshold;
+        }
+        if (ImGui::Checkbox("Additive", &p->additive))
+        {
+            for (unsigned int t = 0; t < ipEngine.threadsCount; t++)
+                if (auto* tp = dynamic_cast<ExtractMotion*>(ipEngine.pipelines[t].plugins[index]))
+                    tp->additive = p->additive;
+        }
+        if (ImGui::Checkbox("Restrict to Zone", &p->restrictToZone))
+        {
+            for (unsigned int t = 0; t < ipEngine.threadsCount; t++)
+                if (auto* tp = dynamic_cast<ExtractMotion*>(ipEngine.pipelines[t].plugins[index]))
+                    tp->restrictToZone = p->restrictToZone;
+        }
         if (p->restrictToZone)
-            ImGui::InputInt("Zone", &p->zone);
+        {
+            if (ImGui::InputInt("Zone", &p->zone))
+            {
+                for (unsigned int t = 0; t < ipEngine.threadsCount; t++)
+                    if (auto* tp = dynamic_cast<ExtractMotion*>(ipEngine.pipelines[t].plugins[index]))
+                        tp->zone = p->zone;
+            }
+        }
     }
 
     // --- BackgroundDiffMOG ---
@@ -2062,6 +2306,10 @@ void AppGui::SaveSettings()
     auto result = f.result();
     if (result.empty()) return;
 
+    // Release any open file handle so we can overwrite
+    if (parameters.file.isOpened())
+        parameters.file.release();
+
     cv::FileStorage fs(result, cv::FileStorage::WRITE);
     if (fs.isOpened())
     {
@@ -2074,21 +2322,16 @@ void AppGui::SaveSettings()
 
         for (unsigned int i = 0; i < ipEngine.pipelines[0].plugins.size(); i++)
         {
-            // Get plugin name
+            // Get plugin from thread 0 or the single-thread pipeline
             PipelinePlugin* pp = ipEngine.pipelines[0].plugins[i];
             if (!pp) pp = ipEngine.pipelines[ipEngine.threadsCount].plugins[i];
             if (!pp) continue;
 
-            // Use typeid to get the class name for saving
-            std::string className = typeid(*pp).name();
-            // Demangle: strip leading digits (GCC mangling)
-            size_t start = 0;
-            while (start < className.size() && std::isdigit(className[start]))
-                start++;
-            className = className.substr(start);
+            // Use registry name (matches NewPipelinePluginVector keys)
+            std::string pluginName = pp->registryName;
 
             fs << std::string("Plugin_") + std::to_string(i) << "{"
-               << className << "{";
+               << pluginName << "{";
 
             pp->SaveXML(fs);
 
@@ -2098,6 +2341,9 @@ void AppGui::SaveSettings()
         fs << "}"; // Pipeline
         fs << "}"; // Configuration
         fs.release();
+
+        // Re-open the saved file as the current parameters file
+        parameters.loadXML(result);
     }
 }
 
