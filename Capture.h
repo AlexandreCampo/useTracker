@@ -60,6 +60,10 @@ struct Capture
     virtual void Stop() = 0;
     virtual void Pause() = 0;
 
+    virtual void SetSpeedFaster(int speed) {};
+    virtual void SetSpeedSlower(int speed) {};
+    virtual void SetPlaySpeed(int level) {};
+
     int GetWidth() {return width;};
     int GetHeight() {return height;};
     double GetFPS() {return fps;};

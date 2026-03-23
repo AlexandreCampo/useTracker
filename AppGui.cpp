@@ -856,19 +856,20 @@ void AppGui::DrawToolbar()
 
     ImGui::SameLine();
 
-    // Rewind
-    if (ImGui::Button("|<", ImVec2(30*dpiScale, 24*dpiScale)))
+    // Decrease play speed
+    if (ImGui::Button("|<##speed_down", ImVec2(30*dpiScale, 24*dpiScale)))
     {
-        ipEngine.capture->Stop();
-        ipEngine.capture->GetNextFrame();
-        play = false;
+        if (playSpeed > -4) playSpeed--;
+        ipEngine.capture->SetPlaySpeed(playSpeed);
     }
 
     ImGui::SameLine();
 
-    // Step backward
-    if (ImGui::Button("<", ImVec2(24*dpiScale, 24*dpiScale)))
+    // Step backward (pause and go back one frame)
+    if (ImGui::Button("<##step_back", ImVec2(24*dpiScale, 24*dpiScale)))
     {
+        play = false;
+        ipEngine.capture->Pause();
         if (ipEngine.capture->GetFrameCount() > 0)
         {
             double t = ipEngine.capture->GetTime();
@@ -884,10 +885,12 @@ void AppGui::DrawToolbar()
     ImGui::SameLine();
 
     // Play/Pause
-    const char* playLabel = play ? "||" : ">";
+    const char* playLabel = play ? "||##play_pause" : ">##play_pause";
     if (ImGui::Button(playLabel, ImVec2(30*dpiScale, 24*dpiScale)))
     {
         play = !play;
+        playSpeed = 0;
+        ipEngine.capture->SetPlaySpeed(0);
         if (play)
             ipEngine.capture->Play();
         else
@@ -896,24 +899,34 @@ void AppGui::DrawToolbar()
 
     ImGui::SameLine();
 
-    // Step forward
-    if (ImGui::Button(">", ImVec2(24*dpiScale, 24*dpiScale)))
+    // Step forward (pause and advance one frame)
+    if (ImGui::Button(">##step_fwd", ImVec2(24*dpiScale, 24*dpiScale)))
     {
+        play = false;
+        ipEngine.capture->Pause();
         ipEngine.GetNextFrame();
         ipEngine.Step(hudVisible);
     }
 
     ImGui::SameLine();
 
-    // Fast forward
-    if (ImGui::Button(">|", ImVec2(30*dpiScale, 24*dpiScale)))
+    // Increase play speed
+    if (ImGui::Button(">|##speed_up", ImVec2(30*dpiScale, 24*dpiScale)))
     {
-        // Jump forward (skip 10 frames)
-        for (int i = 0; i < 10; i++)
-        {
-            if (!ipEngine.GetNextFrame()) break;
-        }
-        ipEngine.Step(hudVisible);
+        if (playSpeed < 4) playSpeed++;
+        ipEngine.capture->SetPlaySpeed(playSpeed);
+    }
+
+    // Show speed indicator when not at normal speed
+    if (playSpeed != 0)
+    {
+        ImGui::SameLine();
+        char speedLabel[32];
+        if (playSpeed > 0)
+            snprintf(speedLabel, sizeof(speedLabel), "%dx", 1 << playSpeed);
+        else
+            snprintf(speedLabel, sizeof(speedLabel), "1/%dx", 1 << (-playSpeed));
+        ImGui::Text("%s", speedLabel);
     }
 
     ImGui::SameLine();

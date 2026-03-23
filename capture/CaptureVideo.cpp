@@ -158,7 +158,7 @@ bool CaptureVideo::Open (string filename)
     currentPts = nextPts;
     firstPts = nextPts;
     frameNumber = 0;
-    playSpeed = 1;
+    playSpeedMul = 1; playSpeedDiv = 1;
     isPaused = true;
     nextFrameTime = GetUTCTimeUSec();
 
@@ -267,7 +267,7 @@ bool CaptureVideo::GetNextFrame ()
 
     calibration.Undistort(frame);
 
-    nextFrameTime += frameDelay * playSpeed;
+    nextFrameTime += frameDelay * playSpeedMul / playSpeedDiv;
 
     return true;
 }
@@ -288,7 +288,7 @@ void CaptureVideo::Play()
     // restart timing
     if (isPaused || isStopped)
     {
-	nextFrameTime = GetUTCTimeUSec() + frameDelay * playSpeed;
+	nextFrameTime = GetUTCTimeUSec() + frameDelay * playSpeedMul / playSpeedDiv;
 
 	isPaused = false;
 	isStopped = false;
@@ -400,7 +400,7 @@ void CaptureVideo::SeekTimestamp (long targetPts)
 
     calibration.Undistort(frame);
 
-    nextFrameTime += frameDelay * playSpeed;
+    nextFrameTime += frameDelay * playSpeedMul / playSpeedDiv;
     statusChanged = true;
 }
 
@@ -455,23 +455,32 @@ double CaptureVideo::GetDuration()
 
 void CaptureVideo::SetSpeedFaster(int speed)
 {
-    if (speed > 1)
-	playSpeed = (int64_t)(1000000.0 / (double)speed);
-    else
-	playSpeed = 1;
-
-    // recalculate using frame delay in microseconds
-    nextFrameTime = GetUTCTimeUSec() + frameDelay / (speed > 1 ? speed : 1);
+    playSpeedMul = 1;
+    playSpeedDiv = (speed > 1) ? speed : 1;
+    nextFrameTime = GetUTCTimeUSec() + frameDelay * playSpeedMul / playSpeedDiv;
 }
 
 void CaptureVideo::SetSpeedSlower(int speed)
 {
-    if (speed > 1)
-	playSpeed = speed;
-    else
-	playSpeed = 1;
+    playSpeedMul = (speed > 1) ? speed : 1;
+    playSpeedDiv = 1;
+    nextFrameTime = GetUTCTimeUSec() + frameDelay * playSpeedMul / playSpeedDiv;
+}
 
-    nextFrameTime = GetUTCTimeUSec() + frameDelay * playSpeed;
+void CaptureVideo::SetPlaySpeed(int level)
+{
+    // level > 0: faster (2^level x), level < 0: slower (2^|level| x), 0: normal
+    if (level > 0) {
+        playSpeedMul = 1;
+        playSpeedDiv = 1 << level;
+    } else if (level < 0) {
+        playSpeedMul = 1 << (-level);
+        playSpeedDiv = 1;
+    } else {
+        playSpeedMul = 1;
+        playSpeedDiv = 1;
+    }
+    nextFrameTime = GetUTCTimeUSec() + frameDelay * playSpeedMul / playSpeedDiv;
 }
 
 void CaptureVideo::SaveXML(FileStorage& fs)

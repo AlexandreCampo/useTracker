@@ -34,8 +34,9 @@ struct CaptureMultiVideo : public Capture
     void Play();
     void Stop();
 
-    void SetSpeedFaster(int speed);
-    void SetSpeedSlower(int speed);
+    void SetSpeedFaster(int speed) override;
+    void SetSpeedSlower(int speed) override;
+    void SetPlaySpeed(int level) override;
 
     bool GetNextFrame ();
     bool GetPreviousFrame();

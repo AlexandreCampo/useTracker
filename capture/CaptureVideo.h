@@ -42,7 +42,8 @@ struct CaptureVideo : Capture
     int64_t startTime = 0;
     int64_t nextFrameTime = 0;
     int64_t time = 0;
-    int64_t playSpeed = 1;
+    int64_t playSpeedMul = 1;   // delay multiplier (for slower playback)
+    int64_t playSpeedDiv = 1;   // delay divisor (for faster playback)
 
 
     CaptureVideo(std::string filename);
@@ -63,8 +64,9 @@ struct CaptureVideo : Capture
     void Play();
     void Pause();
 
-    void SetSpeedFaster(int speed);
-    void SetSpeedSlower(int speed);
+    void SetSpeedFaster(int speed) override;
+    void SetSpeedSlower(int speed) override;
+    void SetPlaySpeed(int level) override;
 
     long GetFrameNumber();
     long GetFrameCount();

@@ -268,6 +268,12 @@ void CaptureMultiVideo::SetSpeedSlower(int speed)
 	subcaptures[i]->SetSpeedSlower(speed);
 }
 
+void CaptureMultiVideo::SetPlaySpeed(int level)
+{
+    for (unsigned int i = 0; i < subcaptures.size(); i++)
+	subcaptures[i]->SetPlaySpeed(level);
+}
+
 double CaptureMultiVideo::GetTime()
 {
     return subcaptures[masterDevice]->GetTime();
