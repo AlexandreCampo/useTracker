@@ -49,8 +49,7 @@ void Parameters::parseCommandLine (int argc, char** argv)
     try {
         app.parse(argc, argv);
     } catch (const CLI::ParseError &e) {
-        if (app.exit(e) != 0)
-            exit(1);
+        exit(app.exit(e));
     }
 
     if (startTimeF >= 0) startTime = startTimeF;

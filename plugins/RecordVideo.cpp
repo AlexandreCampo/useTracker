@@ -125,9 +125,22 @@ void RecordVideo::OpenOutput ()
     {
         const AVRational *p = NULL;
         int count = 0;
-        if (avcodec_get_supported_config(codec_context, codec,
+        bool found = false;
+
+#if LIBAVCODEC_VERSION_INT >= AV_VERSION_INT(61, 0, 0)
+        found = (avcodec_get_supported_config(codec_context, codec,
                 AV_CODEC_CONFIG_FRAME_RATE, 0,
-                (const void **)&p, &count) == 0 && p && count > 0)
+                (const void **)&p, &count) == 0 && p && count > 0);
+#else
+        if (codec->supported_framerates)
+        {
+            p = codec->supported_framerates;
+            for (count = 0; p[count].den != 0; count++) {}
+            found = (count > 0);
+        }
+#endif
+
+        if (found)
         {
             AVRational req = {frame_rate, frame_rate_base};
             const AVRational *best = NULL;

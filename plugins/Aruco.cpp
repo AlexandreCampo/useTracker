@@ -27,8 +27,13 @@ using namespace std;
 
 Aruco::Aruco() : PipelinePlugin()
 {
+#if ARUCO_NEW_API
     dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250);
     RebuildDetector();
+#else
+    detectorParams = cv::aruco::DetectorParameters::create();
+    dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_250);
+#endif
 }
 
 Aruco::~Aruco()
@@ -38,23 +43,37 @@ Aruco::~Aruco()
 
 void Aruco::RebuildDetector()
 {
+#if ARUCO_NEW_API
     detector = std::make_unique<cv::aruco::ArucoDetector>(dictionary, detectorParams);
+#endif
 }
 
 void Aruco::Reset()
 {
+#if ARUCO_NEW_API
     detectorParams.adaptiveThreshWinSizeMin = thresh1;
     detectorParams.adaptiveThreshWinSizeMax = thresh1;
     detectorParams.adaptiveThreshConstant = thresh2;
     detectorParams.minMarkerPerimeterRate = minSize;
     detectorParams.maxMarkerPerimeterRate = maxSize;
     RebuildDetector();
+#else
+    detectorParams->adaptiveThreshWinSizeMin = thresh1;
+    detectorParams->adaptiveThreshWinSizeMax = thresh1;
+    detectorParams->adaptiveThreshConstant = thresh2;
+    detectorParams->minMarkerPerimeterRate = minSize;
+    detectorParams->maxMarkerPerimeterRate = maxSize;
+#endif
 }
 
 void Aruco::Apply()
 {
     std::vector<std::vector<cv::Point2f>> rejected;
+#if ARUCO_NEW_API
     detector->detectMarkers(pipeline->frame, markerCorners, markerIds, rejected);
+#else
+    cv::aruco::detectMarkers(pipeline->frame, dictionary, markerCorners, markerIds, detectorParams, rejected);
+#endif
 
     // when no mask shape, threshold the frame for the marked buffer
     if (maskShape == ARUCO_MASK_SHAPE_NONE)
@@ -151,30 +170,47 @@ void Aruco::OutputHud(Mat& hud)
 void Aruco::SetMinSize(double minSize)
 {
     this->minSize = minSize;
+#if ARUCO_NEW_API
     detectorParams.minMarkerPerimeterRate = minSize;
     RebuildDetector();
+#else
+    detectorParams->minMarkerPerimeterRate = minSize;
+#endif
 }
 
 void Aruco::SetMaxSize(double maxSize)
 {
     this->maxSize = maxSize;
+#if ARUCO_NEW_API
     detectorParams.maxMarkerPerimeterRate = maxSize;
     RebuildDetector();
+#else
+    detectorParams->maxMarkerPerimeterRate = maxSize;
+#endif
 }
 
 void Aruco::SetThreshold1(int t1)
 {
     this->thresh1 = t1;
+#if ARUCO_NEW_API
     detectorParams.adaptiveThreshWinSizeMin = t1;
     detectorParams.adaptiveThreshWinSizeMax = t1;
     RebuildDetector();
+#else
+    detectorParams->adaptiveThreshWinSizeMin = t1;
+    detectorParams->adaptiveThreshWinSizeMax = t1;
+#endif
 }
 
 void Aruco::SetThreshold2(int t2)
 {
     this->thresh2 = t2;
+#if ARUCO_NEW_API
     detectorParams.adaptiveThreshConstant = t2;
     RebuildDetector();
+#else
+    detectorParams->adaptiveThreshConstant = t2;
+#endif
 }
 
 void Aruco::SetMaskShape(int v) { this->maskShape = v; }

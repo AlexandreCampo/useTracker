@@ -917,17 +917,6 @@ void AppGui::DrawToolbar()
         ipEngine.capture->SetPlaySpeed(playSpeed);
     }
 
-    // Show speed indicator when not at normal speed
-    if (playSpeed != 0)
-    {
-        ImGui::SameLine();
-        char speedLabel[32];
-        if (playSpeed > 0)
-            snprintf(speedLabel, sizeof(speedLabel), "%dx", 1 << playSpeed);
-        else
-            snprintf(speedLabel, sizeof(speedLabel), "1/%dx", 1 << (-playSpeed));
-        ImGui::Text("%s", speedLabel);
-    }
 
     ImGui::SameLine();
     ImGui::Spacing();
@@ -1138,9 +1127,15 @@ void AppGui::DrawVideoDisplay()
         long frameNum = ipEngine.capture->GetFrameNumber();
         long frameCount = ipEngine.capture->GetFrameCount();
 
-        ImGui::Text("Time: %02d:%02d  Frame: %ld / %ld  FPS: %.1f",
+        char speedStr[32] = "1x";
+        if (playSpeed > 0)
+            snprintf(speedStr, sizeof(speedStr), "%dx", 1 << playSpeed);
+        else if (playSpeed < 0)
+            snprintf(speedStr, sizeof(speedStr), "1/%dx", 1 << (-playSpeed));
+
+        ImGui::Text("Time: %02d:%02d  Frame: %ld / %ld  FPS: %.1f  Speed: %s",
                      minutes, seconds, frameNum, frameCount,
-                     ipEngine.capture->GetFPS());
+                     ipEngine.capture->GetFPS(), speedStr);
     }
 }
 

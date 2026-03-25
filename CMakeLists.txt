@@ -18,6 +18,8 @@ option(USE_ARUCO_COLOR "Build the ArucoColor custom marker library"     ON)
 # ---------------------------------------------------------------------------
 find_package(OpenCV 4 REQUIRED COMPONENTS
     core imgproc highgui videoio objdetect calib3d features2d bgsegm)
+# OpenCV < 4.7 has aruco as a separate module; 4.7+ merged it into objdetect
+find_package(OpenCV 4 QUIET OPTIONAL_COMPONENTS aruco)
 find_package(SDL2     REQUIRED)
 find_package(OpenGL   REQUIRED)
 find_package(FFmpeg   REQUIRED)   # cmake/FindFFmpeg.cmake

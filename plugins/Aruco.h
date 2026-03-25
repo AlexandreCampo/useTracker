@@ -27,7 +27,16 @@
 #include <memory>
 
 #include <opencv2/imgproc.hpp>
+#include <opencv2/core/version.hpp>
+
+// OpenCV 4.7+ moved aruco into objdetect with a new class-based API
+#if CV_VERSION_MAJOR > 4 || (CV_VERSION_MAJOR == 4 && CV_VERSION_MINOR >= 7)
+#define ARUCO_NEW_API 1
 #include <opencv2/objdetect/aruco_detector.hpp>
+#else
+#define ARUCO_NEW_API 0
+#include <opencv2/aruco.hpp>
+#endif
 
 #define ARUCO_MASK_SHAPE_NONE 0
 #define ARUCO_MASK_SHAPE_SQUARE 1
@@ -37,9 +46,14 @@ class Aruco : public PipelinePlugin
 {
 public:
 
+#if ARUCO_NEW_API
     cv::aruco::Dictionary dictionary;
     cv::aruco::DetectorParameters detectorParams;
     std::unique_ptr<cv::aruco::ArucoDetector> detector;
+#else
+    cv::Ptr<cv::aruco::Dictionary> dictionary;
+    cv::Ptr<cv::aruco::DetectorParameters> detectorParams;
+#endif
 
     std::vector<std::vector<cv::Point2f>> markerCorners;
     std::vector<int> markerIds;
