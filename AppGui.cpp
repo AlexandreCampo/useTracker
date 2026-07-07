@@ -61,6 +61,7 @@
 #include "plugins/Clahe.h"
 #include "plugins/WhiteBalance.h"
 #include "plugins/YoloDetector.h"
+#include "plugins/PatternTracker.h"
 #include "plugins/ColorSegmentation.h"
 #include "plugins/Dilation.h"
 #include "plugins/Erosion.h"
@@ -1093,6 +1094,46 @@ void AppGui::DrawVideoDisplay()
                      ImVec2(displayW, displayH),
                      uv0, uv1);
 
+        // Helper: map current mouse position to frame pixel coordinates
+        ImVec2 itemMinAbs = ImGui::GetItemRectMin();
+        ImVec2 itemSizeAbs = ImGui::GetItemRectSize();
+        auto mouseToFrame = [&](cv::Point& out) -> bool
+        {
+            if (itemSizeAbs.x <= 0 || itemSizeAbs.y <= 0) return false;
+            ImVec2 mp = ImGui::GetMousePos();
+            float nx = (mp.x - itemMinAbs.x) / itemSizeAbs.x;
+            float ny = (mp.y - itemMinAbs.y) / itemSizeAbs.y;
+            float uvx = zoomStartX + nx * (zoomEndX - zoomStartX);
+            float uvy = zoomStartY + ny * (zoomEndY - zoomStartY);
+            out.x = (int)(uvx * texWidth);
+            out.y = (int)(uvy * texHeight);
+            return (out.x >= 0 && out.x < texWidth && out.y >= 0 && out.y < texHeight);
+        };
+
+        // PatternTracker click-to-seed mode
+        bool seedMode = (patternSeedPluginIndex >= 0 &&
+                         !ipEngine.pipelines.empty() &&
+                         patternSeedPluginIndex < (int)ipEngine.pipelines[ipEngine.threadsCount].plugins.size());
+        if (seedMode && ImGui::IsItemHovered())
+        {
+            PatternTracker* pt = dynamic_cast<PatternTracker*>(
+                ipEngine.pipelines[ipEngine.threadsCount].plugins[patternSeedPluginIndex]);
+            if (pt)
+            {
+                cv::Point fp;
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && mouseToFrame(fp))
+                {
+                    pt->AddSeed(fp);
+                    pipelineDirty = true;
+                }
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+                {
+                    pt->ClearTargets();
+                    pipelineDirty = true;
+                }
+            }
+        }
+
         // Zoom/pan with mouse
         if (ImGui::IsItemHovered())
         {
@@ -1159,8 +1200,9 @@ void AppGui::DrawVideoDisplay()
                 zoomStartY = std::max(0.0f, zoomStartY);
             }
 
-            // Double-click to reset zoom
-            if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+            // Double-click to reset zoom (disabled while seeding targets, where
+            // left click is used to place targets)
+            if (!seedMode && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
             {
                 zoomStartX = 0.0f; zoomStartY = 0.0f;
                 zoomEndX = 1.0f; zoomEndY = 1.0f;
@@ -2171,6 +2213,92 @@ void AppGui::DrawPluginDialog(int index)
             p->outputFilename = outBuf;
         ImGui::SameLine();
         if (ImGui::Button("Browse##YoloOut"))
+        {
+            OpenFileDialog("Output File", FileBrowser::SAVE,
+                           {"CSV files", "*.csv", "All files", "*"},
+                           p->outputFilename,
+                           [p](const std::string& filename)
+            {
+                p->outputFilename = filename;
+            });
+        }
+    }
+
+    // --- PatternTracker (single threaded, no sync needed) ---
+    else if (PatternTracker* p = dynamic_cast<PatternTracker*>(pp))
+    {
+        ImGui::TextWrapped("Follows a target by matching its appearance in a "
+                           "local window each frame. Place it after Extract "
+                           "Blobs if you want automatic seeding.");
+        ImGui::Spacing();
+
+        // seed by clicking on the video
+        bool seeding = (patternSeedPluginIndex == index);
+        if (ImGui::Checkbox("Click on video to add targets", &seeding))
+            patternSeedPluginIndex = seeding ? index : -1;
+        if (seeding)
+            ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f),
+                               "Left click = add target, right click = clear all");
+
+        ImGui::SameLine();
+        if (ImGui::Button("Clear Targets"))
+            p->ClearTargets();
+
+        ImGui::Text("Active targets: %d", (int)p->targets.size());
+
+        ImGui::Separator();
+
+        int backend = p->backend;
+        const char* backends[] = { "Template match", "CSRT" };
+        if (ImGui::Combo("Backend", &backend, backends, 2))
+        {
+            p->SetBackend(backend);
+            changed = true;
+        }
+
+        if (ImGui::InputInt("Search Distance (px)", &p->maxDistance))
+        {
+            if (p->maxDistance < 1) p->maxDistance = 1;
+            changed = true;
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Max pixels the target may move between frames");
+
+        if (ImGui::InputInt("Template Size (px)", &p->templateSize))
+        {
+            if (p->templateSize < 8) p->templateSize = 8;
+            changed = true;
+        }
+
+        if (p->backend == PatternTracker::TEMPLATE)
+        {
+            changed |= ImGui::SliderFloat("Match Threshold", &p->matchThreshold, 0.0f, 1.0f, "%.2f");
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Below this correlation the target is lost");
+            changed |= ImGui::SliderFloat("Update Threshold", &p->updateThreshold, 0.0f, 1.0f, "%.2f");
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Adapt the template only above this confidence");
+            changed |= ImGui::SliderFloat("Update Rate", &p->updateRate, 0.0f, 1.0f, "%.2f");
+        }
+
+        changed |= ImGui::Checkbox("Predict position", &p->usePrediction);
+        changed |= ImGui::InputInt("Max Lost Frames", &p->maxLostFrames);
+        changed |= ImGui::InputInt("Max Targets", &p->maxTargets);
+        changed |= ImGui::InputInt("Trail Length", &p->trailLength);
+
+        ImGui::Separator();
+        changed |= ImGui::Checkbox("Seed from detected blobs", &p->seedFromDetection);
+        if (p->seedFromDetection)
+            changed |= ImGui::InputInt("Min Blob Size to Seed", &p->minBlobSeedSize);
+
+        changed |= ImGui::Checkbox("Additive", &p->additive);
+
+        char ptOut[INPUT_BUF_SIZE];
+        snprintf(ptOut, sizeof(ptOut), "%s", p->outputFilename.c_str());
+        if (ImGui::InputText("Output File", ptOut, INPUT_BUF_SIZE))
+            p->outputFilename = ptOut;
+        ImGui::SameLine();
+        if (ImGui::Button("Browse##PTOut"))
         {
             OpenFileDialog("Output File", FileBrowser::SAVE,
                            {"CSV files", "*.csv", "All files", "*"},

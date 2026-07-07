@@ -104,6 +104,10 @@ private:
     std::string errorMessage;
     bool showAbout = false;
 
+    // PatternTracker: index of the plugin currently in click-to-seed mode
+    // (-1 = none). A left click on the video seeds a target in that plugin.
+    int patternSeedPluginIndex = -1;
+
     // Available plugin names for UI
     std::vector<std::string> availablePluginNames;
 

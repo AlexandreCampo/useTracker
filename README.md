@@ -8,6 +8,15 @@ Pipelines are built by stacking plugins; each plugin refines a shared *marked* m
 
 Several background subtractors are available: **Background Difference** (static background image), **MOG**, **MOG2**, **GMG**, **KNN**, and **GSOC**. For difficult footage (e.g. turbid underwater scenes) KNN and GSOC on the raw frames tend to give the cleanest foreground masks. When paused, the model history stays frozen — it only advances on real movie frames, never on repeated views of a static frame.
 
+### Pattern tracking
+
+The **Pattern Tracker** plugin follows a target by its appearance. Once a target is seeded — by clicking on the video, or automatically from a detected blob (place the plugin after **Extract Blobs**) — it stores the image patch around it and, each following frame, searches a limited neighbourhood (*search distance*) for the best match, stepping the target to the peak. Two backends are available:
+
+- **Template match** — explicit local-window normalized cross-correlation, with a template that adapts only when the match is confident (avoids drifting onto the background). Every parameter (search distance, match/update thresholds, update rate) is exposed.
+- **CSRT** — OpenCV's discriminative correlation-filter tracker, more robust to appearance and scale change.
+
+Multiple targets are tracked at once. A short-term motion prediction centres the search on the expected position, and targets lost for too long (or that leave the frame) are dropped. Tracks are drawn on the HUD with a trail, written to CSV, and stamped into the *marked* mask so **Track Blobs** can consume them. All settings are saved in the settings file.
+
 ### Deep-learning detection (YOLO)
 
 The **Yolo Detector** plugin runs any ONNX YOLO model (v5 / v8 / v11 layouts are auto-detected) through OpenCV's DNN module on the CPU. Provide:
