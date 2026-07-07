@@ -105,6 +105,10 @@ private:
     std::string errorMessage;
     bool showAbout = false;
 
+    // Quit confirmation (avoid losing unsaved pipeline / ROI work)
+    bool showQuitConfirm = false;
+    bool quitConfirmJustOpened = false;
+
     // PatternTracker: index of the plugin currently in click-to-seed mode
     // (-1 = none). A left click on the video seeds a target in that plugin.
     int patternSeedPluginIndex = -1;
@@ -176,6 +180,8 @@ private:
     void RefreshFileBrowser();
     void DrawFileBrowser();
     void DrawErrorPopup();
+    void RequestQuit();     // ask to quit (shows the confirmation modal)
+    void DrawQuitConfirm();
 
     // Helpers
     void OpenSource();

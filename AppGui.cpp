@@ -459,18 +459,18 @@ int AppGui::Run()
             ImGui_ImplSDL2_ProcessEvent(&event);
 
             if (event.type == SDL_QUIT)
-                running = false;
+                RequestQuit();
 
             if (event.type == SDL_WINDOWEVENT &&
                 event.window.event == SDL_WINDOWEVENT_CLOSE &&
                 event.window.windowID == SDL_GetWindowID(window))
-                running = false;
+                RequestQuit();
 
             // Keyboard shortcuts — active unless the user is typing in a text
             // field or navigating the in-app file browser (which uses the
             // arrow / Enter / Esc keys for its own navigation)
             if (event.type == SDL_KEYDOWN && !ImGui::GetIO().WantTextInput &&
-                !fileBrowser.visible)
+                !fileBrowser.visible && !showQuitConfirm)
             {
                 bool ctrl = (event.key.keysym.mod & KMOD_CTRL) != 0;
                 HandleShortcut(event.key.keysym.sym, ctrl);
@@ -582,7 +582,7 @@ void AppGui::HandleShortcut(SDL_Keycode key, bool ctrl)
         break;
 
     case SDLK_ESCAPE:
-        running = false;
+        RequestQuit();
         break;
 
     default:
@@ -762,6 +762,9 @@ void AppGui::RenderFrame()
     // Error message popup
     DrawErrorPopup();
 
+    // Quit confirmation
+    DrawQuitConfirm();
+
     // UI Scale buttons — bottom right corner
     {
         ImGuiViewport* vp = ImGui::GetMainViewport();
@@ -836,7 +839,7 @@ void AppGui::DrawMenuBar()
                 SaveSettings();
             ImGui::Separator();
             if (ImGui::MenuItem("Quit"))
-                running = false;
+                RequestQuit();
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Help"))
@@ -3883,6 +3886,58 @@ void AppGui::DrawFileBrowser()
 // ============================================================================
 // DrawErrorPopup
 // ============================================================================
+
+void AppGui::RequestQuit()
+{
+    if (showQuitConfirm) return;
+    showQuitConfirm = true;
+    quitConfirmJustOpened = true;
+}
+
+void AppGui::DrawQuitConfirm()
+{
+    if (!showQuitConfirm) return;
+
+    if (!ImGui::IsPopupOpen("Quit###QuitConfirm"))
+        ImGui::OpenPopup("Quit###QuitConfirm");
+
+    // centre the modal
+    ImVec2 center = ImGui::GetMainViewport()->GetCenter();
+    ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+
+    if (ImGui::BeginPopupModal("Quit###QuitConfirm", nullptr,
+                               ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::Text("Quit USE Tracker?");
+        ImGui::TextDisabled("Unsaved changes to the pipeline, ROIs and settings\n"
+                            "will be lost. Save first with File → Save Settings.");
+        ImGui::Spacing();
+
+        if (ImGui::Button("Quit", ImVec2(120 * dpiScale, 0)))
+        {
+            running = false;
+            showQuitConfirm = false;
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel", ImVec2(120 * dpiScale, 0)))
+        {
+            showQuitConfirm = false;
+            ImGui::CloseCurrentPopup();
+        }
+
+        // Escape cancels — but not on the frame the modal opened (that same
+        // Escape press is what asked to quit)
+        if (!quitConfirmJustOpened && ImGui::IsKeyPressed(ImGuiKey_Escape))
+        {
+            showQuitConfirm = false;
+            ImGui::CloseCurrentPopup();
+        }
+        quitConfirmJustOpened = false;
+
+        ImGui::EndPopup();
+    }
+}
 
 void AppGui::DrawErrorPopup()
 {
