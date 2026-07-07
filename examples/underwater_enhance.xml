@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<!--
+  useTracker settings: underwater enhancement showcase.
+
+  Pipeline:
+    1. White Balance (Underwater) - restores the red channel absorbed by
+       water and neutralises the blue-green cast (single strength slider)
+    2. Curves                     - gentle S-curve on the Master channel for
+       a touch more contrast (edit it live in the plugin dialog)
+    3. Background Diff Knn        - foreground mask
+    4. Erosion                    - de-speckle
+    5. Extract Blobs              - connected components
+    6. Pattern Tracker            - follow the detected blobs
+
+  Stages 1-2 modify the frame in place, so the enhanced image is what you
+  see and what the detector works on (the original is kept for Record Video).
+  Toggle their Active checkboxes to compare enhanced vs raw detection.
+
+  Load with File -> Load Settings, then open a video.
+-->
+<opencv_storage>
+<Configuration>
+  <StartTime>0.</StartTime>
+  <DurationTime>0.</DurationTime>
+  <Timestep>0.</Timestep>
+  <UseTimeBounds>0</UseTimeBounds>
+  <BackgroundFilename>""</BackgroundFilename>
+  <BackgroundRecalculate>0</BackgroundRecalculate>
+  <BackgroundCalcType>mean</BackgroundCalcType>
+  <ZonesFilename>""</ZonesFilename>
+  <Pipeline>
+    <Plugin_0>
+      <WhiteBalance>
+        <Active>1</Active>
+        <Type>3</Type>
+        <SaturationThreshold>9.0000000000000002e-01</SaturationThreshold>
+        <GainB>1.</GainB>
+        <GainG>1.</GainG>
+        <GainR>1.</GainR>
+        <RedCompensation>1.</RedCompensation></WhiteBalance></Plugin_0>
+    <Plugin_1>
+      <Curves>
+        <Active>1</Active>
+        <EditChannel>0</EditChannel>
+        <MasterPoints>
+          0. 0. 64. 56. 192. 200. 255. 255.</MasterPoints>
+        <RedPoints>
+          0. 0. 255. 255.</RedPoints>
+        <GreenPoints>
+          0. 0. 255. 255.</GreenPoints>
+        <BluePoints>
+          0. 0. 255. 255.</BluePoints></Curves></Plugin_1>
+    <Plugin_2>
+      <BackgroundDiffKnn>
+        <Active>1</Active>
+        <History>300</History>
+        <Threshold>150.</Threshold>
+        <ShadowDetection>0</ShadowDetection>
+        <LearningRate>-1.</LearningRate>
+        <RestrictToZone>0</RestrictToZone>
+        <Additive>0</Additive></BackgroundDiffKnn></Plugin_2>
+    <Plugin_3>
+      <Erosion>
+        <Active>1</Active>
+        <Size>2</Size></Erosion></Plugin_3>
+    <Plugin_4>
+      <ExtractBlobs>
+        <Active>1</Active>
+        <Output>0</Output>
+        <MinSize>400</MinSize>
+        <MaxSize>50000</MaxSize>
+        <RecordLabels>0</RecordLabels>
+        <OutputFilename>"blobs.csv"</OutputFilename></ExtractBlobs></Plugin_4>
+    <Plugin_5>
+      <PatternTracker>
+        <Active>1</Active>
+        <Output>1</Output>
+        <Backend>0</Backend>
+        <MaxDistance>60</MaxDistance>
+        <TemplateSize>64</TemplateSize>
+        <MatchThreshold>3.5000000000000000e-01</MatchThreshold>
+        <UpdateThreshold>6.0000000000000000e-01</UpdateThreshold>
+        <UpdateRate>1.0000000000000001e-01</UpdateRate>
+        <MaxLostFrames>20</MaxLostFrames>
+        <MaxTargets>10</MaxTargets>
+        <UsePrediction>1</UsePrediction>
+        <TrailLength>30</TrailLength>
+        <SeedFromDetection>1</SeedFromDetection>
+        <MinBlobSeedSize>400</MinBlobSeedSize>
+        <Additive>0</Additive>
+        <OutputFilename>"tracks.csv"</OutputFilename></PatternTracker></Plugin_5>
+  </Pipeline>
+</Configuration>
+</opencv_storage>

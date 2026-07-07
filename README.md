@@ -12,6 +12,10 @@ Several plugins improve the image before detection (all applied in place):
 - **Clahe** — local contrast enhancement (CLAHE on the lightness channel).
 - **Curves** — general per-channel tone/colour curves. Each of the Master, Red, Green and Blue channels has an editable curve (drag points on the graph; click to add, right-click to remove), interpolated with a monotone cubic spline. Curves subsume levels, gamma, contrast and colour balance in one tool.
 
+### Regions of interest (ROI)
+
+Restrict processing to parts of the frame either with a **zone mask image** (grayscale PNG, pixel value = region number, 0 = ignored) or, more conveniently, by **drawing polygons** directly on the video (Background tab → *Regions of Interest*). Enable *Edit on video*, then click to add polygon vertices, drag vertices to move them, and right-click to finish a polygon or delete a vertex. Each polygon is assigned a **region number** (0, 1, 2, …); region 0 and un-painted areas are ignored by downstream plugins, and a plugin's *Restrict to Zone* option keeps only the pixels of a chosen region. Polygons are saved to / loaded from a plain text file and the ROI file is remembered in the settings.
+
 ### Background subtraction
 
 Several background subtractors are available: **Background Difference** (static background image), **MOG**, **MOG2**, **GMG**, **KNN**, and **GSOC**. For difficult footage (e.g. turbid underwater scenes) KNN and GSOC on the raw frames tend to give the cleanest foreground masks. When paused, the model history stays frozen — it only advances on real movie frames, never on repeated views of a static frame.

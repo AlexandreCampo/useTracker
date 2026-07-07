@@ -112,6 +112,14 @@ private:
     // (-1 = none). A left click on the video picks a neutral pixel.
     int whitePickPluginIndex = -1;
 
+    // Polygon ROI editor state
+    bool roiEditing = false;
+    int roiCurrentRegion = 1;      // region assigned to newly created polygons
+    int roiActivePolygon = -1;     // polygon receiving new vertices (-1 = none)
+    int roiSelectedPolygon = -1;   // polygon selected in the list / for delete
+    int roiDragPoly = -1;          // polygon whose vertex is being dragged
+    int roiDragPoint = -1;         // vertex index being dragged
+
     // Available plugin names for UI
     std::vector<std::string> availablePluginNames;
 
@@ -153,6 +161,11 @@ private:
     // Interactive tone-curve editor (used by the Curves plugin dialog).
     // Returns true when the control points were edited.
     bool DrawCurveEditor(const char* id, std::vector<cv::Point2f>& pts);
+
+    // Polygon ROI overlay editing on the video (called from DrawVideoDisplay).
+    // (minX,minY) and (sizeX,sizeY) describe the drawn image rectangle on
+    // screen; the current zoom UVs map screen <-> frame coordinates.
+    void HandleRoiEditing(float minX, float minY, float sizeX, float sizeY);
 
     // File dialogs (native if available, in-app fallback otherwise)
     void OpenFileDialog(const std::string& title, FileBrowser::Mode mode,

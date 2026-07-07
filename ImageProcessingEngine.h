@@ -87,6 +87,22 @@ struct ImageProcessingEngine
     // zones of interest
     std::string zonesFilename;
 
+    // regions of interest defined as polygons (an alternative to the zone
+    // mask image). Each polygon is assigned a region number; the polygons are
+    // rasterized into zoneMap (background 0 = ignored by downstream plugins).
+    struct RoiPolygon
+    {
+	std::vector<cv::Point> points;
+	int region = 1;
+    };
+    std::vector<RoiPolygon> rois;
+    bool useRois = false;
+    std::string roiFilename;
+
+    void RasterizeRois();               // fill zoneMap from the polygons, in place
+    bool LoadRois (const std::string& filename);
+    void SaveRois (const std::string& filename);
+
     // output
     bool output = false;
 
