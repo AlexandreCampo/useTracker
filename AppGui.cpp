@@ -39,6 +39,7 @@
 #include <thread>
 #include <cmath>
 #include <sstream>
+#include <fstream>
 #include <system_error>
 
 #include "Background.h"
@@ -454,9 +455,16 @@ int AppGui::Run()
     // Initialize engine
     ResetEngine(parameters);
 
+    // Test harness: load the input script if one was given
+    if (!parameters.testScript.empty())
+        LoadTestScript(parameters.testScript);
+
     // Main loop
     while (running)
     {
+        // scripted input for automated GUI tests
+        TestAdvance();
+
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -483,6 +491,13 @@ int AppGui::Run()
 
         UpdateEngine();
         RenderFrame();
+
+        // capture a scripted screenshot from the rendered back buffer
+        if (!testShotPath.empty())
+        {
+            CaptureScreenshot(testShotPath);
+            testShotPath.clear();
+        }
 
         SDL_GL_SwapWindow(window);
     }
@@ -699,6 +714,12 @@ void AppGui::RenderFrame()
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
+
+    // scripted test input overrides the real mouse/keys (added after the SDL
+    // backend so it wins for this frame)
+    if (testMode)
+        TestInjectInput();
+
     ImGui::NewFrame();
 
     // Full-window dockspace-like layout
@@ -4449,6 +4470,152 @@ void AppGui::DrawQuitConfirm()
 
         ImGui::EndPopup();
     }
+}
+
+// ============================================================================
+// Test harness — drive the GUI from a script and take screenshots
+// ============================================================================
+
+// map a key name to (ImGuiKey, SDL keycode, isShortcut)
+static bool MapTestKey(const std::string& name, ImGuiKey& ik, SDL_Keycode& sk, bool& shortcut)
+{
+    shortcut = false;
+    if (name == "space")  { ik = ImGuiKey_Space;      sk = SDLK_SPACE;  shortcut = true; return true; }
+    if (name == "left")   { ik = ImGuiKey_LeftArrow;  sk = SDLK_LEFT;   shortcut = true; return true; }
+    if (name == "right")  { ik = ImGuiKey_RightArrow; sk = SDLK_RIGHT;  shortcut = true; return true; }
+    if (name == "up")     { ik = ImGuiKey_UpArrow;    sk = SDLK_UP;     return true; }
+    if (name == "down")   { ik = ImGuiKey_DownArrow;  sk = SDLK_DOWN;   return true; }
+    if (name == "enter")  { ik = ImGuiKey_Enter;      sk = SDLK_RETURN; return true; }
+    if (name == "tab")    { ik = ImGuiKey_Tab;        sk = SDLK_TAB;    return true; }
+    if (name == "escape") { ik = ImGuiKey_Escape;     sk = SDLK_ESCAPE; return true; }
+    if (name == "backspace") { ik = ImGuiKey_Backspace; sk = SDLK_BACKSPACE; shortcut = true; return true; }
+    return false;
+}
+
+void AppGui::LoadTestScript(const std::string& file)
+{
+    std::ifstream f(file);
+    if (!f.is_open())
+    {
+        std::cerr << "Could not open test script " << file << std::endl;
+        return;
+    }
+    std::string line;
+    while (std::getline(f, line))
+    {
+        size_t h = line.find('#');
+        if (h != std::string::npos) line = line.substr(0, h);
+        // trim
+        size_t a = line.find_first_not_of(" \t\r\n");
+        if (a == std::string::npos) continue;
+        testScript.push_back(line);
+    }
+    testMode = true;
+    std::cerr << "Test mode: " << testScript.size() << " commands loaded" << std::endl;
+}
+
+void AppGui::TestAdvance()
+{
+    if (!testMode) return;
+
+    // release an injected click after it has been held a couple of frames
+    if (testReleaseIn > 0)
+    {
+        if (--testReleaseIn == 0) { testLeftDown = false; testRightDown = false; }
+        return;
+    }
+    if (testWaitFrames > 0) { testWaitFrames--; return; }
+
+    while (testPc < testScript.size())
+    {
+        std::istringstream ss(testScript[testPc++]);
+        std::string op; ss >> op;
+
+        if (op == "move")
+        {
+            ss >> testMouseX >> testMouseY;
+            continue; // instant, no frame consumed
+        }
+        if (op == "click")
+        {
+            std::string btn; ss >> btn;
+            if (btn == "right") testRightDown = true; else testLeftDown = true;
+            testReleaseIn = 3;
+            return;
+        }
+        if (op == "wait")
+        {
+            int n = 1; ss >> n; testWaitFrames = std::max(1, n);
+            return;
+        }
+        if (op == "shot")
+        {
+            std::string path; ss >> path; testShotPath = path;
+            return; // captured after this frame renders
+        }
+        if (op == "key")
+        {
+            std::string k; ss >> k;
+            bool ctrl = false;
+            if (k == "ctrl") { ctrl = true; ss >> k; }
+            ImGuiKey ik; SDL_Keycode sk; bool sc;
+            if (MapTestKey(k, ik, sk, sc))
+            {
+                testKey = ik; testKeyReleaseIn = 2;
+                ImGuiIO& io = ImGui::GetIO();
+                if (sc && !io.WantTextInput && !fileBrowser.visible && !showQuitConfirm)
+                    HandleShortcut(sk, ctrl);
+            }
+            testWaitFrames = 1;
+            return;
+        }
+        if (op == "quit")
+        {
+            running = false; testMode = false;
+            return;
+        }
+    }
+
+    // script exhausted: quit cleanly
+    if (testPc >= testScript.size() && testShotPath.empty())
+        running = false;
+}
+
+void AppGui::TestInjectInput()
+{
+    ImGuiIO& io = ImGui::GetIO();
+    io.AddMousePosEvent(testMouseX, testMouseY);
+    io.AddMouseButtonEvent(0, testLeftDown);
+    io.AddMouseButtonEvent(1, testRightDown);
+
+    if (testKey >= 0)
+    {
+        io.AddKeyEvent((ImGuiKey)testKey, true);
+        if (testKeyReleaseIn > 0 && --testKeyReleaseIn == 0)
+        {
+            io.AddKeyEvent((ImGuiKey)testKey, false);
+            testKey = -1;
+        }
+    }
+}
+
+void AppGui::CaptureScreenshot(const std::string& path)
+{
+    int w = 0, h = 0;
+    SDL_GL_GetDrawableSize(window, &w, &h);
+    if (w <= 0 || h <= 0) return;
+
+    std::vector<unsigned char> buf((size_t)w * h * 4);
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadBuffer(GL_BACK);
+    glReadPixels(0, 0, w, h, GL_RGBA, GL_UNSIGNED_BYTE, buf.data());
+
+    cv::Mat img(h, w, CV_8UC4, buf.data());
+    cv::Mat flipped, bgr;
+    cv::flip(img, flipped, 0);              // GL origin is bottom-left
+    cv::cvtColor(flipped, bgr, cv::COLOR_RGBA2BGR);
+    cv::imwrite(path, bgr);
+    std::cerr << "Test screenshot: " << path << " (" << w << "x" << h << ")" << std::endl;
 }
 
 void AppGui::DrawErrorPopup()

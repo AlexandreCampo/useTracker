@@ -26,6 +26,9 @@ public:
     std::string stitchingFilename;
     std::string calibrationFilename;
 
+    // GUI test/debug: a script of input commands to drive the interface
+    std::string testScript;
+
 
     double startTime = -1;
     double durationTime = -1;

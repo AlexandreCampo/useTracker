@@ -112,6 +112,19 @@ private:
     bool showQuitConfirm = false;
     bool quitConfirmJustOpened = false;
 
+    // GUI test harness (--test <script>): drives the interface with scripted
+    // mouse moves / clicks / keys and captures screenshots, for automated tests
+    bool testMode = false;
+    std::vector<std::string> testScript;
+    size_t testPc = 0;
+    int testWaitFrames = 0;
+    float testMouseX = 0.0f, testMouseY = 0.0f;
+    bool testLeftDown = false, testRightDown = false;
+    int testReleaseIn = 0;          // frames until an injected click releases
+    std::string testShotPath;       // pending screenshot path
+    int testKey = -1;               // ImGuiKey to inject this/next frame (-1 none)
+    int testKeyReleaseIn = 0;       // frames until the injected key releases
+
     // PatternTracker: index of the plugin currently in click-to-seed mode
     // (-1 = none). A left click on the video seeds a target in that plugin.
     int patternSeedPluginIndex = -1;
@@ -185,6 +198,12 @@ private:
     void DrawErrorPopup();
     void RequestQuit();     // ask to quit (shows the confirmation modal)
     void DrawQuitConfirm();
+
+    // test harness
+    void LoadTestScript(const std::string& file);
+    void TestAdvance();        // per-frame: run the next script command(s)
+    void TestInjectInput();    // per-frame: feed scripted mouse/keys into ImGui
+    void CaptureScreenshot(const std::string& path);
 
     // Helpers
     void OpenSource();

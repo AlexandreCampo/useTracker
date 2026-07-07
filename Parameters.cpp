@@ -45,6 +45,7 @@ void Parameters::parseCommandLine (int argc, char** argv)
     app.add_option("--stitching", stitchingFilename, "Stitching configuration file in xml format");
     app.add_option("--calibration", calibrationFilename, "Calibration configuration file in xml format");
     app.add_option("-b,--background", bgFilename, "Specify the background image for motion detection");
+    app.add_option("--test", testScript, "GUI test script: drive the interface and take screenshots");
 
     try {
         app.parse(argc, argv);
