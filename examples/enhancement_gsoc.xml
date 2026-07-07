@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<!--
+  Example useTracker settings: enhance a murky / colour-cast scene so the
+  content pops, then detect moving objects with the GSOC background model.
+
+  Pipeline:
+    1. White Balance  - remove the colour cast (e.g. underwater blue-green)
+    2. Clahe          - local contrast enhancement (CLAHE on lightness)
+    3. Background Diff Gsoc - foreground mask from a GSOC background model
+    4. Extract Blobs  - connected components above a size threshold
+
+  The White Balance and Clahe plugins modify the frame IN PLACE, so their
+  effect is visible live in the video view and feeds the plugins below.
+  The original frame is preserved for Record Video.
+
+  Note: enhancement mainly helps the human eye and colour / threshold based
+  detectors. It also amplifies water noise, so for the cleanest GSOC masks
+  you may prefer to disable stages 1-2 (untick "Active") and run GSOC on the
+  raw frames. Toggle them and watch the mask to compare.
+
+  Load it with  File -> Load Settings...  then open a video with
+  File -> Open Source...  (or start with  -i yourvideo.mp4).
+-->
+<opencv_storage>
+<Configuration>
+  <StartTime>0.</StartTime>
+  <DurationTime>0.</DurationTime>
+  <Timestep>0.</Timestep>
+  <UseTimeBounds>0</UseTimeBounds>
+  <BackgroundFilename>""</BackgroundFilename>
+  <BackgroundRecalculate>0</BackgroundRecalculate>
+  <BackgroundFrames>11</BackgroundFrames>
+  <BackgroundStartTime>0.</BackgroundStartTime>
+  <BackgroundEndTime>0.</BackgroundEndTime>
+  <BackgroundLowThreshold>0</BackgroundLowThreshold>
+  <BackgroundHighThreshold>255</BackgroundHighThreshold>
+  <BackgroundCalcType>mean</BackgroundCalcType>
+  <ZonesFilename>""</ZonesFilename>
+  <Pipeline>
+    <Plugin_0>
+      <WhiteBalance>
+        <Active>1</Active>
+        <Type>0</Type>
+        <SaturationThreshold>9.0000000000000002e-01</SaturationThreshold></WhiteBalance></Plugin_0>
+    <Plugin_1>
+      <Clahe>
+        <Active>1</Active>
+        <ClipLimit>3.</ClipLimit>
+        <TileSize>8</TileSize></Clahe></Plugin_1>
+    <Plugin_2>
+      <BackgroundDiffGsoc>
+        <Active>1</Active>
+        <NSamples>20</NSamples>
+        <ReplaceRate>3.0000000000000000e-03</ReplaceRate>
+        <PropagationRate>1.0000000000000000e-02</PropagationRate>
+        <HitsThreshold>32</HitsThreshold>
+        <RestrictToZone>0</RestrictToZone>
+        <Additive>0</Additive></BackgroundDiffGsoc></Plugin_2>
+    <Plugin_3>
+      <ExtractBlobs>
+        <Active>1</Active>
+        <Output>1</Output>
+        <MinSize>500</MinSize>
+        <MaxSize>200000</MaxSize>
+        <RecordLabels>0</RecordLabels>
+        <OutputFilename>"blobs.csv"</OutputFilename></ExtractBlobs></Plugin_3>
+  </Pipeline>
+</Configuration>
+</opencv_storage>

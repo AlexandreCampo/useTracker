@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<!--
+  Example useTracker settings: detect and track a faint moving target
+  (e.g. a fish in turbid water) with the newer plugins.
+
+  Pipeline:
+    1. Background Diff Knn  - foreground mask from a KNN background model
+    2. Erosion             - remove speckle noise from the mask
+    3. Extract Blobs       - connected components above a size threshold
+    4. Pattern Tracker     - follow each detected blob by its appearance
+
+  Load it with  File -> Load Settings...  then open a video with
+  File -> Open Source...  (or start with  -i yourvideo.mp4).
+
+  Tips:
+    - Raise ExtractBlobs MinSize to reject small noise blobs.
+    - In Pattern Tracker you can also tick "Click on video to add targets"
+      and click the target directly instead of relying on auto-seeding.
+    - Output CSV files are written to the current working directory.
+-->
+<opencv_storage>
+<Configuration>
+  <StartTime>0.</StartTime>
+  <DurationTime>0.</DurationTime>
+  <Timestep>0.</Timestep>
+  <UseTimeBounds>0</UseTimeBounds>
+  <BackgroundFilename>""</BackgroundFilename>
+  <BackgroundRecalculate>0</BackgroundRecalculate>
+  <BackgroundFrames>11</BackgroundFrames>
+  <BackgroundStartTime>0.</BackgroundStartTime>
+  <BackgroundEndTime>0.</BackgroundEndTime>
+  <BackgroundLowThreshold>0</BackgroundLowThreshold>
+  <BackgroundHighThreshold>255</BackgroundHighThreshold>
+  <BackgroundCalcType>mean</BackgroundCalcType>
+  <ZonesFilename>""</ZonesFilename>
+  <Pipeline>
+    <Plugin_0>
+      <BackgroundDiffKnn>
+        <Active>1</Active>
+        <History>300</History>
+        <Threshold>100.</Threshold>
+        <ShadowDetection>0</ShadowDetection>
+        <LearningRate>-1.</LearningRate>
+        <RestrictToZone>0</RestrictToZone>
+        <Additive>0</Additive></BackgroundDiffKnn></Plugin_0>
+    <Plugin_1>
+      <Erosion>
+        <Active>1</Active>
+        <Size>2</Size></Erosion></Plugin_1>
+    <Plugin_2>
+      <ExtractBlobs>
+        <Active>1</Active>
+        <Output>0</Output>
+        <MinSize>400</MinSize>
+        <MaxSize>50000</MaxSize>
+        <RecordLabels>0</RecordLabels>
+        <OutputFilename>"blobs.csv"</OutputFilename></ExtractBlobs></Plugin_2>
+    <Plugin_3>
+      <PatternTracker>
+        <Active>1</Active>
+        <Output>1</Output>
+        <Backend>0</Backend>
+        <MaxDistance>60</MaxDistance>
+        <TemplateSize>64</TemplateSize>
+        <MatchThreshold>3.5000000000000000e-01</MatchThreshold>
+        <UpdateThreshold>6.0000000000000000e-01</UpdateThreshold>
+        <UpdateRate>1.0000000000000001e-01</UpdateRate>
+        <MaxLostFrames>20</MaxLostFrames>
+        <MaxTargets>10</MaxTargets>
+        <UsePrediction>1</UsePrediction>
+        <TrailLength>30</TrailLength>
+        <SeedFromDetection>1</SeedFromDetection>
+        <MinBlobSeedSize>400</MinBlobSeedSize>
+        <Additive>0</Additive>
+        <OutputFilename>"tracks.csv"</OutputFilename></PatternTracker></Plugin_3>
+  </Pipeline>
+</Configuration>
+</opencv_storage>
