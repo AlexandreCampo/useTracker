@@ -2376,11 +2376,6 @@ void AppGui::DrawPluginDialog(int index)
         pipelineHelpOpen.resize(pipelineDialogOpen.size(), false);
     bool helpOpen = (index < (int)pipelineHelpOpen.size()) ? (bool)pipelineHelpOpen[index] : false;
 
-    // when help is open, force the window wide enough for the side panel
-    if (helpOpen)
-        ImGui::SetNextWindowSizeConstraints(ImVec2(720*dpiScale, 220*dpiScale),
-                                            ImVec2(100000.0f, 100000.0f));
-
     ImGui::SetNextWindowSize(ImVec2(400*dpiScale, 350*dpiScale), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin(title.c_str(), &open))
     {
@@ -2390,15 +2385,24 @@ void AppGui::DrawPluginDialog(int index)
     }
     pipelineDialogOpen[index] = open;
 
-    // help toggle button, right-aligned at the top of the dialog
+    // help toggle button, right-aligned at the top of the dialog. Shows "?"
+    // when closed, and a fold-away arrow when the help panel is open.
     {
-        float bw = 26 * dpiScale;
+        float bw = ImGui::GetFrameHeight();
         ImGui::SetCursorPosX(ImGui::GetCursorPosX() +
                              ImGui::GetContentRegionAvail().x - bw);
-        if (ImGui::Button("?##help", ImVec2(bw, 0)))
-            helpOpen = !helpOpen;
+        bool toggled = helpOpen
+            ? ImGui::ArrowButton("##help", ImGuiDir_Right)
+            : ImGui::Button("?##help", ImVec2(bw, 0));
         if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("Show / hide parameter help");
+            ImGui::SetTooltip(helpOpen ? "Hide parameter help" : "Show parameter help");
+        if (toggled)
+        {
+            helpOpen = !helpOpen;
+            // widen the dialog for the help panel, or shrink it back when folding
+            ImGui::SetWindowSize(ImVec2((helpOpen ? 720.0f : 400.0f) * dpiScale,
+                                        ImGui::GetWindowHeight()));
+        }
         if (index < (int)pipelineHelpOpen.size())
             pipelineHelpOpen[index] = helpOpen;
     }
