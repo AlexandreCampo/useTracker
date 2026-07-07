@@ -2048,6 +2048,315 @@ void AppGui::HandleRoiEditing(ZonesOfInterest* zoi,
 // DrawPluginDialog
 // ============================================================================
 
+// per-plugin help: default values and the impact of each setting
+static const char* PluginHelpText(const std::string& name)
+{
+    if (name == "BackgroundDifference")
+        return "Background Difference\n\n"
+               "Subtracts a fixed background image (set in the Background tab) "
+               "from the current frame and keeps pixels that differ.\n\n"
+               "Threshold (def 42): minimum brightness difference to count as "
+               "foreground. Lower = more sensitive (more noise); higher = only "
+               "strong changes.\n"
+               "Additive: OR the result into the mask (combine detectors) "
+               "instead of AND.\n"
+               "Restrict to Zone: keep foreground only inside the given ROI region.";
+
+    if (name == "BackgroundDiffMog")
+        return "Background Diff MOG (Mixture of Gaussians)\n\n"
+               "Learns a per-pixel statistical model of the scene and marks "
+               "pixels that no longer fit it as foreground.\n\n"
+               "History (def 200): number of past frames the model remembers. "
+               "Higher = more stable, slower to adapt.\n"
+               "Num Mixtures (def 5): Gaussian components per pixel (1-8). More = "
+               "handles multi-modal backgrounds (waves, foliage) but slower.\n"
+               "Background Ratio (def 0.7): fraction of weight that defines the "
+               "background. Higher = more of the scene treated as background.\n"
+               "Noise Sigma (def 15): expected image noise; higher tolerates more "
+               "noise (fewer false detections, may miss faint targets).\n"
+               "Learning Rate (def 0.05): how fast the model adapts (0-1). Higher "
+               "adapts quickly but absorbs slow/stopped targets. Frozen while paused.\n"
+               "Additive / Restrict to Zone: as in the other detectors.";
+
+    if (name == "BackgroundDiffMog2")
+        return "Background Diff MOG2\n\n"
+               "Improved Mixture-of-Gaussians subtractor with automatic per-pixel "
+               "component count.\n\n"
+               "History (def 200): frames remembered; higher = more stable, slower "
+               "to adapt.\n"
+               "Threshold (def 16): squared Mahalanobis distance to flag a pixel as "
+               "foreground. Lower = more sensitive/noisy; higher = stricter.\n"
+               "Shadow Detection: mark shadows separately (grey) instead of "
+               "foreground. Useful outdoors.\n"
+               "Learning Rate (def 0.05): adaptation speed (0-1); -1 lets it auto-"
+               "tune. Frozen while paused.\n"
+               "Additive / Restrict to Zone: as in the other detectors.";
+
+    if (name == "BackgroundDiffGmg")
+        return "Background Diff GMG\n\n"
+               "Bayesian per-pixel subtractor; needs a warm-up period before it "
+               "produces stable output.\n\n"
+               "Learning Rate (def 0.05): how fast the background model adapts "
+               "(0-1). Higher adapts faster but absorbs slow targets. Frozen "
+               "while paused.\n"
+               "Additive / Restrict to Zone: as in the other detectors.";
+
+    if (name == "BackgroundDiffGsoc")
+        return "Background Diff GSOC\n\n"
+               "Sample-based background subtractor (OpenCV bgsegm). Each pixel "
+               "keeps a set of recent background samples; pixels that match too "
+               "few are marked foreground. Robust on noisy / low-contrast footage.\n\n"
+               "Num Samples (def 20, range 2-1023): background samples kept per "
+               "pixel. More = more stable model, slower to adapt, more memory.\n"
+               "Replace Rate (def 0.003): chance of replacing a stored sample with "
+               "the current pixel each frame. Higher = adapts faster to lasting "
+               "changes, but a slow/stopped target can be absorbed into the "
+               "background.\n"
+               "Propagation Rate (def 0.01): chance of spreading a good background "
+               "sample to neighbouring pixels. Higher = fills noise/holes faster "
+               "and smooths the background, but can eat small foreground.\n"
+               "Hits Threshold (def 32): matching samples needed to call a pixel "
+               "background. Lower = cleaner mask but may miss faint targets; higher "
+               "= more foreground and more noise.\n"
+               "The model is frozen automatically while paused (learning only from "
+               "real movie frames).\n"
+               "Additive / Restrict to Zone: as in the other detectors.";
+
+    if (name == "BackgroundDiffKnn")
+        return "Background Diff KNN\n\n"
+               "K-nearest-neighbours background subtractor. Fast and robust; a "
+               "good default on difficult footage.\n\n"
+               "History (def 500): frames remembered; higher = more stable, slower "
+               "to adapt.\n"
+               "Dist2 Threshold (def 400): squared colour distance for a pixel to "
+               "match the background. Lower = more sensitive (more foreground and "
+               "noise); higher = stricter. Try ~100 for faint targets.\n"
+               "Shadow Detection: mark shadows separately instead of foreground.\n"
+               "Learning Rate (def -1 = automatic): adaptation speed. Frozen while "
+               "paused.\n"
+               "Additive / Restrict to Zone: as in the other detectors.";
+
+    if (name == "ColorSegmentation")
+        return "Color Segmentation\n\n"
+               "Keeps pixels whose colour falls inside a range.\n\n"
+               "Color Space: BGR (blue/green/red) or HSV (hue/saturation/value). "
+               "HSV is usually better for picking a colour regardless of "
+               "brightness.\n"
+               "Min/Max per channel: the accepted range. Narrow it around the "
+               "target colour; widen if the target is missed.\n"
+               "Additive / Restrict to Zone: as in the other plugins.";
+
+    if (name == "Erosion")
+        return "Erosion\n\n"
+               "Shrinks white regions of the mask, removing small speckle noise "
+               "and thin bridges.\n\n"
+               "Size (def small): radius of the erosion. Larger removes more but "
+               "also eats into real objects. Pair with Dilation to clean noise "
+               "while keeping object size.";
+
+    if (name == "Dilation")
+        return "Dilation\n\n"
+               "Grows white regions of the mask, filling small holes and joining "
+               "nearby blobs.\n\n"
+               "Size (def small): radius of the dilation. Larger fills more but "
+               "merges separate objects.";
+
+    if (name == "SafeErosion")
+        return "Safe Erosion\n\n"
+               "Erosion that never fully removes a connected component (keeps at "
+               "least a seed pixel), so small objects are not lost.\n\n"
+               "Size: erosion radius.";
+
+    if (name == "ExtractBlobs")
+        return "Extract Blobs\n\n"
+               "Finds connected white regions (blobs) in the mask and measures "
+               "their position and size. Feeds Track Blobs and the CSV output.\n\n"
+               "Min Size / Max Size (px area): only keep blobs within this size "
+               "range. Raise Min Size to reject noise.\n"
+               "Output File: CSV of blob position/size per frame (enable Output).";
+
+    if (name == "GetBlobsAngles")
+        return "Get Blobs Angles\n\n"
+               "Computes the orientation (major-axis angle) of each blob found by "
+               "Extract Blobs. No parameters.";
+
+    if (name == "TrackBlobs")
+        return "Track Blobs (Tracker)\n\n"
+               "Links blobs across frames into persistent tracked entities.\n\n"
+               "Max Entities: how many targets to track at once.\n"
+               "Min Interdistance: minimum spacing between entities (avoids two "
+               "IDs on one object).\n"
+               "Max Motion/sec: largest allowed speed; limits how far an entity "
+               "may jump between frames.\n"
+               "Extrapolation Decay / Motion Estimator: how the tracker predicts "
+               "position when a blob is briefly missing.\n"
+               "Virtual Entities: keep a predicted entity alive when detection "
+               "drops out (lifetime/delay control how long).\n"
+               "Trail Length: number of past positions drawn on the HUD.\n"
+               "Output File: CSV of tracked positions (enable Output).";
+
+    if (name == "FrameDifference")
+        return "Frame Difference\n\n"
+               "Marks pixels that changed between consecutive frames (motion), "
+               "either on the source image or on the current mask.\n\n"
+               "Threshold (def small): minimum change to count as motion.\n"
+               "Use Pipeline: difference the running mask instead of the raw "
+               "frame.\n"
+               "Invert / Additive / Restrict to Zone: as in the other plugins.";
+
+    if (name == "MovingAverage")
+        return "Moving Average\n\n"
+               "Averages the mask over the last N frames and keeps pixels active "
+               "often enough. Smooths flickering detections.\n\n"
+               "Length (def frames): number of frames averaged. Longer = smoother "
+               "but laggier.\n"
+               "Threshold: how many of the N frames a pixel must be active to be "
+               "kept.\n"
+               "Clear History: reset the accumulated frames.";
+
+    if (name == "AdaptiveThreshold")
+        return "Adaptive Threshold\n\n"
+               "Thresholds each pixel against the local average, coping with "
+               "uneven lighting.\n\n"
+               "Block Size (odd): neighbourhood used for the local average. Larger "
+               "= smoother, less local.\n"
+               "Constant (C): offset subtracted from the local mean; raise to "
+               "reject more (cleaner), lower to keep more.\n"
+               "Threshold Method: Mean or Gaussian weighting of the neighbourhood.\n"
+               "Additive / Invert / Restrict to Zone: as in the other plugins.";
+
+    if (name == "Clahe")
+        return "CLAHE (Contrast Limited Adaptive Histogram Equalisation)\n\n"
+               "Enhances local contrast in place (on the lightness channel). Makes "
+               "faint detail pop for viewing and for threshold-based detectors.\n\n"
+               "Clip Limit (def 3.0): contrast strength; higher = punchier but "
+               "amplifies noise.\n"
+               "Tile Size (def 8): grid of local regions; smaller tiles = more "
+               "local contrast.";
+
+    if (name == "WhiteBalance")
+        return "White Balance\n\n"
+               "Removes colour casts in place.\n\n"
+               "Mode: Gray World / Simple (automatic), Manual (per-channel gains, "
+               "set with the Pick White tool by clicking a neutral pixel), or "
+               "Underwater (restores the red channel lost in water).\n"
+               "Saturation Threshold (Gray World): ignore over-saturated pixels "
+               "when estimating the cast.\n"
+               "Gains (Manual): per-channel multipliers (1 = unchanged).\n"
+               "Strength (Underwater): amount of red compensation.";
+
+    if (name == "Curves")
+        return "Curves\n\n"
+               "Per-channel tone/colour curves applied in place. One tool for "
+               "levels, gamma, contrast and colour balance.\n\n"
+               "Channel: Master affects all channels; Red/Green/Blue are applied "
+               "on top of Master.\n"
+               "Editor: click to add a point, drag to move it, right-click to "
+               "remove. A straight diagonal leaves the image unchanged; an "
+               "S-shape adds contrast; lifting the dark end raises shadows.";
+
+    if (name == "ZonesOfInterest")
+        return "Zones of Interest\n\n"
+               "Defines which parts of the frame are processed, as polygons drawn "
+               "on the video and/or a zone-mask image.\n\n"
+               "Select this plugin, then on the video: click to add points, drag "
+               "to move, click the first point (or right-click) to close a "
+               "polygon, right-click a point to delete it.\n"
+               "Region number: 0 and un-painted areas are ignored by downstream "
+               "plugins; a plugin's Restrict to Zone keeps only one region.\n"
+               "New polygons default to region 1; change a selected polygon's "
+               "region below. Save/Load stores the polygons in a text file.";
+
+    if (name == "YoloDetector")
+        return "Yolo Detector\n\n"
+               "Runs an ONNX YOLO model (v5/v8/v11) on the CPU or GPU.\n\n"
+               "Model / Class Names: the .onnx file and an optional class-name "
+               "list. No model ships with useTracker.\n"
+               "Model Type: output layout; Auto suits standard exports.\n"
+               "Compute Target: CPU, OpenCL or Vulkan (falls back to CPU if the "
+               "GPU cannot run the model).\n"
+               "Input Size: network resolution; larger = more accurate, slower.\n"
+               "Confidence: minimum score to keep a detection.\n"
+               "NMS Threshold: overlap above which duplicate boxes are merged.\n"
+               "Class Filter: comma-separated names/ids to keep (empty = all).\n"
+               "Detections are drawn on the HUD, written to CSV and stamped into "
+               "the mask for Extract Blobs / trackers.";
+
+    if (name == "PatternTracker")
+        return "Pattern Tracker\n\n"
+               "Follows a target by matching its appearance in a local window "
+               "each frame. Seed it by clicking on the video or from detected "
+               "blobs (place it after Extract Blobs).\n\n"
+               "Backend: Template match (local cross-correlation) or CSRT "
+               "(correlation-filter tracker, handles scale better).\n"
+               "Search Distance: how far the target may move between frames.\n"
+               "Template Size: box size for click-seeded targets.\n"
+               "Match Threshold: below this correlation the target is lost.\n"
+               "Update Threshold / Rate: adapt the template only when confident, "
+               "to follow appearance changes without drifting.\n"
+               "Predict position / Max Lost Frames / Max Targets / Trail Length: "
+               "search prediction, drop-out tolerance, count and HUD trail.\n"
+               "Seed from detected blobs: auto-create targets from blobs above a "
+               "minimum size.";
+
+    if (name == "RecordVideo")
+        return "Record Video\n\n"
+               "Encodes the video to an H.264 file (records the original frame, "
+               "not the enhanced/annotated view). Enable Output and the REC "
+               "button.\n\n"
+               "Output File: destination (.mp4/.avi/.mkv).\n"
+               "Preset: x264 speed/quality trade-off (e.g. fast, medium, slow).\n"
+               "Bitrate (kbps): higher = better quality, larger file.";
+
+    if (name == "RecordPixels")
+        return "Record Pixels\n\n"
+               "Writes per-pixel data of the mask to a CSV file over time. Enable "
+               "Output.\n\nOutput File: destination CSV.";
+
+    if (name == "SimpleTags")
+        return "Simple Tags\n\n"
+               "Detects simple rectangular coded tags.\n\n"
+               "Tag Width / Height: the tag's cell grid size.\n"
+               "Output File: CSV of detected tag ids/positions.";
+
+    if (name == "TakeSnapshots")
+        return "Take Snapshots\n\n"
+               "Saves image snapshots of the mask while Output is enabled.\n\n"
+               "Output Dir/Pattern: folder (a frame number is appended).";
+
+    if (name == "Stopwatch")
+        return "Stopwatch\n\n"
+               "Logs timed events triggered by keyboard shortcuts to a CSV file.\n\n"
+               "Output File: destination CSV of event times.";
+
+    if (name == "RemoteControl")
+        return "Remote Control\n\n"
+               "Bluetooth remote control input (Linux, if built with Bluetooth).\n\n"
+               "Corner: screen corner used for the on-screen control overlay.";
+
+    if (name == "ArucoColor")
+        return "Aruco Color\n\n"
+               "Detects custom colour ArUco-style markers.\n\n"
+               "Marker Cols/Rows: marker grid dimensions.\n"
+               "Saturation/Value Threshold: colour segmentation of the marker.\n"
+               "AT Block Size / Constant: adaptive threshold for the black grid.\n"
+               "Min/Max Marker Area: accepted marker size range.\n"
+               "Max Hue Deviation / Marker Range: colour and search tolerances.\n"
+               "Dictionary / Reference Hues: marker code set and colour codes.\n"
+               "Output File: CSV of detected markers.";
+
+    if (name == "Aruco")
+        return "Aruco\n\n"
+               "Detects standard ArUco markers.\n\n"
+               "Min/Max Size: accepted marker size range.\n"
+               "Threshold 1/2: adaptive threshold parameters.\n"
+               "Mask Shape/Radius/Perspective Shift/Value: optional masking of the "
+               "detected marker.\n"
+               "Output File: CSV of detected markers.";
+
+    return "No help available for this plugin yet.";
+}
+
 void AppGui::DrawPluginDialog(int index)
 {
     if (index < 0 || ipEngine.pipelines.empty()) return;
@@ -2062,6 +2371,16 @@ void AppGui::DrawPluginDialog(int index)
                         " [" + std::to_string(index) + "]###PluginDlg" + std::to_string(index);
     bool open = pipelineDialogOpen[index];
 
+    // per-dialog help-panel state
+    if ((int)pipelineHelpOpen.size() < (int)pipelineDialogOpen.size())
+        pipelineHelpOpen.resize(pipelineDialogOpen.size(), false);
+    bool helpOpen = (index < (int)pipelineHelpOpen.size()) ? (bool)pipelineHelpOpen[index] : false;
+
+    // when help is open, force the window wide enough for the side panel
+    if (helpOpen)
+        ImGui::SetNextWindowSizeConstraints(ImVec2(720*dpiScale, 220*dpiScale),
+                                            ImVec2(100000.0f, 100000.0f));
+
     ImGui::SetNextWindowSize(ImVec2(400*dpiScale, 350*dpiScale), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin(title.c_str(), &open))
     {
@@ -2070,6 +2389,23 @@ void AppGui::DrawPluginDialog(int index)
         return;
     }
     pipelineDialogOpen[index] = open;
+
+    // help toggle button, right-aligned at the top of the dialog
+    {
+        float bw = 26 * dpiScale;
+        ImGui::SetCursorPosX(ImGui::GetCursorPosX() +
+                             ImGui::GetContentRegionAvail().x - bw);
+        if (ImGui::Button("?##help", ImVec2(bw, 0)))
+            helpOpen = !helpOpen;
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Show / hide parameter help");
+        if (index < (int)pipelineHelpOpen.size())
+            pipelineHelpOpen[index] = helpOpen;
+    }
+
+    // left column holds all the controls; help panel (if open) sits on the right
+    if (helpOpen)
+        ImGui::BeginChild("##ctrls", ImVec2(360*dpiScale, 0), false);
 
     // Common controls
     bool isActive = pp->active;
@@ -3407,6 +3743,16 @@ void AppGui::DrawPluginDialog(int index)
     else
     {
         ImGui::Text("No specific UI for this plugin type.");
+    }
+
+    // close the controls column and draw the help panel on the right
+    if (helpOpen)
+    {
+        ImGui::EndChild();
+        ImGui::SameLine();
+        ImGui::BeginChild("##help", ImVec2(0, 0), true);
+        ImGui::TextWrapped("%s", PluginHelpText(pp->registryName));
+        ImGui::EndChild();
     }
 
     // any parameter change must be reflected immediately in the video view

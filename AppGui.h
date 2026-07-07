@@ -101,6 +101,7 @@ private:
     int selectedPipelineItem = -1;
     int selectedAvailablePlugin = -1;
     std::vector<bool> pipelineDialogOpen;
+    std::vector<bool> pipelineHelpOpen;   // per-dialog: help panel expanded
 
     // File dialogs / popups
     FileBrowser fileBrowser;
