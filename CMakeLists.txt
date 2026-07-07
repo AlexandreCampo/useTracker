@@ -137,6 +137,7 @@ set(CORE_SOURCES
     plugins/SimpleTags.cpp
     plugins/Stopwatch.cpp
     plugins/TakeSnapshots.cpp
+    plugins/TemporalDenoise.cpp
     plugins/Tracker.cpp
     plugins/WhiteBalance.cpp
     plugins/YoloDetector.cpp

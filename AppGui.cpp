@@ -61,6 +61,7 @@
 #include "plugins/Clahe.h"
 #include "plugins/Curves.h"
 #include "plugins/Denoise.h"
+#include "plugins/TemporalDenoise.h"
 #include "plugins/Sharpen.h"
 #include "plugins/Dehaze.h"
 #include "plugins/WhiteBalance.h"
@@ -2263,6 +2264,21 @@ static const char* PluginHelpText(const std::string& name)
                "NL-means - Strength / Color Strength (def 3): filter power; higher "
                "removes more noise but softens detail. CPU-heavy.";
 
+    if (name == "TemporalDenoise")
+        return "Temporal Denoise\n\n"
+               "Multi-frame NL-means denoising: reduces noise using several "
+               "consecutive frames, which cleans much harder than a single-frame "
+               "filter without blurring moving objects (patches are matched, not "
+               "averaged). Applied in place.\n\n"
+               "Window (frames, def 5, odd): how many frames are used. It denoises "
+               "the CENTRE frame of the window, so the output is delayed by half "
+               "the window (e.g. 2 frames for a window of 5) - but with no "
+               "positional lag on moving targets.\n"
+               "Strength / Color Strength (def 3): filter power; higher removes "
+               "more noise but softens detail.\n"
+               "Note: NL-means is CPU-heavy, so playback will be slow - this is "
+               "best used for offline analysis.";
+
     if (name == "Sharpen")
         return "Sharpen\n\n"
                "Unsharp mask: adds back the difference between the image and a "
@@ -2920,6 +2936,21 @@ void AppGui::DrawPluginDialog(int index)
             changed |= ImGui::SliderFloat("Color Strength", &p->nlmColorStrength, 1.0f, 30.0f, "%.1f");
             ImGui::TextDisabled("NL-means is CPU-heavy; expect slow playback.");
         }
+    }
+
+    // --- TemporalDenoise (single threaded, no sync needed) ---
+    else if (TemporalDenoise* p = dynamic_cast<TemporalDenoise*>(pp))
+    {
+        ImGui::TextWrapped("Multi-frame (temporal) noise reduction, in place. "
+                           "Denoises the centre frame of a rolling window using "
+                           "the frames around it. Result is delayed by half the "
+                           "window but has no motion lag.");
+        ImGui::Spacing();
+        changed |= ImGui::SliderInt("Window (frames)", &p->windowSize, 3, 11);
+        if (p->windowSize % 2 == 0) p->windowSize += 1;
+        changed |= ImGui::SliderFloat("Strength", &p->strength, 1.0f, 30.0f, "%.1f");
+        changed |= ImGui::SliderFloat("Color Strength", &p->colorStrength, 1.0f, 30.0f, "%.1f");
+        ImGui::TextDisabled("CPU-heavy; expect slow playback. Best offline.");
     }
 
     // --- Sharpen (single threaded, no sync needed) ---

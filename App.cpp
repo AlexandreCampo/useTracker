@@ -34,6 +34,7 @@
 #include "Clahe.h"
 #include "Curves.h"
 #include "Denoise.h"
+#include "TemporalDenoise.h"
 #include "Sharpen.h"
 #include "Dehaze.h"
 #include "WhiteBalance.h"
@@ -82,6 +83,7 @@ int main(int argc, char **argv)
     NewPipelinePluginVector["Clahe"] = &CreatePipelinePluginVector<Clahe>;
     NewPipelinePluginVector["Curves"] = &CreatePipelinePluginVector<Curves>;
     NewPipelinePluginVector["Denoise"] = &CreatePipelinePluginVector<Denoise>;
+    NewPipelinePluginVector["TemporalDenoise"] = &CreatePipelinePluginVector<TemporalDenoise>;
     NewPipelinePluginVector["Sharpen"] = &CreatePipelinePluginVector<Sharpen>;
     NewPipelinePluginVector["Dehaze"] = &CreatePipelinePluginVector<Dehaze>;
     NewPipelinePluginVector["WhiteBalance"] = &CreatePipelinePluginVector<WhiteBalance>;
