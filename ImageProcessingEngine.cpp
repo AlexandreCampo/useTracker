@@ -138,6 +138,7 @@ void ImageProcessingEngine::Reset(Parameters& parameters)
 
     pipelineSnapshot = cv::Mat::zeros (capture->height, capture->width, CV_8U);
     pipelineSnapshotMarked = cv::Mat::zeros (capture->height, capture->width, CV_8U);
+    sourceFrame.release();
     takeSnapshot = false;
     snapshotPos = 0;
 
@@ -208,6 +209,7 @@ void ImageProcessingEngine::Reset()
 
     pipelineSnapshot = cv::Mat::zeros (capture->height, capture->width, CV_8U);
     pipelineSnapshotMarked = cv::Mat::zeros (capture->height, capture->width, CV_8U);
+    sourceFrame.release();
 
     if (threadsCount == 0)
 	threadsCount = std::thread::hardware_concurrency();
@@ -607,6 +609,15 @@ void ImageProcessingEngine::Step(bool drawHud)
     lastFrameNumber = frameNumber;
     frameNumber = capture->GetFrameNumber();
     staticFrame = (frameNumber == lastFrameNumber);
+
+    // save a pristine copy of the source frame; on static re-steps restore
+    // it so that in-place enhancement plugins are applied only once
+    if (!staticFrame
+	|| sourceFrame.size() != capture->frame.size()
+	|| sourceFrame.type() != capture->frame.type())
+	capture->frame.copyTo(sourceFrame);
+    else
+	sourceFrame.copyTo(capture->frame);
 
     // prepare marked buffer
     marked.setTo(255);

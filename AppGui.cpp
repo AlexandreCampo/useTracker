@@ -54,8 +54,12 @@
 // Plugin headers
 #include "plugins/AdaptiveThreshold.h"
 #include "plugins/BackgroundDiffGMG.h"
+#include "plugins/BackgroundDiffGSOC.h"
+#include "plugins/BackgroundDiffKNN.h"
 #include "plugins/BackgroundDiffMOG.h"
 #include "plugins/BackgroundDiffMOG2.h"
+#include "plugins/Clahe.h"
+#include "plugins/WhiteBalance.h"
 #include "plugins/ColorSegmentation.h"
 #include "plugins/Dilation.h"
 #include "plugins/Erosion.h"
@@ -1914,6 +1918,160 @@ void AppGui::DrawPluginDialog(int index)
                     tp->restrictToZone = p->restrictToZone;
                     tp->zone = p->zone;
                 }
+    }
+
+    // --- BackgroundDiffGSOC ---
+    else if (BackgroundDiffGSOC* p = dynamic_cast<BackgroundDiffGSOC*>(pp))
+    {
+        int nSamples = p->nSamples;
+        if (ImGui::InputInt("Num Samples", &nSamples))
+        {
+            p->SetNSamples(nSamples);
+            changed = true;
+        }
+
+        float replaceRate = p->replaceRate;
+        if (ImGui::InputFloat("Replace Rate", &replaceRate, 0.001f, 0.01f, "%.4f"))
+        {
+            p->SetReplaceRate(replaceRate);
+            changed = true;
+        }
+
+        float propagationRate = p->propagationRate;
+        if (ImGui::InputFloat("Propagation Rate", &propagationRate, 0.001f, 0.01f, "%.4f"))
+        {
+            p->SetPropagationRate(propagationRate);
+            changed = true;
+        }
+
+        int hitsThreshold = p->hitsThreshold;
+        if (ImGui::InputInt("Hits Threshold", &hitsThreshold))
+        {
+            p->SetHitsThreshold(hitsThreshold);
+            changed = true;
+        }
+
+        changed |= ImGui::Checkbox("Additive", &p->additive);
+        changed |= ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
+        if (p->restrictToZone)
+            changed |= ImGui::InputInt("Zone", &p->zone);
+
+        // Sync to all thread instances (setters are no-ops when unchanged,
+        // so this does not reset the background models of the other threads)
+        if (changed)
+            for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+                if (auto* tp = dynamic_cast<BackgroundDiffGSOC*>(ipEngine.pipelines[t].plugins[index]))
+                {
+                    tp->SetNSamples(p->nSamples);
+                    tp->SetReplaceRate(p->replaceRate);
+                    tp->SetPropagationRate(p->propagationRate);
+                    tp->SetHitsThreshold(p->hitsThreshold);
+                    tp->additive = p->additive;
+                    tp->restrictToZone = p->restrictToZone;
+                    tp->zone = p->zone;
+                }
+    }
+
+    // --- BackgroundDiffKNN ---
+    else if (BackgroundDiffKNN* p = dynamic_cast<BackgroundDiffKNN*>(pp))
+    {
+        int history = p->history;
+        if (ImGui::InputInt("History", &history))
+        {
+            p->SetHistory(history);
+            changed = true;
+        }
+
+        float thresh = (float)p->threshold;
+        if (ImGui::InputFloat("Dist2 Threshold", &thresh, 10.0f, 100.0f, "%.1f"))
+        {
+            p->SetThreshold(thresh);
+            changed = true;
+        }
+
+        bool shadow = p->shadowDetection;
+        if (ImGui::Checkbox("Shadow Detection", &shadow))
+        {
+            p->SetShadowDetection(shadow);
+            changed = true;
+        }
+
+        float lr = (float)p->learningRate;
+        if (ImGui::InputFloat("Learning Rate", &lr, 0.001f, 0.01f, "%.4f"))
+        {
+            p->learningRate = lr;
+            changed = true;
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("-1 = automatic");
+
+        changed |= ImGui::Checkbox("Additive", &p->additive);
+        changed |= ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
+        if (p->restrictToZone)
+            changed |= ImGui::InputInt("Zone", &p->zone);
+
+        // Sync to all thread instances (KNN parameters change live,
+        // the background models are preserved)
+        if (changed)
+            for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+                if (auto* tp = dynamic_cast<BackgroundDiffKNN*>(ipEngine.pipelines[t].plugins[index]))
+                {
+                    tp->SetHistory(p->history);
+                    tp->SetThreshold(p->threshold);
+                    tp->SetShadowDetection(p->shadowDetection);
+                    tp->learningRate = p->learningRate;
+                    tp->additive = p->additive;
+                    tp->restrictToZone = p->restrictToZone;
+                    tp->zone = p->zone;
+                }
+    }
+
+    // --- Clahe (single threaded, no sync needed) ---
+    else if (Clahe* p = dynamic_cast<Clahe*>(pp))
+    {
+        ImGui::TextWrapped("Contrast enhancement, modifies the frame in place. "
+                           "Place it before the detection plugins.");
+        ImGui::Spacing();
+
+        float clipLimit = p->clipLimit;
+        if (ImGui::InputFloat("Clip Limit", &clipLimit, 0.5f, 1.0f, "%.1f"))
+        {
+            p->SetClipLimit(clipLimit);
+            changed = true;
+        }
+
+        int tileSize = p->tileSize;
+        if (ImGui::InputInt("Tile Size", &tileSize))
+        {
+            p->SetTileSize(tileSize);
+            changed = true;
+        }
+    }
+
+    // --- WhiteBalance (single threaded, no sync needed) ---
+    else if (WhiteBalance* p = dynamic_cast<WhiteBalance*>(pp))
+    {
+        ImGui::TextWrapped("Automatic color cast removal, modifies the frame "
+                           "in place. Place it before the detection plugins.");
+        ImGui::Spacing();
+
+        int type = p->type;
+        const char* types[] = { "Gray World", "Simple" };
+        if (ImGui::Combo("Algorithm", &type, types, 2))
+        {
+            p->SetType(type);
+            changed = true;
+        }
+
+        if (p->type == WhiteBalance::GRAYWORLD)
+        {
+            float sat = p->saturationThreshold;
+            if (ImGui::InputFloat("Saturation Threshold", &sat, 0.05f, 0.1f, "%.2f"))
+            {
+                p->SetSaturationThreshold(sat);
+                changed = true;
+            }
+        }
     }
 
     // --- ColorSegmentation ---

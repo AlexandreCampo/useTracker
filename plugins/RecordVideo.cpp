@@ -219,11 +219,18 @@ void RecordVideo::OutputStep ()
 {
     if (!outputOpened) return;
 
+    // record the pristine source frame: enhancement plugins may have
+    // modified the capture frame in place
+    cv::Mat src = pipeline->frame;
+    if (!pipeline->parent->sourceFrame.empty()
+	&& pipeline->parent->sourceFrame.size() == cv::Size(pipeline->parent->capture->width, pipeline->parent->capture->height))
+	src = pipeline->parent->sourceFrame(pipeline->roi);
+
     // copy mat to frame
     for (int y = 0; y < pipeline->height; y++)
     {
 	unsigned char* row = (unsigned char*) frameBGR->data[0] + y * frameBGR->linesize[0];
-	unsigned char* mrow = pipeline->frame.ptr<uchar>(y);
+	const unsigned char* mrow = src.ptr<uchar>(y);
 	memcpy (row, mrow, pipeline->width*3);
     }
 

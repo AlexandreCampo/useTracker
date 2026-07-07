@@ -35,6 +35,11 @@ struct ImageProcessingEngine
     cv::Mat zoneMap;
     cv::Mat marked;
     cv::Mat labels;
+    // pristine copy of the capture frame, saved before the pipeline runs:
+    // enhancement plugins (CLAHE, white balance, ...) modify the capture
+    // frame in place; the copy is restored on static re-steps so they stay
+    // idempotent, and RecordVideo uses it to record the original images
+    cv::Mat sourceFrame;
     std::vector<cv::KeyPoint> keypoints;
     std::vector<Blob> blobs;
 
