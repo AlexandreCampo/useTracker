@@ -60,6 +60,9 @@
 #include "plugins/BackgroundDiffMOG2.h"
 #include "plugins/Clahe.h"
 #include "plugins/Curves.h"
+#include "plugins/Denoise.h"
+#include "plugins/Sharpen.h"
+#include "plugins/Dehaze.h"
 #include "plugins/WhiteBalance.h"
 #include "plugins/YoloDetector.h"
 #include "plugins/PatternTracker.h"
@@ -2249,6 +2252,39 @@ static const char* PluginHelpText(const std::string& name)
                "Gains (Manual): per-channel multipliers (1 = unchanged).\n"
                "Strength (Underwater): amount of red compensation.";
 
+    if (name == "Denoise")
+        return "Denoise\n\n"
+               "Reduces image noise in place (single frame).\n\n"
+               "Method: Bilateral (fast, edge-preserving smoothing) or NL-means "
+               "(slower, cleaner on textured noise).\n"
+               "Bilateral - Diameter (def 5): neighbourhood size. Sigma Color "
+               "(def 50): how similar colours must be to blur together (higher = "
+               "stronger). Sigma Space (def 50): spatial reach.\n"
+               "NL-means - Strength / Color Strength (def 3): filter power; higher "
+               "removes more noise but softens detail. CPU-heavy.";
+
+    if (name == "Sharpen")
+        return "Sharpen\n\n"
+               "Unsharp mask: adds back the difference between the image and a "
+               "blurred copy, boosting edges. Applied in place; best after a "
+               "denoise stage (otherwise it amplifies noise).\n\n"
+               "Amount (def 1.0): sharpening strength. 0 = none; large = harsh, "
+               "may create halos.\n"
+               "Radius (def 2.0): blur size; small enhances fine detail, large "
+               "enhances coarse structure.";
+
+    if (name == "Dehaze")
+        return "Dehaze (Dark Channel Prior)\n\n"
+               "Estimates and removes the veiling haze / backscatter that washes "
+               "out contrast in turbid water or fog. Applied in place. Combine "
+               "with Underwater White Balance for the cast.\n\n"
+               "Strength (omega, def 0.95): how much haze to remove. Higher = "
+               "punchier but can look unnatural or over-dark.\n"
+               "Patch Size (def 15): scale of the local estimate. Larger = smoother "
+               "transmission, less local detail.\n"
+               "Min Transmission (def 0.1): floor on the recovered transmission; "
+               "raise it if very hazy regions turn noisy/over-corrected.";
+
     if (name == "Curves")
         return "Curves\n\n"
                "Per-channel tone/colour curves applied in place. One tool for "
@@ -2856,6 +2892,56 @@ void AppGui::DrawPluginDialog(int index)
             for (int c = 0; c < Curves::NUM_CHANNELS; c++) p->SetIdentity(c);
             changed = true;
         }
+    }
+
+    // --- Denoise (single threaded, no sync needed) ---
+    else if (Denoise* p = dynamic_cast<Denoise*>(pp))
+    {
+        ImGui::TextWrapped("Spatial noise reduction, applied in place.");
+        ImGui::Spacing();
+
+        int method = p->method;
+        const char* methods[] = { "Bilateral (fast)", "NL-means (slow, cleaner)" };
+        if (ImGui::Combo("Method", &method, methods, 2))
+        {
+            p->method = method;
+            changed = true;
+        }
+
+        if (p->method == Denoise::BILATERAL)
+        {
+            changed |= ImGui::SliderInt("Diameter", &p->diameter, 1, 25);
+            changed |= ImGui::SliderFloat("Sigma Color", &p->sigmaColor, 1.0f, 150.0f, "%.0f");
+            changed |= ImGui::SliderFloat("Sigma Space", &p->sigmaSpace, 1.0f, 150.0f, "%.0f");
+        }
+        else
+        {
+            changed |= ImGui::SliderFloat("Strength", &p->nlmStrength, 1.0f, 30.0f, "%.1f");
+            changed |= ImGui::SliderFloat("Color Strength", &p->nlmColorStrength, 1.0f, 30.0f, "%.1f");
+            ImGui::TextDisabled("NL-means is CPU-heavy; expect slow playback.");
+        }
+    }
+
+    // --- Sharpen (single threaded, no sync needed) ---
+    else if (Sharpen* p = dynamic_cast<Sharpen*>(pp))
+    {
+        ImGui::TextWrapped("Unsharp-mask sharpening, applied in place. Best "
+                           "after a denoise stage.");
+        ImGui::Spacing();
+        changed |= ImGui::SliderFloat("Amount", &p->amount, 0.0f, 4.0f, "%.2f");
+        changed |= ImGui::SliderFloat("Radius", &p->radius, 0.5f, 10.0f, "%.1f");
+    }
+
+    // --- Dehaze (single threaded, no sync needed) ---
+    else if (Dehaze* p = dynamic_cast<Dehaze*>(pp))
+    {
+        ImGui::TextWrapped("Dark Channel Prior dehazing, applied in place. "
+                           "Removes veiling haze / backscatter. Pairs well with "
+                           "Underwater White Balance.");
+        ImGui::Spacing();
+        changed |= ImGui::SliderFloat("Strength (omega)", &p->omega, 0.0f, 1.0f, "%.2f");
+        changed |= ImGui::SliderInt("Patch Size", &p->patchSize, 3, 41);
+        changed |= ImGui::SliderFloat("Min Transmission", &p->t0, 0.01f, 0.5f, "%.2f");
     }
 
     // --- YoloDetector (single threaded, no sync needed) ---

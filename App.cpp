@@ -33,6 +33,9 @@
 #include "BackgroundDiffKNN.h"
 #include "Clahe.h"
 #include "Curves.h"
+#include "Denoise.h"
+#include "Sharpen.h"
+#include "Dehaze.h"
 #include "WhiteBalance.h"
 #include "YoloDetector.h"
 #include "PatternTracker.h"
@@ -78,6 +81,9 @@ int main(int argc, char **argv)
     NewPipelinePluginVector["BackgroundDiffKnn"] = &CreatePipelinePluginVector<BackgroundDiffKNN>;
     NewPipelinePluginVector["Clahe"] = &CreatePipelinePluginVector<Clahe>;
     NewPipelinePluginVector["Curves"] = &CreatePipelinePluginVector<Curves>;
+    NewPipelinePluginVector["Denoise"] = &CreatePipelinePluginVector<Denoise>;
+    NewPipelinePluginVector["Sharpen"] = &CreatePipelinePluginVector<Sharpen>;
+    NewPipelinePluginVector["Dehaze"] = &CreatePipelinePluginVector<Dehaze>;
     NewPipelinePluginVector["WhiteBalance"] = &CreatePipelinePluginVector<WhiteBalance>;
     NewPipelinePluginVector["YoloDetector"] = &CreatePipelinePluginVector<YoloDetector>;
     NewPipelinePluginVector["PatternTracker"] = &CreatePipelinePluginVector<PatternTracker>;

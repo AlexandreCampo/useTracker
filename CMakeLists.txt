@@ -17,7 +17,7 @@ option(USE_ARUCO_COLOR "Build the ArucoColor custom marker library"     ON)
 # Dependencies — system / vcpkg
 # ---------------------------------------------------------------------------
 find_package(OpenCV 4 REQUIRED COMPONENTS
-    core imgproc highgui videoio objdetect calib3d features2d video bgsegm xphoto dnn tracking)
+    core imgproc highgui videoio objdetect calib3d features2d video bgsegm xphoto dnn tracking photo)
 # OpenCV < 4.7 has aruco as a separate module; 4.7+ merged it into objdetect
 find_package(OpenCV 4 QUIET OPTIONAL_COMPONENTS aruco)
 find_package(SDL2     REQUIRED)
@@ -119,6 +119,8 @@ set(CORE_SOURCES
     plugins/Clahe.cpp
     plugins/ColorSegmentation.cpp
     plugins/Curves.cpp
+    plugins/Dehaze.cpp
+    plugins/Denoise.cpp
     plugins/Dilation.cpp
     plugins/Erosion.cpp
     plugins/ExtractBlobs.cpp
@@ -131,6 +133,7 @@ set(CORE_SOURCES
     plugins/RecordVideo.cpp
     plugins/RemoteControl.cpp
     plugins/SafeErosion.cpp
+    plugins/Sharpen.cpp
     plugins/SimpleTags.cpp
     plugins/Stopwatch.cpp
     plugins/TakeSnapshots.cpp
