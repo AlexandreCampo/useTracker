@@ -8,6 +8,7 @@
     2. Clahe          - local contrast enhancement (CLAHE on lightness)
     3. Background Diff Gsoc - foreground mask from a GSOC background model
     4. Extract Blobs  - connected components above a size threshold
+    5. Pattern Tracker - follow each detected blob by its appearance
 
   The White Balance and Clahe plugins modify the frame IN PLACE, so their
   effect is visible live in the video view and feeds the plugins below.
@@ -64,6 +65,24 @@
         <MaxSize>200000</MaxSize>
         <RecordLabels>0</RecordLabels>
         <OutputFilename>"blobs.csv"</OutputFilename></ExtractBlobs></Plugin_3>
+    <Plugin_4>
+      <PatternTracker>
+        <Active>1</Active>
+        <Output>1</Output>
+        <Backend>0</Backend>
+        <MaxDistance>60</MaxDistance>
+        <TemplateSize>64</TemplateSize>
+        <MatchThreshold>3.5000000000000000e-01</MatchThreshold>
+        <UpdateThreshold>6.0000000000000000e-01</UpdateThreshold>
+        <UpdateRate>1.0000000000000001e-01</UpdateRate>
+        <MaxLostFrames>20</MaxLostFrames>
+        <MaxTargets>10</MaxTargets>
+        <UsePrediction>1</UsePrediction>
+        <TrailLength>30</TrailLength>
+        <SeedFromDetection>1</SeedFromDetection>
+        <MinBlobSeedSize>500</MinBlobSeedSize>
+        <Additive>0</Additive>
+        <OutputFilename>"tracks.csv"</OutputFilename></PatternTracker></Plugin_4>
   </Pipeline>
 </Configuration>
 </opencv_storage>

@@ -47,9 +47,16 @@ public:
 	float confidence;
     };
 
+    // output layout of the model: AUTO detects it from the tensor shape,
+    // V5 forces the [x,y,w,h,objectness,classes...] layout, V8 forces the
+    // [x,y,w,h,classes...] layout (also YOLOv11). Use AUTO for the standard
+    // Ultralytics exports and only override for non standard converters.
+    enum ModelType { AUTO = 0, V5 = 1, V8 = 2 };
+
     // parameters (saved in the settings file)
     std::string modelFilename;
     std::string classNamesFilename;
+    int modelType = AUTO;
     int inputSize = 640;
     float confidenceThreshold = 0.25f;
     float nmsThreshold = 0.45f;
@@ -60,7 +67,8 @@ public:
     // state
     cv::dnn::Net net;
     bool netLoaded = false;
-    std::string loadedModelFilename;
+    std::string loadedModelFilename;  // filename of the model in memory
+    std::string triedModelFilename;   // last filename we attempted to load
     std::string status = "no model loaded";
     bool cacheValid = false;
 

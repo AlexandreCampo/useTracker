@@ -2179,6 +2179,16 @@ void AppGui::DrawPluginDialog(int index)
 
         ImGui::Separator();
 
+        int modelType = p->modelType;
+        const char* modelTypes[] = { "Auto", "YOLOv5", "YOLOv8 / v11" };
+        if (ImGui::Combo("Model Type", &modelType, modelTypes, 3))
+        {
+            p->modelType = modelType;
+            changed = true;
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Output layout. Auto suits standard Ultralytics exports.");
+
         const char* sizes[] = { "320", "416", "512", "640", "1280" };
         const int sizeVals[] = { 320, 416, 512, 640, 1280 };
         int sizeIdx = 3;
@@ -2222,6 +2232,10 @@ void AppGui::DrawPluginDialog(int index)
                 p->outputFilename = filename;
             });
         }
+
+        // a parameter change must re-run inference even on a paused frame,
+        // otherwise the tuning would not be reflected in the view
+        if (changed) p->cacheValid = false;
     }
 
     // --- PatternTracker (single threaded, no sync needed) ---

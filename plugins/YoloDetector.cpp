@@ -55,6 +55,8 @@ void YoloDetector::LoadModel()
 {
     netLoaded = false;
     loadedModelFilename.clear();
+    triedModelFilename = modelFilename; // remember the attempt (success or not)
+    cacheValid = false;                 // force a fresh inference
 
     if (modelFilename.empty())
     {
@@ -87,6 +89,7 @@ void YoloDetector::LoadModel()
 void YoloDetector::LoadClassNames()
 {
     classNames.clear();
+    cacheValid = false; // labels affect the drawn/decoded output
     if (classNamesFilename.empty()) return;
 
     ifstream f(classNamesFilename);
@@ -207,12 +210,16 @@ void YoloDetector::RunInference()
 	out = out.t();
     }
 
-    // YOLOv5: numAttrs == 5 + nc, has objectness at index 4
+    // YOLOv5: numAttrs == 5 + nc, has an objectness score at index 4
     // YOLOv8/v11: numAttrs == 4 + nc, no objectness
-    // heuristic: if a column of "objectness" makes sense (values in [0,1] and
-    // there is a separate block of class scores) treat as v5. We infer v5 when
-    // the transpose was NOT needed AND attrs look like 5+nc; otherwise v8.
-    bool hasObjectness = (!transposed);
+    // AUTO infers it from the tensor orientation (the canonical Ultralytics
+    // exports put v5 as boxes x attrs and v8 as attrs x boxes), otherwise the
+    // user forces the layout to handle non standard converters.
+    bool hasObjectness;
+    if (modelType == V5)      hasObjectness = true;
+    else if (modelType == V8) hasObjectness = false;
+    else                      hasObjectness = (!transposed);
+
     int classOffset = hasObjectness ? 5 : 4;
     int numClasses = numAttrs - classOffset;
     if (numClasses <= 0)
@@ -286,8 +293,9 @@ void YoloDetector::RunInference()
 
 void YoloDetector::Apply()
 {
-    // reload the model if the settings changed since last time
-    if (modelFilename != loadedModelFilename)
+    // (re)load the model when the filename changes, but do not retry the same
+    // filename every frame if the load failed (avoids per-frame disk churn)
+    if (modelFilename != loadedModelFilename && modelFilename != triedModelFilename)
 	LoadModel();
 
     if (detectionMask.size() != Size(pipeline->width, pipeline->height))
@@ -386,6 +394,8 @@ void YoloDetector::LoadXML (FileNode& fn)
 	output = (int)fn["Output"];
 	modelFilename = (string)fn["ModelFilename"];
 	classNamesFilename = (string)fn["ClassNamesFilename"];
+	if (!fn["ModelType"].empty())
+	    modelType = (int)fn["ModelType"];
 	if (!fn["InputSize"].empty())
 	    inputSize = (int)fn["InputSize"];
 	if (!fn["ConfidenceThreshold"].empty())
@@ -396,6 +406,7 @@ void YoloDetector::LoadXML (FileNode& fn)
 	additive = (int)fn["Additive"];
 	outputFilename = (string)fn["OutputFilename"];
 
+	if (modelType < AUTO || modelType > V8) modelType = AUTO;
 	if (inputSize < 32) inputSize = 640;
 	if (confidenceThreshold <= 0.0f || confidenceThreshold > 1.0f) confidenceThreshold = 0.25f;
 	if (nmsThreshold <= 0.0f || nmsThreshold > 1.0f) nmsThreshold = 0.45f;
@@ -408,6 +419,7 @@ void YoloDetector::SaveXML (FileStorage& fs)
     fs << "Output" << output;
     fs << "ModelFilename" << modelFilename;
     fs << "ClassNamesFilename" << classNamesFilename;
+    fs << "ModelType" << modelType;
     fs << "InputSize" << inputSize;
     fs << "ConfidenceThreshold" << confidenceThreshold;
     fs << "NMSThreshold" << nmsThreshold;
