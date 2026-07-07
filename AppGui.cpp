@@ -3908,9 +3908,8 @@ void AppGui::DrawQuitConfirm()
     if (ImGui::BeginPopupModal("Quit###QuitConfirm", nullptr,
                                ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::Text("Quit USE Tracker?");
-        ImGui::TextDisabled("Unsaved changes to the pipeline, ROIs and settings\n"
-                            "will be lost. Save first with File → Save Settings.");
+        ImGui::Text("Are you sure you want to leave?");
+        ImGui::TextDisabled("Any unsaved changes will be lost.");
         ImGui::Spacing();
 
         if (ImGui::Button("Quit", ImVec2(120 * dpiScale, 0)))
