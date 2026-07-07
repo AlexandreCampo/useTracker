@@ -466,8 +466,11 @@ int AppGui::Run()
                 event.window.windowID == SDL_GetWindowID(window))
                 running = false;
 
-            // Keyboard shortcuts — active unless the user is typing in a text field
-            if (event.type == SDL_KEYDOWN && !ImGui::GetIO().WantTextInput)
+            // Keyboard shortcuts — active unless the user is typing in a text
+            // field or navigating the in-app file browser (which uses the
+            // arrow / Enter / Esc keys for its own navigation)
+            if (event.type == SDL_KEYDOWN && !ImGui::GetIO().WantTextInput &&
+                !fileBrowser.visible)
             {
                 bool ctrl = (event.key.keysym.mod & KMOD_CTRL) != 0;
                 HandleShortcut(event.key.keysym.sym, ctrl);
@@ -688,6 +691,17 @@ void AppGui::RenderFrame()
     {
         ApplyUIScale();
         pendingScaleChange = false;
+    }
+
+    // Enable ImGui keyboard navigation only while the in-app file browser is
+    // open (it is a modal, so playback shortcuts are suppressed anyway). This
+    // gives arrow/Enter/Tab navigation without breaking the video shortcuts.
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        if (fileBrowser.visible)
+            io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        else
+            io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
     }
 
     ImGui_ImplOpenGL3_NewFrame();
@@ -3641,6 +3655,7 @@ void AppGui::OpenFileDialog(const std::string& title, FileBrowser::Mode mode,
     fileBrowser.title = title;
     fileBrowser.onSelect = onSelect;
     fileBrowser.error.clear();
+    fileBrowser.focusList = true;
 
     // extract the allowed extensions from the pfd-style filters
     // (pairs of "label", "*.ext1 *.ext2" strings)
@@ -3733,6 +3748,16 @@ void AppGui::DrawFileBrowser()
         return;
     }
 
+    // Escape cancels the browser (and must not fall through to quitting the app)
+    if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+    {
+        fileBrowser.visible = false;
+        fileBrowser.onSelect = nullptr;
+        ImGui::CloseCurrentPopup();
+        ImGui::EndPopup();
+        return;
+    }
+
     bool confirm = false;
 
     // current directory + navigation
@@ -3743,6 +3768,7 @@ void AppGui::DrawFileBrowser()
         {
             fileBrowser.dir = parent;
             RefreshFileBrowser();
+            fileBrowser.focusList = true;
         }
     }
     ImGui::SameLine();
@@ -3750,11 +3776,14 @@ void AppGui::DrawFileBrowser()
 
     if (!fileBrowser.error.empty())
         ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%s", fileBrowser.error.c_str());
+    else
+        ImGui::TextDisabled("Up/Down: browse   Enter: open folder   Tab: buttons");
 
-    // entries list
+    // entries list — keyboard: arrows move, Enter opens a folder or picks a file
     float footerHeight = ImGui::GetFrameHeightWithSpacing() *
                          (fileBrowser.mode == FileBrowser::FOLDER ? 1.4f : 2.6f);
     ImGui::BeginChild("##FileList", ImVec2(0, -footerHeight), true);
+    bool changedDir = false;
     for (int i = 0; i < (int)fileBrowser.entries.size(); i++)
     {
         const std::string& name = fileBrowser.entries[i].first;
@@ -3764,29 +3793,42 @@ void AppGui::DrawFileBrowser()
         bool isSelected = (!isDir && name == fileBrowser.nameBuf);
 
         ImGui::PushID(i);
-        if (ImGui::Selectable(label.c_str(), isSelected,
-                              ImGuiSelectableFlags_AllowDoubleClick))
+        bool activated = ImGui::Selectable(label.c_str(), isSelected,
+                                           ImGuiSelectableFlags_AllowDoubleClick);
+
+        // give the list keyboard focus when the browser (re)opens
+        if (fileBrowser.focusList && (isSelected || i == 0))
+            ImGui::SetItemDefaultFocus();
+
+        // Enter/keypad-Enter on the focused row (keyboard activation)
+        bool keyEnter = ImGui::IsItemFocused() &&
+                        (ImGui::IsKeyPressed(ImGuiKey_Enter) ||
+                         ImGui::IsKeyPressed(ImGuiKey_KeypadEnter));
+
+        if (isDir)
         {
-            if (isDir)
+            if (keyEnter || (activated && ImGui::IsMouseDoubleClicked(0)))
             {
-                if (ImGui::IsMouseDoubleClicked(0))
-                {
-                    fileBrowser.dir /= name;
-                    RefreshFileBrowser();
-                    ImGui::PopID();
-                    break; // entries were rebuilt, stop iterating
-                }
+                fileBrowser.dir /= name;
+                RefreshFileBrowser();
+                fileBrowser.focusList = true;
+                changedDir = true;
+                ImGui::PopID();
+                break; // entries were rebuilt, stop iterating
             }
-            else
-            {
+        }
+        else
+        {
+            if (activated || keyEnter)
                 snprintf(fileBrowser.nameBuf, sizeof(fileBrowser.nameBuf), "%s", name.c_str());
-                if (ImGui::IsMouseDoubleClicked(0))
-                    confirm = true;
-            }
+            if (activated && ImGui::IsMouseDoubleClicked(0))
+                confirm = true;
         }
         ImGui::PopID();
     }
     ImGui::EndChild();
+    if (!changedDir)
+        fileBrowser.focusList = false;
 
     // file name input
     if (fileBrowser.mode != FileBrowser::FOLDER)

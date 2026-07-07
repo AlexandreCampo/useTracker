@@ -48,6 +48,7 @@ struct FileBrowser
     std::vector<std::pair<std::string, bool>> entries; // name, isDirectory
     char nameBuf[512] = {0};
     std::string error;
+    bool focusList = false; // request keyboard focus on the entry list next frame
 };
 
 class AppGui
