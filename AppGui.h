@@ -162,10 +162,11 @@ private:
     // Returns true when the control points were edited.
     bool DrawCurveEditor(const char* id, std::vector<cv::Point2f>& pts);
 
-    // Polygon ROI overlay editing on the video (called from DrawVideoDisplay).
-    // (minX,minY) and (sizeX,sizeY) describe the drawn image rectangle on
-    // screen; the current zoom UVs map screen <-> frame coordinates.
-    void HandleRoiEditing(float minX, float minY, float sizeX, float sizeY);
+    // Polygon ROI overlay editing on the video (called from DrawVideoDisplay
+    // when a ZonesOfInterest plugin is selected). (minX,minY)/(sizeX,sizeY)
+    // describe the drawn image rectangle; the zoom UVs map screen <-> frame.
+    void HandleRoiEditing(class ZonesOfInterest* zoi,
+                          float minX, float minY, float sizeX, float sizeY);
 
     // File dialogs (native if available, in-app fallback otherwise)
     void OpenFileDialog(const std::string& title, FileBrowser::Mode mode,

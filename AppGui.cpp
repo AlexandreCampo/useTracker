@@ -1152,9 +1152,16 @@ void AppGui::DrawVideoDisplay()
             }
         }
 
-        // Polygon ROI editing overlay
+        // Polygon ROI editing overlay — active when a ZonesOfInterest plugin
+        // is selected in the pipeline
+        ZonesOfInterest* roiPlugin = nullptr;
+        if (selectedPipelineItem >= 0 && !ipEngine.pipelines.empty() &&
+            selectedPipelineItem < (int)ipEngine.pipelines[ipEngine.threadsCount].plugins.size())
+            roiPlugin = dynamic_cast<ZonesOfInterest*>(
+                ipEngine.pipelines[ipEngine.threadsCount].plugins[selectedPipelineItem]);
+        roiEditing = (roiPlugin != nullptr);
         if (roiEditing)
-            HandleRoiEditing(itemMinAbs.x, itemMinAbs.y, itemSizeAbs.x, itemSizeAbs.y);
+            HandleRoiEditing(roiPlugin, itemMinAbs.x, itemMinAbs.y, itemSizeAbs.x, itemSizeAbs.y);
 
         // Zoom/pan with mouse
         if (ImGui::IsItemHovered())
@@ -1577,125 +1584,6 @@ void AppGui::DrawBackgroundTab()
         });
     }
 
-    // ------------------------------------------------------------------
-    // Polygon regions of interest (ROI)
-    // ------------------------------------------------------------------
-    ImGui::Spacing();
-    ImGui::Separator();
-    ImGui::Text("Regions of Interest (polygons)");
-
-    bool useRois = ipEngine.useRois;
-    if (ImGui::Checkbox("Use polygon ROIs", &useRois))
-    {
-        ipEngine.useRois = useRois;
-        if (useRois)
-            ipEngine.RasterizeRois();
-        else if (!ipEngine.zoneMap.empty())
-            ipEngine.zoneMap.setTo(1); // restore "everything visible"
-        pipelineDirty = true;
-    }
-    if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("Rasterize the polygons into the zone map. Region 0 "
-                          "and un-painted areas are ignored by downstream plugins.");
-
-    if (ImGui::Checkbox("Edit on video", &roiEditing))
-    {
-        if (roiEditing)
-        {
-            ipEngine.useRois = true;      // editing implies using the ROIs
-            ipEngine.RasterizeRois();
-            pipelineDirty = true;
-        }
-        else
-        {
-            roiActivePolygon = -1;
-        }
-    }
-    if (roiEditing)
-        ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f),
-                           "Click: add point   drag: move point\n"
-                           "Right-click: finish polygon / delete a point");
-
-    ImGui::SetNextItemWidth(120 * dpiScale);
-    if (ImGui::InputInt("Region for new polygons", &roiCurrentRegion))
-        if (roiCurrentRegion < 0) roiCurrentRegion = 0;
-
-    if (ImGui::Button("Finish Polygon"))
-        roiActivePolygon = -1;
-    ImGui::SameLine();
-    if (ImGui::Button("Delete Selected"))
-    {
-        if (roiSelectedPolygon >= 0 && roiSelectedPolygon < (int)ipEngine.rois.size())
-        {
-            ipEngine.rois.erase(ipEngine.rois.begin() + roiSelectedPolygon);
-            roiSelectedPolygon = -1;
-            roiActivePolygon = -1;
-            ipEngine.RasterizeRois();
-            pipelineDirty = true;
-        }
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Clear All"))
-    {
-        ipEngine.rois.clear();
-        roiSelectedPolygon = -1;
-        roiActivePolygon = -1;
-        ipEngine.RasterizeRois();
-        pipelineDirty = true;
-    }
-
-    // list of polygons
-    ImGui::BeginChild("RoiList", ImVec2(0, 90 * dpiScale), true);
-    for (int i = 0; i < (int)ipEngine.rois.size(); i++)
-    {
-        char lbl[64];
-        snprintf(lbl, sizeof(lbl), "Polygon %d: region %d, %d points", i,
-                 ipEngine.rois[i].region, (int)ipEngine.rois[i].points.size());
-        if (ImGui::Selectable(lbl, roiSelectedPolygon == i))
-            roiSelectedPolygon = i;
-    }
-    ImGui::EndChild();
-
-    // region of the selected polygon can be edited
-    if (roiSelectedPolygon >= 0 && roiSelectedPolygon < (int)ipEngine.rois.size())
-    {
-        int reg = ipEngine.rois[roiSelectedPolygon].region;
-        ImGui::SetNextItemWidth(120 * dpiScale);
-        if (ImGui::InputInt("Selected region", &reg))
-        {
-            ipEngine.rois[roiSelectedPolygon].region = std::max(0, reg);
-            ipEngine.RasterizeRois();
-            pipelineDirty = true;
-        }
-    }
-
-    if (ImGui::Button("Save ROIs..."))
-    {
-        OpenFileDialog("Save ROIs", FileBrowser::SAVE,
-                       {"Text files", "*.txt", "All files", "*"},
-                       ipEngine.roiFilename.empty() ? "rois.txt" : ipEngine.roiFilename,
-                       [this](const std::string& filename)
-        {
-            ipEngine.SaveRois(filename);
-        });
-    }
-    ImGui::SameLine();
-    if (ImGui::Button("Load ROIs..."))
-    {
-        OpenFileDialog("Load ROIs", FileBrowser::OPEN,
-                       {"Text files", "*.txt", "All files", "*"}, "",
-                       [this](const std::string& filename)
-        {
-            if (ipEngine.LoadRois(filename))
-            {
-                ipEngine.useRois = true;
-                ipEngine.RasterizeRois();
-                pipelineDirty = true;
-            }
-            else
-                errorMessage = "Could not load ROI file:\n" + filename;
-        });
-    }
 }
 
 // ============================================================================
@@ -1964,9 +1852,10 @@ bool AppGui::DrawCurveEditor(const char* id, std::vector<cv::Point2f>& pts)
 // HandleRoiEditing — draw and edit polygon ROIs over the video
 // ============================================================================
 
-void AppGui::HandleRoiEditing(float minX, float minY, float sizeX, float sizeY)
+void AppGui::HandleRoiEditing(ZonesOfInterest* zoi,
+                             float minX, float minY, float sizeX, float sizeY)
 {
-    if (sizeX <= 0 || sizeY <= 0 || texWidth <= 0 || texHeight <= 0) return;
+    if (!zoi || sizeX <= 0 || sizeY <= 0 || texWidth <= 0 || texHeight <= 0) return;
 
     ImDrawList* dl = ImGui::GetWindowDrawList();
 
@@ -1995,12 +1884,12 @@ void AppGui::HandleRoiEditing(float minX, float minY, float sizeX, float sizeY)
         return pal[((r % n) + n) % n];
     };
 
-    auto& rois = ipEngine.rois;
+    auto& polys = zoi->polygons;
 
     // draw all polygons
-    for (int pi = 0; pi < (int)rois.size(); pi++)
+    for (int pi = 0; pi < (int)polys.size(); pi++)
     {
-        auto& poly = rois[pi];
+        auto& poly = polys[pi];
         ImU32 col = regionColor(poly.region);
         int np = (int)poly.points.size();
         bool active = (pi == roiActivePolygon);
@@ -2028,13 +1917,30 @@ void AppGui::HandleRoiEditing(float minX, float minY, float sizeX, float sizeY)
         }
     }
 
-    // rubber-band from the last vertex of the polygon being drawn
-    if (roiActivePolygon >= 0 && roiActivePolygon < (int)rois.size() &&
-        !rois[roiActivePolygon].points.empty())
+    ImVec2 mouse = ImGui::GetMousePos();
+
+    // near the first vertex of the polygon being drawn? then a click closes it
+    float closeR = 10.0f * dpiScale;
+    bool canClose = false;
+    if (roiActivePolygon >= 0 && roiActivePolygon < (int)polys.size() &&
+        polys[roiActivePolygon].points.size() >= 3)
     {
-        ImVec2 last = frameToScreen(rois[roiActivePolygon].points.back());
-        dl->AddLine(last, ImGui::GetMousePos(),
-                    regionColor(rois[roiActivePolygon].region), 1.0f);
+        ImVec2 first = frameToScreen(polys[roiActivePolygon].points.front());
+        float dx = mouse.x - first.x, dy = mouse.y - first.y;
+        canClose = (dx * dx + dy * dy <= closeR * closeR);
+        if (canClose)
+        {
+            dl->AddCircle(first, closeR, IM_COL32(255, 255, 255, 255), 0, 2.0f);
+            ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+        }
+    }
+
+    // rubber-band from the last vertex of the polygon being drawn
+    if (roiActivePolygon >= 0 && roiActivePolygon < (int)polys.size() &&
+        !polys[roiActivePolygon].points.empty())
+    {
+        ImVec2 last = frameToScreen(polys[roiActivePolygon].points.back());
+        dl->AddLine(last, mouse, regionColor(polys[roiActivePolygon].region), 1.0f);
     }
 
     if (!ImGui::IsItemHovered())
@@ -2044,13 +1950,12 @@ void AppGui::HandleRoiEditing(float minX, float minY, float sizeX, float sizeY)
     }
 
     // vertex hit test in screen space
-    ImVec2 mouse = ImGui::GetMousePos();
     float grab = 8.0f * dpiScale;
     int hitPoly = -1, hitPt = -1;
-    for (int pi = 0; pi < (int)rois.size() && hitPoly < 0; pi++)
-        for (int i = 0; i < (int)rois[pi].points.size(); i++)
+    for (int pi = 0; pi < (int)polys.size() && hitPoly < 0; pi++)
+        for (int i = 0; i < (int)polys[pi].points.size(); i++)
         {
-            ImVec2 s = frameToScreen(rois[pi].points[i]);
+            ImVec2 s = frameToScreen(polys[pi].points[i]);
             float dx = mouse.x - s.x, dy = mouse.y - s.y;
             if (dx * dx + dy * dy <= grab * grab) { hitPoly = pi; hitPt = i; break; }
         }
@@ -2060,30 +1965,34 @@ void AppGui::HandleRoiEditing(float minX, float minY, float sizeX, float sizeY)
 
     if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
     {
-        if (hitPoly >= 0)
+        if (canClose)
+        {
+            roiActivePolygon = -1; // click near the first vertex closes the polygon
+        }
+        else if (hitPoly >= 0)
         {
             roiDragPoly = hitPoly; roiDragPoint = hitPt; roiSelectedPolygon = hitPoly;
         }
         else
         {
-            if (roiActivePolygon < 0 || roiActivePolygon >= (int)rois.size())
+            if (roiActivePolygon < 0 || roiActivePolygon >= (int)polys.size())
             {
-                ImageProcessingEngine::RoiPolygon np;
+                ZonesOfInterest::Polygon np;
                 np.region = roiCurrentRegion;
-                rois.push_back(np);
-                roiActivePolygon = (int)rois.size() - 1;
+                polys.push_back(np);
+                roiActivePolygon = (int)polys.size() - 1;
                 roiSelectedPolygon = roiActivePolygon;
             }
-            rois[roiActivePolygon].points.push_back(fp);
+            polys[roiActivePolygon].points.push_back(fp);
             changed = true;
         }
     }
 
     if (roiDragPoly >= 0 && ImGui::IsMouseDown(ImGuiMouseButton_Left))
     {
-        if (roiDragPoly < (int)rois.size() && roiDragPoint < (int)rois[roiDragPoly].points.size())
+        if (roiDragPoly < (int)polys.size() && roiDragPoint < (int)polys[roiDragPoly].points.size())
         {
-            rois[roiDragPoly].points[roiDragPoint] = fp;
+            polys[roiDragPoly].points[roiDragPoint] = fp;
             changed = true;
         }
     }
@@ -2093,11 +2002,11 @@ void AppGui::HandleRoiEditing(float minX, float minY, float sizeX, float sizeY)
     {
         if (hitPoly >= 0)
         {
-            auto& pts = rois[hitPoly].points;
+            auto& pts = polys[hitPoly].points;
             pts.erase(pts.begin() + hitPt);
             if (pts.empty())
             {
-                rois.erase(rois.begin() + hitPoly);
+                polys.erase(polys.begin() + hitPoly);
                 if (roiActivePolygon == hitPoly) roiActivePolygon = -1;
                 roiSelectedPolygon = -1;
             }
@@ -2111,7 +2020,7 @@ void AppGui::HandleRoiEditing(float minX, float minY, float sizeX, float sizeY)
 
     if (changed)
     {
-        ipEngine.RasterizeRois();
+        zoi->Rasterize();
         pipelineDirty = true;
     }
 }
@@ -3185,8 +3094,113 @@ void AppGui::DrawPluginDialog(int index)
     // --- ZonesOfInterest ---
     else if (ZonesOfInterest* p = dynamic_cast<ZonesOfInterest*>(pp))
     {
-        ImGui::Text("Zones of Interest plugin");
-        ImGui::Text("Zones are loaded via the Background tab.");
+        ImGui::TextWrapped("Define regions of interest as polygons drawn on the "
+                           "video, and/or from a zone-mask image. Region 0 and "
+                           "un-painted areas are ignored by downstream plugins.");
+        ImGui::Spacing();
+
+        bool selected = (selectedPipelineItem == index);
+        if (selected)
+            ImGui::TextColored(ImVec4(0.5f, 1.0f, 0.5f, 1.0f),
+                               "Editing active on the video:");
+        else
+            ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f),
+                               "Select this plugin in the pipeline to edit on the video.");
+        ImGui::BulletText("Click to add points, drag to move");
+        ImGui::BulletText("Click the first point (or right-click) to close a polygon");
+        ImGui::BulletText("Right-click a point to delete it");
+
+        ImGui::Separator();
+
+        ImGui::SetNextItemWidth(120 * dpiScale);
+        if (ImGui::InputInt("Region for new polygons", &roiCurrentRegion))
+            if (roiCurrentRegion < 0) roiCurrentRegion = 0;
+
+        // polygon list
+        ImGui::BeginChild("RoiList", ImVec2(0, 90 * dpiScale), true);
+        for (int i = 0; i < (int)p->polygons.size(); i++)
+        {
+            char lbl[64];
+            snprintf(lbl, sizeof(lbl), "Polygon %d: region %d, %d points", i,
+                     p->polygons[i].region, (int)p->polygons[i].points.size());
+            if (ImGui::Selectable(lbl, roiSelectedPolygon == i))
+                roiSelectedPolygon = i;
+        }
+        ImGui::EndChild();
+
+        if (roiSelectedPolygon >= 0 && roiSelectedPolygon < (int)p->polygons.size())
+        {
+            int reg = p->polygons[roiSelectedPolygon].region;
+            ImGui::SetNextItemWidth(120 * dpiScale);
+            if (ImGui::InputInt("Selected polygon region", &reg))
+            {
+                p->polygons[roiSelectedPolygon].region = std::max(0, reg);
+                p->Rasterize();
+                pipelineDirty = true;
+            }
+        }
+
+        if (ImGui::Button("Delete Selected"))
+        {
+            if (roiSelectedPolygon >= 0 && roiSelectedPolygon < (int)p->polygons.size())
+            {
+                p->polygons.erase(p->polygons.begin() + roiSelectedPolygon);
+                roiSelectedPolygon = -1;
+                roiActivePolygon = -1;
+                p->Rasterize();
+                pipelineDirty = true;
+            }
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Clear All"))
+        {
+            p->polygons.clear();
+            roiSelectedPolygon = -1;
+            roiActivePolygon = -1;
+            p->Rasterize();
+            pipelineDirty = true;
+        }
+
+        if (ImGui::Button("Save ROIs..."))
+        {
+            OpenFileDialog("Save ROIs", FileBrowser::SAVE,
+                           {"Text files", "*.txt", "All files", "*"},
+                           p->roiFilename.empty() ? "rois.txt" : p->roiFilename,
+                           [p](const std::string& filename) { p->SaveRois(filename); });
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Load ROIs..."))
+        {
+            OpenFileDialog("Load ROIs", FileBrowser::OPEN,
+                           {"Text files", "*.txt", "All files", "*"}, "",
+                           [p, this](const std::string& filename)
+            {
+                if (p->LoadRois(filename)) { p->Rasterize(); pipelineDirty = true; }
+                else errorMessage = "Could not load ROI file:\n" + filename;
+            });
+        }
+
+        ImGui::Separator();
+
+        // optional zone-mask image
+        char zi[INPUT_BUF_SIZE];
+        snprintf(zi, sizeof(zi), "%s", p->zonesImageFilename.c_str());
+        ImGui::SetNextItemWidth(220 * dpiScale);
+        if (ImGui::InputText("Zone image", zi, INPUT_BUF_SIZE))
+            p->zonesImageFilename = zi;
+        ImGui::SameLine();
+        if (ImGui::Button("Browse##ZoneImg"))
+        {
+            OpenFileDialog("Load Zone Image", FileBrowser::OPEN,
+                           {"Image files", "*.png *.jpg *.bmp *.tif", "All files", "*"},
+                           "",
+                           [p, this](const std::string& filename)
+            {
+                p->LoadImage(filename);
+                p->Rasterize();
+                pipelineDirty = true;
+            });
+        }
     }
 
     // --- RemoteControl ---

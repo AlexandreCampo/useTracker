@@ -134,14 +134,6 @@ void ImageProcessingEngine::Reset(Parameters& parameters)
 	zoneMap = cv::Mat::ones(capture->height, capture->width, CV_8U);
     }
 
-    // apply polygon regions of interest if enabled (overrides the mask above)
-    if (useRois)
-    {
-	if (rois.empty() && !roiFilename.empty())
-	    LoadRois(roiFilename);
-	RasterizeRois();
-    }
-
     // pipeline data
     marked.create (capture->height, capture->width, CV_8U);
     labels.create (capture->height, capture->width, CV_32S);
@@ -213,10 +205,6 @@ void ImageProcessingEngine::Reset()
 	zoneMap = cv::Mat::ones(capture->height, capture->width, CV_8U);
     }
 
-    // apply polygon regions of interest if enabled
-    if (useRois)
-	RasterizeRois();
-
     // pipeline data
     marked.create (capture->height, capture->width, CV_8U);
     labels.create (capture->height, capture->width, CV_32S);
@@ -244,97 +232,6 @@ void ImageProcessingEngine::Reset()
 
 
 
-void ImageProcessingEngine::RasterizeRois()
-{
-    // fill zoneMap IN PLACE so the per-thread pipeline slices (which hold
-    // submatrix views of this buffer) stay valid
-    if (zoneMap.empty()) return;
-
-    zoneMap.setTo(0);
-    for (auto& poly : rois)
-    {
-	if (poly.points.size() < 3) continue;
-	if (poly.region <= 0) continue; // region 0 == ignored, same as background
-	std::vector<std::vector<cv::Point>> pts { poly.points };
-	cv::fillPoly(zoneMap, pts, cv::Scalar(poly.region), cv::LINE_8);
-    }
-}
-
-bool ImageProcessingEngine::LoadRois(const std::string& filename)
-{
-    std::ifstream f(filename);
-    if (!f.is_open())
-    {
-	std::cerr << "Could not open ROI file " << filename << std::endl;
-	return false;
-    }
-
-    std::vector<RoiPolygon> loaded;
-    RoiPolygon* current = nullptr;
-    std::string line;
-    while (std::getline(f, line))
-    {
-	// strip comments and whitespace
-	size_t hash = line.find('#');
-	if (hash != std::string::npos) line = line.substr(0, hash);
-	std::istringstream ss(line);
-
-	std::string tok;
-	if (!(ss >> tok)) continue; // blank line
-
-	if (tok == "polygon")
-	{
-	    int region = 1;
-	    ss >> region;
-	    loaded.push_back(RoiPolygon());
-	    loaded.back().region = region;
-	    current = &loaded.back();
-	}
-	else
-	{
-	    // expect two numbers "x y" (tok already holds the first)
-	    try
-	    {
-		int x = std::stoi(tok);
-		int y;
-		if (!(ss >> y)) continue;
-		if (!current)
-		{
-		    loaded.push_back(RoiPolygon());
-		    current = &loaded.back();
-		}
-		current->points.push_back(cv::Point(x, y));
-	    }
-	    catch (...) { continue; }
-	}
-    }
-
-    rois = loaded;
-    roiFilename = filename;
-    return true;
-}
-
-void ImageProcessingEngine::SaveRois(const std::string& filename)
-{
-    std::ofstream f(filename);
-    if (!f.is_open())
-    {
-	std::cerr << "Could not write ROI file " << filename << std::endl;
-	return;
-    }
-
-    f << "# useTracker regions of interest\n";
-    f << "# each polygon: 'polygon <region>' then one 'x y' vertex per line\n";
-    for (auto& poly : rois)
-    {
-	f << "polygon " << poly.region << "\n";
-	for (auto& p : poly.points)
-	    f << p.x << " " << p.y << "\n";
-	f << "\n";
-    }
-    roiFilename = filename;
-}
-
 void ImageProcessingEngine::LoadXML(cv::FileNode& fn)
 {
      // read xml file
@@ -358,9 +255,6 @@ void ImageProcessingEngine::LoadXML(cv::FileNode& fn)
 	else if (bt == "mean") bgCalcType = BG_MEAN;
 
 	zonesFilename = (string)fn["ZonesFilename"];
-
-	if (!fn["UseRois"].empty()) useRois = (int)fn["UseRois"];
-	roiFilename = (string)fn["RoiFilename"];
     }
 }
 
@@ -382,8 +276,6 @@ void ImageProcessingEngine::SaveXML(cv::FileStorage& fs)
     else if (bgCalcType == BG_MEAN)
 	fs << "BackgroundCalcType" << "mean";
     fs << "ZonesFilename" << zonesFilename;
-    fs << "UseRois" << useRois;
-    fs << "RoiFilename" << roiFilename;
 }
 
 void ImageProcessingEngine::PushBack (vector<PipelinePlugin*> pfv, bool reset)

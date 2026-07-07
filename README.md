@@ -14,7 +14,7 @@ Several plugins improve the image before detection (all applied in place):
 
 ### Regions of interest (ROI)
 
-Restrict processing to parts of the frame either with a **zone mask image** (grayscale PNG, pixel value = region number, 0 = ignored) or, more conveniently, by **drawing polygons** directly on the video (Background tab → *Regions of Interest*). Enable *Edit on video*, then click to add polygon vertices, drag vertices to move them, and right-click to finish a polygon or delete a vertex. Each polygon is assigned a **region number** (0, 1, 2, …); region 0 and un-painted areas are ignored by downstream plugins, and a plugin's *Restrict to Zone* option keeps only the pixels of a chosen region. Polygons are saved to / loaded from a plain text file and the ROI file is remembered in the settings.
+Add a **Zones of Interest** plugin to the pipeline and configure it entirely in its dialog. Zones are defined by **drawing polygons directly on the video** and/or from a **zone-mask image** (grayscale, pixel value = region number). Select the plugin in the pipeline to edit on the video: click to add polygon vertices, drag vertices to move them, click the first vertex (the cursor changes) or right-click to close a polygon, and right-click a vertex to delete it. Each polygon has a **region number** (0, 1, 2, …); region 0 and un-painted areas are ignored by downstream plugins, and a plugin's *Restrict to Zone* option keeps only the pixels of a chosen region. Polygons are saved to / loaded from a plain text file, and are also embedded in the settings file so a configuration is self-contained.
 
 ### Background subtraction
 
