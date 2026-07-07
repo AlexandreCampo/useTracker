@@ -118,6 +118,7 @@ set(CORE_SOURCES
     plugins/BackgroundDiffMOG2.cpp
     plugins/Clahe.cpp
     plugins/ColorSegmentation.cpp
+    plugins/Curves.cpp
     plugins/Dilation.cpp
     plugins/Erosion.cpp
     plugins/ExtractBlobs.cpp

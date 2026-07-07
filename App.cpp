@@ -32,6 +32,7 @@
 #include "BackgroundDiffGSOC.h"
 #include "BackgroundDiffKNN.h"
 #include "Clahe.h"
+#include "Curves.h"
 #include "WhiteBalance.h"
 #include "YoloDetector.h"
 #include "PatternTracker.h"
@@ -76,6 +77,7 @@ int main(int argc, char **argv)
     NewPipelinePluginVector["BackgroundDiffGsoc"] = &CreatePipelinePluginVector<BackgroundDiffGSOC>;
     NewPipelinePluginVector["BackgroundDiffKnn"] = &CreatePipelinePluginVector<BackgroundDiffKNN>;
     NewPipelinePluginVector["Clahe"] = &CreatePipelinePluginVector<Clahe>;
+    NewPipelinePluginVector["Curves"] = &CreatePipelinePluginVector<Curves>;
     NewPipelinePluginVector["WhiteBalance"] = &CreatePipelinePluginVector<WhiteBalance>;
     NewPipelinePluginVector["YoloDetector"] = &CreatePipelinePluginVector<YoloDetector>;
     NewPipelinePluginVector["PatternTracker"] = &CreatePipelinePluginVector<PatternTracker>;

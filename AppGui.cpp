@@ -59,6 +59,7 @@
 #include "plugins/BackgroundDiffMOG.h"
 #include "plugins/BackgroundDiffMOG2.h"
 #include "plugins/Clahe.h"
+#include "plugins/Curves.h"
 #include "plugins/WhiteBalance.h"
 #include "plugins/YoloDetector.h"
 #include "plugins/PatternTracker.h"
@@ -1134,6 +1135,23 @@ void AppGui::DrawVideoDisplay()
             }
         }
 
+        // WhiteBalance "pick white" mode
+        bool pickMode = (whitePickPluginIndex >= 0 &&
+                         !ipEngine.pipelines.empty() &&
+                         whitePickPluginIndex < (int)ipEngine.pipelines[ipEngine.threadsCount].plugins.size());
+        if (pickMode && ImGui::IsItemHovered())
+        {
+            WhiteBalance* wbp = dynamic_cast<WhiteBalance*>(
+                ipEngine.pipelines[ipEngine.threadsCount].plugins[whitePickPluginIndex]);
+            cv::Point fp;
+            if (wbp && ImGui::IsMouseClicked(ImGuiMouseButton_Left) && mouseToFrame(fp))
+            {
+                wbp->AddPick(fp);
+                whitePickPluginIndex = -1; // single pick, then leave the mode
+                pipelineDirty = true;
+            }
+        }
+
         // Zoom/pan with mouse
         if (ImGui::IsItemHovered())
         {
@@ -1200,9 +1218,9 @@ void AppGui::DrawVideoDisplay()
                 zoomStartY = std::max(0.0f, zoomStartY);
             }
 
-            // Double-click to reset zoom (disabled while seeding targets, where
-            // left click is used to place targets)
-            if (!seedMode && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+            // Double-click to reset zoom (disabled while seeding targets or
+            // picking a white point, where left click has another purpose)
+            if (!seedMode && !pickMode && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
             {
                 zoomStartX = 0.0f; zoomStartY = 0.0f;
                 zoomEndX = 1.0f; zoomEndY = 1.0f;
@@ -1702,6 +1720,122 @@ void AppGui::DrawProcessingFrameTab()
 }
 
 // ============================================================================
+// DrawCurveEditor — interactive draggable tone curve
+// ============================================================================
+
+bool AppGui::DrawCurveEditor(const char* id, std::vector<cv::Point2f>& pts)
+{
+    ImGui::PushID(id);
+    bool changed = false;
+
+    float sz = 256.0f * dpiScale;
+    ImVec2 p0 = ImGui::GetCursorScreenPos();
+    ImGui::InvisibleButton("canvas", ImVec2(sz, sz));
+    bool hovered = ImGui::IsItemHovered();
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    ImVec2 p1(p0.x + sz, p0.y + sz);
+
+    // background, border, grid, identity diagonal
+    dl->AddRectFilled(p0, p1, IM_COL32(30, 30, 30, 255));
+    for (int i = 1; i < 4; i++)
+    {
+        float t = i / 4.0f;
+        dl->AddLine(ImVec2(p0.x + t * sz, p0.y), ImVec2(p0.x + t * sz, p1.y), IM_COL32(55, 55, 55, 255));
+        dl->AddLine(ImVec2(p0.x, p0.y + t * sz), ImVec2(p1.x, p0.y + t * sz), IM_COL32(55, 55, 55, 255));
+    }
+    dl->AddLine(ImVec2(p0.x, p1.y), ImVec2(p1.x, p0.y), IM_COL32(70, 70, 70, 255));
+    dl->AddRect(p0, p1, IM_COL32(90, 90, 90, 255));
+
+    // data (0..255) <-> screen, y is inverted
+    auto toScreen = [&](float dx, float dy) {
+        return ImVec2(p0.x + (dx / 255.0f) * sz, p1.y - (dy / 255.0f) * sz);
+    };
+    auto clamp255 = [](float v) { return v < 0.0f ? 0.0f : (v > 255.0f ? 255.0f : v); };
+
+    // the interpolated curve
+    unsigned char lut[256];
+    Curves::BuildCurveLUT(pts, lut);
+    ImVec2 prev = toScreen(0.0f, (float)lut[0]);
+    for (int x = 1; x < 256; x++)
+    {
+        ImVec2 cur = toScreen((float)x, (float)lut[x]);
+        dl->AddLine(prev, cur, IM_COL32(235, 235, 130, 255), 2.0f);
+        prev = cur;
+    }
+
+    // per-widget drag state (survives across frames, isolated by ImGui ID)
+    ImGuiStorage* store = ImGui::GetStateStorage();
+    ImGuiID dragKey = ImGui::GetID("drag");
+    int drag = store->GetInt(dragKey, -1);
+
+    float grabR = 7.0f * dpiScale;
+    ImVec2 mouse = ImGui::GetMousePos();
+
+    // points + hit test
+    int hoverIdx = -1;
+    for (int i = 0; i < (int)pts.size(); i++)
+    {
+        ImVec2 sp = toScreen(pts[i].x, pts[i].y);
+        float dx = mouse.x - sp.x, dy = mouse.y - sp.y;
+        bool hot = (dx * dx + dy * dy <= grabR * grabR);
+        if (hot) hoverIdx = i;
+        float r = (hot ? 6.0f : 4.0f) * dpiScale;
+        dl->AddCircleFilled(sp, r, IM_COL32(255, 255, 255, 255));
+        dl->AddCircle(sp, r, IM_COL32(0, 0, 0, 255));
+    }
+
+    if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+    {
+        if (hoverIdx >= 0)
+            drag = hoverIdx;
+        else
+        {
+            float nx = clamp255((mouse.x - p0.x) / sz * 255.0f);
+            float ny = clamp255((p1.y - mouse.y) / sz * 255.0f);
+            int ins = 0;
+            while (ins < (int)pts.size() && pts[ins].x < nx) ins++;
+            pts.insert(pts.begin() + ins, cv::Point2f(nx, ny));
+            drag = ins;
+            changed = true;
+        }
+    }
+
+    // right click removes an interior point
+    if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Right) &&
+        hoverIdx > 0 && hoverIdx < (int)pts.size() - 1)
+    {
+        pts.erase(pts.begin() + hoverIdx);
+        changed = true;
+    }
+
+    // dragging
+    if (drag >= 0 && drag < (int)pts.size() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+    {
+        float ny = clamp255((p1.y - mouse.y) / sz * 255.0f);
+        float nx = clamp255((mouse.x - p0.x) / sz * 255.0f);
+        if (drag == 0)
+            pts[0] = cv::Point2f(0.0f, ny);
+        else if (drag == (int)pts.size() - 1)
+            pts[drag] = cv::Point2f(255.0f, ny);
+        else
+        {
+            float lo = pts[drag - 1].x + 1.0f;
+            float hi = pts[drag + 1].x - 1.0f;
+            pts[drag] = cv::Point2f(std::min(hi, std::max(lo, nx)), ny);
+        }
+        changed = true;
+    }
+    if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)) drag = -1;
+
+    store->SetInt(dragKey, drag);
+
+    ImGui::TextDisabled("click: add/move point   right-click: remove");
+
+    ImGui::PopID();
+    return changed;
+}
+
+// ============================================================================
 // DrawPluginDialog
 // ============================================================================
 
@@ -2099,8 +2233,9 @@ void AppGui::DrawPluginDialog(int index)
         ImGui::Spacing();
 
         int type = p->type;
-        const char* types[] = { "Gray World", "Simple" };
-        if (ImGui::Combo("Algorithm", &type, types, 2))
+        const char* types[] = { "Gray World (auto)", "Simple (auto)",
+                                "Manual / Pick", "Underwater" };
+        if (ImGui::Combo("Mode", &type, types, 4))
         {
             p->SetType(type);
             changed = true;
@@ -2114,6 +2249,59 @@ void AppGui::DrawPluginDialog(int index)
                 p->SetSaturationThreshold(sat);
                 changed = true;
             }
+        }
+        else if (p->type == WhiteBalance::MANUAL)
+        {
+            bool picking = (whitePickPluginIndex == index);
+            if (ImGui::Checkbox("Pick white (click a neutral pixel)", &picking))
+                whitePickPluginIndex = picking ? index : -1;
+            if (picking)
+                ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f),
+                                   "Click a pixel that should be neutral grey/white");
+
+            changed |= ImGui::SliderFloat("Gain R", &p->gainR, 0.2f, 5.0f, "%.2f");
+            changed |= ImGui::SliderFloat("Gain G", &p->gainG, 0.2f, 5.0f, "%.2f");
+            changed |= ImGui::SliderFloat("Gain B", &p->gainB, 0.2f, 5.0f, "%.2f");
+            if (ImGui::Button("Reset Gains"))
+            {
+                p->ResetGains();
+                changed = true;
+            }
+        }
+        else if (p->type == WhiteBalance::UNDERWATER)
+        {
+            ImGui::TextWrapped("Restores the red channel absorbed by water, "
+                               "then normalises the colour.");
+            changed |= ImGui::SliderFloat("Strength", &p->redCompensation, 0.0f, 2.0f, "%.2f");
+        }
+    }
+
+    // --- Curves (single threaded, no sync needed) ---
+    else if (Curves* p = dynamic_cast<Curves*>(pp))
+    {
+        ImGui::TextWrapped("Per-channel tone/colour curves, applied in place. "
+                           "Master affects all channels; R/G/B are added on top.");
+        ImGui::Spacing();
+
+        const char* chans[] = { "Master", "Red", "Green", "Blue" };
+        ImGui::Combo("Channel", &p->editChannel, chans, 4);
+
+        if (DrawCurveEditor("##curve", p->points[p->editChannel]))
+        {
+            p->MarkDirty();
+            changed = true;
+        }
+
+        if (ImGui::Button("Reset Channel"))
+        {
+            p->SetIdentity(p->editChannel);
+            changed = true;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Reset All"))
+        {
+            for (int c = 0; c < Curves::NUM_CHANNELS; c++) p->SetIdentity(c);
+            changed = true;
         }
     }
 

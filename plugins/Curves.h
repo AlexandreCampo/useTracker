@@ -17,65 +17,52 @@
 /*    along with USE Tracker.  If not, see <http://www.gnu.org/licenses/>.    */
 /*----------------------------------------------------------------------------*/
 
-#ifndef WHITE_BALANCE_H
-#define WHITE_BALANCE_H
+#ifndef CURVES_PLUGIN_H
+#define CURVES_PLUGIN_H
 
 #include "PipelinePlugin.h"
 
 #include <opencv2/imgproc.hpp>
 #include <opencv2/core.hpp>
-#include <opencv2/xphoto/white_balance.hpp>
 
-// Colour cast correction. Image enhancement plugin: modifies the capture
-// frame in place. Modes:
-//   GRAYWORLD / SIMPLE - automatic white balance (xphoto)
-//   MANUAL             - per-channel gains, typically set by picking a pixel
-//                        that should be neutral grey (the "pick white" tool)
-//   UNDERWATER         - red-channel compensation (counters the way water
-//                        absorbs red first) followed by a gray-world pass,
-//                        controlled by a single strength slider
-class WhiteBalance : public PipelinePlugin
+#include <vector>
+
+// Tone / colour curves. A general image-enhancement plugin: each of the
+// Master, Red, Green and Blue channels has an editable transfer curve
+// (control points interpolated with a monotone cubic spline into a lookup
+// table). The Master curve is applied to all three channels, then the
+// per-channel curve. Curves subsume levels, gamma, contrast and colour
+// balance in one tool. Like the other enhancement plugins it modifies the
+// capture frame in place, so the effect is visible live and feeds downstream.
+class Curves : public PipelinePlugin
 {
 public:
 
-    enum Type {GRAYWORLD = 0, SIMPLE = 1, MANUAL = 2, UNDERWATER = 3};
+    enum Channel { MASTER = 0, RED = 1, GREEN = 2, BLUE = 3, NUM_CHANNELS = 4 };
 
-    int type = GRAYWORLD;
-    float saturationThreshold = 0.9f;  // grayworld only
+    // control points per channel, in [0,255] x [0,255], sorted by x, with the
+    // first point at x=0 and the last at x=255
+    std::vector<cv::Point2f> points[NUM_CHANNELS];
 
-    // MANUAL mode per-channel gains (BGR)
-    float gainB = 1.0f;
-    float gainG = 1.0f;
-    float gainR = 1.0f;
+    int editChannel = MASTER;   // channel currently shown in the editor (UI)
+    bool lutDirty = true;
 
-    // UNDERWATER mode strength
-    float redCompensation = 1.0f;
+    cv::Mat lutMat;             // 1x256 CV_8UC3 combined lookup table
 
-    // pending "pick white" request from the GUI (frame coordinates)
-    cv::Point pendingPick;
-    bool hasPick = false;
-
-    cv::Ptr<cv::xphoto::WhiteBalancer> wb;
-    cv::Mat balanced;
-
-    WhiteBalance();
-    ~WhiteBalance();
+    Curves();
+    ~Curves();
     void Apply();
     void Reset();
     void LoadXML (cv::FileNode& fn);
     void SaveXML (cv::FileStorage& fs);
 
-    void SetType(int t);
-    void SetSaturationThreshold(float s);
+    void SetIdentity(int channel);
+    void MarkDirty() { lutDirty = true; }
+    void BuildLUT();
 
-    // queue a pick of a should-be-neutral pixel (called from the GUI)
-    void AddPick (cv::Point p);
-    void ResetGains();
-
-private:
-    void ApplyManual();
-    void ApplyUnderwater();
-    void ComputeGainsFromPixel (const cv::Vec3b& bgr);
+    // sample a curve's control points into a 256-entry lookup table using a
+    // monotone cubic spline (no overshoot). Exposed for the GUI editor.
+    static void BuildCurveLUT (const std::vector<cv::Point2f>& pts, unsigned char out[256]);
 };
 
 #endif

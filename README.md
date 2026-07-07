@@ -4,6 +4,14 @@ Real-time tracking and image processing software with a graphical interface. It 
 
 Pipelines are built by stacking plugins; each plugin refines a shared *marked* mask that downstream plugins (Extract Blobs, Track Blobs) consume. Enhancement plugins modify the frame in place so their effect is visible live and benefits the whole pipeline, while the original frame is preserved for recording.
 
+### Image enhancement
+
+Several plugins improve the image before detection (all applied in place):
+
+- **White Balance** — automatic (gray-world / simple), **manual** with per-channel gains you can set by clicking a should-be-neutral pixel (*pick white*), or **underwater** mode which restores the red channel absorbed by water with a single strength slider. The underwater mode removes the blue-green cast far better than generic auto white balance.
+- **Clahe** — local contrast enhancement (CLAHE on the lightness channel).
+- **Curves** — general per-channel tone/colour curves. Each of the Master, Red, Green and Blue channels has an editable curve (drag points on the graph; click to add, right-click to remove), interpolated with a monotone cubic spline. Curves subsume levels, gamma, contrast and colour balance in one tool.
+
 ### Background subtraction
 
 Several background subtractors are available: **Background Difference** (static background image), **MOG**, **MOG2**, **GMG**, **KNN**, and **GSOC**. For difficult footage (e.g. turbid underwater scenes) KNN and GSOC on the raw frames tend to give the cleanest foreground masks. When paused, the model history stays frozen — it only advances on real movie frames, never on repeated views of a static frame.

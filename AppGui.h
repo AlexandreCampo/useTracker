@@ -108,6 +108,10 @@ private:
     // (-1 = none). A left click on the video seeds a target in that plugin.
     int patternSeedPluginIndex = -1;
 
+    // WhiteBalance: index of the plugin currently in "pick white" mode
+    // (-1 = none). A left click on the video picks a neutral pixel.
+    int whitePickPluginIndex = -1;
+
     // Available plugin names for UI
     std::vector<std::string> availablePluginNames;
 
@@ -145,6 +149,10 @@ private:
 
     // Dialog drawing (one per plugin type)
     void DrawPluginDialog(int index);
+
+    // Interactive tone-curve editor (used by the Curves plugin dialog).
+    // Returns true when the control points were edited.
+    bool DrawCurveEditor(const char* id, std::vector<cv::Point2f>& pts);
 
     // File dialogs (native if available, in-app fallback otherwise)
     void OpenFileDialog(const std::string& title, FileBrowser::Mode mode,
