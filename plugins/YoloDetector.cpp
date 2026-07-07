@@ -21,6 +21,8 @@
 
 #include "ImageProcessingEngine.h"
 
+#include <opencv2/core/ocl.hpp>
+
 #include <iostream>
 #include <sstream>
 #include <algorithm>
@@ -72,11 +74,10 @@ void YoloDetector::LoadModel()
 	    status = "failed to load model";
 	    return;
 	}
-	net.setPreferableBackend(dnn::DNN_BACKEND_OPENCV);
-	net.setPreferableTarget(dnn::DNN_TARGET_CPU);
 	netLoaded = true;
 	loadedModelFilename = modelFilename;
-	status = "model loaded";
+	// apply the selected compute target (GPU if available, else CPU)
+	ApplyTarget();
     }
     catch (const cv::Exception& e)
     {
@@ -84,6 +85,87 @@ void YoloDetector::LoadModel()
 	status = string("error: ") + e.what();
 	cerr << "YoloDetector: " << e.what() << endl;
     }
+}
+
+string YoloDetector::TargetName(int t)
+{
+    switch (t)
+    {
+    case TARGET_OPENCL:      return "OpenCL";
+    case TARGET_OPENCL_FP16: return "OpenCL FP16";
+    case TARGET_VULKAN:      return "Vulkan";
+    default:                 return "CPU";
+    }
+}
+
+// configure the net for target t and run one warmup inference; returns false
+// if the target is unavailable or the model cannot run on it
+bool YoloDetector::TryTarget(int t)
+{
+    if (!netLoaded) return false;
+
+    // OpenCL needs a usable runtime/device, checked up front for a clean message
+    if ((t == TARGET_OPENCL || t == TARGET_OPENCL_FP16) && !ocl::haveOpenCL())
+	return false;
+
+    int backend = dnn::DNN_BACKEND_OPENCV;
+    int tgt = dnn::DNN_TARGET_CPU;
+    switch (t)
+    {
+    case TARGET_OPENCL:      backend = dnn::DNN_BACKEND_OPENCV; tgt = dnn::DNN_TARGET_OPENCL; break;
+    case TARGET_OPENCL_FP16: backend = dnn::DNN_BACKEND_OPENCV; tgt = dnn::DNN_TARGET_OPENCL_FP16; break;
+    case TARGET_VULKAN:      backend = dnn::DNN_BACKEND_VKCOM;  tgt = dnn::DNN_TARGET_VULKAN; break;
+    default:                 backend = dnn::DNN_BACKEND_OPENCV; tgt = dnn::DNN_TARGET_CPU; break;
+    }
+
+    try
+    {
+	net.setPreferableBackend(backend);
+	net.setPreferableTarget(tgt);
+
+	// warmup: forces kernel compilation and surfaces unsupported-layer
+	// errors now rather than mid-playback
+	Mat dummy = Mat::zeros(inputSize, inputSize, CV_8UC3);
+	Mat blob;
+	dnn::blobFromImage(dummy, blob, 1.0 / 255.0, Size(inputSize, inputSize),
+			   Scalar(), true, false);
+	net.setInput(blob);
+	vector<Mat> outs;
+	net.forward(outs, net.getUnconnectedOutLayersNames());
+	return true;
+    }
+    catch (const cv::Exception& e)
+    {
+	cerr << "YoloDetector: target " << TargetName(t) << " unavailable: "
+	     << e.what() << endl;
+	return false;
+    }
+}
+
+void YoloDetector::ApplyTarget()
+{
+    if (!netLoaded) return;
+
+    cacheValid = false; // the target change requires a fresh inference
+
+    if (TryTarget(target))
+    {
+	activeTarget = target;
+	status = "model loaded (target: " + TargetName(target) + ")";
+	return;
+    }
+
+    // requested target failed: fall back to the CPU
+    if (target != TARGET_CPU && TryTarget(TARGET_CPU))
+    {
+	activeTarget = TARGET_CPU;
+	status = "model loaded (" + TargetName(target) +
+		 " unavailable, using CPU)";
+	return;
+    }
+
+    activeTarget = TARGET_CPU;
+    status = "model loaded (target: CPU)";
 }
 
 void YoloDetector::LoadClassNames()
@@ -396,6 +478,8 @@ void YoloDetector::LoadXML (FileNode& fn)
 	classNamesFilename = (string)fn["ClassNamesFilename"];
 	if (!fn["ModelType"].empty())
 	    modelType = (int)fn["ModelType"];
+	if (!fn["Target"].empty())
+	    target = (int)fn["Target"];
 	if (!fn["InputSize"].empty())
 	    inputSize = (int)fn["InputSize"];
 	if (!fn["ConfidenceThreshold"].empty())
@@ -407,6 +491,7 @@ void YoloDetector::LoadXML (FileNode& fn)
 	outputFilename = (string)fn["OutputFilename"];
 
 	if (modelType < AUTO || modelType > V8) modelType = AUTO;
+	if (target < TARGET_CPU || target > TARGET_VULKAN) target = TARGET_CPU;
 	if (inputSize < 32) inputSize = 640;
 	if (confidenceThreshold <= 0.0f || confidenceThreshold > 1.0f) confidenceThreshold = 0.25f;
 	if (nmsThreshold <= 0.0f || nmsThreshold > 1.0f) nmsThreshold = 0.45f;
@@ -420,6 +505,7 @@ void YoloDetector::SaveXML (FileStorage& fs)
     fs << "ModelFilename" << modelFilename;
     fs << "ClassNamesFilename" << classNamesFilename;
     fs << "ModelType" << modelType;
+    fs << "Target" << target;
     fs << "InputSize" << inputSize;
     fs << "ConfidenceThreshold" << confidenceThreshold;
     fs << "NMSThreshold" << nmsThreshold;

@@ -2189,6 +2189,22 @@ void AppGui::DrawPluginDialog(int index)
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Output layout. Auto suits standard Ultralytics exports.");
 
+        int target = p->target;
+        const char* targets[] = { "CPU", "OpenCL (GPU)", "OpenCL FP16 (GPU)", "Vulkan (GPU)" };
+        if (ImGui::Combo("Compute Target", &target, targets, 4))
+        {
+            p->target = target;
+            p->ApplyTarget(); // probe the target now, falls back to CPU if it fails
+            changed = true;
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("GPU targets need a working OpenCL/Vulkan runtime; "
+                              "the plugin falls back to CPU if the target cannot run the model.");
+        if (p->netLoaded && p->activeTarget != p->target)
+            ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.2f, 1.0f),
+                               "Requested target unavailable, running on %s",
+                               YoloDetector::TargetName(p->activeTarget).c_str());
+
         const char* sizes[] = { "320", "416", "512", "640", "1280" };
         const int sizeVals[] = { 320, 416, 512, 640, 1280 };
         int sizeIdx = 3;

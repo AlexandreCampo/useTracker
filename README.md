@@ -24,7 +24,9 @@ The **Yolo Detector** plugin runs any ONNX YOLO model (v5 / v8 / v11 layouts are
 - a model file (`.onnx`) — no model ships with useTracker; export one with e.g. `yolo export model=yolov8n.pt format=onnx` (Ultralytics)
 - an optional class-names file (one name per line)
 
-Set the confidence / NMS thresholds and an optional class filter (comma-separated names or ids). Detections are drawn on the HUD, written to a CSV file, and stamped into the *marked* mask so Extract Blobs / Track Blobs can consume them. The model path is saved in the settings file and reloads automatically when the settings are reopened. CPU inference runs at a few fps at 640×640 — suited to offline analysis rather than live 25 fps capture.
+Set the confidence / NMS thresholds and an optional class filter (comma-separated names or ids). Detections are drawn on the HUD, written to a CSV file, and stamped into the *marked* mask so Extract Blobs / Track Blobs can consume them. The model path is saved in the settings file and reloads automatically when the settings are reopened.
+
+A **Compute Target** can be selected (CPU / OpenCL / OpenCL FP16 / Vulkan). The GPU targets are used only if a working OpenCL or Vulkan runtime is present and can run the model — the plugin probes the target on load and silently falls back to the CPU otherwise. On an integrated GPU expect a modest speed-up over the multi-threaded CPU path; CPU inference runs at a few fps at 640×640, suited to offline analysis rather than live 25 fps capture. NVIDIA CUDA is only available if OpenCV itself was built with CUDA.
 
 ## Building
 

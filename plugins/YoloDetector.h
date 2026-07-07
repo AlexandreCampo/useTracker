@@ -53,10 +53,16 @@ public:
     // Ultralytics exports and only override for non standard converters.
     enum ModelType { AUTO = 0, V5 = 1, V8 = 2 };
 
+    // compute target for inference. OpenCL / Vulkan use the GPU if a usable
+    // runtime is present; the plugin probes the target after loading and
+    // falls back to the CPU if it cannot run the model.
+    enum Target { TARGET_CPU = 0, TARGET_OPENCL = 1, TARGET_OPENCL_FP16 = 2, TARGET_VULKAN = 3 };
+
     // parameters (saved in the settings file)
     std::string modelFilename;
     std::string classNamesFilename;
     int modelType = AUTO;
+    int target = TARGET_CPU;
     int inputSize = 640;
     float confidenceThreshold = 0.25f;
     float nmsThreshold = 0.45f;
@@ -67,6 +73,7 @@ public:
     // state
     cv::dnn::Net net;
     bool netLoaded = false;
+    int activeTarget = TARGET_CPU;     // target actually running (after fallback)
     std::string loadedModelFilename;  // filename of the model in memory
     std::string triedModelFilename;   // last filename we attempted to load
     std::string status = "no model loaded";
@@ -93,9 +100,15 @@ public:
     void LoadClassNames();
     std::string GetClassName(int classId);
 
+    // (re)apply the selected compute target to the loaded net, with warmup
+    // and automatic fallback to the CPU. Safe to call when a model is loaded.
+    void ApplyTarget();
+    static std::string TargetName(int t);
+
 private:
     void RunInference();
     bool ClassAllowed(int classId);
+    bool TryTarget(int t);
 };
 
 #endif
