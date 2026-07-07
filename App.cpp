@@ -33,6 +33,7 @@
 #include "BackgroundDiffKNN.h"
 #include "Clahe.h"
 #include "WhiteBalance.h"
+#include "YoloDetector.h"
 #include "ColorSegmentation.h"
 #include "ExtractBlobs.h"
 #include "GetBlobsAngles.h"
@@ -75,6 +76,7 @@ int main(int argc, char **argv)
     NewPipelinePluginVector["BackgroundDiffKnn"] = &CreatePipelinePluginVector<BackgroundDiffKNN>;
     NewPipelinePluginVector["Clahe"] = &CreatePipelinePluginVector<Clahe>;
     NewPipelinePluginVector["WhiteBalance"] = &CreatePipelinePluginVector<WhiteBalance>;
+    NewPipelinePluginVector["YoloDetector"] = &CreatePipelinePluginVector<YoloDetector>;
     NewPipelinePluginVector["ColorSegmentation"] = &CreatePipelinePluginVector<ColorSegmentation>;
     NewPipelinePluginVector["Erosion"] = &CreatePipelinePluginVector<Erosion>;
     NewPipelinePluginVector["Dilation"] = &CreatePipelinePluginVector<Dilation>;

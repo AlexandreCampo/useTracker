@@ -50,12 +50,14 @@ void BackgroundDiffKNN::Reset()
 
 void BackgroundDiffKNN::SetHistory(int h)
 {
+    if (h < 1) h = 1;
     history = h;
     if (KNN) KNN->setHistory(h);
 }
 
 void BackgroundDiffKNN::SetThreshold(double t)
 {
+    if (t < 1.0) t = 1.0;
     threshold = t;
     if (KNN) KNN->setDist2Threshold(t);
 }

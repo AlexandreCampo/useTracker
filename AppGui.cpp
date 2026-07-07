@@ -60,6 +60,7 @@
 #include "plugins/BackgroundDiffMOG2.h"
 #include "plugins/Clahe.h"
 #include "plugins/WhiteBalance.h"
+#include "plugins/YoloDetector.h"
 #include "plugins/ColorSegmentation.h"
 #include "plugins/Dilation.h"
 #include "plugins/Erosion.h"
@@ -2071,6 +2072,113 @@ void AppGui::DrawPluginDialog(int index)
                 p->SetSaturationThreshold(sat);
                 changed = true;
             }
+        }
+    }
+
+    // --- YoloDetector (single threaded, no sync needed) ---
+    else if (YoloDetector* p = dynamic_cast<YoloDetector*>(pp))
+    {
+        ImGui::TextWrapped("Deep learning detector. Provide an ONNX YOLO model "
+                           "(v5 / v8 / v11) and a class names file.");
+        ImGui::Spacing();
+
+        // Model file
+        char modelBuf[INPUT_BUF_SIZE];
+        snprintf(modelBuf, sizeof(modelBuf), "%s", p->modelFilename.c_str());
+        if (ImGui::InputText("Model (.onnx)", modelBuf, INPUT_BUF_SIZE))
+        {
+            p->modelFilename = modelBuf;
+            changed = true;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Browse##Yolo"))
+        {
+            OpenFileDialog("Open ONNX Model", FileBrowser::OPEN,
+                           {"ONNX models", "*.onnx", "All files", "*"},
+                           p->modelFilename,
+                           [p, this](const std::string& filename)
+            {
+                p->modelFilename = filename;
+                p->LoadModel();
+                pipelineDirty = true;
+            });
+        }
+
+        // Class names file
+        char classBuf[INPUT_BUF_SIZE];
+        snprintf(classBuf, sizeof(classBuf), "%s", p->classNamesFilename.c_str());
+        if (ImGui::InputText("Class Names", classBuf, INPUT_BUF_SIZE))
+        {
+            p->classNamesFilename = classBuf;
+            changed = true;
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Browse##YoloNames"))
+        {
+            OpenFileDialog("Open Class Names File", FileBrowser::OPEN,
+                           {"Text files", "*.txt *.names", "All files", "*"},
+                           p->classNamesFilename,
+                           [p, this](const std::string& filename)
+            {
+                p->classNamesFilename = filename;
+                p->LoadClassNames();
+                pipelineDirty = true;
+            });
+        }
+
+        if (ImGui::Button("Reload Model"))
+        {
+            p->LoadModel();
+            p->LoadClassNames();
+            changed = true;
+        }
+        ImGui::SameLine();
+        ImGui::TextWrapped("%s", p->status.c_str());
+
+        ImGui::Separator();
+
+        const char* sizes[] = { "320", "416", "512", "640", "1280" };
+        const int sizeVals[] = { 320, 416, 512, 640, 1280 };
+        int sizeIdx = 3;
+        for (int i = 0; i < 5; i++) if (sizeVals[i] == p->inputSize) sizeIdx = i;
+        if (ImGui::Combo("Input Size", &sizeIdx, sizes, 5))
+        {
+            p->inputSize = sizeVals[sizeIdx];
+            changed = true;
+        }
+
+        if (ImGui::SliderFloat("Confidence", &p->confidenceThreshold, 0.01f, 1.0f, "%.2f"))
+            changed = true;
+        if (ImGui::SliderFloat("NMS Threshold", &p->nmsThreshold, 0.01f, 1.0f, "%.2f"))
+            changed = true;
+
+        char filterBuf[INPUT_BUF_SIZE];
+        snprintf(filterBuf, sizeof(filterBuf), "%s", p->classFilter.c_str());
+        if (ImGui::InputText("Class Filter", filterBuf, INPUT_BUF_SIZE))
+        {
+            p->classFilter = filterBuf;
+            changed = true;
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Comma separated class names or ids, empty = all classes");
+
+        changed |= ImGui::Checkbox("Additive", &p->additive);
+
+        // Output file
+        char outBuf[INPUT_BUF_SIZE];
+        snprintf(outBuf, sizeof(outBuf), "%s", p->outputFilename.c_str());
+        if (ImGui::InputText("Output File", outBuf, INPUT_BUF_SIZE))
+            p->outputFilename = outBuf;
+        ImGui::SameLine();
+        if (ImGui::Button("Browse##YoloOut"))
+        {
+            OpenFileDialog("Output File", FileBrowser::SAVE,
+                           {"CSV files", "*.csv", "All files", "*"},
+                           p->outputFilename,
+                           [p](const std::string& filename)
+            {
+                p->outputFilename = filename;
+            });
         }
     }
 

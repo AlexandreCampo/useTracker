@@ -46,6 +46,7 @@ void BackgroundDiffMOG2::Reset()
 
 void BackgroundDiffMOG2::SetHistory(int h)
 {
+    if (h < 1) h = 1;
     if (h == history) return; // avoid needless model reset
 
     history = h;

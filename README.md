@@ -1,6 +1,21 @@
 # useTracker
 
-Real-time tracking and image processing software with a graphical interface. It can open images, videos, and USB cameras and run plugins on them. Plugins include tracking, blob extraction, H264 recording, ArUco marker detection, and other classic tools (erosion, dilation, segmentation, background subtraction, ...).
+Real-time tracking and image processing software with a graphical interface. It can open images, videos, and USB cameras and run plugins on them. Plugins include tracking, blob extraction, H264 recording, ArUco marker detection, deep-learning object detection (YOLO), image enhancement (CLAHE, white balance), and other classic tools (erosion, dilation, segmentation, background subtraction, ...).
+
+Pipelines are built by stacking plugins; each plugin refines a shared *marked* mask that downstream plugins (Extract Blobs, Track Blobs) consume. Enhancement plugins modify the frame in place so their effect is visible live and benefits the whole pipeline, while the original frame is preserved for recording.
+
+### Background subtraction
+
+Several background subtractors are available: **Background Difference** (static background image), **MOG**, **MOG2**, **GMG**, **KNN**, and **GSOC**. For difficult footage (e.g. turbid underwater scenes) KNN and GSOC on the raw frames tend to give the cleanest foreground masks. When paused, the model history stays frozen — it only advances on real movie frames, never on repeated views of a static frame.
+
+### Deep-learning detection (YOLO)
+
+The **Yolo Detector** plugin runs any ONNX YOLO model (v5 / v8 / v11 layouts are auto-detected) through OpenCV's DNN module on the CPU. Provide:
+
+- a model file (`.onnx`) — no model ships with useTracker; export one with e.g. `yolo export model=yolov8n.pt format=onnx` (Ultralytics)
+- an optional class-names file (one name per line)
+
+Set the confidence / NMS thresholds and an optional class filter (comma-separated names or ids). Detections are drawn on the HUD, written to a CSV file, and stamped into the *marked* mask so Extract Blobs / Track Blobs can consume them. The model path is saved in the settings file and reloads automatically when the settings are reopened. CPU inference runs at a few fps at 640×640 — suited to offline analysis rather than live 25 fps capture.
 
 ## Building
 

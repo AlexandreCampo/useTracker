@@ -47,6 +47,7 @@ void BackgroundDiffMOG::Reset()
 
 void BackgroundDiffMOG::SetHistory(int h)
 {
+    if (h < 1) h = 1;
     if (h == history) return; // avoid needless model reset
 
     history = h;
@@ -57,6 +58,8 @@ void BackgroundDiffMOG::SetHistory(int h)
 
 void BackgroundDiffMOG::SetNMixtures(int m)
 {
+    if (m < 1) m = 1;
+    if (m > 8) m = 8;
     if (m == nMixtures) return; // avoid needless model reset
 
     nMixtures = m;

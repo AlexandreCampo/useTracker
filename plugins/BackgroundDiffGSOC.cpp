@@ -38,8 +38,26 @@ void BackgroundDiffGSOC::Reset()
     marked2 = Mat::zeros(pipeline->height, pipeline->width, CV_8U);
     marked3 = Mat(pipeline->height, pipeline->width, CV_8U);
 
-    GSOC = createBackgroundSubtractorGSOC(LSBP_CAMERA_MOTION_COMPENSATION_NONE,
-					  nSamples, replaceRate, propagationRate, hitsThreshold);
+    // enforce the constraints of the GSOC implementation, invalid values
+    // trigger a fatal assertion in OpenCV
+    if (nSamples < 2) nSamples = 2;
+    if (nSamples > 1023) nSamples = 1023;
+    if (replaceRate < 0.0f) replaceRate = 0.0f;
+    if (replaceRate > 1.0f) replaceRate = 1.0f;
+    if (propagationRate < 0.0f) propagationRate = 0.0f;
+    if (propagationRate > 1.0f) propagationRate = 1.0f;
+    if (hitsThreshold < 0) hitsThreshold = 0;
+
+    try
+    {
+	GSOC = createBackgroundSubtractorGSOC(LSBP_CAMERA_MOTION_COMPENSATION_NONE,
+					      nSamples, replaceRate, propagationRate, hitsThreshold);
+    }
+    catch (const cv::Exception& e)
+    {
+	std::cerr << "BackgroundDiffGSOC: could not create model: " << e.what() << std::endl;
+	GSOC = createBackgroundSubtractorGSOC();
+    }
 
     // prime the model only if a real background image is available: seeding
     // a sample-based subtractor with a blank image poisons the model (the
@@ -50,6 +68,8 @@ void BackgroundDiffGSOC::Reset()
 
 void BackgroundDiffGSOC::SetNSamples(int n)
 {
+    if (n < 2) n = 2;
+    if (n > 1023) n = 1023;
     if (n == nSamples) return; // avoid needless model reset
 
     nSamples = n;
@@ -58,6 +78,8 @@ void BackgroundDiffGSOC::SetNSamples(int n)
 
 void BackgroundDiffGSOC::SetReplaceRate(float r)
 {
+    if (r < 0.0f) r = 0.0f;
+    if (r > 1.0f) r = 1.0f;
     if (r == replaceRate) return; // avoid needless model reset
 
     replaceRate = r;
@@ -66,6 +88,8 @@ void BackgroundDiffGSOC::SetReplaceRate(float r)
 
 void BackgroundDiffGSOC::SetPropagationRate(float r)
 {
+    if (r < 0.0f) r = 0.0f;
+    if (r > 1.0f) r = 1.0f;
     if (r == propagationRate) return; // avoid needless model reset
 
     propagationRate = r;
@@ -74,6 +98,7 @@ void BackgroundDiffGSOC::SetPropagationRate(float r)
 
 void BackgroundDiffGSOC::SetHitsThreshold(int t)
 {
+    if (t < 0) t = 0;
     if (t == hitsThreshold) return; // avoid needless model reset
 
     hitsThreshold = t;
@@ -110,7 +135,7 @@ void BackgroundDiffGSOC::LoadXML (FileNode& fn)
 	propagationRate = (float)fn["PropagationRate"];
 	hitsThreshold = (int)fn["HitsThreshold"];
 
-	if (nSamples <= 0) nSamples = 20;
+	if (nSamples < 2) nSamples = 20;
 	if (replaceRate <= 0.0f) replaceRate = 0.003f;
 	if (propagationRate <= 0.0f) propagationRate = 0.01f;
 	if (hitsThreshold <= 0) hitsThreshold = 32;
