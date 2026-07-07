@@ -25,11 +25,30 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <functional>
+#include <filesystem>
 
 #include <opencv2/opencv.hpp>
 
 #include "ImageProcessingEngine.h"
 #include "Parameters.h"
+
+// Fallback in-app file browser, used when no native dialog backend
+// (zenity/kdialog/...) is available on the system
+struct FileBrowser
+{
+    enum Mode { OPEN, SAVE, FOLDER };
+
+    bool visible = false;
+    Mode mode = OPEN;
+    std::string title;
+    std::vector<std::string> extensions; // lowercase, with dot; empty = show all
+    std::function<void(const std::string&)> onSelect;
+    std::filesystem::path dir;
+    std::vector<std::pair<std::string, bool>> entries; // name, isDirectory
+    char nameBuf[512] = {0};
+    std::string error;
+};
 
 class AppGui
 {
@@ -61,7 +80,10 @@ private:
     bool hudVisible = true;
     bool output = false;
     int playSpeed = 0;
-    float processingBlending = 0.0f;
+    float processingBlending = 0.5f;
+    // set whenever the pipeline must be (re)processed: new frame, seek,
+    // plugin parameter change, pipeline edit, ... — cleared after Step()
+    bool pipelineDirty = true;
     float videoSliderPos = 0.0f;
     bool sliderMoving = false;
     bool pendingScaleChange = false;
@@ -76,6 +98,11 @@ private:
     int selectedPipelineItem = -1;
     int selectedAvailablePlugin = -1;
     std::vector<bool> pipelineDialogOpen;
+
+    // File dialogs / popups
+    FileBrowser fileBrowser;
+    std::string errorMessage;
+    bool showAbout = false;
 
     // Available plugin names for UI
     std::vector<std::string> availablePluginNames;
@@ -115,13 +142,26 @@ private:
     // Dialog drawing (one per plugin type)
     void DrawPluginDialog(int index);
 
+    // File dialogs (native if available, in-app fallback otherwise)
+    void OpenFileDialog(const std::string& title, FileBrowser::Mode mode,
+                        const std::vector<std::string>& filters,
+                        const std::string& defaultName,
+                        std::function<void(const std::string&)> onSelect);
+    void RefreshFileBrowser();
+    void DrawFileBrowser();
+    void DrawErrorPopup();
+
     // Helpers
     void OpenSource();
+    void OpenSourceFile(const std::string& filename);
+    void ChangeCapture(Capture* newCapture);
     void SaveSource();
     void LoadSettings();
     void SaveSettings();
+    void DoSaveSettings(const std::string& result);
     void ResetEngine();
     void ResetEngine(Parameters& params);
+    void HandleShortcut(SDL_Keycode key, bool ctrl);
 
     bool AddPipelinePlugin(const std::string& name, cv::FileNode& fn, int pos = -1);
     std::string CamelCaseToText(const std::string& txt);

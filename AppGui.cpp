@@ -38,6 +38,8 @@
 #include <cstring>
 #include <thread>
 #include <cmath>
+#include <sstream>
+#include <system_error>
 
 #include "Background.h"
 #include "Pipeline.h"
@@ -184,8 +186,8 @@ bool AppGui::InitImGui()
 {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    // Note: keyboard navigation is deliberately NOT enabled — it would mark the
+    // keyboard as captured by the GUI at all times, breaking playback shortcuts
 
     ImGui::StyleColorsDark();
 
@@ -348,6 +350,9 @@ void AppGui::UploadVideoTexture(const cv::Mat& frame)
                        (rgb.cols != texWidth) ||
                        (rgb.rows != texHeight);
 
+    // rows are tightly packed (width * 3 bytes), not 4-byte aligned
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
     if (needsCreate)
     {
         if (videoTexture)
@@ -454,110 +459,11 @@ int AppGui::Run()
                 event.window.windowID == SDL_GetWindowID(window))
                 running = false;
 
-            // Keyboard shortcuts
-            if (event.type == SDL_KEYDOWN && !ImGui::GetIO().WantCaptureKeyboard)
+            // Keyboard shortcuts — active unless the user is typing in a text field
+            if (event.type == SDL_KEYDOWN && !ImGui::GetIO().WantTextInput)
             {
                 bool ctrl = (event.key.keysym.mod & KMOD_CTRL) != 0;
-                switch (event.key.keysym.sym)
-                {
-                case SDLK_SPACE:
-                    play = !play;
-                    if (play)
-                        ipEngine.capture->Play();
-                    else
-                        ipEngine.capture->Pause();
-                    break;
-
-                case SDLK_RIGHT:
-                    // Step forward one frame
-                    ipEngine.GetNextFrame();
-                    ipEngine.Step(hudVisible);
-                    break;
-
-                case SDLK_LEFT:
-                    // Step backward one frame
-                    if (ipEngine.capture && ipEngine.capture->GetFrameCount() > 0)
-                    {
-                        double t = ipEngine.capture->GetTime();
-                        double fps = ipEngine.capture->GetFPS();
-                        if (fps > 0)
-                        {
-                            ipEngine.capture->GetFrame(t - 1.0 / fps);
-                            ipEngine.Step(hudVisible);
-                        }
-                    }
-                    break;
-
-                case SDLK_EQUALS:  // + or = key
-                case SDLK_PLUS:
-                case SDLK_KP_PLUS:
-                    // Fast forward — skip 10 frames
-                    for (int i = 0; i < 10; i++)
-                    {
-                        if (!ipEngine.GetNextFrame()) break;
-                    }
-                    ipEngine.Step(hudVisible);
-                    break;
-
-                case SDLK_MINUS:
-                case SDLK_KP_MINUS:
-                    // Rewind — jump back ~10 frames
-                    if (ipEngine.capture && ipEngine.capture->GetFrameCount() > 0)
-                    {
-                        double t = ipEngine.capture->GetTime();
-                        double fps = ipEngine.capture->GetFPS();
-                        if (fps > 0)
-                        {
-                            ipEngine.capture->GetFrame(std::max(0.0, t - 10.0 / fps));
-                            ipEngine.Step(hudVisible);
-                        }
-                    }
-                    break;
-
-                case SDLK_BACKSPACE:
-                    // Reset to beginning
-                    if (ipEngine.capture)
-                    {
-                        ipEngine.capture->Stop();
-                        ipEngine.capture->GetNextFrame();
-                        play = false;
-                    }
-                    break;
-
-                case SDLK_r:
-                    if (ctrl)
-                    {
-                        // Toggle recording/output
-                        output = !output;
-                        if (output)
-                            ipEngine.OpenOutput();
-                        else
-                            ipEngine.CloseOutput();
-                    }
-                    break;
-
-                case SDLK_o:
-                    if (ctrl)
-                        OpenSource();
-                    break;
-
-                case SDLK_l:
-                    if (ctrl)
-                        LoadSettings();
-                    break;
-
-                case SDLK_s:
-                    if (ctrl)
-                        SaveSettings();
-                    break;
-
-                case SDLK_ESCAPE:
-                    running = false;
-                    break;
-
-                default:
-                    break;
-                }
+                HandleShortcut(event.key.keysym.sym, ctrl);
             }
         }
 
@@ -573,6 +479,108 @@ int AppGui::Run()
 }
 
 // ============================================================================
+// HandleShortcut - Playback and application keyboard shortcuts
+// ============================================================================
+
+void AppGui::HandleShortcut(SDL_Keycode key, bool ctrl)
+{
+    if (!ipEngine.capture) return;
+
+    switch (key)
+    {
+    case SDLK_SPACE:
+        // Play / pause
+        play = !play;
+        if (play)
+            ipEngine.capture->Play();
+        else
+            ipEngine.capture->Pause();
+        pipelineDirty = true;
+        break;
+
+    case SDLK_RIGHT:
+        // Pause and step forward one frame
+        play = false;
+        ipEngine.capture->Pause();
+        ipEngine.GetNextFrame();
+        pipelineDirty = true;
+        break;
+
+    case SDLK_LEFT:
+        // Pause and step backward one frame
+        play = false;
+        ipEngine.capture->Pause();
+        if (ipEngine.capture->GetFrameCount() > 0)
+        {
+            double t = ipEngine.capture->GetTime();
+            double fps = ipEngine.capture->GetFPS();
+            if (fps > 0)
+            {
+                ipEngine.capture->GetFrame(t - 1.0 / fps);
+                pipelineDirty = true;
+            }
+        }
+        break;
+
+    case SDLK_EQUALS:  // + or = key
+    case SDLK_PLUS:
+    case SDLK_KP_PLUS:
+        // Accelerate playback
+        if (playSpeed < 4) playSpeed++;
+        ipEngine.capture->SetPlaySpeed(playSpeed);
+        break;
+
+    case SDLK_MINUS:
+    case SDLK_KP_MINUS:
+        // Slow down playback
+        if (playSpeed > -4) playSpeed--;
+        ipEngine.capture->SetPlaySpeed(playSpeed);
+        break;
+
+    case SDLK_BACKSPACE:
+        // Stop: reset to beginning
+        ipEngine.capture->Stop();
+        play = false;
+        pipelineDirty = true;
+        break;
+
+    case SDLK_r:
+        if (ctrl)
+        {
+            // Toggle recording/output
+            output = !output;
+            if (output)
+                ipEngine.OpenOutput();
+            else
+                ipEngine.CloseOutput();
+        }
+        break;
+
+    case SDLK_o:
+        if (ctrl)
+            OpenSource();
+        break;
+
+    case SDLK_l:
+        if (ctrl)
+            LoadSettings();
+        break;
+
+    case SDLK_s:
+        if (ctrl)
+            SaveSettings();
+        break;
+
+    case SDLK_ESCAPE:
+        running = false;
+        break;
+
+    default:
+        break;
+    }
+}
+
+// ============================================================================
 // UpdateEngine - Frame timing (derived from MainFrame::OnIdle)
 // ============================================================================
 
@@ -581,11 +589,14 @@ void AppGui::UpdateEngine()
     if (!ipEngine.capture) return;
 
     // Update pipeline snapshot position
+    unsigned int oldSnapshotPos = ipEngine.snapshotPos;
     if (selectedPipelineItem >= 0 &&
         selectedPipelineItem < (int)ipEngine.pipelines[0].plugins.size())
         ipEngine.snapshotPos = selectedPipelineItem;
     else if (!ipEngine.pipelines.empty() && !ipEngine.pipelines[0].plugins.empty())
         ipEngine.snapshotPos = ipEngine.pipelines[0].plugins.size() - 1;
+    if (ipEngine.snapshotPos != oldSnapshotPos)
+        pipelineDirty = true;
 
     // Estimate time to wait before getting next frame
     bool getNextFrame = true;
@@ -619,14 +630,23 @@ void AppGui::UpdateEngine()
                 {
                     play = false;
                 }
+                else
+                {
+                    pipelineDirty = true;
+                }
             }
         }
     }
 
-    // Step the processing pipeline
+    // Step the processing pipeline, but only when there is new data to process
+    // (new frame, seek, plugin parameter change, pipeline edit, ...)
     if (activeTab == TAB_PROCESSING)
     {
-        ipEngine.Step(hudVisible);
+        if (pipelineDirty)
+        {
+            ipEngine.Step(hudVisible);
+            pipelineDirty = false;
+        }
     }
     else if (activeTab == TAB_CALIBRATION)
     {
@@ -715,6 +735,12 @@ void AppGui::RenderFrame()
             DrawPluginDialog(i);
     }
 
+    // In-app file browser (fallback when no native dialog backend is available)
+    DrawFileBrowser();
+
+    // Error message popup
+    DrawErrorPopup();
+
     // UI Scale buttons — bottom right corner
     {
         ImGuiViewport* vp = ImGui::GetMainViewport();
@@ -796,12 +822,19 @@ void AppGui::DrawMenuBar()
         {
             if (ImGui::MenuItem("About"))
             {
-                // Show about popup
-                ImGui::OpenPopup("AboutPopup");
+                // OpenPopup cannot be called from inside the menu scope
+                // (ID stack mismatch), defer it below
+                showAbout = true;
             }
             ImGui::EndMenu();
         }
         ImGui::EndMenuBar();
+    }
+
+    if (showAbout)
+    {
+        ImGui::OpenPopup("AboutPopup");
+        showAbout = false;
     }
 
     // About popup
@@ -852,6 +885,7 @@ void AppGui::DrawToolbar()
         play = false;
         output = false;
         ipEngine.CloseOutput();
+        pipelineDirty = true;
     }
 
     ImGui::SameLine();
@@ -877,7 +911,7 @@ void AppGui::DrawToolbar()
             if (fps > 0)
             {
                 ipEngine.capture->GetFrame(t - 1.0 / fps);
-                ipEngine.Step(hudVisible);
+                pipelineDirty = true;
             }
         }
     }
@@ -895,6 +929,7 @@ void AppGui::DrawToolbar()
             ipEngine.capture->Play();
         else
             ipEngine.capture->Pause();
+        pipelineDirty = true;
     }
 
     ImGui::SameLine();
@@ -905,7 +940,7 @@ void AppGui::DrawToolbar()
         play = false;
         ipEngine.capture->Pause();
         ipEngine.GetNextFrame();
-        ipEngine.Step(hudVisible);
+        pipelineDirty = true;
     }
 
     ImGui::SameLine();
@@ -923,8 +958,7 @@ void AppGui::DrawToolbar()
     ImGui::SameLine();
 
     // Video slider
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 250);
-    float prevSliderPos = videoSliderPos;
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 250*dpiScale);
     if (ImGui::SliderFloat("##VideoSlider", &videoSliderPos, 0.0f, 1.0f, ""))
     {
         sliderMoving = true;
@@ -932,7 +966,7 @@ void AppGui::DrawToolbar()
         {
             double totalTime = (double)ipEngine.capture->GetFrameCount() / ipEngine.capture->GetFPS();
             ipEngine.capture->GetFrame(videoSliderPos * totalTime);
-            ipEngine.Step(hudVisible);
+            pipelineDirty = true;
         }
     }
     if (ImGui::IsItemDeactivatedAfterEdit() || (!ImGui::IsItemActive() && sliderMoving))
@@ -945,13 +979,13 @@ void AppGui::DrawToolbar()
     // HUD toggle
     if (ImGui::Checkbox("HUD", &hudVisible))
     {
-        // state toggled
+        pipelineDirty = true; // the HUD is drawn during pipeline processing
     }
 
     ImGui::SameLine();
 
     // Processing blending slider
-    ImGui::SetNextItemWidth(80);
+    ImGui::SetNextItemWidth(80*dpiScale);
     ImGui::SliderFloat("##Blend", &processingBlending, 0.0f, 1.0f, "%.1f");
     if (ImGui::IsItemHovered())
         ImGui::SetTooltip("Processing blending");
@@ -968,9 +1002,19 @@ void AppGui::DrawVideoDisplay()
     // Blend source frame with processing snapshot if needed
     cv::Mat displayFrame;
 
+    // only blend the processing result in when there is a plugin producing one
+    bool anyActivePlugin = false;
+    for (auto& pl : ipEngine.pipelines)
+    {
+        for (auto* pp : pl.plugins)
+            if (pp && pp->active) { anyActivePlugin = true; break; }
+        if (anyActivePlugin) break;
+    }
+
     if (!oglScreen.empty())
     {
-        if (processingBlending > 0.001f && !ipEngine.pipelineSnapshot.empty())
+        if (processingBlending > 0.001f && anyActivePlugin &&
+            activeTab == TAB_PROCESSING && !ipEngine.pipelineSnapshot.empty())
         {
             cv::Mat snapshot3;
             if (ipEngine.pipelineSnapshot.channels() == 1)
@@ -996,6 +1040,11 @@ void AppGui::DrawVideoDisplay()
         // Overlay HUD if visible
         if (hudVisible && !ipEngine.hud.empty() && ipEngine.hud.size() == displayFrame.size())
         {
+            // displayFrame may still share pixels with the capture frame;
+            // copy before drawing on it or we would corrupt the source data
+            if (displayFrame.data == oglScreen.data)
+                displayFrame = oglScreen.clone();
+
             // The HUD is BGRA with alpha channel
             for (int y = 0; y < ipEngine.hud.rows; y++)
             {
@@ -1145,6 +1194,7 @@ void AppGui::DrawVideoDisplay()
 
 void AppGui::DrawTabs()
 {
+    int prevTab = activeTab;
     if (ImGui::BeginTabBar("##MainTabs"))
     {
         if (ImGui::BeginTabItem("Processing"))
@@ -1173,6 +1223,10 @@ void AppGui::DrawTabs()
         }
         ImGui::EndTabBar();
     }
+
+    // reprocess when coming back to the processing tab
+    if (activeTab != prevTab && activeTab == TAB_PROCESSING)
+        pipelineDirty = true;
 }
 
 // ============================================================================
@@ -1212,6 +1266,7 @@ void AppGui::DrawProcessingTab()
                 if (ipEngine.pipelines[p].plugins[i])
                     ipEngine.pipelines[p].plugins[i]->active = isActive;
             }
+            pipelineDirty = true;
         }
         ImGui::SameLine();
 
@@ -1220,6 +1275,7 @@ void AppGui::DrawProcessingTab()
         {
             selectedPipelineItem = i;
             ipEngine.takeSnapshot = true;
+            pipelineDirty = true;
         }
 
         // Double-click to open dialog
@@ -1243,11 +1299,14 @@ void AppGui::DrawProcessingTab()
     if (ImGui::Button("Remove") && selectedPipelineItem >= 0 &&
         selectedPipelineItem < pipelineSize)
     {
-        ipEngine.Erase(selectedPipelineItem);
+        auto pfv = ipEngine.Erase(selectedPipelineItem);
+        for (auto* p : pfv)
+            delete p;
         if (selectedPipelineItem < (int)pipelineDialogOpen.size())
             pipelineDialogOpen.erase(pipelineDialogOpen.begin() + selectedPipelineItem);
         if (selectedPipelineItem >= (int)ipEngine.pipelines[0].plugins.size())
             selectedPipelineItem = (int)ipEngine.pipelines[0].plugins.size() - 1;
+        pipelineDirty = true;
     }
     ImGui::SameLine();
 
@@ -1264,6 +1323,7 @@ void AppGui::DrawProcessingTab()
         selectedPipelineItem--;
         ipEngine.Insert(selectedPipelineItem, pfv, false);
         pipelineDialogOpen.insert(pipelineDialogOpen.begin() + selectedPipelineItem, dialogState);
+        pipelineDirty = true;
     }
     ImGui::SameLine();
 
@@ -1280,6 +1340,7 @@ void AppGui::DrawProcessingTab()
         selectedPipelineItem++;
         ipEngine.Insert(selectedPipelineItem, pfv, false);
         pipelineDialogOpen.insert(pipelineDialogOpen.begin() + selectedPipelineItem, dialogState);
+        pipelineDirty = true;
     }
 
     ImGui::Spacing();
@@ -1354,30 +1415,36 @@ void AppGui::DrawBackgroundTab()
     // Load/Save/Calculate background
     if (ImGui::Button("Load Background"))
     {
-        auto f = pfd::open_file("Load Background Image", ".",
-                                {"Image files", "*.png *.jpg *.bmp *.tif *.tiff",
-                                 "All files", "*"});
-        auto result = f.result();
-        if (!result.empty())
+        OpenFileDialog("Load Background Image", FileBrowser::OPEN,
+                       {"Image files", "*.png *.jpg *.bmp *.tif *.tiff",
+                        "All files", "*"}, "",
+                       [this](const std::string& filename)
         {
-            ipEngine.bgFilename = result[0];
-            ipEngine.background = cv::imread(ipEngine.bgFilename);
-            if (!ipEngine.background.empty())
+            cv::Mat bg = cv::imread(filename);
+            if (!bg.empty())
+            {
+                ipEngine.bgFilename = filename;
+                ipEngine.background = bg;
                 ipEngine.Reset();
-        }
+                pipelineDirty = true;
+            }
+            else
+            {
+                errorMessage = "Could not load background image:\n" + filename;
+            }
+        });
     }
     ImGui::SameLine();
 
     if (ImGui::Button("Save Background"))
     {
-        auto f = pfd::save_file("Save Background Image", "background.png",
-                                {"PNG files", "*.png",
-                                 "All files", "*"});
-        auto result = f.result();
-        if (!result.empty())
+        OpenFileDialog("Save Background Image", FileBrowser::SAVE,
+                       {"PNG files", "*.png",
+                        "All files", "*"}, "background.png",
+                       [this](const std::string& filename)
         {
-            cv::imwrite(result, ipEngine.background);
-        }
+            cv::imwrite(filename, ipEngine.background);
+        });
     }
 
     ImGui::Spacing();
@@ -1403,6 +1470,7 @@ void AppGui::DrawBackgroundTab()
                     ipEngine.bgLowThreshold, ipEngine.bgHighThreshold);
             }
             ipEngine.Reset();
+            pipelineDirty = true;
         }
     }
 
@@ -1411,33 +1479,33 @@ void AppGui::DrawBackgroundTab()
     ImGui::Text("Zones of Interest");
 
     // Zones file
-    static char zonesPath[INPUT_BUF_SIZE] = "";
-    if (zonesPath[0] == '\0' && !ipEngine.zonesFilename.empty())
-        strncpy(zonesPath, ipEngine.zonesFilename.c_str(), INPUT_BUF_SIZE - 1);
-
-    ImGui::InputText("Zones File", zonesPath, INPUT_BUF_SIZE);
+    char zonesPath[INPUT_BUF_SIZE];
+    snprintf(zonesPath, sizeof(zonesPath), "%s", ipEngine.zonesFilename.c_str());
+    if (ImGui::InputText("Zones File", zonesPath, INPUT_BUF_SIZE))
+        ipEngine.zonesFilename = zonesPath;
     ImGui::SameLine();
 
     if (ImGui::Button("Browse##Zones"))
     {
-        auto f = pfd::open_file("Load Zones Image", ".",
-                                {"Image files", "*.png *.jpg *.bmp *.tif",
-                                 "All files", "*"});
-        auto result = f.result();
-        if (!result.empty())
+        OpenFileDialog("Load Zones Image", FileBrowser::OPEN,
+                       {"Image files", "*.png *.jpg *.bmp *.tif",
+                        "All files", "*"}, "",
+                       [this](const std::string& filename)
         {
-            strncpy(zonesPath, result[0].c_str(), INPUT_BUF_SIZE - 1);
-            ipEngine.zonesFilename = result[0];
-            cv::Mat zones = cv::imread(ipEngine.zonesFilename, cv::IMREAD_GRAYSCALE);
+            cv::Mat zones = cv::imread(filename, cv::IMREAD_GRAYSCALE);
             if (!zones.empty())
             {
+                ipEngine.zonesFilename = filename;
                 ipEngine.zoneMap = zones;
                 ipEngine.Reset();
+                pipelineDirty = true;
             }
-        }
+            else
+            {
+                errorMessage = "Could not load zones image:\n" + filename;
+            }
+        });
     }
-
-    ipEngine.zonesFilename = zonesPath;
 }
 
 // ============================================================================
@@ -1458,12 +1526,11 @@ void AppGui::DrawCalibrationTab()
     // Board type
     int boardType = ipEngine.capture->CalibrationGetBoardType();
     const char* boardTypes[] = { "Chessboard", "Circles Grid", "Asymmetric Circles Grid" };
-    if (boardType >= 1 && boardType <= 3)
+    if (boardType >= 0 && boardType <= 2)
     {
-        int sel = boardType - 1;
-        if (ImGui::Combo("Board Type", &sel, boardTypes, 3))
+        if (ImGui::Combo("Board Type", &boardType, boardTypes, 3))
         {
-            ipEngine.capture->CalibrationSetBoardType(sel + 1);
+            ipEngine.capture->CalibrationSetBoardType(boardType);
         }
     }
 
@@ -1621,6 +1688,7 @@ void AppGui::DrawPluginDialog(int index)
         for (unsigned int p = 0; p <= ipEngine.threadsCount; p++)
             if (ipEngine.pipelines[p].plugins[index])
                 ipEngine.pipelines[p].plugins[index]->active = isActive;
+        pipelineDirty = true;
     }
 
     bool isOutput = pp->output;
@@ -1629,9 +1697,14 @@ void AppGui::DrawPluginDialog(int index)
         for (unsigned int p = 0; p <= ipEngine.threadsCount; p++)
             if (ipEngine.pipelines[p].plugins[index])
                 ipEngine.pipelines[p].plugins[index]->output = isOutput;
+        pipelineDirty = true;
     }
 
     ImGui::Separator();
+
+    // any widget edit below sets this, triggering a reprocessing of the
+    // pipeline so the parameter change is immediately visible
+    bool changed = false;
 
     // Type-specific controls using dynamic_cast
 
@@ -1640,11 +1713,17 @@ void AppGui::DrawPluginDialog(int index)
     {
         int blockSize = p->blockSize;
         if (ImGui::InputInt("Block Size", &blockSize))
+        {
             p->SetBlockSize(blockSize);
+            changed = true;
+        }
 
         int constant = p->constant;
         if (ImGui::InputInt("Constant (C)", &constant))
+        {
             p->SetConstant(constant);
+            changed = true;
+        }
 
         int method = p->thresholdMethod;
         const char* methods[] = { "Mean", "Gaussian" };
@@ -1653,46 +1732,49 @@ void AppGui::DrawPluginDialog(int index)
         {
             p->SetThresholdMethod(sel == 1 ? cv::ADAPTIVE_THRESH_GAUSSIAN_C
                                             : cv::ADAPTIVE_THRESH_MEAN_C);
+            changed = true;
         }
 
-        ImGui::Checkbox("Additive", &p->additive);
-        ImGui::Checkbox("Invert", &p->invert);
-        ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
+        changed |= ImGui::Checkbox("Additive", &p->additive);
+        changed |= ImGui::Checkbox("Invert", &p->invert);
+        changed |= ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
         if (p->restrictToZone)
-            ImGui::InputInt("Zone", &p->zone);
+            changed |= ImGui::InputInt("Zone", &p->zone);
 
         // Sync to all thread instances
-        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
-            if (auto* tp = dynamic_cast<AdaptiveThreshold*>(ipEngine.pipelines[t].plugins[index]))
-            {
-                tp->SetBlockSize(p->blockSize);
-                tp->SetConstant(p->constant);
-                tp->SetThresholdMethod(p->thresholdMethod);
-                tp->additive = p->additive;
-                tp->invert = p->invert;
-                tp->restrictToZone = p->restrictToZone;
-                tp->zone = p->zone;
-            }
+        if (changed)
+            for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+                if (auto* tp = dynamic_cast<AdaptiveThreshold*>(ipEngine.pipelines[t].plugins[index]))
+                {
+                    tp->SetBlockSize(p->blockSize);
+                    tp->SetConstant(p->constant);
+                    tp->SetThresholdMethod(p->thresholdMethod);
+                    tp->additive = p->additive;
+                    tp->invert = p->invert;
+                    tp->restrictToZone = p->restrictToZone;
+                    tp->zone = p->zone;
+                }
     }
 
     // --- ExtractMotion (background difference) ---
     else if (ExtractMotion* p = dynamic_cast<ExtractMotion*>(pp))
     {
-        ImGui::InputInt("Threshold", &p->threshold);
-        ImGui::Checkbox("Additive", &p->additive);
-        ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
+        changed |= ImGui::InputInt("Threshold", &p->threshold);
+        changed |= ImGui::Checkbox("Additive", &p->additive);
+        changed |= ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
         if (p->restrictToZone)
-            ImGui::InputInt("Zone", &p->zone);
+            changed |= ImGui::InputInt("Zone", &p->zone);
 
         // Sync to all thread instances
-        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
-            if (auto* tp = dynamic_cast<ExtractMotion*>(ipEngine.pipelines[t].plugins[index]))
-            {
-                tp->threshold = p->threshold;
-                tp->additive = p->additive;
-                tp->restrictToZone = p->restrictToZone;
-                tp->zone = p->zone;
-            }
+        if (changed)
+            for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+                if (auto* tp = dynamic_cast<ExtractMotion*>(ipEngine.pipelines[t].plugins[index]))
+                {
+                    tp->threshold = p->threshold;
+                    tp->additive = p->additive;
+                    tp->restrictToZone = p->restrictToZone;
+                    tp->zone = p->zone;
+                }
     }
 
     // --- BackgroundDiffMOG ---
@@ -1700,44 +1782,59 @@ void AppGui::DrawPluginDialog(int index)
     {
         int history = p->history;
         if (ImGui::InputInt("History", &history))
+        {
             p->SetHistory(history);
+            changed = true;
+        }
 
         int nMixtures = p->nMixtures;
         if (ImGui::InputInt("Num Mixtures", &nMixtures))
+        {
             p->SetNMixtures(nMixtures);
+            changed = true;
+        }
 
-        double bgRatio = p->backgroundRatio;
-        float bgRatioF = (float)bgRatio;
+        float bgRatioF = (float)p->backgroundRatio;
         if (ImGui::InputFloat("Background Ratio", &bgRatioF, 0.01f, 0.1f, "%.3f"))
+        {
             p->SetBackgroundRatio(bgRatioF);
+            changed = true;
+        }
 
-        double noiseSigma = p->noiseSigma;
-        float noiseSigmaF = (float)noiseSigma;
+        float noiseSigmaF = (float)p->noiseSigma;
         if (ImGui::InputFloat("Noise Sigma", &noiseSigmaF, 0.1f, 1.0f, "%.2f"))
+        {
             p->SetNoiseSigma(noiseSigmaF);
+            changed = true;
+        }
 
         float lr = (float)p->learningRate;
         if (ImGui::InputFloat("Learning Rate", &lr, 0.001f, 0.01f, "%.4f"))
+        {
             p->learningRate = lr;
+            changed = true;
+        }
 
-        ImGui::Checkbox("Additive", &p->additive);
-        ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
+        changed |= ImGui::Checkbox("Additive", &p->additive);
+        changed |= ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
         if (p->restrictToZone)
-            ImGui::InputInt("Zone", &p->zone);
+            changed |= ImGui::InputInt("Zone", &p->zone);
 
-        // Sync to all thread instances
-        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
-            if (auto* tp = dynamic_cast<BackgroundDiffMOG*>(ipEngine.pipelines[t].plugins[index]))
-            {
-                tp->SetHistory(p->history);
-                tp->SetNMixtures(p->nMixtures);
-                tp->SetBackgroundRatio(p->backgroundRatio);
-                tp->SetNoiseSigma(p->noiseSigma);
-                tp->learningRate = p->learningRate;
-                tp->additive = p->additive;
-                tp->restrictToZone = p->restrictToZone;
-                tp->zone = p->zone;
-            }
+        // Sync to all thread instances (setters are no-ops when unchanged,
+        // so this does not reset the background models of the other threads)
+        if (changed)
+            for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+                if (auto* tp = dynamic_cast<BackgroundDiffMOG*>(ipEngine.pipelines[t].plugins[index]))
+                {
+                    tp->SetHistory(p->history);
+                    tp->SetNMixtures(p->nMixtures);
+                    tp->SetBackgroundRatio(p->backgroundRatio);
+                    tp->SetNoiseSigma(p->noiseSigma);
+                    tp->learningRate = p->learningRate;
+                    tp->additive = p->additive;
+                    tp->restrictToZone = p->restrictToZone;
+                    tp->zone = p->zone;
+                }
     }
 
     // --- BackgroundDiffMOG2 ---
@@ -1745,37 +1842,51 @@ void AppGui::DrawPluginDialog(int index)
     {
         int history = p->history;
         if (ImGui::InputInt("History", &history))
+        {
             p->SetHistory(history);
+            changed = true;
+        }
 
         float thresh = (float)p->threshold;
         if (ImGui::InputFloat("Threshold", &thresh, 0.1f, 1.0f, "%.2f"))
+        {
             p->SetThreshold(thresh);
+            changed = true;
+        }
 
         bool shadow = p->shadowDetection;
         if (ImGui::Checkbox("Shadow Detection", &shadow))
+        {
             p->SetShadowDetection(shadow);
+            changed = true;
+        }
 
         float lr = (float)p->learningRate;
         if (ImGui::InputFloat("Learning Rate", &lr, 0.001f, 0.01f, "%.4f"))
+        {
             p->learningRate = lr;
+            changed = true;
+        }
 
-        ImGui::Checkbox("Additive", &p->additive);
-        ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
+        changed |= ImGui::Checkbox("Additive", &p->additive);
+        changed |= ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
         if (p->restrictToZone)
-            ImGui::InputInt("Zone", &p->zone);
+            changed |= ImGui::InputInt("Zone", &p->zone);
 
-        // Sync to all thread instances
-        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
-            if (auto* tp = dynamic_cast<BackgroundDiffMOG2*>(ipEngine.pipelines[t].plugins[index]))
-            {
-                tp->SetHistory(p->history);
-                tp->SetThreshold(p->threshold);
-                tp->SetShadowDetection(p->shadowDetection);
-                tp->learningRate = p->learningRate;
-                tp->additive = p->additive;
-                tp->restrictToZone = p->restrictToZone;
-                tp->zone = p->zone;
-            }
+        // Sync to all thread instances (setters are no-ops when unchanged,
+        // so this does not reset the background models of the other threads)
+        if (changed)
+            for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+                if (auto* tp = dynamic_cast<BackgroundDiffMOG2*>(ipEngine.pipelines[t].plugins[index]))
+                {
+                    tp->SetHistory(p->history);
+                    tp->SetThreshold(p->threshold);
+                    tp->SetShadowDetection(p->shadowDetection);
+                    tp->learningRate = p->learningRate;
+                    tp->additive = p->additive;
+                    tp->restrictToZone = p->restrictToZone;
+                    tp->zone = p->zone;
+                }
     }
 
     // --- BackgroundDiffGMG ---
@@ -1783,22 +1894,26 @@ void AppGui::DrawPluginDialog(int index)
     {
         float lr = (float)p->learningRate;
         if (ImGui::InputFloat("Learning Rate", &lr, 0.001f, 0.01f, "%.4f"))
+        {
             p->learningRate = lr;
+            changed = true;
+        }
 
-        ImGui::Checkbox("Additive", &p->additive);
-        ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
+        changed |= ImGui::Checkbox("Additive", &p->additive);
+        changed |= ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
         if (p->restrictToZone)
-            ImGui::InputInt("Zone", &p->zone);
+            changed |= ImGui::InputInt("Zone", &p->zone);
 
         // Sync to all thread instances
-        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
-            if (auto* tp = dynamic_cast<BackgroundDiffGMG*>(ipEngine.pipelines[t].plugins[index]))
-            {
-                tp->learningRate = p->learningRate;
-                tp->additive = p->additive;
-                tp->restrictToZone = p->restrictToZone;
-                tp->zone = p->zone;
-            }
+        if (changed)
+            for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+                if (auto* tp = dynamic_cast<BackgroundDiffGMG*>(ipEngine.pipelines[t].plugins[index]))
+                {
+                    tp->learningRate = p->learningRate;
+                    tp->additive = p->additive;
+                    tp->restrictToZone = p->restrictToZone;
+                    tp->zone = p->zone;
+                }
     }
 
     // --- ColorSegmentation ---
@@ -1807,19 +1922,22 @@ void AppGui::DrawPluginDialog(int index)
         int type = (int)p->type;
         const char* typeNames[] = { "BGR", "HSV" };
         if (ImGui::Combo("Color Space", &type, typeNames, 2))
+        {
             p->type = (ColorSegmentation::Type)type;
+            changed = true;
+        }
 
         if (p->type == ColorSegmentation::HSV)
         {
             int minH = p->minHSV[0], minS = p->minHSV[1], minV = p->minHSV[2];
             int maxH = p->maxHSV[0], maxS = p->maxHSV[1], maxV = p->maxHSV[2];
 
-            ImGui::SliderInt("Min Hue", &minH, 0, 180);
-            ImGui::SliderInt("Max Hue", &maxH, 0, 180);
-            ImGui::SliderInt("Min Saturation", &minS, 0, 255);
-            ImGui::SliderInt("Max Saturation", &maxS, 0, 255);
-            ImGui::SliderInt("Min Value", &minV, 0, 255);
-            ImGui::SliderInt("Max Value", &maxV, 0, 255);
+            changed |= ImGui::SliderInt("Min Hue", &minH, 0, 180);
+            changed |= ImGui::SliderInt("Max Hue", &maxH, 0, 180);
+            changed |= ImGui::SliderInt("Min Saturation", &minS, 0, 255);
+            changed |= ImGui::SliderInt("Max Saturation", &maxS, 0, 255);
+            changed |= ImGui::SliderInt("Min Value", &minV, 0, 255);
+            changed |= ImGui::SliderInt("Max Value", &maxV, 0, 255);
 
             p->minHSV = cv::Vec3b(minH, minS, minV);
             p->maxHSV = cv::Vec3b(maxH, maxS, maxV);
@@ -1829,35 +1947,36 @@ void AppGui::DrawPluginDialog(int index)
             int minB = p->minBGR[0], minG = p->minBGR[1], minR = p->minBGR[2];
             int maxB = p->maxBGR[0], maxG = p->maxBGR[1], maxR = p->maxBGR[2];
 
-            ImGui::SliderInt("Min Blue", &minB, 0, 255);
-            ImGui::SliderInt("Max Blue", &maxB, 0, 255);
-            ImGui::SliderInt("Min Green", &minG, 0, 255);
-            ImGui::SliderInt("Max Green", &maxG, 0, 255);
-            ImGui::SliderInt("Min Red", &minR, 0, 255);
-            ImGui::SliderInt("Max Red", &maxR, 0, 255);
+            changed |= ImGui::SliderInt("Min Blue", &minB, 0, 255);
+            changed |= ImGui::SliderInt("Max Blue", &maxB, 0, 255);
+            changed |= ImGui::SliderInt("Min Green", &minG, 0, 255);
+            changed |= ImGui::SliderInt("Max Green", &maxG, 0, 255);
+            changed |= ImGui::SliderInt("Min Red", &minR, 0, 255);
+            changed |= ImGui::SliderInt("Max Red", &maxR, 0, 255);
 
             p->minBGR = cv::Vec3b(minB, minG, minR);
             p->maxBGR = cv::Vec3b(maxB, maxG, maxR);
         }
 
-        ImGui::Checkbox("Additive", &p->additive);
-        ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
+        changed |= ImGui::Checkbox("Additive", &p->additive);
+        changed |= ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
         if (p->restrictToZone)
-            ImGui::InputInt("Zone", &p->zone);
+            changed |= ImGui::InputInt("Zone", &p->zone);
 
         // Sync to all thread instances
-        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
-            if (auto* tp = dynamic_cast<ColorSegmentation*>(ipEngine.pipelines[t].plugins[index]))
-            {
-                tp->type = p->type;
-                tp->minHSV = p->minHSV;
-                tp->maxHSV = p->maxHSV;
-                tp->minBGR = p->minBGR;
-                tp->maxBGR = p->maxBGR;
-                tp->additive = p->additive;
-                tp->restrictToZone = p->restrictToZone;
-                tp->zone = p->zone;
-            }
+        if (changed)
+            for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+                if (auto* tp = dynamic_cast<ColorSegmentation*>(ipEngine.pipelines[t].plugins[index]))
+                {
+                    tp->type = p->type;
+                    tp->minHSV = p->minHSV;
+                    tp->maxHSV = p->maxHSV;
+                    tp->minBGR = p->minBGR;
+                    tp->maxBGR = p->maxBGR;
+                    tp->additive = p->additive;
+                    tp->restrictToZone = p->restrictToZone;
+                    tp->zone = p->zone;
+                }
     }
 
     // --- Dilation ---
@@ -1865,7 +1984,10 @@ void AppGui::DrawPluginDialog(int index)
     {
         int size = p->size;
         if (ImGui::InputInt("Size", &size))
+        {
             p->SetSize(size);
+            changed = true;
+        }
     }
 
     // --- Erosion ---
@@ -1873,13 +1995,16 @@ void AppGui::DrawPluginDialog(int index)
     {
         int size = p->size;
         if (ImGui::InputInt("Size", &size))
+        {
             p->SetSize(size);
+            changed = true;
+        }
     }
 
     // --- SafeErosion ---
     else if (SafeErosion* p = dynamic_cast<SafeErosion*>(pp))
     {
-        ImGui::InputInt("Size", &p->size);
+        changed |= ImGui::InputInt("Size", &p->size);
     }
 
     // --- ExtractBlobs ---
@@ -1887,27 +2012,25 @@ void AppGui::DrawPluginDialog(int index)
     {
         int minSize = (int)p->minSize;
         int maxSize = (int)p->maxSize;
-        ImGui::InputInt("Min Size", &minSize);
-        ImGui::InputInt("Max Size", &maxSize);
+        changed |= ImGui::InputInt("Min Size", &minSize);
+        changed |= ImGui::InputInt("Max Size", &maxSize);
         p->minSize = (unsigned int)std::max(0, minSize);
         p->maxSize = (unsigned int)std::max(0, maxSize);
 
-        static char ebOutput[INPUT_BUF_SIZE] = "";
-        if (ebOutput[0] == '\0' && !p->outputFilename.empty())
-            strncpy(ebOutput, p->outputFilename.c_str(), INPUT_BUF_SIZE - 1);
+        char ebOutput[INPUT_BUF_SIZE];
+        snprintf(ebOutput, sizeof(ebOutput), "%s", p->outputFilename.c_str());
         if (ImGui::InputText("Output File", ebOutput, INPUT_BUF_SIZE))
             p->outputFilename = ebOutput;
         ImGui::SameLine();
         if (ImGui::Button("Browse##EB"))
         {
-            auto f = pfd::save_file("Output File", p->outputFilename,
-                                    {"CSV files", "*.csv", "All files", "*"});
-            auto result = f.result();
-            if (!result.empty())
+            OpenFileDialog("Output File", FileBrowser::SAVE,
+                           {"CSV files", "*.csv", "All files", "*"},
+                           p->outputFilename,
+                           [p](const std::string& filename)
             {
-                strncpy(ebOutput, result.c_str(), INPUT_BUF_SIZE - 1);
-                p->outputFilename = result;
-            }
+                p->outputFilename = filename;
+            });
         }
     }
 
@@ -1916,29 +2039,36 @@ void AppGui::DrawPluginDialog(int index)
     {
         int threshold = p->threshold;
         if (ImGui::InputInt("Threshold", &threshold))
+        {
             p->SetThreshold(threshold);
+            changed = true;
+        }
 
         bool usePipeline = p->usePipeline;
         if (ImGui::Checkbox("Use Pipeline", &usePipeline))
+        {
             p->SetUsePipeline(usePipeline);
+            changed = true;
+        }
 
-        ImGui::Checkbox("Additive", &p->additive);
-        ImGui::Checkbox("Invert", &p->invert);
-        ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
+        changed |= ImGui::Checkbox("Additive", &p->additive);
+        changed |= ImGui::Checkbox("Invert", &p->invert);
+        changed |= ImGui::Checkbox("Restrict to Zone", &p->restrictToZone);
         if (p->restrictToZone)
-            ImGui::InputInt("Zone", &p->zone);
+            changed |= ImGui::InputInt("Zone", &p->zone);
 
         // Sync to all thread instances
-        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
-            if (auto* tp = dynamic_cast<FrameDifference*>(ipEngine.pipelines[t].plugins[index]))
-            {
-                tp->SetThreshold(p->threshold);
-                tp->SetUsePipeline(p->usePipeline);
-                tp->additive = p->additive;
-                tp->invert = p->invert;
-                tp->restrictToZone = p->restrictToZone;
-                tp->zone = p->zone;
-            }
+        if (changed)
+            for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+                if (auto* tp = dynamic_cast<FrameDifference*>(ipEngine.pipelines[t].plugins[index]))
+                {
+                    tp->SetThreshold(p->threshold);
+                    tp->SetUsePipeline(p->usePipeline);
+                    tp->additive = p->additive;
+                    tp->invert = p->invert;
+                    tp->restrictToZone = p->restrictToZone;
+                    tp->zone = p->zone;
+                }
     }
 
     // --- MovingAverage ---
@@ -1946,11 +2076,17 @@ void AppGui::DrawPluginDialog(int index)
     {
         int length = (int)p->length;
         if (ImGui::InputInt("Length", &length))
+        {
             p->SetLength((unsigned int)std::max(1, length));
+            changed = true;
+        }
 
         int threshold = (int)p->threshold;
         if (ImGui::InputInt("Threshold", &threshold))
+        {
             p->SetThreshold((unsigned int)std::max(0, threshold));
+            changed = true;
+        }
 
         if (ImGui::Button("Clear History"))
         {
@@ -1958,15 +2094,17 @@ void AppGui::DrawPluginDialog(int index)
             for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
                 if (auto* tp = dynamic_cast<MovingAverage*>(ipEngine.pipelines[t].plugins[index]))
                     tp->ClearHistory();
+            changed = true;
         }
 
         // Sync to all thread instances
-        for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
-            if (auto* tp = dynamic_cast<MovingAverage*>(ipEngine.pipelines[t].plugins[index]))
-            {
-                tp->SetLength(p->length);
-                tp->SetThreshold(p->threshold);
-            }
+        if (changed)
+            for (unsigned int t = 1; t < ipEngine.threadsCount; t++)
+                if (auto* tp = dynamic_cast<MovingAverage*>(ipEngine.pipelines[t].plugins[index]))
+                {
+                    tp->SetLength(p->length);
+                    tp->SetThreshold(p->threshold);
+                }
     }
 
     // --- Tracker ---
@@ -1974,78 +2112,85 @@ void AppGui::DrawPluginDialog(int index)
     {
         int maxEntities = (int)p->entitiesCount;
         if (ImGui::InputInt("Max Entities", &maxEntities))
+        {
             p->SetMaxEntities((unsigned int)std::max(1, maxEntities));
+            changed = true;
+        }
 
-        ImGui::InputFloat("Min Interdistance", &p->minInterdistance, 1.0f, 10.0f, "%.1f");
-        ImGui::InputFloat("Max Motion/sec", &p->maxMotionPerSecond, 10.0f, 100.0f, "%.1f");
-        ImGui::InputFloat("Extrapolation Decay", &p->extrapolationDecay, 0.01f, 0.1f, "%.2f");
+        changed |= ImGui::InputFloat("Min Interdistance", &p->minInterdistance, 1.0f, 10.0f, "%.1f");
+        changed |= ImGui::InputFloat("Max Motion/sec", &p->maxMotionPerSecond, 10.0f, 100.0f, "%.1f");
+        changed |= ImGui::InputFloat("Extrapolation Decay", &p->extrapolationDecay, 0.01f, 0.1f, "%.2f");
 
         int meLen = (int)p->motionEstimatorLength;
         if (ImGui::InputInt("Motion Estimator Length", &meLen))
+        {
             p->motionEstimatorLength = (unsigned int)std::max(1, meLen);
+            changed = true;
+        }
 
-        ImGui::InputFloat("Motion Estimator Timeout", &p->motionEstimatorTimeout, 0.1f, 1.0f, "%.2f");
+        changed |= ImGui::InputFloat("Motion Estimator Timeout", &p->motionEstimatorTimeout, 0.1f, 1.0f, "%.2f");
 
-        ImGui::Checkbox("Use Virtual Entities", &p->useVirtualEntities);
+        changed |= ImGui::Checkbox("Use Virtual Entities", &p->useVirtualEntities);
         if (p->useVirtualEntities)
         {
-            ImGui::InputFloat("Virtual Lifetime", &p->virtualEntitiesLifetime, 0.1f, 1.0f, "%.2f");
-            ImGui::InputFloat("Virtual Delay", &p->virtualEntitiesDelay, 0.1f, 1.0f, "%.2f");
-            ImGui::Checkbox("Virtual Zone", &p->virtualEntitiesZone);
+            changed |= ImGui::InputFloat("Virtual Lifetime", &p->virtualEntitiesLifetime, 0.1f, 1.0f, "%.2f");
+            changed |= ImGui::InputFloat("Virtual Delay", &p->virtualEntitiesDelay, 0.1f, 1.0f, "%.2f");
+            changed |= ImGui::Checkbox("Virtual Zone", &p->virtualEntitiesZone);
         }
 
         int trailLen = (int)p->trailLength;
         if (ImGui::InputInt("Trail Length", &trailLen))
+        {
             p->trailLength = (unsigned int)std::max(0, trailLen);
+            changed = true;
+        }
 
-        ImGui::Checkbox("Replay", &p->replay);
+        changed |= ImGui::Checkbox("Replay", &p->replay);
 
-        static char trackerOutput[INPUT_BUF_SIZE] = "";
-        if (trackerOutput[0] == '\0' && !p->outputFilename.empty())
-            strncpy(trackerOutput, p->outputFilename.c_str(), INPUT_BUF_SIZE - 1);
+        char trackerOutput[INPUT_BUF_SIZE];
+        snprintf(trackerOutput, sizeof(trackerOutput), "%s", p->outputFilename.c_str());
         if (ImGui::InputText("Output File", trackerOutput, INPUT_BUF_SIZE))
             p->outputFilename = trackerOutput;
         ImGui::SameLine();
         if (ImGui::Button("Browse##Tracker"))
         {
-            auto f = pfd::save_file("Output File", p->outputFilename,
-                                    {"CSV files", "*.csv", "All files", "*"});
-            auto result = f.result();
-            if (!result.empty())
+            OpenFileDialog("Output File", FileBrowser::SAVE,
+                           {"CSV files", "*.csv", "All files", "*"},
+                           p->outputFilename,
+                           [p](const std::string& filename)
             {
-                strncpy(trackerOutput, result.c_str(), INPUT_BUF_SIZE - 1);
-                p->outputFilename = result;
-            }
+                p->outputFilename = filename;
+            });
         }
 
         if (ImGui::Button("Clear History"))
+        {
             p->ClearHistory();
+            changed = true;
+        }
     }
 
     // --- RecordVideo ---
     else if (RecordVideo* p = dynamic_cast<RecordVideo*>(pp))
     {
-        static char rvOutput[INPUT_BUF_SIZE] = "";
-        if (rvOutput[0] == '\0' && !p->outputFilename.empty())
-            strncpy(rvOutput, p->outputFilename.c_str(), INPUT_BUF_SIZE - 1);
+        char rvOutput[INPUT_BUF_SIZE];
+        snprintf(rvOutput, sizeof(rvOutput), "%s", p->outputFilename.c_str());
         if (ImGui::InputText("Output File", rvOutput, INPUT_BUF_SIZE))
             p->outputFilename = rvOutput;
         ImGui::SameLine();
         if (ImGui::Button("Browse##RV"))
         {
-            auto f = pfd::save_file("Output File", p->outputFilename,
-                                    {"Video files", "*.mp4 *.avi *.mkv", "All files", "*"});
-            auto result = f.result();
-            if (!result.empty())
+            OpenFileDialog("Output File", FileBrowser::SAVE,
+                           {"Video files", "*.mp4 *.avi *.mkv", "All files", "*"},
+                           p->outputFilename,
+                           [p](const std::string& filename)
             {
-                strncpy(rvOutput, result.c_str(), INPUT_BUF_SIZE - 1);
-                p->outputFilename = result;
-            }
+                p->outputFilename = filename;
+            });
         }
 
-        static char rvPreset[INPUT_BUF_SIZE] = "";
-        if (rvPreset[0] == '\0' && !p->preset.empty())
-            strncpy(rvPreset, p->preset.c_str(), INPUT_BUF_SIZE - 1);
+        char rvPreset[INPUT_BUF_SIZE];
+        snprintf(rvPreset, sizeof(rvPreset), "%s", p->preset.c_str());
         if (ImGui::InputText("Preset", rvPreset, INPUT_BUF_SIZE))
             p->preset = rvPreset;
 
@@ -2055,22 +2200,20 @@ void AppGui::DrawPluginDialog(int index)
     // --- RecordPixels ---
     else if (RecordPixels* p = dynamic_cast<RecordPixels*>(pp))
     {
-        static char rpOutput[INPUT_BUF_SIZE] = "";
-        if (rpOutput[0] == '\0' && !p->outputFilename.empty())
-            strncpy(rpOutput, p->outputFilename.c_str(), INPUT_BUF_SIZE - 1);
+        char rpOutput[INPUT_BUF_SIZE];
+        snprintf(rpOutput, sizeof(rpOutput), "%s", p->outputFilename.c_str());
         if (ImGui::InputText("Output File", rpOutput, INPUT_BUF_SIZE))
             p->outputFilename = rpOutput;
         ImGui::SameLine();
         if (ImGui::Button("Browse##RP"))
         {
-            auto f = pfd::save_file("Output File", p->outputFilename,
-                                    {"CSV files", "*.csv", "All files", "*"});
-            auto result = f.result();
-            if (!result.empty())
+            OpenFileDialog("Output File", FileBrowser::SAVE,
+                           {"CSV files", "*.csv", "All files", "*"},
+                           p->outputFilename,
+                           [p](const std::string& filename)
             {
-                strncpy(rpOutput, result.c_str(), INPUT_BUF_SIZE - 1);
-                p->outputFilename = result;
-            }
+                p->outputFilename = filename;
+            });
         }
     }
 
@@ -2080,47 +2223,49 @@ void AppGui::DrawPluginDialog(int index)
         int pwidth = p->pwidth;
         int pheight = p->pheight;
         if (ImGui::InputInt("Tag Width", &pwidth))
+        {
             p->SetTagDimensions(pwidth, pheight);
+            changed = true;
+        }
         if (ImGui::InputInt("Tag Height", &pheight))
+        {
             p->SetTagDimensions(pwidth, pheight);
+            changed = true;
+        }
 
-        static char stOutput[INPUT_BUF_SIZE] = "";
-        if (stOutput[0] == '\0' && !p->outputFilename.empty())
-            strncpy(stOutput, p->outputFilename.c_str(), INPUT_BUF_SIZE - 1);
+        char stOutput[INPUT_BUF_SIZE];
+        snprintf(stOutput, sizeof(stOutput), "%s", p->outputFilename.c_str());
         if (ImGui::InputText("Output File", stOutput, INPUT_BUF_SIZE))
             p->outputFilename = stOutput;
         ImGui::SameLine();
         if (ImGui::Button("Browse##ST"))
         {
-            auto f = pfd::save_file("Output File", p->outputFilename,
-                                    {"CSV files", "*.csv", "All files", "*"});
-            auto result = f.result();
-            if (!result.empty())
+            OpenFileDialog("Output File", FileBrowser::SAVE,
+                           {"CSV files", "*.csv", "All files", "*"},
+                           p->outputFilename,
+                           [p](const std::string& filename)
             {
-                strncpy(stOutput, result.c_str(), INPUT_BUF_SIZE - 1);
-                p->outputFilename = result;
-            }
+                p->outputFilename = filename;
+            });
         }
     }
 
     // --- TakeSnapshots ---
     else if (TakeSnapshots* p = dynamic_cast<TakeSnapshots*>(pp))
     {
-        static char tsOutput[INPUT_BUF_SIZE] = "";
-        if (tsOutput[0] == '\0' && !p->outputFilename.empty())
-            strncpy(tsOutput, p->outputFilename.c_str(), INPUT_BUF_SIZE - 1);
+        char tsOutput[INPUT_BUF_SIZE];
+        snprintf(tsOutput, sizeof(tsOutput), "%s", p->outputFilename.c_str());
         if (ImGui::InputText("Output Dir/Pattern", tsOutput, INPUT_BUF_SIZE))
             p->outputFilename = tsOutput;
         ImGui::SameLine();
         if (ImGui::Button("Browse##TS"))
         {
-            auto f = pfd::select_folder("Select Output Directory", ".");
-            auto result = f.result();
-            if (!result.empty())
+            OpenFileDialog("Select Output Directory", FileBrowser::FOLDER,
+                           {}, "",
+                           [p](const std::string& folder)
             {
-                strncpy(tsOutput, result.c_str(), INPUT_BUF_SIZE - 1);
-                p->outputFilename = result;
-            }
+                p->outputFilename = folder;
+            });
         }
     }
 
@@ -2131,9 +2276,8 @@ void AppGui::DrawPluginDialog(int index)
         ImGui::Text("Shortcuts: %d", (int)p->shortcuts.size());
         ImGui::Text("Events: %d", (int)p->events.size());
 
-        static char swOutput[INPUT_BUF_SIZE] = "";
-        if (swOutput[0] == '\0' && !p->outputFilename.empty())
-            strncpy(swOutput, p->outputFilename.c_str(), INPUT_BUF_SIZE - 1);
+        char swOutput[INPUT_BUF_SIZE];
+        snprintf(swOutput, sizeof(swOutput), "%s", p->outputFilename.c_str());
         if (ImGui::InputText("Output File", swOutput, INPUT_BUF_SIZE))
             p->outputFilename = swOutput;
     }
@@ -2157,7 +2301,7 @@ void AppGui::DrawPluginDialog(int index)
     {
         ImGui::Text("Remote Control (Bluetooth)");
         ImGui::Text("Address: %s", p->btAddress.c_str());
-        ImGui::InputInt("Corner", &p->corner);
+        changed |= ImGui::InputInt("Corner", &p->corner);
     }
 
 #ifdef ARUCO
@@ -2167,50 +2311,72 @@ void AppGui::DrawPluginDialog(int index)
         float minSz = (float)p->minSize;
         float maxSz = (float)p->maxSize;
         if (ImGui::InputFloat("Min Size", &minSz, 0.001f, 0.01f, "%.4f"))
+        {
             p->SetMinSize(minSz);
+            changed = true;
+        }
         if (ImGui::InputFloat("Max Size", &maxSz, 0.001f, 0.01f, "%.4f"))
+        {
             p->SetMaxSize(maxSz);
+            changed = true;
+        }
 
         int t1 = p->thresh1;
         int t2 = p->thresh2;
         if (ImGui::InputInt("Threshold 1", &t1))
+        {
             p->SetThreshold1(t1);
+            changed = true;
+        }
         if (ImGui::InputInt("Threshold 2", &t2))
+        {
             p->SetThreshold2(t2);
+            changed = true;
+        }
 
         int maskShape = p->maskShape;
         const char* maskShapes[] = { "None", "Square", "Disc" };
         if (ImGui::Combo("Mask Shape", &maskShape, maskShapes, 3))
+        {
             p->SetMaskShape(maskShape);
+            changed = true;
+        }
 
         int maskRadius = p->maskRadius;
         if (ImGui::InputInt("Mask Radius", &maskRadius))
+        {
             p->SetMaskRadius(maskRadius);
+            changed = true;
+        }
 
         int maskPerspShift = p->maskPerspectiveShift;
         if (ImGui::InputInt("Mask Persp. Shift", &maskPerspShift))
+        {
             p->SetMaskPerspectiveShift(maskPerspShift);
+            changed = true;
+        }
 
         int maskVal = p->maskValue;
         if (ImGui::InputInt("Mask Value", &maskVal))
+        {
             p->SetMaskValue(maskVal);
+            changed = true;
+        }
 
-        static char arucoOutput[INPUT_BUF_SIZE] = "";
-        if (arucoOutput[0] == '\0' && !p->outputFilename.empty())
-            strncpy(arucoOutput, p->outputFilename.c_str(), INPUT_BUF_SIZE - 1);
+        char arucoOutput[INPUT_BUF_SIZE];
+        snprintf(arucoOutput, sizeof(arucoOutput), "%s", p->outputFilename.c_str());
         if (ImGui::InputText("Output File", arucoOutput, INPUT_BUF_SIZE))
             p->outputFilename = arucoOutput;
         ImGui::SameLine();
         if (ImGui::Button("Browse##Aruco"))
         {
-            auto f = pfd::save_file("Output File", p->outputFilename,
-                                    {"CSV files", "*.csv", "All files", "*"});
-            auto result = f.result();
-            if (!result.empty())
+            OpenFileDialog("Output File", FileBrowser::SAVE,
+                           {"CSV files", "*.csv", "All files", "*"},
+                           p->outputFilename,
+                           [p](const std::string& filename)
             {
-                strncpy(arucoOutput, result.c_str(), INPUT_BUF_SIZE - 1);
-                p->outputFilename = result;
-            }
+                p->outputFilename = filename;
+            });
         }
     }
 #endif
@@ -2230,56 +2396,86 @@ void AppGui::DrawPluginDialog(int index)
         int maxRange = p->GetMaxMarkerRange();
 
         if (ImGui::InputInt("Marker Cols", &markerCols))
+        {
             p->SetMarkerCols(markerCols);
+            changed = true;
+        }
         if (ImGui::InputInt("Marker Rows", &markerRows))
+        {
             p->SetMarkerRows(markerRows);
+            changed = true;
+        }
         if (ImGui::InputInt("Saturation Threshold", &satThresh))
+        {
             p->SetSaturationThreshold(satThresh);
+            changed = true;
+        }
         if (ImGui::InputInt("Value Threshold", &valThresh))
+        {
             p->SetValueThreshold(valThresh);
+            changed = true;
+        }
         if (ImGui::InputInt("AT Block Size", &atBlockSize))
+        {
             p->SetAdaptiveThresholdBlockSize(atBlockSize);
+            changed = true;
+        }
         if (ImGui::InputInt("AT Constant", &atConstant))
+        {
             p->SetAdaptiveThresholdConstant(atConstant);
+            changed = true;
+        }
         if (ImGui::InputInt("Min Marker Area", &minArea))
+        {
             p->SetMinMarkerArea(minArea);
+            changed = true;
+        }
         if (ImGui::InputInt("Max Marker Area", &maxArea))
+        {
             p->SetMaxMarkerArea(maxArea);
+            changed = true;
+        }
         if (ImGui::InputInt("Max Hue Deviation", &maxHueDev))
+        {
             p->SetMaxHueDeviation(maxHueDev);
+            changed = true;
+        }
         if (ImGui::InputInt("Max Marker Range", &maxRange))
+        {
             p->SetMaxMarkerRange(maxRange);
+            changed = true;
+        }
 
-        std::string dictStr = p->GetDictionaryString();
-        static char acDict[INPUT_BUF_SIZE] = "";
-        if (acDict[0] == '\0' && !dictStr.empty())
-            strncpy(acDict, dictStr.c_str(), INPUT_BUF_SIZE - 1);
+        char acDict[INPUT_BUF_SIZE];
+        snprintf(acDict, sizeof(acDict), "%s", p->GetDictionaryString().c_str());
         if (ImGui::InputText("Dictionary", acDict, INPUT_BUF_SIZE))
+        {
             p->SetDictionaryString(std::string(acDict));
+            changed = true;
+        }
 
-        std::string refHues = p->GetReferenceHuesString();
-        static char acHues[INPUT_BUF_SIZE] = "";
-        if (acHues[0] == '\0' && !refHues.empty())
-            strncpy(acHues, refHues.c_str(), INPUT_BUF_SIZE - 1);
+        char acHues[INPUT_BUF_SIZE];
+        snprintf(acHues, sizeof(acHues), "%s", p->GetReferenceHuesString().c_str());
         if (ImGui::InputText("Reference Hues", acHues, INPUT_BUF_SIZE))
+        {
             p->SetReferenceHuesString(std::string(acHues));
+            changed = true;
+        }
 
-        static char acOutput[INPUT_BUF_SIZE] = "";
-        if (acOutput[0] == '\0' && !p->outputFilename.empty())
-            strncpy(acOutput, p->outputFilename.c_str(), INPUT_BUF_SIZE - 1);
+        char acOutput[INPUT_BUF_SIZE];
+        snprintf(acOutput, sizeof(acOutput), "%s", p->outputFilename.c_str());
         if (ImGui::InputText("Output File", acOutput, INPUT_BUF_SIZE))
             p->outputFilename = acOutput;
         ImGui::SameLine();
         if (ImGui::Button("Browse##AC"))
         {
-            auto f = pfd::save_file("Output File", p->outputFilename,
-                                    {"CSV files", "*.csv", "All files", "*"});
-            auto result = f.result();
-            if (!result.empty())
+            OpenFileDialog("Output File", FileBrowser::SAVE,
+                           {"CSV files", "*.csv", "All files", "*"},
+                           p->outputFilename,
+                           [p](const std::string& filename)
             {
-                strncpy(acOutput, result.c_str(), INPUT_BUF_SIZE - 1);
-                p->outputFilename = result;
-            }
+                p->outputFilename = filename;
+            });
         }
     }
 
@@ -2288,6 +2484,10 @@ void AppGui::DrawPluginDialog(int index)
     {
         ImGui::Text("No specific UI for this plugin type.");
     }
+
+    // any parameter change must be reflected immediately in the video view
+    if (changed)
+        pipelineDirty = true;
 
     ImGui::End();
 }
@@ -2300,21 +2500,23 @@ void AppGui::OpenSource()
 {
     play = false;
     if (ipEngine.capture)
-        ipEngine.capture->Stop();
+        ipEngine.capture->Pause();
 
-    auto f = pfd::open_file("Open Source", ".",
-                            {"Video files", "*.avi *.mp4 *.mkv *.mov *.mpg *.mpeg *.wmv *.flv",
-                             "Image files", "*.png *.jpg *.jpeg *.bmp *.tif *.tiff",
-                             "All files", "*"});
-    auto result = f.result();
-    if (result.empty()) return;
+    OpenFileDialog("Open Source", FileBrowser::OPEN,
+                   {"Video files", "*.avi *.mp4 *.mkv *.mov *.mpg *.mpeg *.wmv *.flv",
+                    "Image files", "*.png *.jpg *.jpeg *.bmp *.tif *.tiff",
+                    "All files", "*"}, "",
+                   [this](const std::string& filename)
+    {
+        OpenSourceFile(filename);
+    });
+}
 
-    std::string filename = result[0];
-
+void AppGui::OpenSourceFile(const std::string& filename)
+{
     // Determine type and create capture
     Capture* newCapture = nullptr;
 
-    // Try as image first (check extension)
     std::string ext = filename.substr(filename.find_last_of('.') + 1);
     std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
@@ -2326,19 +2528,59 @@ void AppGui::OpenSource()
     else
     {
         newCapture = new CaptureVideo(filename);
+
+        // video failed ? try as image
+        if (newCapture->type == Capture::NONE)
+        {
+            delete newCapture;
+            newCapture = new CaptureImage(filename);
+        }
     }
 
-    if (newCapture)
+    // keep the current source untouched if the new one could not be opened
+    if (!newCapture || newCapture->type == Capture::NONE)
     {
-        delete ipEngine.capture;
-        ipEngine.capture = newCapture;
-        parameters.inputFilename = filename;
-
-        std::string title = "USE Tracker: " + ipEngine.capture->GetName();
-        SDL_SetWindowTitle(window, title.c_str());
-
-        ResetEngine(parameters);
+        delete newCapture;
+        errorMessage = "Could not open source:\n" + filename;
+        return;
     }
+
+    parameters.inputFilename = filename;
+    ChangeCapture(newCapture);
+}
+
+// ============================================================================
+// ChangeCapture - swap the capture source, preserving the current pipeline
+// ============================================================================
+
+void AppGui::ChangeCapture(Capture* newCapture)
+{
+    // detach the plugins: the engine reset destroys and recreates the
+    // pipelines, and we do not want to lose the pipeline built by the user
+    std::vector<std::vector<PipelinePlugin*>> savedPlugins;
+    if (!ipEngine.pipelines.empty())
+        while (!ipEngine.pipelines[0].plugins.empty())
+            savedPlugins.push_back(ipEngine.Erase(0));
+
+    delete ipEngine.capture;
+    ipEngine.capture = newCapture;
+
+    std::string title = "USE Tracker: " + ipEngine.capture->GetName();
+    SDL_SetWindowTitle(window, title.c_str());
+
+    ipEngine.Reset(parameters);
+
+    // reattach the plugins, Reset adapts them to the new frame dimensions
+    for (auto& pfv : savedPlugins)
+        ipEngine.PushBack(pfv, true);
+
+    hud.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
+    hudApp.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
+    ipEngine.hud = hud;
+    ipEngine.takeSnapshot = true;
+
+    play = false;
+    pipelineDirty = true;
 }
 
 // ============================================================================
@@ -2348,19 +2590,23 @@ void AppGui::OpenSource()
 void AppGui::SaveSource()
 {
     // Save source is typically used for multi-video stitching configs
-    auto f = pfd::save_file("Save Source Configuration", "source.xml",
-                            {"XML files", "*.xml", "All files", "*"});
-    auto result = f.result();
-    if (result.empty()) return;
-
-    cv::FileStorage fs(result, cv::FileStorage::WRITE);
-    if (fs.isOpened())
+    OpenFileDialog("Save Source Configuration", FileBrowser::SAVE,
+                   {"XML files", "*.xml", "All files", "*"}, "source.xml",
+                   [this](const std::string& filename)
     {
-        fs << "Source" << "{";
-        ipEngine.capture->SaveXML(fs);
-        fs << "}";
-        fs.release();
-    }
+        cv::FileStorage fs(filename, cv::FileStorage::WRITE);
+        if (fs.isOpened())
+        {
+            fs << "Source" << "{";
+            ipEngine.capture->SaveXML(fs);
+            fs << "}";
+            fs.release();
+        }
+        else
+        {
+            errorMessage = "Could not write file:\n" + filename;
+        }
+    });
 }
 
 // ============================================================================
@@ -2369,15 +2615,16 @@ void AppGui::SaveSource()
 
 void AppGui::LoadSettings()
 {
-    auto f = pfd::open_file("Load Settings", ".",
-                            {"XML files", "*.xml", "All files", "*"});
-    auto result = f.result();
-    if (result.empty()) return;
+    OpenFileDialog("Load Settings", FileBrowser::OPEN,
+                   {"XML files", "*.xml", "All files", "*"}, "",
+                   [this](const std::string& filename)
+    {
+        parameters.parametersFilename = filename;
+        parameters.loadXML(filename);
 
-    parameters.parametersFilename = result[0];
-    parameters.loadXML(result[0]);
-
-    ResetEngine(parameters);
+        ResetEngine(parameters);
+        pipelineDirty = true;
+    });
 }
 
 // ============================================================================
@@ -2386,11 +2633,16 @@ void AppGui::LoadSettings()
 
 void AppGui::SaveSettings()
 {
-    auto f = pfd::save_file("Save Settings", "settings.xml",
-                            {"XML files", "*.xml", "All files", "*"});
-    auto result = f.result();
-    if (result.empty()) return;
+    OpenFileDialog("Save Settings", FileBrowser::SAVE,
+                   {"XML files", "*.xml", "All files", "*"}, "settings.xml",
+                   [this](const std::string& filename)
+    {
+        DoSaveSettings(filename);
+    });
+}
 
+void AppGui::DoSaveSettings(const std::string& result)
+{
     // Release any open file handle so we can overwrite
     if (parameters.file.isOpened())
         parameters.file.release();
@@ -2429,6 +2681,265 @@ void AppGui::SaveSettings()
 
         // Re-open the saved file as the current parameters file
         parameters.loadXML(result);
+    }
+}
+
+// ============================================================================
+// OpenFileDialog - native dialog when available, in-app fallback otherwise
+// ============================================================================
+
+void AppGui::OpenFileDialog(const std::string& title, FileBrowser::Mode mode,
+                            const std::vector<std::string>& filters,
+                            const std::string& defaultName,
+                            std::function<void(const std::string&)> onSelect)
+{
+    // use the native dialogs if a backend (zenity, kdialog, ...) is installed
+    if (pfd::settings::available())
+    {
+        if (mode == FileBrowser::OPEN)
+        {
+            auto result = pfd::open_file(title, ".", filters).result();
+            if (!result.empty())
+                onSelect(result[0]);
+        }
+        else if (mode == FileBrowser::SAVE)
+        {
+            auto result = pfd::save_file(title, defaultName, filters).result();
+            if (!result.empty())
+                onSelect(result);
+        }
+        else
+        {
+            auto result = pfd::select_folder(title, ".").result();
+            if (!result.empty())
+                onSelect(result);
+        }
+        return;
+    }
+
+    // no backend available : use the in-app fallback browser
+    fileBrowser.visible = true;
+    fileBrowser.mode = mode;
+    fileBrowser.title = title;
+    fileBrowser.onSelect = onSelect;
+    fileBrowser.error.clear();
+
+    // extract the allowed extensions from the pfd-style filters
+    // (pairs of "label", "*.ext1 *.ext2" strings)
+    fileBrowser.extensions.clear();
+    for (size_t i = 1; i < filters.size(); i += 2)
+    {
+        std::istringstream ss(filters[i]);
+        std::string pattern;
+        while (ss >> pattern)
+        {
+            if (pattern.rfind("*.", 0) == 0 && pattern != "*.*")
+            {
+                std::string ext = pattern.substr(1); // keep the dot
+                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+                fileBrowser.extensions.push_back(ext);
+            }
+        }
+    }
+
+    // start in the directory of the current source, else keep the last one
+    if (fileBrowser.dir.empty())
+    {
+        std::error_code ec;
+        if (!parameters.inputFilename.empty())
+            fileBrowser.dir = std::filesystem::absolute(
+                std::filesystem::path(parameters.inputFilename), ec).parent_path();
+        if (fileBrowser.dir.empty() || !std::filesystem::is_directory(fileBrowser.dir, ec))
+            fileBrowser.dir = std::filesystem::current_path(ec);
+    }
+
+    snprintf(fileBrowser.nameBuf, sizeof(fileBrowser.nameBuf), "%s",
+             std::filesystem::path(defaultName).filename().string().c_str());
+
+    RefreshFileBrowser();
+}
+
+void AppGui::RefreshFileBrowser()
+{
+    fileBrowser.entries.clear();
+    fileBrowser.error.clear();
+
+    try
+    {
+        for (auto& entry : std::filesystem::directory_iterator(fileBrowser.dir))
+        {
+            std::string name = entry.path().filename().string();
+            bool isDir = entry.is_directory();
+
+            if (!isDir && !fileBrowser.extensions.empty())
+            {
+                std::string ext = entry.path().extension().string();
+                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+                if (std::find(fileBrowser.extensions.begin(),
+                              fileBrowser.extensions.end(), ext)
+                    == fileBrowser.extensions.end())
+                    continue;
+            }
+
+            fileBrowser.entries.push_back({name, isDir});
+        }
+    }
+    catch (const std::exception& ex)
+    {
+        fileBrowser.error = ex.what();
+    }
+
+    std::sort(fileBrowser.entries.begin(), fileBrowser.entries.end(),
+              [](const std::pair<std::string, bool>& a,
+                 const std::pair<std::string, bool>& b)
+    {
+        if (a.second != b.second) return a.second; // directories first
+        return a.first < b.first;
+    });
+}
+
+void AppGui::DrawFileBrowser()
+{
+    if (!fileBrowser.visible) return;
+
+    std::string popupId = fileBrowser.title + "###FileBrowser";
+
+    if (!ImGui::IsPopupOpen(popupId.c_str()))
+        ImGui::OpenPopup(popupId.c_str());
+
+    ImGui::SetNextWindowSize(ImVec2(560*dpiScale, 480*dpiScale), ImGuiCond_Appearing);
+    bool open = true;
+    if (!ImGui::BeginPopupModal(popupId.c_str(), &open))
+    {
+        if (!open) fileBrowser.visible = false;
+        return;
+    }
+
+    bool confirm = false;
+
+    // current directory + navigation
+    if (ImGui::Button("Up"))
+    {
+        std::filesystem::path parent = fileBrowser.dir.parent_path();
+        if (!parent.empty() && parent != fileBrowser.dir)
+        {
+            fileBrowser.dir = parent;
+            RefreshFileBrowser();
+        }
+    }
+    ImGui::SameLine();
+    ImGui::TextWrapped("%s", fileBrowser.dir.string().c_str());
+
+    if (!fileBrowser.error.empty())
+        ImGui::TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "%s", fileBrowser.error.c_str());
+
+    // entries list
+    float footerHeight = ImGui::GetFrameHeightWithSpacing() *
+                         (fileBrowser.mode == FileBrowser::FOLDER ? 1.4f : 2.6f);
+    ImGui::BeginChild("##FileList", ImVec2(0, -footerHeight), true);
+    for (int i = 0; i < (int)fileBrowser.entries.size(); i++)
+    {
+        const std::string& name = fileBrowser.entries[i].first;
+        bool isDir = fileBrowser.entries[i].second;
+
+        std::string label = isDir ? name + "/" : name;
+        bool isSelected = (!isDir && name == fileBrowser.nameBuf);
+
+        ImGui::PushID(i);
+        if (ImGui::Selectable(label.c_str(), isSelected,
+                              ImGuiSelectableFlags_AllowDoubleClick))
+        {
+            if (isDir)
+            {
+                if (ImGui::IsMouseDoubleClicked(0))
+                {
+                    fileBrowser.dir /= name;
+                    RefreshFileBrowser();
+                    ImGui::PopID();
+                    break; // entries were rebuilt, stop iterating
+                }
+            }
+            else
+            {
+                snprintf(fileBrowser.nameBuf, sizeof(fileBrowser.nameBuf), "%s", name.c_str());
+                if (ImGui::IsMouseDoubleClicked(0))
+                    confirm = true;
+            }
+        }
+        ImGui::PopID();
+    }
+    ImGui::EndChild();
+
+    // file name input
+    if (fileBrowser.mode != FileBrowser::FOLDER)
+    {
+        ImGui::SetNextItemWidth(-1);
+        if (ImGui::InputText("##FileName", fileBrowser.nameBuf,
+                             sizeof(fileBrowser.nameBuf),
+                             ImGuiInputTextFlags_EnterReturnsTrue))
+            confirm = true;
+    }
+
+    const char* okLabel = (fileBrowser.mode == FileBrowser::SAVE) ? "Save"
+                        : (fileBrowser.mode == FileBrowser::FOLDER) ? "Select This Folder"
+                        : "Open";
+    if (ImGui::Button(okLabel, ImVec2(160*dpiScale, 0)))
+        confirm = true;
+    ImGui::SameLine();
+    if (ImGui::Button("Cancel", ImVec2(100*dpiScale, 0)))
+    {
+        fileBrowser.visible = false;
+        ImGui::CloseCurrentPopup();
+        confirm = false;
+    }
+
+    if (confirm)
+    {
+        std::string result;
+        if (fileBrowser.mode == FileBrowser::FOLDER)
+            result = fileBrowser.dir.string();
+        else if (fileBrowser.nameBuf[0] != '\0')
+            result = (fileBrowser.dir / fileBrowser.nameBuf).string();
+
+        if (!result.empty())
+        {
+            fileBrowser.visible = false;
+            ImGui::CloseCurrentPopup();
+
+            // copy the callback: it may open another dialog
+            auto callback = fileBrowser.onSelect;
+            fileBrowser.onSelect = nullptr;
+            if (callback)
+                callback(result);
+        }
+    }
+
+    ImGui::EndPopup();
+
+    if (!open)
+        fileBrowser.visible = false;
+}
+
+// ============================================================================
+// DrawErrorPopup
+// ============================================================================
+
+void AppGui::DrawErrorPopup()
+{
+    if (!errorMessage.empty() && !ImGui::IsPopupOpen("Error###ErrorPopup"))
+        ImGui::OpenPopup("Error###ErrorPopup");
+
+    if (ImGui::BeginPopupModal("Error###ErrorPopup", nullptr,
+                               ImGuiWindowFlags_AlwaysAutoResize))
+    {
+        ImGui::TextWrapped("%s", errorMessage.c_str());
+        ImGui::Spacing();
+        if (ImGui::Button("OK", ImVec2(120*dpiScale, 0)))
+        {
+            errorMessage.clear();
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
     }
 }
 
@@ -2506,6 +3017,8 @@ bool AppGui::AddPipelinePlugin(const std::string& name, cv::FileNode& fn, int po
         ipEngine.Insert(pos, pfv, true);
         pipelineDialogOpen.insert(pipelineDialogOpen.begin() + pos, false);
     }
+
+    pipelineDirty = true;
 
     return true;
 }

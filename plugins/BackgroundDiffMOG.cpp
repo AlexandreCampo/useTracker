@@ -19,6 +19,8 @@
 
 #include "BackgroundDiffMOG.h"
 
+#include "ImageProcessingEngine.h"
+
 using namespace cv;
 using namespace cv::bgsegm;
 
@@ -45,6 +47,8 @@ void BackgroundDiffMOG::Reset()
 
 void BackgroundDiffMOG::SetHistory(int h)
 {
+    if (h == history) return; // avoid needless model reset
+
     history = h;
 
     MOG = createBackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
@@ -53,6 +57,8 @@ void BackgroundDiffMOG::SetHistory(int h)
 
 void BackgroundDiffMOG::SetNMixtures(int m)
 {
+    if (m == nMixtures) return; // avoid needless model reset
+
     nMixtures = m;
 
     MOG = createBackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
@@ -61,6 +67,8 @@ void BackgroundDiffMOG::SetNMixtures(int m)
 
 void BackgroundDiffMOG::SetBackgroundRatio(double r)
 {
+    if (r == backgroundRatio) return; // avoid needless model reset
+
     backgroundRatio = r;
 
     MOG = createBackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
@@ -69,6 +77,8 @@ void BackgroundDiffMOG::SetBackgroundRatio(double r)
 
 void BackgroundDiffMOG::SetNoiseSigma(double s)
 {
+    if (s == noiseSigma) return; // avoid needless model reset
+
     noiseSigma = s;
 
     MOG = createBackgroundSubtractorMOG(history, nMixtures, backgroundRatio, noiseSigma);
@@ -77,7 +87,10 @@ void BackgroundDiffMOG::SetNoiseSigma(double s)
 
 void BackgroundDiffMOG::Apply()
 {
-    MOG->apply(pipeline->frame, marked2, learningRate);
+    // do not update the background model on a static frame (paused or replayed),
+    // the model history must only come from actual movie frames
+    double lr = pipeline->parent->staticFrame ? 0.0 : learningRate;
+    MOG->apply(pipeline->frame, marked2, lr);
 
     if (restrictToZone)
     {

@@ -19,6 +19,8 @@
 
 #include "BackgroundDiffGMG.h"
 
+#include "ImageProcessingEngine.h"
+
 using namespace cv;
 using namespace cv::bgsegm;
 
@@ -45,7 +47,10 @@ void BackgroundDiffGMG::Reset()
 
 void BackgroundDiffGMG::Apply()
 {
-    GMG->apply(pipeline->frame, marked2, learningRate);
+    // do not update the background model on a static frame (paused or replayed),
+    // the model history must only come from actual movie frames
+    double lr = pipeline->parent->staticFrame ? 0.0 : learningRate;
+    GMG->apply(pipeline->frame, marked2, lr);
 
     if (restrictToZone)
     {

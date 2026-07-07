@@ -136,8 +136,8 @@ void ImageProcessingEngine::Reset(Parameters& parameters)
     marked.create (capture->height, capture->width, CV_8U);
     labels.create (capture->height, capture->width, CV_32S);
 
-    pipelineSnapshot.create (capture->height, capture->width, CV_8U);
-    pipelineSnapshotMarked.create (capture->height, capture->width, CV_8U);
+    pipelineSnapshot = cv::Mat::zeros (capture->height, capture->width, CV_8U);
+    pipelineSnapshotMarked = cv::Mat::zeros (capture->height, capture->width, CV_8U);
     takeSnapshot = false;
     snapshotPos = 0;
 
@@ -206,8 +206,8 @@ void ImageProcessingEngine::Reset()
     marked.create (capture->height, capture->width, CV_8U);
     labels.create (capture->height, capture->width, CV_32S);
 
-    pipelineSnapshot.create (capture->height, capture->width, CV_8U);
-    pipelineSnapshotMarked.create (capture->height, capture->width, CV_8U);
+    pipelineSnapshot = cv::Mat::zeros (capture->height, capture->width, CV_8U);
+    pipelineSnapshotMarked = cv::Mat::zeros (capture->height, capture->width, CV_8U);
 
     if (threadsCount == 0)
 	threadsCount = std::thread::hardware_concurrency();

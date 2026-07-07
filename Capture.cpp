@@ -138,6 +138,8 @@ int Capture::CalibrationGetBoardType()
 	return 1;
     case CaptureCalibration::ASYMMETRIC_CIRCLES_GRID :
 	return 2;
+    default :
+	return 0;
     }
 }
 

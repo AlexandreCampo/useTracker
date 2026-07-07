@@ -19,6 +19,8 @@
 
 #include "BackgroundDiffMOG2.h"
 
+#include "ImageProcessingEngine.h"
+
 using namespace cv;
 
 BackgroundDiffMOG2::BackgroundDiffMOG2() : PipelinePlugin()
@@ -44,6 +46,8 @@ void BackgroundDiffMOG2::Reset()
 
 void BackgroundDiffMOG2::SetHistory(int h)
 {
+    if (h == history) return; // avoid needless model reset
+
     history = h;
 
     MOG2 = createBackgroundSubtractorMOG2(history, threshold, shadowDetection);
@@ -52,6 +56,8 @@ void BackgroundDiffMOG2::SetHistory(int h)
 
 void BackgroundDiffMOG2::SetThreshold(double t)
 {
+    if (t == threshold) return; // avoid needless model reset
+
     threshold = t;
 
     MOG2 = createBackgroundSubtractorMOG2(history, threshold, shadowDetection);
@@ -60,6 +66,8 @@ void BackgroundDiffMOG2::SetThreshold(double t)
 
 void BackgroundDiffMOG2::SetShadowDetection(bool s)
 {
+    if (s == shadowDetection) return; // avoid needless model reset
+
     shadowDetection = s;
 
     MOG2 = createBackgroundSubtractorMOG2(history, threshold, shadowDetection);
@@ -69,7 +77,10 @@ void BackgroundDiffMOG2::SetShadowDetection(bool s)
 
 void BackgroundDiffMOG2::Apply()
 {
-    MOG2->apply(pipeline->frame, marked2, learningRate);
+    // do not update the background model on a static frame (paused or replayed),
+    // the model history must only come from actual movie frames
+    double lr = pipeline->parent->staticFrame ? 0.0 : learningRate;
+    MOG2->apply(pipeline->frame, marked2, lr);
 
     if (restrictToZone)
     {
