@@ -114,7 +114,6 @@ private:
 
     // Polygon ROI editor state
     bool roiEditing = false;
-    int roiCurrentRegion = 1;      // region assigned to newly created polygons
     int roiActivePolygon = -1;     // polygon receiving new vertices (-1 = none)
     int roiSelectedPolygon = -1;   // polygon selected in the list / for delete
     int roiDragPoly = -1;          // polygon whose vertex is being dragged

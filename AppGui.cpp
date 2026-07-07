@@ -1886,6 +1886,14 @@ void AppGui::HandleRoiEditing(ZonesOfInterest* zoi,
 
     auto& polys = zoi->polygons;
 
+    // normalise possibly stale indices (polygons can be removed here or from
+    // the plugin dialog) before any of them is used to index the vector
+    if (roiActivePolygon >= (int)polys.size()) roiActivePolygon = -1;
+    if (roiSelectedPolygon >= (int)polys.size()) roiSelectedPolygon = -1;
+    if (roiDragPoly >= (int)polys.size()) { roiDragPoly = -1; roiDragPoint = -1; }
+    if (roiDragPoly >= 0 && roiDragPoint >= (int)polys[roiDragPoly].points.size())
+    { roiDragPoly = -1; roiDragPoint = -1; }
+
     // draw all polygons
     for (int pi = 0; pi < (int)polys.size(); pi++)
     {
@@ -1978,7 +1986,7 @@ void AppGui::HandleRoiEditing(ZonesOfInterest* zoi,
             if (roiActivePolygon < 0 || roiActivePolygon >= (int)polys.size())
             {
                 ZonesOfInterest::Polygon np;
-                np.region = roiCurrentRegion;
+                np.region = 1; // new polygons default to region 1
                 polys.push_back(np);
                 roiActivePolygon = (int)polys.size() - 1;
                 roiSelectedPolygon = roiActivePolygon;
@@ -2000,16 +2008,21 @@ void AppGui::HandleRoiEditing(ZonesOfInterest* zoi,
 
     if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
     {
-        if (hitPoly >= 0)
+        if (hitPoly >= 0 && hitPoly < (int)polys.size() &&
+            hitPt >= 0 && hitPt < (int)polys[hitPoly].points.size())
         {
-            auto& pts = polys[hitPoly].points;
-            pts.erase(pts.begin() + hitPt);
-            if (pts.empty())
-            {
-                polys.erase(polys.begin() + hitPoly);
-                if (roiActivePolygon == hitPoly) roiActivePolygon = -1;
-                roiSelectedPolygon = -1;
-            }
+            // delete the vertex; if the polygon becomes empty, remove it and
+            // shift the active/selected indices to stay consistent
+            polys[hitPoly].points.erase(polys[hitPoly].points.begin() + hitPt);
+            bool removed = polys[hitPoly].points.empty();
+            if (removed) polys.erase(polys.begin() + hitPoly);
+
+            auto fixup = [&](int& idx) {
+                if (removed) { if (idx == hitPoly) idx = -1; else if (idx > hitPoly) idx--; }
+            };
+            fixup(roiActivePolygon);
+            fixup(roiSelectedPolygon);
+            roiDragPoly = -1; roiDragPoint = -1;
             changed = true;
         }
         else
@@ -3109,12 +3122,10 @@ void AppGui::DrawPluginDialog(int index)
         ImGui::BulletText("Click to add points, drag to move");
         ImGui::BulletText("Click the first point (or right-click) to close a polygon");
         ImGui::BulletText("Right-click a point to delete it");
+        ImGui::TextDisabled("New polygons default to region 1; change the "
+                            "region of a selected polygon below.");
 
         ImGui::Separator();
-
-        ImGui::SetNextItemWidth(120 * dpiScale);
-        if (ImGui::InputInt("Region for new polygons", &roiCurrentRegion))
-            if (roiCurrentRegion < 0) roiCurrentRegion = 0;
 
         // polygon list
         ImGui::BeginChild("RoiList", ImVec2(0, 90 * dpiScale), true);
