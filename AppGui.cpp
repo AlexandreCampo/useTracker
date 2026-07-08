@@ -536,18 +536,13 @@ void AppGui::HandleShortcut(SDL_Keycode key, bool ctrl)
         break;
 
     case SDLK_LEFT:
-        // Pause and step backward one frame
+        // Pause and step backward one frame (served from the buffer if cached)
         play = false;
         ipEngine.capture->Pause();
         if (ipEngine.capture->GetFrameCount() > 0)
         {
-            double t = ipEngine.capture->GetTime();
-            double fps = ipEngine.capture->GetFPS();
-            if (fps > 0)
-            {
-                ipEngine.capture->GetFrame(t - 1.0 / fps);
-                pipelineDirty = true;
-            }
+            ipEngine.StepBackward();
+            pipelineDirty = true;
         }
         break;
 
@@ -569,6 +564,8 @@ void AppGui::HandleShortcut(SDL_Keycode key, bool ctrl)
     case SDLK_BACKSPACE:
         // Stop: reset to beginning
         ipEngine.capture->Stop();
+        ipEngine.frameBuffer.clear();
+        ipEngine.playIndex = -1;
         play = false;
         pipelineDirty = true;
         break;
@@ -695,7 +692,7 @@ void AppGui::UpdateEngine()
     // Update the video slider position
     if (!sliderMoving && ipEngine.capture->GetFrameCount() > 0)
     {
-        videoSliderPos = (float)ipEngine.capture->GetFrameNumber() /
+        videoSliderPos = (float)ipEngine.GetPresentFrameNumber() /
                          (float)(ipEngine.capture->GetFrameCount() + 1);
     }
 }
@@ -920,6 +917,8 @@ void AppGui::DrawToolbar()
     if (ImGui::Button("Stop", ImVec2(40*dpiScale, 24*dpiScale)))
     {
         ipEngine.capture->Stop();
+        ipEngine.frameBuffer.clear();
+        ipEngine.playIndex = -1;
         play = false;
         output = false;
         ipEngine.CloseOutput();
@@ -937,20 +936,15 @@ void AppGui::DrawToolbar()
 
     ImGui::SameLine();
 
-    // Step backward (pause and go back one frame)
+    // Step backward (pause and go back one frame, cached if possible)
     if (ImGui::Button("<##step_back", ImVec2(24*dpiScale, 24*dpiScale)))
     {
         play = false;
         ipEngine.capture->Pause();
         if (ipEngine.capture->GetFrameCount() > 0)
         {
-            double t = ipEngine.capture->GetTime();
-            double fps = ipEngine.capture->GetFPS();
-            if (fps > 0)
-            {
-                ipEngine.capture->GetFrame(t - 1.0 / fps);
-                pipelineDirty = true;
-            }
+            ipEngine.StepBackward();
+            pipelineDirty = true;
         }
     }
 
@@ -1003,7 +997,7 @@ void AppGui::DrawToolbar()
         if (ipEngine.capture->GetFrameCount() > 0)
         {
             double totalTime = (double)ipEngine.capture->GetFrameCount() / ipEngine.capture->GetFPS();
-            ipEngine.capture->GetFrame(videoSliderPos * totalTime);
+            ipEngine.SeekTime(videoSliderPos * totalTime);
             pipelineDirty = true;
         }
     }
@@ -1278,10 +1272,10 @@ void AppGui::DrawVideoDisplay()
     // Status line
     if (ipEngine.capture)
     {
-        int totalSec = (int)ipEngine.capture->GetTime();
+        int totalSec = (int)ipEngine.GetPresentTime();
         int minutes = totalSec / 60;
         int seconds = totalSec % 60;
-        long frameNum = ipEngine.capture->GetFrameNumber();
+        long frameNum = ipEngine.GetPresentFrameNumber();
         long frameCount = ipEngine.capture->GetFrameCount();
 
         char speedStr[32] = "1x";

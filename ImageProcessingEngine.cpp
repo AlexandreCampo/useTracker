@@ -570,7 +570,7 @@ void ImageProcessingEngine::Step(bool drawHud)
 {
     bool forceStep = false;
 
-    double ctime = capture->GetTime();
+    double ctime = GetPresentTime();
 
     // first check the status of the capture
     if (capture->statusChanged)
@@ -609,7 +609,7 @@ void ImageProcessingEngine::Step(bool drawHud)
 
     // check if frame is static
     lastFrameNumber = frameNumber;
-    frameNumber = capture->GetFrameNumber();
+    frameNumber = GetPresentFrameNumber();
     staticFrame = (frameNumber == lastFrameNumber);
 
     // save a pristine copy of the source frame; on static re-steps restore
@@ -643,15 +643,120 @@ void ImageProcessingEngine::Step(bool drawHud)
     }
 }
 
+// ---- prefetch buffer -------------------------------------------------------
+
+int ImageProcessingEngine::ComputePrefetch()
+{
+    int m = 0;
+    for (auto& pl : pipelines)
+	for (auto* p : pl.plugins)
+	    if (p && p->active)
+		m = std::max(m, p->PrefetchAhead());
+    return m;
+}
+
+bool ImageProcessingEngine::DecodeOne()
+{
+    if (!capture->GetNextFrame()) return false;
+    BufferedFrame bf;
+    bf.number = capture->GetFrameNumber();
+    bf.time = capture->GetTime();
+    capture->frame.copyTo(bf.image);   // keep a pristine copy in the buffer
+    frameBuffer.push_back(std::move(bf));
+    return true;
+}
+
+void ImageProcessingEngine::PresentPlayhead()
+{
+    if (playIndex < 0 || playIndex >= (int)frameBuffer.size()) return;
+    BufferedFrame& bf = frameBuffer[playIndex];
+    // the pipeline reads capture->frame; copy in place so the per-thread
+    // slice views stay valid
+    bf.image.copyTo(capture->frame);
+    presentNumber = bf.number;
+    presentTime = bf.time;
+}
+
+bool ImageProcessingEngine::AdvanceFrame()
+{
+    prefetchAhead = ComputePrefetch();
+
+    if (frameBuffer.empty())
+    {
+	if (!DecodeOne()) return false;
+	playIndex = 0;
+    }
+    else
+    {
+	if (playIndex + 1 >= (int)frameBuffer.size())
+	    if (!DecodeOne()) return false;
+	playIndex++;
+    }
+
+    // keep the decoder prefetchAhead frames ahead of the playhead
+    while ((int)frameBuffer.size() - 1 - playIndex < prefetchAhead)
+	if (!DecodeOne()) break;
+
+    // drop old past frames beyond the cache limit
+    while (playIndex > maxPastFrames)
+    {
+	frameBuffer.pop_front();
+	playIndex--;
+    }
+
+    PresentPlayhead();
+
+    if (useTimeBoundaries && durationTime > 0.0000001)
+	if (presentTime > (startTime + durationTime))
+	    return false;
+
+    return true;
+}
+
+bool ImageProcessingEngine::StepBackward()
+{
+    // serve from the cache if the previous frame is buffered
+    if (playIndex > 0)
+    {
+	playIndex--;
+	PresentPlayhead();
+	return true;
+    }
+
+    // not cached: seek (the user may have to wait)
+    double fps = capture->GetFPS();
+    double target = presentTime - (fps > 0 ? 1.0 / fps : 0.04);
+    if (target < 0) target = 0;
+    SeekTime(target);
+    return true;
+}
+
+void ImageProcessingEngine::SeekTime(double t)
+{
+    capture->GetFrame(t);
+    frameBuffer.clear();
+    playIndex = -1;
+    if (!DecodeOne()) return;
+    playIndex = 0;
+
+    prefetchAhead = ComputePrefetch();
+    while ((int)frameBuffer.size() - 1 - playIndex < prefetchAhead)
+	if (!DecodeOne()) break;
+
+    PresentPlayhead();
+}
+
+cv::Mat ImageProcessingEngine::GetBufferedImage(int offset)
+{
+    if (frameBuffer.empty()) return cv::Mat();
+    int i = playIndex + offset;
+    if (i < 0) i = 0;
+    if (i >= (int)frameBuffer.size()) i = (int)frameBuffer.size() - 1;
+    return frameBuffer[i].image;
+}
+
 bool ImageProcessingEngine::GetNextFrame()
 {
-    bool capres = capture->GetNextFrame();
-    double ctime = capture->GetTime();
-
-    // respect time bounds (not implementing forward jump...)
-    if (useTimeBoundaries && durationTime > 0.0000001)
-    	if (ctime > (startTime + durationTime))
-    	    return false;
-
-    return capres;
+    // now backed by the prefetch buffer
+    return AdvanceFrame();
 }

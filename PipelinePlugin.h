@@ -30,6 +30,11 @@ virtual ~PipelinePlugin () {};
 
 virtual void Reset (){};
 
+// number of future frames this plugin needs prefetched ahead of the current
+// frame (0 = none). The engine keeps the decoder this many frames ahead so
+// the plugin can read future frames from the shared buffer.
+virtual int PrefetchAhead () { return 0; }
+
 virtual void Apply () = 0;
 virtual void OpenOutput () {};
 virtual void CloseOutput () {};
