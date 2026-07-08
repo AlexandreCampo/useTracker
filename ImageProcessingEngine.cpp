@@ -643,6 +643,11 @@ void ImageProcessingEngine::Step(bool drawHud)
     {
 	cv::threshold(pipelineSnapshotMarked, pipelineSnapshot, 0, 255, cv::THRESH_BINARY);
     }
+
+    // when a centered / delayed plugin is active, keep the processed (enhanced)
+    // frame so the delayed display shows the right image, in sync with its mask
+    if (outputLatency > 0 && playIndex >= 0 && playIndex < (int)frameBuffer.size())
+	capture->frame.copyTo(frameBuffer[playIndex].processed);
 }
 
 // ---- prefetch buffer -------------------------------------------------------
@@ -696,11 +701,13 @@ void ImageProcessingEngine::PresentPlayhead()
 
 cv::Mat ImageProcessingEngine::GetPresentImage()
 {
-    // no latency: show the (possibly enhanced) process-head frame
+    // no latency: show the (possibly enhanced) process-head frame directly
     if (outputLatency <= 0 || frameBuffer.empty()) return capture->frame;
     int pi = playIndex - outputLatency;
     if (pi < 0) pi = 0;
     if (pi >= (int)frameBuffer.size()) pi = (int)frameBuffer.size() - 1;
+    // prefer the processed (enhanced) frame so the display matches its mask
+    if (!frameBuffer[pi].processed.empty()) return frameBuffer[pi].processed;
     return frameBuffer[pi].image;
 }
 

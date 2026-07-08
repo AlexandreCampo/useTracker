@@ -36,7 +36,10 @@ struct ImageProcessingEngine
     // temporal plugins can read future frames, and recent past frames are
     // kept for fast step-back. When prefetchAhead is 0 the playhead follows
     // the decoder (no latency) and only past frames are cached.
-    struct BufferedFrame { long number = 0; double time = 0; cv::Mat image; };
+    // image = raw decoded frame (read by temporal plugins); processed = the
+    // frame after the pipeline ran on it (e.g. enhanced), used to display the
+    // delayed present frame in sync with a centered plugin's mask
+    struct BufferedFrame { long number = 0; double time = 0; cv::Mat image; cv::Mat processed; };
     std::deque<BufferedFrame> frameBuffer;
     int playIndex = -1;         // process head: the frame the pipeline runs on
     int prefetchAhead = 0;      // future frames kept decoded (frame look-ahead)
