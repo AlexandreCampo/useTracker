@@ -178,6 +178,7 @@ private:
     // UI drawing
     void DrawMenuBar();
     void DrawToolbar();
+    void DrawDownscaleControl();
     void DrawVideoDisplay();
     void DrawTabs();
     void DrawProcessingTab();

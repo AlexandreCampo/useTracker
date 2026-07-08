@@ -804,6 +804,9 @@ void AppGui::RenderFrame()
     // Quit confirmation
     DrawQuitConfirm();
 
+    // Input-downscale control — bottom right, above the UI-zoom widget
+    DrawDownscaleControl();
+
     // UI Scale buttons — bottom right corner
     {
         ImGuiViewport* vp = ImGui::GetMainViewport();
@@ -1050,14 +1053,37 @@ void AppGui::DrawToolbar()
     if (ImGui::IsItemHovered())
         ImGui::SetTooltip("Processing blending");
 
-    // Input downscale: run the whole pipeline on a smaller frame for faster
-    // parameter tuning. Output coordinates are rescaled to full resolution.
-    if (ipEngine.capture)
+    ImGui::PopStyleVar();
+}
+
+// Input-downscale control, anchored bottom-right just above the UI-zoom widget.
+// Runs the whole pipeline on a smaller frame for faster parameter tuning;
+// output coordinates are rescaled to full resolution.
+void AppGui::DrawDownscaleControl()
+{
+    if (!ipEngine.capture) return;
+
+    ImGuiViewport* vp = ImGui::GetMainViewport();
+    float pad   = 4 * dpiScale;
+    float uiRow = 22 * dpiScale;   // height of the UI-zoom widget below us
+
+    // anchor the window's bottom-right corner just above the UI-zoom widget
+    ImVec2 anchor(vp->WorkPos.x + vp->WorkSize.x - pad,
+                  vp->WorkPos.y + vp->WorkSize.y - uiRow - pad * 3);
+    ImGui::SetNextWindowPos(anchor, ImGuiCond_Always, ImVec2(1.0f, 1.0f));
+    ImGui::SetNextWindowBgAlpha(0.85f);
+
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(6*dpiScale, 4*dpiScale));
+    if (ImGui::Begin("##Downscale", nullptr,
+        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::SameLine();
-        ImGui::TextDisabled("|");
-        ImGui::SameLine();
-        ImGui::TextUnformatted("Scale");
+        ImGui::AlignTextToFramePadding();
+        ImGui::TextUnformatted("Downscale");
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Run the pipeline on a smaller frame for faster tuning.\n"
+                              "Output coordinates are rescaled to full resolution.");
         ImGui::SameLine();
 
         struct ScaleSnap { const char* label; float v; };
@@ -1069,7 +1095,7 @@ void AppGui::DrawToolbar()
             if (sel)
                 ImGui::PushStyleColor(ImGuiCol_Button,
                                       ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-            if (ImGui::Button(s.label, ImVec2(30*dpiScale, 24*dpiScale)))
+            if (ImGui::Button(s.label, ImVec2(30*dpiScale, 22*dpiScale)))
             {
                 ipEngine.SetInputScale(s.v);
                 SyncHudSize();
@@ -1079,7 +1105,7 @@ void AppGui::DrawToolbar()
             ImGui::SameLine();
         }
 
-        // continuous slider (applied on release)
+        // continuous slider (applied on release, so it does not rebuild while dragging)
         if (!scaleSliderActive)
             scaleSliderPct = ipEngine.inputScale * 100.0f;
         ImGui::SetNextItemWidth(90*dpiScale);
@@ -1091,13 +1117,12 @@ void AppGui::DrawToolbar()
             SyncHudSize();
             pipelineDirty = true;
         }
-        if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("Downscale the input for faster tuning.\n"
-                              "Processing runs at %d x %d; output coordinates\n"
-                              "are rescaled to full resolution.",
-                              ipEngine.ProcWidth(), ipEngine.ProcHeight());
-    }
 
+        // resulting processing resolution
+        ImGui::SameLine();
+        ImGui::TextDisabled("%dx%d", ipEngine.ProcWidth(), ipEngine.ProcHeight());
+    }
+    ImGui::End();
     ImGui::PopStyleVar();
 }
 
