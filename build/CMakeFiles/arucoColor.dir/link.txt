@@ -1,2 +1,0 @@
-/usr/bin/ar qc libarucoColor.a CMakeFiles/arucoColor.dir/arucoColor/arucoColor.cpp.o CMakeFiles/arucoColor.dir/arucoColor/dictionary.cpp.o CMakeFiles/arucoColor.dir/arucoColor/generateMarkers.cpp.o CMakeFiles/arucoColor.dir/arucoColor/marker.cpp.o CMakeFiles/arucoColor.dir/arucoColor/printMarkers.cpp.o
-/usr/bin/ranlib libarucoColor.a

@@ -1,0 +1,26 @@
+# Build directories / CMake output
+/build/
+build/
+
+# Compiled objects, libraries, dependency files
+*.o
+*.a
+*.d
+*.obj
+*.lo
+*.slo
+obj/
+
+# Editor / IDE
+compile_commands.json
+
+# Runtime-generated UI layout (regenerated on every run)
+imgui.ini
+
+# Local runtime output / scratch
+update_status.txt
+blobs.csv
+settings.xml
+
+# The executable
+/useTracker
