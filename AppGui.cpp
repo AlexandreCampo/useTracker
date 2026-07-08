@@ -1219,6 +1219,11 @@ void AppGui::DrawVideoDisplay()
             if (displayFrame.data == oglScreen.data)
                 displayFrame = oglScreen.clone();
 
+            // some views (zone map) are single channel; the HUD blend below
+            // writes Vec3b, so make sure the frame is 3-channel BGR first
+            if (displayFrame.channels() == 1)
+                cv::cvtColor(displayFrame, displayFrame, cv::COLOR_GRAY2BGR);
+
             if (displayFrame.size() != ipEngine.hud.size())
                 cv::resize(displayFrame, displayFrame, ipEngine.hud.size(),
                            0, 0, cv::INTER_LINEAR);

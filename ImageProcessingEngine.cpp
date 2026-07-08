@@ -526,20 +526,35 @@ void ImageProcessingEngine::PipelineThread (unsigned int p)
 		{
 		    if (pipelines[p].plugins[i]->active)
 		    {
-			pipelines[p].plugins[i]->Apply();
-
-			if (output
-			    && pipelines[p].plugins[i]->output
-			    && !staticFrame)
+			// a plugin throwing must not take down the whole app: an
+			// uncaught exception here would escape the thread and
+			// call std::terminate (seen as "terminate called
+			// recursively" when several threads abort at once)
+			try
 			{
-			    pipelines[p].plugins[i]->OutputStep();
+			    pipelines[p].plugins[i]->Apply();
+
+			    if (output
+				&& pipelines[p].plugins[i]->output
+				&& !staticFrame)
+			    {
+				pipelines[p].plugins[i]->OutputStep();
+			    }
+			}
+			catch (const std::exception& e)
+			{
+			    std::cerr << "Pipeline plugin error (thread " << p
+				      << ", plugin " << i << "): " << e.what() << std::endl;
 			}
 		    }
 
 		    if (takeSnapshot && snapshotPos == i)
 		    {
 			pipelines[p].marked.copyTo(pipelines[p].pipelineSnapshotMarked);
-			if (threadsDrawHud) pipelines[p].plugins[i]->OutputHud(hud);
+			if (threadsDrawHud)
+			    try { pipelines[p].plugins[i]->OutputHud(hud); }
+			    catch (const std::exception& e)
+			    { std::cerr << "Plugin HUD error: " << e.what() << std::endl; }
 		    }
 		}
 		// the special thread will take care of this plugin, wait...
@@ -564,20 +579,33 @@ void ImageProcessingEngine::PipelineThread (unsigned int p)
 		    {
 			if (pipelines[p].plugins[i]->active)
 			{
-			    pipelines[p].plugins[i]->Apply();
-
-			    if (output
-				&& pipelines[p].plugins[i]->output
-				&& !staticFrame)
+			    // see note above: never let a plugin exception escape
+			    // the thread and terminate the whole application
+			    try
 			    {
-			    	pipelines[p].plugins[i]->OutputStep();
+				pipelines[p].plugins[i]->Apply();
+
+				if (output
+				    && pipelines[p].plugins[i]->output
+				    && !staticFrame)
+				{
+				    pipelines[p].plugins[i]->OutputStep();
+				}
+			    }
+			    catch (const std::exception& e)
+			    {
+				std::cerr << "Pipeline plugin error (single-thread, plugin "
+					  << i << "): " << e.what() << std::endl;
 			    }
 			}
 
 			if (takeSnapshot && snapshotPos == i)
 			{
 			    pipelines[p].marked.copyTo(pipelines[p].pipelineSnapshotMarked);
-			    if (threadsDrawHud) pipelines[p].plugins[i]->OutputHud(hud);
+			    if (threadsDrawHud)
+				try { pipelines[p].plugins[i]->OutputHud(hud); }
+				catch (const std::exception& e)
+				{ std::cerr << "Plugin HUD error: " << e.what() << std::endl; }
 			}
 		    }
 
