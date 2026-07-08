@@ -3875,7 +3875,7 @@ void AppGui::DrawPluginDialog(int index)
         int size = p->size;
         if (ImGui::InputInt("Size", &size))
         {
-            p->SetSize(size);
+            p->SetSize(std::max(1, size));   // kernel radius must be >= 1
             changed = true;
         }
     }
@@ -3886,7 +3886,7 @@ void AppGui::DrawPluginDialog(int index)
         int size = p->size;
         if (ImGui::InputInt("Size", &size))
         {
-            p->SetSize(size);
+            p->SetSize(std::max(1, size));   // kernel radius must be >= 1
             changed = true;
         }
     }
@@ -3894,7 +3894,9 @@ void AppGui::DrawPluginDialog(int index)
     // --- SafeErosion ---
     else if (SafeErosion* p = dynamic_cast<SafeErosion*>(pp))
     {
-        changed |= ImGui::InputInt("Size", &p->size);
+        if (ImGui::InputInt("Size", &p->size))
+            p->size = std::max(1, p->size);
+        changed = true;
     }
 
     // --- ExtractBlobs ---

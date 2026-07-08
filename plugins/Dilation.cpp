@@ -45,7 +45,7 @@ void Dilation::LoadXML (FileNode& fn)
     if (!fn.empty())
     {
 	active = (int)fn["Active"];
-	size = (int)fn["Size"];
+	SetSize((int)fn["Size"]);   // rebuilds the (clamped) structuring element
     }
 }
 
@@ -57,6 +57,9 @@ void Dilation::SaveXML (FileStorage& fs)
 
 void Dilation::SetSize (int s)
 {
+    // a kernel radius below 1 yields an empty/invalid structuring element,
+    // which makes cv::dilate throw; clamp to the smallest real kernel (3x3)
+    if (s < 1) s = 1;
     size = s;
 
     structuringElement = getStructuringElement(

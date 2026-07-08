@@ -45,7 +45,7 @@ void Erosion::LoadXML (FileNode& fn)
     if (!fn.empty())
     {
 	active = (int)fn["Active"];
-	size = (int)fn["Size"];
+	SetSize((int)fn["Size"]);   // rebuilds the (clamped) structuring element
     }
 }
 
@@ -57,6 +57,9 @@ void Erosion::SaveXML (FileStorage& fs)
 
 void Erosion::SetSize (int s)
 {
+    // a kernel radius below 1 yields an empty/invalid structuring element,
+    // which makes cv::erode throw; clamp to the smallest real kernel (3x3)
+    if (s < 1) s = 1;
     size = s;
 
     structuringElement = getStructuringElement(
