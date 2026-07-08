@@ -134,18 +134,17 @@ void ImageProcessingEngine::Reset(Parameters& parameters)
 	zoneMap = cv::Mat::ones(capture->height, capture->width, CV_8U);
     }
 
-    // pipeline data
-    marked.create (capture->height, capture->width, CV_8U);
-    labels.create (capture->height, capture->width, CV_32S);
-
-    pipelineSnapshot = cv::Mat::zeros (capture->height, capture->width, CV_8U);
-    pipelineSnapshotMarked = cv::Mat::zeros (capture->height, capture->width, CV_8U);
-    sourceFrame.release();
     takeSnapshot = false;
     snapshotPos = 0;
 
     if (threadsCount == 0)
 	threadsCount = std::thread::hardware_concurrency();
+
+    // stash the source-resolution background/zone and allocate the shared
+    // buffers at the (possibly scaled) processing resolution BEFORE creating
+    // the pipelines, since the Pipeline constructor slices those buffers
+    CaptureNativeBgZone();
+    BuildProcBuffers();
 
     SetupThreads();
 
@@ -191,43 +190,108 @@ void ImageProcessingEngine::Reset()
 	exit (-1);
     }
 
-    // get background pic
-    if (background.cols != capture->width || background.rows != capture->height)
+    if (threadsCount == 0)
+	threadsCount = std::thread::hardware_concurrency();
+
+    // a runtime background/zone image just assigned by the GUI is at source
+    // resolution; stash it, then rebuild all buffers/slices at proc resolution
+    CaptureNativeBgZone();
+    BuildProcBuffers();
+
+    std::cerr << "Tracker core has been reset and is ready" << std::endl;
+}
+
+// remember the current playback size in procWidth/procHeight
+void ImageProcessingEngine::UpdateProcSize()
+{
+    if (!capture) { procWidth = procHeight = 0; return; }
+    if (inputScale > 0.999f)
     {
-	cerr << "Background and video dimensions mismatch... please update your background" << std::endl;
-	background = cv::Mat::zeros(capture->height, capture->width, CV_8UC3);
+	procWidth  = capture->width;
+	procHeight = capture->height;
+	return;
     }
+    procWidth  = std::max(16, (int)(capture->width  * (double)inputScale + 0.5));
+    procHeight = std::max(16, (int)(capture->height * (double)inputScale + 0.5));
+}
 
-    // if provided, load png of mask
-    if (zoneMap.cols != capture->width || zoneMap.rows != capture->height)
+// keep a source-resolution copy of a background/zone image (only when it is
+// actually at source size, so a scaled buffer is never mistaken for native)
+void ImageProcessingEngine::CaptureNativeBgZone()
+{
+    if (!capture) return;
+    cv::Size nativeSz(capture->width, capture->height);
+    if (!background.empty() && background.size() == nativeSz)
+	backgroundNative = background.clone();
+    if (!zoneMap.empty() && zoneMap.size() == nativeSz)
+	zoneMapNative = zoneMap.clone();
+}
+
+// (re)allocate the shared buffers and re-slice the pipelines at proc resolution
+void ImageProcessingEngine::BuildProcBuffers()
+{
+    UpdateProcSize();
+    cv::Size ps(procWidth, procHeight);
+
+    // background / zone map derived from the source-resolution originals
+    if (!backgroundNative.empty())
     {
-	cerr << "Zones mask image and video dimensions mismatch... please update your mask" << std::endl;
-	zoneMap = cv::Mat::ones(capture->height, capture->width, CV_8U);
+	if (backgroundNative.size() == ps) background = backgroundNative.clone();
+	else cv::resize(backgroundNative, background, ps, 0, 0, cv::INTER_AREA);
     }
+    else background = cv::Mat::zeros(ps, CV_8UC3);
 
-    // pipeline data
-    marked.create (capture->height, capture->width, CV_8U);
-    labels.create (capture->height, capture->width, CV_32S);
+    if (!zoneMapNative.empty())
+    {
+	if (zoneMapNative.size() == ps) zoneMap = zoneMapNative.clone();
+	else cv::resize(zoneMapNative, zoneMap, ps, 0, 0, cv::INTER_NEAREST);
+    }
+    else zoneMap = cv::Mat::ones(ps, CV_8U);
 
-    pipelineSnapshot = cv::Mat::zeros (capture->height, capture->width, CV_8U);
-    pipelineSnapshotMarked = cv::Mat::zeros (capture->height, capture->width, CV_8U);
+    marked.create(ps, CV_8U);
+    labels.create(ps, CV_32S);
+    // stable processing frame the pipelines slice into (allocate before slicing)
+    if (procFrame.size() != ps || procFrame.type() != CV_8UC3)
+	procFrame = cv::Mat::zeros(ps, CV_8UC3);
+    pipelineSnapshot = cv::Mat::zeros(ps, CV_8U);
+    pipelineSnapshotMarked = cv::Mat::zeros(ps, CV_8U);
     sourceFrame.release();
 
     if (threadsCount == 0)
 	threadsCount = std::thread::hardware_concurrency();
 
-    // reset pipelines
-    int sliceHeight = capture->height / threadsCount;
-    int y = 0;
-    for (unsigned int i = 0; i < threadsCount; i++)
+    // re-slice existing pipelines at the new size, preserving their plugins
+    if (pipelines.size() > threadsCount)
     {
-	if (i == threadsCount - 1) sliceHeight = capture->height - y;
-	pipelines[i].Reset(cv::Rect(0, y, capture->width, sliceHeight));
-	y += sliceHeight;
+	int sliceHeight = procHeight / threadsCount;
+	int y = 0;
+	for (unsigned int i = 0; i < threadsCount; i++)
+	{
+	    if (i == threadsCount - 1) sliceHeight = procHeight - y;
+	    pipelines[i].Reset(cv::Rect(0, y, procWidth, sliceHeight));
+	    y += sliceHeight;
+	}
+	pipelines[threadsCount].Reset(cv::Rect(0, 0, procWidth, procHeight));
     }
-    pipelines[threadsCount].Reset(cv::Rect(0, 0, capture->width, capture->height));
+}
 
-    std::cerr << "Tracker core has been reset and is ready" << std::endl;
+// change the input downscale factor and rebuild, returning to the same time
+void ImageProcessingEngine::SetInputScale(float s)
+{
+    if (s < 0.1f) s = 0.1f;
+    if (s > 1.0f) s = 1.0f;
+    if (std::abs(s - inputScale) < 1e-4f) return;
+
+    double keepTime = GetPresentTime();
+
+    inputScale = s;
+    CaptureNativeBgZone();
+    BuildProcBuffers();
+
+    // rebuild the prefetch buffer at the new resolution and seek back
+    frameBuffer.clear();
+    playIndex = -1;
+    SeekTime(keepTime);
 }
 
 
@@ -409,17 +473,18 @@ void ImageProcessingEngine::SetupThreads ()
     // destroy pipelines
     pipelines.clear();
 
-    // create new pipelines
-    int sliceHeight = capture->height / threadsCount;
+    // create new pipelines at the processing resolution
+    UpdateProcSize();
+    int sliceHeight = procHeight / threadsCount;
     int y = 0;
     for (unsigned int i = 0; i < threadsCount; i++)
     {
-	if (i == threadsCount - 1) sliceHeight = capture->height - y;
-	pipelines.push_back(Pipeline(this, cv::Rect(0, y, capture->width, sliceHeight)));
+	if (i == threadsCount - 1) sliceHeight = procHeight - y;
+	pipelines.push_back(Pipeline(this, cv::Rect(0, y, procWidth, sliceHeight)));
 	y += sliceHeight;
     }
     // this is the pipeline for the non multithreaded plugins
-    pipelines.push_back(Pipeline(this, cv::Rect(0, 0, capture->width, capture->height)));
+    pipelines.push_back(Pipeline(this, cv::Rect(0, 0, procWidth, procHeight)));
 
     // spawn new threads, including special thread, also allocate new mutexes
     for (unsigned int i = 0; i <= threadsCount; i++)
@@ -617,11 +682,11 @@ void ImageProcessingEngine::Step(bool drawHud)
     // save a pristine copy of the source frame; on static re-steps restore
     // it so that in-place enhancement plugins are applied only once
     if (!staticFrame
-	|| sourceFrame.size() != capture->frame.size()
-	|| sourceFrame.type() != capture->frame.type())
-	capture->frame.copyTo(sourceFrame);
+	|| sourceFrame.size() != procFrame.size()
+	|| sourceFrame.type() != procFrame.type())
+	procFrame.copyTo(sourceFrame);
     else
-	sourceFrame.copyTo(capture->frame);
+	sourceFrame.copyTo(procFrame);
 
     // prepare marked buffer
     marked.setTo(255);
@@ -647,7 +712,7 @@ void ImageProcessingEngine::Step(bool drawHud)
     // when a centered / delayed plugin is active, keep the processed (enhanced)
     // frame so the delayed display shows the right image, in sync with its mask
     if (outputLatency > 0 && playIndex >= 0 && playIndex < (int)frameBuffer.size())
-	capture->frame.copyTo(frameBuffer[playIndex].processed);
+	procFrame.copyTo(frameBuffer[playIndex].processed);
 }
 
 // ---- prefetch buffer -------------------------------------------------------
@@ -678,7 +743,14 @@ bool ImageProcessingEngine::DecodeOne()
     BufferedFrame bf;
     bf.number = capture->GetFrameNumber();
     bf.time = capture->GetTime();
-    capture->frame.copyTo(bf.image);   // keep a pristine copy in the buffer
+    // store the frame at processing resolution: downscale the decoded frame
+    // into the buffer (the decoder's capture->frame stays at source size)
+    if (inputScale < 0.999f && procWidth > 0 &&
+	(capture->frame.cols != procWidth || capture->frame.rows != procHeight))
+	cv::resize(capture->frame, bf.image,
+		   cv::Size(procWidth, procHeight), 0, 0, cv::INTER_AREA);
+    else
+	capture->frame.copyTo(bf.image);
     frameBuffer.push_back(std::move(bf));
     return true;
 }
@@ -687,9 +759,9 @@ void ImageProcessingEngine::PresentPlayhead()
 {
     if (playIndex < 0 || playIndex >= (int)frameBuffer.size()) return;
 
-    // the pipeline runs on the process head; copy it into capture->frame in
-    // place so the per-thread slice views stay valid
-    frameBuffer[playIndex].image.copyTo(capture->frame);
+    // the pipeline runs on the process head; copy it into the stable procFrame
+    // in place so the per-thread slice views stay valid
+    frameBuffer[playIndex].image.copyTo(procFrame);
 
     // the present (displayed) frame lags the process head by outputLatency, so
     // a centered temporal-mask result aligns with the image shown
@@ -702,7 +774,7 @@ void ImageProcessingEngine::PresentPlayhead()
 cv::Mat ImageProcessingEngine::GetPresentImage()
 {
     // no latency: show the (possibly enhanced) process-head frame directly
-    if (outputLatency <= 0 || frameBuffer.empty()) return capture->frame;
+    if (outputLatency <= 0 || frameBuffer.empty()) return procFrame;
     int pi = playIndex - outputLatency;
     if (pi < 0) pi = 0;
     if (pi >= (int)frameBuffer.size()) pi = (int)frameBuffer.size() - 1;

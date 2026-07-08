@@ -48,6 +48,31 @@ struct ImageProcessingEngine
     long presentNumber = 0;     // displayed frame (process head - outputLatency)
     double presentTime = 0.0;
 
+    // input downscaling: the pipeline runs on frames scaled by inputScale
+    // (1.0 = full resolution). Downscaling speeds up parameter tuning. All
+    // internal buffers and plugin coordinates are in this scaled space;
+    // GetOutputScale() converts them back to source-resolution for output.
+    // backgroundNative / zoneMapNative hold the source-resolution originals so
+    // the scale can be changed without losing them.
+    float inputScale = 1.0f;
+    int procWidth = 0;
+    int procHeight = 0;
+    cv::Mat backgroundNative;
+    cv::Mat zoneMapNative;
+    // stable processing frame at proc resolution: the pipeline slices view into
+    // this (not the decoder's capture->frame, which stays at source size). Kept
+    // a fixed buffer so the per-thread slice views stay valid between frames.
+    cv::Mat procFrame;
+
+    void UpdateProcSize();
+    void BuildProcBuffers();          // (re)allocate buffers/slices at proc size
+    void CaptureNativeBgZone();       // stash native background/zone before scaling
+    void SetInputScale(float s);      // change scale and rebuild (keeps position)
+    int  ProcWidth()  const { return procWidth; }
+    int  ProcHeight() const { return procHeight; }
+    // factor to convert scaled (internal) coordinates back to source resolution
+    double GetOutputScale() const { return (inputScale > 1e-6f) ? 1.0 / (double)inputScale : 1.0; }
+
     // about image processing
     cv::Mat background;
     cv::Mat zoneMap;

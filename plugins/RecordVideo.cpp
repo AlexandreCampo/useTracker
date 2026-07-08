@@ -222,8 +222,10 @@ void RecordVideo::OutputStep ()
     // record the pristine source frame: enhancement plugins may have
     // modified the capture frame in place
     cv::Mat src = pipeline->frame;
+    // sourceFrame is at processing resolution, same as procFrame that the
+    // pipeline slices view into
     if (!pipeline->parent->sourceFrame.empty()
-	&& pipeline->parent->sourceFrame.size() == cv::Size(pipeline->parent->capture->width, pipeline->parent->capture->height))
+	&& pipeline->parent->sourceFrame.size() == pipeline->parent->procFrame.size())
 	src = pipeline->parent->sourceFrame(pipeline->roi);
 
     // copy mat to frame

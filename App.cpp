@@ -224,6 +224,8 @@ int main(int argc, char **argv)
             }
         }
 
+        if (parameters.inputScale > 0.0f && parameters.inputScale <= 1.0f)
+            ipEngine.inputScale = parameters.inputScale;
         ipEngine.Reset(parameters);
 
         // load pipeline's XML

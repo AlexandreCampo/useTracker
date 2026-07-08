@@ -272,16 +272,17 @@ void SimpleTags::OutputStep()
     // in any case, also output blob list with characs...
     if (outputStream.is_open())
     {
+	double os = pipeline->parent->GetOutputScale();
 	for (unsigned int b = 0; b < pipeline->parent->blobs.size(); b++)
 	{
 	    outputStream
 		<< pipeline->parent->GetPresentTime() << "\t"
 		<< pipeline->parent->GetPresentFrameNumber() << "\t"
 		<< pipeline->parent->blobs[b].tagId << "\t"
-		<< pipeline->parent->blobs[b].x << "\t"
-		<< pipeline->parent->blobs[b].y << "\t"
+		<< (int)round(pipeline->parent->blobs[b].x * os) << "\t"
+		<< (int)round(pipeline->parent->blobs[b].y * os) << "\t"
 		<< pipeline->parent->blobs[b].angle << "\t"
-		<< pipeline->parent->blobs[b].size << "\t"
+		<< (long)round(pipeline->parent->blobs[b].size * os*os) << "\t"
 		<< pipeline->parent->blobs[b].zone
 		<< std::endl;
 	}

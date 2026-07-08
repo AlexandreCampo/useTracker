@@ -46,6 +46,7 @@ void Parameters::parseCommandLine (int argc, char** argv)
     app.add_option("--calibration", calibrationFilename, "Calibration configuration file in xml format");
     app.add_option("-b,--background", bgFilename, "Specify the background image for motion detection");
     app.add_option("--test", testScript, "GUI test script: drive the interface and take screenshots");
+    app.add_option("--scale", inputScale, "Downscale input frames by this factor (0.1-1.0) for faster processing");
 
     try {
         app.parse(argc, argv);

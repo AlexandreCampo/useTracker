@@ -453,6 +453,8 @@ int AppGui::Run()
     SDL_SetWindowTitle(window, title.c_str());
 
     // Initialize engine
+    if (parameters.inputScale > 0.0f && parameters.inputScale <= 1.0f)
+        ipEngine.inputScale = parameters.inputScale;
     ResetEngine(parameters);
 
     // Test harness: load the input script if one was given
@@ -1047,6 +1049,54 @@ void AppGui::DrawToolbar()
     ImGui::SliderFloat("##Blend", &processingBlending, 0.0f, 1.0f, "%.1f");
     if (ImGui::IsItemHovered())
         ImGui::SetTooltip("Processing blending");
+
+    // Input downscale: run the whole pipeline on a smaller frame for faster
+    // parameter tuning. Output coordinates are rescaled to full resolution.
+    if (ipEngine.capture)
+    {
+        ImGui::SameLine();
+        ImGui::TextDisabled("|");
+        ImGui::SameLine();
+        ImGui::TextUnformatted("Scale");
+        ImGui::SameLine();
+
+        struct ScaleSnap { const char* label; float v; };
+        static const ScaleSnap snaps[] = {
+            {"1:1", 1.0f}, {"1/2", 0.5f}, {"1/4", 0.25f}, {"1/8", 0.125f} };
+        for (const auto& s : snaps)
+        {
+            bool sel = std::abs(ipEngine.inputScale - s.v) < 1e-3f;
+            if (sel)
+                ImGui::PushStyleColor(ImGuiCol_Button,
+                                      ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+            if (ImGui::Button(s.label, ImVec2(30*dpiScale, 24*dpiScale)))
+            {
+                ipEngine.SetInputScale(s.v);
+                SyncHudSize();
+                pipelineDirty = true;
+            }
+            if (sel) ImGui::PopStyleColor();
+            ImGui::SameLine();
+        }
+
+        // continuous slider (applied on release)
+        if (!scaleSliderActive)
+            scaleSliderPct = ipEngine.inputScale * 100.0f;
+        ImGui::SetNextItemWidth(90*dpiScale);
+        ImGui::SliderFloat("##InputScale", &scaleSliderPct, 10.0f, 100.0f, "%.0f%%");
+        scaleSliderActive = ImGui::IsItemActive();
+        if (ImGui::IsItemDeactivatedAfterEdit())
+        {
+            ipEngine.SetInputScale(scaleSliderPct / 100.0f);
+            SyncHudSize();
+            pipelineDirty = true;
+        }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Downscale the input for faster tuning.\n"
+                              "Processing runs at %d x %d; output coordinates\n"
+                              "are rescaled to full resolution.",
+                              ipEngine.ProcWidth(), ipEngine.ProcHeight());
+    }
 
     ImGui::PopStyleVar();
 }
@@ -4121,9 +4171,7 @@ void AppGui::ChangeCapture(Capture* newCapture)
     for (auto& pfv : savedPlugins)
         ipEngine.PushBack(pfv, true);
 
-    hud.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
-    hudApp.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
-    ipEngine.hud = hud;
+    SyncHudSize();
     ipEngine.takeSnapshot = true;
 
     play = false;
@@ -4807,15 +4855,26 @@ void AppGui::DrawErrorPopup()
 // ResetEngine
 // ============================================================================
 
+// (re)create the HUD at the processing resolution so it lines up with the
+// (possibly downscaled) video frame it is drawn over
+void AppGui::SyncHudSize()
+{
+    if (!ipEngine.capture) return;
+    int w = ipEngine.ProcWidth();
+    int h = ipEngine.ProcHeight();
+    if (w <= 0 || h <= 0) { w = ipEngine.capture->width; h = ipEngine.capture->height; }
+    hud.create(h, w, CV_8UC4);
+    hudApp.create(h, w, CV_8UC4);
+    ipEngine.hud = hud;
+}
+
 void AppGui::ResetEngine()
 {
     // Regenerate HUD
     if (ipEngine.capture)
     {
-        hud.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
-        hudApp.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
-        ipEngine.hud = hud;
         ipEngine.Reset();
+        SyncHudSize();
     }
 }
 
@@ -4825,9 +4884,7 @@ void AppGui::ResetEngine(Parameters& params)
 
     if (ipEngine.capture)
     {
-        hud.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
-        hudApp.create(ipEngine.capture->height, ipEngine.capture->width, CV_8UC4);
-        ipEngine.hud = hud;
+        SyncHudSize();
         ipEngine.takeSnapshot = true;
     }
 

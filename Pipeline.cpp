@@ -29,7 +29,7 @@ Pipeline::Pipeline (ImageProcessingEngine* ipEngine, cv::Rect roi)
     width = roi.width;
     height = roi.height;
 
-    frame = ipEngine->capture->frame(roi);
+    frame = ipEngine->procFrame(roi);
     background = ipEngine->background(roi);
     zoneMap = ipEngine->zoneMap(roi);
     marked = ipEngine->marked(roi);
@@ -53,7 +53,7 @@ void Pipeline::Reset (cv::Rect roi)
     width = roi.width;
     height = roi.height;
 
-    frame = parent->capture->frame(roi);
+    frame = parent->procFrame(roi);
     background = parent->background(roi);
     zoneMap = parent->zoneMap(roi);
     marked = parent->marked(roi);

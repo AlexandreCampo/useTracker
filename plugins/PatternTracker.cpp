@@ -484,14 +484,16 @@ void PatternTracker::OutputStep()
 
     double time = pipeline->parent->GetPresentTime();
     long frame = pipeline->parent->GetPresentFrameNumber();
+    // scale coordinates back to the source resolution when the input is downscaled
+    double os = pipeline->parent->GetOutputScale();
 
     for (auto& t : targets)
     {
 	if (!t.active) continue;
 	outputStream
 	    << time << "\t" << frame << "\t" << t.id << "\t"
-	    << (int)t.pos.x << "\t" << (int)t.pos.y << "\t"
-	    << t.box.width << "\t" << t.box.height << "\t"
+	    << (int)round(t.pos.x * os) << "\t" << (int)round(t.pos.y * os) << "\t"
+	    << (int)round(t.box.width * os) << "\t" << (int)round(t.box.height * os) << "\t"
 	    << t.score << endl;
     }
 }

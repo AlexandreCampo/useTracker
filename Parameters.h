@@ -29,6 +29,8 @@ public:
     // GUI test/debug: a script of input commands to drive the interface
     std::string testScript;
 
+    // downscale factor applied to input frames (1.0 = full resolution)
+    float inputScale = 1.0f;
 
     double startTime = -1;
     double durationTime = -1;

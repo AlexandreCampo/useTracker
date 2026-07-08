@@ -393,6 +393,7 @@ void Tracker::OutputStep ()
 {
     if (outputStream.is_open() && !replay)
     {
+	double os = pipeline->parent->GetOutputScale();
 	for (unsigned int e = 0; e < entitiesCount; e++)
 	{
 	    outputStream
@@ -403,9 +404,9 @@ void Tracker::OutputStep ()
 		<< e << "\t"
 		<< entities[e].assigned << "\t"
 		<< entities[e].zone << "\t"
-		<< entities[e].size << "\t"
-		<< entities[e].x << "\t"
-		<< entities[e].y
+		<< (long)round(entities[e].size * os*os) << "\t"
+		<< (int)round(entities[e].x * os) << "\t"
+		<< (int)round(entities[e].y * os)
 		<< std::endl;
 	}
     }

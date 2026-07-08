@@ -256,19 +256,20 @@ void ExtractBlobs::OutputStep()
     // in any case, also output blob list with characs...
     if (outputStream.is_open())
     {
+	double os = pipeline->parent->GetOutputScale();
 	vector<Blob>& blobs = pipeline->parent->blobs;
 	for (auto b : blobs)
 	{
 	    if (b.available)
 	    {
-		outputStream 
-		    << pipeline->parent->GetPresentTime() << "\t" 
-		    << pipeline->parent->GetPresentFrameNumber() << "\t" 
-		    << b.x << "\t" 
-		    << b.y << "\t" 
-		    << b.angle << "\t" 
-		    << b.size << "\t" 
-		    << b.zone 
+		outputStream
+		    << pipeline->parent->GetPresentTime() << "\t"
+		    << pipeline->parent->GetPresentFrameNumber() << "\t"
+		    << (int)round(b.x * os) << "\t"
+		    << (int)round(b.y * os) << "\t"
+		    << b.angle << "\t"
+		    << (long)round(b.size * os*os) << "\t"
+		    << b.zone
 		    << std::endl;
 	    }
 	}

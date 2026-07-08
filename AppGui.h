@@ -73,6 +73,11 @@ private:
     // at use). Draggable via the splitter between the video area and the panel.
     float controlPanelWidth = 380.0f;
 
+    // input-downscale slider state (applied on release to avoid rebuilding the
+    // engine on every drag frame)
+    float scaleSliderPct = 100.0f;
+    bool  scaleSliderActive = false;
+
     // Video texture
     GLuint videoTexture = 0;
     int texWidth = 0;
@@ -220,6 +225,8 @@ private:
     void DoSaveSettings(const std::string& result);
     void ResetEngine();
     void ResetEngine(Parameters& params);
+    // (re)create the HUD overlay at the current processing resolution
+    void SyncHudSize();
     void HandleShortcut(SDL_Keycode key, bool ctrl);
 
     bool AddPipelinePlugin(const std::string& name, cv::FileNode& fn, int pos = -1);

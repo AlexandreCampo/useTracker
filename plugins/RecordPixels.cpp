@@ -44,6 +44,7 @@ void RecordPixels::OutputStep()
 {
     if (outputStream.is_open())
     {
+	double os = pipeline->parent->GetOutputScale();
 	for (int y = 0; y < pipeline->height; y++)
 	{
 	    unsigned char* row = pipeline->marked.ptr<unsigned char>(y);
@@ -55,8 +56,8 @@ void RecordPixels::OutputStep()
 			<< pipeline->parent->GetPresentTime()<< "\t"
 			<< pipeline->parent->GetPresentFrameNumber() << "\t"
 			<< (int) (pipeline->zoneMap.at<unsigned char>(y,x)) << "\t"
-			<< x << "\t"
-			<< y
+			<< (int)round(x * os) << "\t"
+			<< (int)round(y * os)
 			<< std::endl;
 		}
 	    }
