@@ -69,6 +69,10 @@ private:
     int windowHeight = 800;
     float dpiScale = 1.0f;
 
+    // width of the right-hand control panel (in unscaled px; *dpiScale applied
+    // at use). Draggable via the splitter between the video area and the panel.
+    float controlPanelWidth = 380.0f;
+
     // Video texture
     GLuint videoTexture = 0;
     int texWidth = 0;
@@ -111,6 +115,7 @@ private:
     // Quit confirmation (avoid losing unsaved pipeline / ROI work)
     bool showQuitConfirm = false;
     bool quitConfirmJustOpened = false;
+    int  quitConfirmFocus = 1;  // 0 = Quit, 1 = Cancel (default); Tab/arrows move
 
     // GUI test harness (--test <script>): drives the interface with scripted
     // mouse moves / clicks / keys and captures screenshots, for automated tests

@@ -742,14 +742,40 @@ void AppGui::RenderFrame()
     DrawMenuBar();
     DrawToolbar();
 
-    // Split: left = video, right = tabs
-    float panelWidth = 380.0f * dpiScale;
+    // Split: left = video, splitter, right = tabs. The panel width is
+    // draggable via the splitter and persists in controlPanelWidth.
     ImVec2 contentRegion = ImGui::GetContentRegionAvail();
+    float splitterW = 6.0f * dpiScale;
+    // keep the panel within sane bounds for the current window size
+    float minPanel = 220.0f * dpiScale;
+    float maxPanel = contentRegion.x - 200.0f * dpiScale;
+    if (maxPanel < minPanel) maxPanel = minPanel;
+    float panelWidth = controlPanelWidth * dpiScale;
+    if (panelWidth < minPanel) panelWidth = minPanel;
+    if (panelWidth > maxPanel) panelWidth = maxPanel;
 
     // Video display on the left
-    ImGui::BeginChild("VideoArea", ImVec2(contentRegion.x - panelWidth, 0), false);
+    ImGui::BeginChild("VideoArea", ImVec2(contentRegion.x - panelWidth - splitterW, 0), false);
     DrawVideoDisplay();
     ImGui::EndChild();
+
+    ImGui::SameLine();
+
+    // Draggable splitter
+    ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_Separator));
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetStyleColorVec4(ImGuiCol_SeparatorHovered));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImGui::GetStyleColorVec4(ImGuiCol_SeparatorActive));
+    ImGui::Button("##panelSplitter", ImVec2(splitterW, ImGui::GetContentRegionAvail().y));
+    ImGui::PopStyleColor(3);
+    if (ImGui::IsItemHovered() || ImGui::IsItemActive())
+        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+    if (ImGui::IsItemActive())
+    {
+        // dragging left widens the panel, right narrows it
+        controlPanelWidth -= ImGui::GetIO().MouseDelta.x / dpiScale;
+        if (controlPanelWidth < minPanel / dpiScale) controlPanelWidth = minPanel / dpiScale;
+        if (controlPanelWidth > maxPanel / dpiScale) controlPanelWidth = maxPanel / dpiScale;
+    }
 
     ImGui::SameLine();
 
@@ -1449,22 +1475,76 @@ void AppGui::DrawProcessingTab()
     ImGui::Separator();
     ImGui::Text("Available Plugins");
 
-    // Available plugins list
-    ImGui::BeginChild("AvailablePlugins", ImVec2(0, 150*dpiScale), true);
-    for (int i = 0; i < (int)availablePluginNames.size(); i++)
+    // Plugins grouped by function. The order here defines the display order;
+    // any registered plugin not listed below is collected under "Other" so
+    // newly-added plugins never silently disappear from the list.
+    struct PluginCategory { const char* name; std::vector<std::string> keys; };
+    static const std::vector<PluginCategory> categories = {
+        { "Enhancement",           { "Clahe", "Curves", "WhiteBalance", "Denoise",
+                                     "TemporalDenoise", "Sharpen", "Dehaze" } },
+        { "Background Subtraction",{ "BackgroundDifference", "FrameDifference", "MovingAverage",
+                                     "BackgroundDiffMog", "BackgroundDiffMog2", "BackgroundDiffGmg",
+                                     "BackgroundDiffGsoc", "BackgroundDiffKnn" } },
+        { "Threshold & Segmentation", { "AdaptiveThreshold", "ColorSegmentation" } },
+        { "Morphology",            { "Erosion", "Dilation", "SafeErosion" } },
+        { "Blobs",                 { "ExtractBlobs", "GetBlobsAngles" } },
+        { "Markers & Patterns",    { "Aruco", "ArucoColor", "SimpleTags",
+                                     "PatternTracker", "YoloDetector" } },
+        { "Tracking",              { "TrackBlobs" } },
+        { "Zones",                 { "ZonesOfInterest" } },
+        { "Recording & Output",    { "RecordVideo", "RecordPixels", "TakeSnapshots",
+                                     "Stopwatch", "RemoteControl" } },
+    };
+
+    // renders one selectable entry for a plugin key (index into availablePluginNames)
+    auto drawEntry = [&](int i)
     {
         std::string displayName = CamelCaseToText(availablePluginNames[i]);
         bool isSelected = (selectedAvailablePlugin == i);
         if (ImGui::Selectable(displayName.c_str(), isSelected))
-        {
             selectedAvailablePlugin = i;
-        }
-        // Double-click to add
         if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
         {
             cv::FileNode fn;
             AddPipelinePlugin(availablePluginNames[i], fn);
         }
+    };
+
+    ImGui::BeginChild("AvailablePlugins", ImVec2(0, 220*dpiScale), true);
+
+    // track which plugins land in a category so we can gather the rest
+    std::vector<bool> categorized(availablePluginNames.size(), false);
+    for (const auto& cat : categories)
+    {
+        // gather the indices of this category's plugins that are registered
+        std::vector<int> members;
+        for (const auto& key : cat.keys)
+        {
+            for (int i = 0; i < (int)availablePluginNames.size(); i++)
+                if (availablePluginNames[i] == key)
+                {
+                    members.push_back(i);
+                    categorized[i] = true;
+                    break;
+                }
+        }
+        if (members.empty()) continue;
+        if (ImGui::CollapsingHeader(cat.name, ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            ImGui::Indent(ImGui::GetStyle().IndentSpacing * 0.5f);
+            for (int i : members) drawEntry(i);
+            ImGui::Unindent(ImGui::GetStyle().IndentSpacing * 0.5f);
+        }
+    }
+    // anything not placed in a category
+    std::vector<int> others;
+    for (int i = 0; i < (int)availablePluginNames.size(); i++)
+        if (!categorized[i]) others.push_back(i);
+    if (!others.empty() && ImGui::CollapsingHeader("Other", ImGuiTreeNodeFlags_DefaultOpen))
+    {
+        ImGui::Indent(ImGui::GetStyle().IndentSpacing * 0.5f);
+        for (int i : others) drawEntry(i);
+        ImGui::Unindent(ImGui::GetStyle().IndentSpacing * 0.5f);
     }
     ImGui::EndChild();
 
@@ -2452,6 +2532,17 @@ void AppGui::DrawPluginDialog(int index)
         pipelineHelpOpen.resize(pipelineDialogOpen.size(), false);
     bool helpOpen = (index < (int)pipelineHelpOpen.size()) ? (bool)pipelineHelpOpen[index] : false;
 
+    // Place new dialogs inside the work area, staggered so several don't stack
+    // exactly. Without this the saved/default position can land off-screen when
+    // the main window is small (not maximized), leaving the dialog invisible.
+    ImGuiViewport* dvp = ImGui::GetMainViewport();
+    ImVec2 workMin = dvp->WorkPos;
+    ImVec2 workMax = ImVec2(dvp->WorkPos.x + dvp->WorkSize.x,
+                            dvp->WorkPos.y + dvp->WorkSize.y);
+    float stagger = 32.0f * dpiScale * (index % 6);
+    ImGui::SetNextWindowPos(ImVec2(workMin.x + 80*dpiScale + stagger,
+                                   workMin.y + 80*dpiScale + stagger),
+                            ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(ImVec2(400*dpiScale, 350*dpiScale), ImGuiCond_FirstUseEver);
     if (!ImGui::Begin(title.c_str(), &open))
     {
@@ -2460,6 +2551,20 @@ void AppGui::DrawPluginDialog(int index)
         return;
     }
     pipelineDialogOpen[index] = open;
+
+    // Clamp the dialog back into the work area if it (or the main window) has
+    // moved/shrunk so part of it would be off-screen — keeps it reachable.
+    {
+        ImVec2 pos = ImGui::GetWindowPos();
+        ImVec2 sz  = ImGui::GetWindowSize();
+        ImVec2 cl  = pos;
+        if (cl.x + sz.x > workMax.x) cl.x = workMax.x - sz.x;
+        if (cl.y + sz.y > workMax.y) cl.y = workMax.y - sz.y;
+        if (cl.x < workMin.x) cl.x = workMin.x;
+        if (cl.y < workMin.y) cl.y = workMin.y;
+        if (cl.x != pos.x || cl.y != pos.y)
+            ImGui::SetWindowPos(cl);
+    }
 
     // help toggle button, right-aligned at the top of the dialog. Shows "?"
     // when closed, and a fold-away arrow when the help panel is open.
@@ -4432,6 +4537,7 @@ void AppGui::RequestQuit()
     if (showQuitConfirm) return;
     showQuitConfirm = true;
     quitConfirmJustOpened = true;
+    quitConfirmFocus = 1;  // default focus on Cancel
 }
 
 void AppGui::DrawQuitConfirm()
@@ -4452,22 +4558,56 @@ void AppGui::DrawQuitConfirm()
         ImGui::TextDisabled("Any unsaved changes will be lost.");
         ImGui::Spacing();
 
-        if (ImGui::Button("Quit", ImVec2(120 * dpiScale, 0)))
+        // Keyboard is handled manually here (global ImGui nav is off so it does
+        // not swallow playback shortcuts). Tab / Left / Right move between the
+        // two buttons, Enter activates the focused one, Escape cancels.
+        bool doQuit = false, doCancel = false;
+        if (!quitConfirmJustOpened)
+        {
+            if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow) ||
+                ImGui::IsKeyPressed(ImGuiKey_RightArrow) ||
+                ImGui::IsKeyPressed(ImGuiKey_Tab))
+                quitConfirmFocus ^= 1;
+            if (ImGui::IsKeyPressed(ImGuiKey_Enter) ||
+                ImGui::IsKeyPressed(ImGuiKey_KeypadEnter))
+            {
+                if (quitConfirmFocus == 0) doQuit = true; else doCancel = true;
+            }
+            if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+                doCancel = true;
+        }
+
+        // draw a button, highlighting it when it holds the keyboard focus
+        auto focusButton = [&](const char* label, int which) -> bool
+        {
+            bool focused = (quitConfirmFocus == which);
+            if (focused)
+            {
+                ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonHovered));
+                ImGui::PushStyleColor(ImGuiCol_Border, ImGui::GetStyleColorVec4(ImGuiCol_NavHighlight));
+                ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f * dpiScale);
+            }
+            bool clicked = ImGui::Button(label, ImVec2(120 * dpiScale, 0));
+            if (ImGui::IsItemHovered()) quitConfirmFocus = which;
+            if (focused)
+            {
+                ImGui::PopStyleVar();
+                ImGui::PopStyleColor(2);
+            }
+            return clicked;
+        };
+
+        if (focusButton("Quit", 0))   doQuit = true;
+        ImGui::SameLine();
+        if (focusButton("Cancel", 1)) doCancel = true;
+
+        if (doQuit)
         {
             running = false;
             showQuitConfirm = false;
             ImGui::CloseCurrentPopup();
         }
-        ImGui::SameLine();
-        if (ImGui::Button("Cancel", ImVec2(120 * dpiScale, 0)))
-        {
-            showQuitConfirm = false;
-            ImGui::CloseCurrentPopup();
-        }
-
-        // Escape cancels — but not on the frame the modal opened (that same
-        // Escape press is what asked to quit)
-        if (!quitConfirmJustOpened && ImGui::IsKeyPressed(ImGuiKey_Escape))
+        else if (doCancel)
         {
             showQuitConfirm = false;
             ImGui::CloseCurrentPopup();
