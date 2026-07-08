@@ -37,8 +37,14 @@ TemporalDenoise::~TemporalDenoise()
 
 void TemporalDenoise::Reset()
 {
-    buffer.clear();
     lastResult.release();
+}
+
+int TemporalDenoise::PrefetchAhead()
+{
+    int n = windowSize;
+    if (n < 3) n = 3;
+    return n / 2;   // radius of future frames needed
 }
 
 void TemporalDenoise::Apply()
@@ -49,29 +55,26 @@ void TemporalDenoise::Apply()
     int n = windowSize;
     if (n < 3) n = 3;
     if ((n % 2) == 0) n += 1;
+    int r = n / 2;
 
     bool staticFrame = pipeline->parent->staticFrame;
 
-    // buffer a copy of each new (non-static) frame
-    if (!staticFrame || buffer.empty())
+    // gather a window centred on the current frame from the engine's shared
+    // prefetch buffer (past on one side, future on the other)
+    std::vector<Mat> imgs;
+    imgs.reserve(n);
+    for (int k = -r; k <= r; k++)
     {
-	buffer.push_back(pipeline->frame.clone());
-	while ((int)buffer.size() > n)
-	    buffer.pop_front();
+	Mat m = pipeline->parent->GetBufferedImage(k);
+	if (m.empty()) return; // buffer not primed yet: passthrough
+	imgs.push_back(m);
     }
 
-    // not enough frames yet: leave the frame untouched (passthrough)
-    if ((int)buffer.size() < n)
-	return;
-
-    // denoise the centre frame of the window using both sides; recompute only
-    // on a real new frame, reuse the last result while paused
+    // denoise the centre frame (index r); recompute only on a real new frame,
+    // reuse the last result while paused
     if (!staticFrame || lastResult.empty())
-    {
-	vector<Mat> imgs(buffer.begin(), buffer.end());
-	fastNlMeansDenoisingColoredMulti(imgs, lastResult, n / 2, n,
+	fastNlMeansDenoisingColoredMulti(imgs, lastResult, r, n,
 					 strength, colorStrength, 7, 21);
-    }
 
     if (!lastResult.empty())
 	lastResult.copyTo(pipeline->frame);

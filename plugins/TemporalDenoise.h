@@ -25,8 +25,6 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/photo.hpp>
 
-#include <deque>
-
 // Temporal (multi-frame) denoising with OpenCV's fastNlMeansDenoisingColored-
 // Multi. Keeps a rolling buffer of recent frames and denoises the CENTRE frame
 // of that window, using the frames on both sides (past and, relative to that
@@ -43,13 +41,13 @@ public:
     float strength = 3.0f;     // luminance filter strength (h)
     float colorStrength = 3.0f;
 
-    std::deque<cv::Mat> buffer; // recent frames (clones)
     cv::Mat lastResult;
 
     TemporalDenoise();
     ~TemporalDenoise();
     void Apply();
     void Reset();
+    int PrefetchAhead();       // ask the engine to prefetch (window-1)/2 frames
     void LoadXML (cv::FileNode& fn);
     void SaveXML (cv::FileStorage& fs);
 };
