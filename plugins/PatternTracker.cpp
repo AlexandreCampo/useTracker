@@ -48,6 +48,8 @@ void PatternTracker::Reset()
     pendingSeeds.clear();
     nextId = 0;
     backendChanged = false;
+    ccCount = 0;
+    ccLabels.release();
 }
 
 void PatternTracker::SetBackend(int b)
@@ -90,6 +92,86 @@ bool PatternTracker::NearExistingTarget (Point2f p, float radius)
     return false;
 }
 
+// label the incoming foreground mask into connected components so target boxes
+// can be taken from the real blob pixels rather than a fixed square
+void PatternTracker::ComputeComponents (const Mat& mask)
+{
+    if (mask.empty())
+    {
+	ccCount = 0;
+	ccLabels.release();
+	return;
+    }
+    Mat bin;
+    if (mask.type() != CV_8U) mask.convertTo(bin, CV_8U);
+    else bin = mask;
+    ccCount = connectedComponentsWithStats(bin, ccLabels, ccStats, ccCentroids, 8, CV_32S);
+}
+
+// find the mask blob under p; if p is on background, search outward in rings up
+// to searchRadius for the nearest foreground pixel. Returns its bounding box.
+bool PatternTracker::ComponentBoxNear (Point p, int searchRadius,
+				       Rect& outBox, Point2f& outCentroid)
+{
+    if (ccCount <= 1 || ccLabels.empty()) return false;
+    const int W = ccLabels.cols, H = ccLabels.rows;
+    auto labelAt = [&](int x, int y) -> int
+    {
+	if (x < 0 || y < 0 || x >= W || y >= H) return 0;
+	return ccLabels.at<int>(y, x);
+    };
+
+    int lab = labelAt(p.x, p.y);
+    for (int r = 1; lab <= 0 && r <= searchRadius; r++)
+    {
+	// scan the square ring at radius r
+	for (int dx = -r; dx <= r && lab <= 0; dx++)
+	{
+	    int l1 = labelAt(p.x + dx, p.y - r);
+	    if (l1 > 0) { lab = l1; break; }
+	    int l2 = labelAt(p.x + dx, p.y + r);
+	    if (l2 > 0) { lab = l2; break; }
+	}
+	for (int dy = -r + 1; dy <= r - 1 && lab <= 0; dy++)
+	{
+	    int l1 = labelAt(p.x - r, p.y + dy);
+	    if (l1 > 0) { lab = l1; break; }
+	    int l2 = labelAt(p.x + r, p.y + dy);
+	    if (l2 > 0) { lab = l2; break; }
+	}
+    }
+    if (lab <= 0) return false;
+
+    outBox = Rect(ccStats.at<int>(lab, CC_STAT_LEFT),
+		  ccStats.at<int>(lab, CC_STAT_TOP),
+		  ccStats.at<int>(lab, CC_STAT_WIDTH),
+		  ccStats.at<int>(lab, CC_STAT_HEIGHT));
+    outCentroid = Point2f((float)ccCentroids.at<double>(lab, 0),
+			  (float)ccCentroids.at<double>(lab, 1));
+    return true;
+}
+
+// grow/shrink the reported box towards the underlying blob, rate-limited so a
+// flickering blob does not make the box jump. When no blob is found this frame
+// (occlusion / flicker) the last size is kept and the box just follows pos.
+void PatternTracker::RefitBoxToMask (Target& t)
+{
+    Rect blobBox;
+    Point2f blobCentroid;
+    if (ComponentBoxNear(Point((int)t.pos.x, (int)t.pos.y), maxDistance,
+			 blobBox, blobCentroid))
+    {
+	t.boxSizeF.width  += sizeAdaptRate * (blobBox.width  - t.boxSizeF.width);
+	t.boxSizeF.height += sizeAdaptRate * (blobBox.height - t.boxSizeF.height);
+    }
+
+    float w = max(8.0f, t.boxSizeF.width);
+    float h = max(8.0f, t.boxSizeF.height);
+    Rect b((int)round(t.pos.x - w / 2.0f), (int)round(t.pos.y - h / 2.0f),
+	   (int)round(w), (int)round(h));
+    t.box = b & Rect(0, 0, pipeline->width, pipeline->height);
+}
+
 void PatternTracker::SeedTarget (const Rect& box, const Mat& frame)
 {
     if ((int)targets.size() >= maxTargets) return;
@@ -99,6 +181,7 @@ void PatternTracker::SeedTarget (const Rect& box, const Mat& frame)
     t.id = nextId++;
     t.active = true;
     t.box = box;
+    t.boxSizeF = Size2f((float)box.width, (float)box.height);
     t.pos = Point2f(box.x + box.width / 2.0f, box.y + box.height / 2.0f);
     t.velocity = Point2f(0, 0);
     t.score = 1.0f;
@@ -221,6 +304,10 @@ void PatternTracker::Apply()
     if (detectionMask.size() != frame.size())
 	detectionMask = Mat::zeros(frame.rows, frame.cols, CV_8U);
 
+    // label the incoming foreground mask so boxes can be taken from the blobs
+    if (fitToMask)
+	ComputeComponents(pipeline->marked);
+
     // rebuild backend state for existing targets if the backend was switched
     if (backendChanged)
     {
@@ -244,23 +331,52 @@ void PatternTracker::Apply()
 	backendChanged = false;
     }
 
-    // 1. manual seeds queued from the GUI (processed even while paused)
+    // 1. manual seeds queued from the GUI (processed even while paused). The
+    // box is taken from the mask blob under the click so it is tight and
+    // correctly shaped; if the click misses every blob, fall back to a square.
     for (auto& p : pendingSeeds)
-	SeedTarget(BoxAround(Point2f(p.x, p.y), templateSize, frame), frame);
+    {
+	Rect blobBox;
+	Point2f blobCentroid;
+	if (fitToMask && ComponentBoxNear(p, maxDistance, blobBox, blobCentroid))
+	    SeedTarget(blobBox, frame);
+	else
+	    SeedTarget(BoxAround(Point2f(p.x, p.y), templateSize, frame), frame);
+    }
     pendingSeeds.clear();
 
-    // 2. automatic seeds from detected blobs (produced by ExtractBlobs upstream)
-    if (seedFromDetection)
+    // 2. automatic seeds from the foreground mask blobs
+    if (seedFromDetection && fitToMask)
     {
+	// one target per sufficiently large mask blob not already tracked
+	const int frameArea = pipeline->width * pipeline->height;
+	for (int lab = 1; lab < ccCount; lab++)
+	{
+	    int area = ccStats.at<int>(lab, CC_STAT_AREA);
+	    if (area < minBlobSeedSize) continue;
+	    // skip a blob covering most of the frame: this is not a target but an
+	    // unsettled background (e.g. before a subtractor has learned the scene)
+	    if (area > frameArea / 2) continue;
+	    Point2f cen((float)ccCentroids.at<double>(lab, 0),
+			(float)ccCentroids.at<double>(lab, 1));
+	    if (NearExistingTarget(cen, (float)maxDistance)) continue;
+	    Rect box(ccStats.at<int>(lab, CC_STAT_LEFT),
+		     ccStats.at<int>(lab, CC_STAT_TOP),
+		     ccStats.at<int>(lab, CC_STAT_WIDTH),
+		     ccStats.at<int>(lab, CC_STAT_HEIGHT));
+	    SeedTarget(box, frame);
+	}
+    }
+    else if (seedFromDetection)
+    {
+	// legacy path (fit-to-mask off): square box sized from the blob area
 	vector<Blob>& blobs = pipeline->parent->blobs;
 	for (auto& b : blobs)
 	{
 	    if (!b.available) continue;
 	    if ((int)b.size < minBlobSeedSize) continue;
 	    Point2f bp(b.x, b.y);
-	    // do not seed a blob that is already covered by a tracked target
 	    if (NearExistingTarget(bp, (float)maxDistance)) continue;
-	    // derive a box side from the blob area, with margin
 	    int side = (int)round(sqrt((double)b.size) * 1.5);
 	    side = max(templateSize / 2, min(side, 256));
 	    SeedTarget(BoxAround(bp, side, frame), frame);
@@ -291,6 +407,11 @@ void PatternTracker::Apply()
 		if (usePrediction) t.pos += t.velocity;
 		if (t.lostFrames > maxLostFrames) t.active = false;
 	    }
+
+	    // refit the reported box to the underlying mask blob (rate-limited).
+	    // On a frame with no blob it keeps the last size and follows pos.
+	    if (fitToMask && t.active)
+		RefitBoxToMask(t);
 
 	    // drop a target whose center has left the frame
 	    if (t.pos.x < 0 || t.pos.x >= frame.cols ||
@@ -384,6 +505,8 @@ void PatternTracker::LoadXML (FileNode& fn)
 	if (!fn["Backend"].empty()) backend = (int)fn["Backend"];
 	if (!fn["MaxDistance"].empty()) maxDistance = (int)fn["MaxDistance"];
 	if (!fn["TemplateSize"].empty()) templateSize = (int)fn["TemplateSize"];
+	if (!fn["FitToMask"].empty()) fitToMask = (int)fn["FitToMask"];
+	if (!fn["SizeAdaptRate"].empty()) sizeAdaptRate = (float)fn["SizeAdaptRate"];
 	if (!fn["MatchThreshold"].empty()) matchThreshold = (float)fn["MatchThreshold"];
 	if (!fn["UpdateThreshold"].empty()) updateThreshold = (float)fn["UpdateThreshold"];
 	if (!fn["UpdateRate"].empty()) updateRate = (float)fn["UpdateRate"];
@@ -410,6 +533,8 @@ void PatternTracker::SaveXML (FileStorage& fs)
     fs << "Backend" << backend;
     fs << "MaxDistance" << maxDistance;
     fs << "TemplateSize" << templateSize;
+    fs << "FitToMask" << fitToMask;
+    fs << "SizeAdaptRate" << sizeAdaptRate;
     fs << "MatchThreshold" << matchThreshold;
     fs << "UpdateThreshold" << updateThreshold;
     fs << "UpdateRate" << updateRate;

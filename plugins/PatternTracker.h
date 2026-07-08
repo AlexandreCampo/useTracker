@@ -52,6 +52,7 @@ public:
 	int id = 0;
 	bool active = false;
 	cv::Rect box;             // current bounding box, frame coordinates
+	cv::Size2f boxSizeF;      // smoothed box size (float, rate-limited to the mask blob)
 	cv::Point2f pos;          // box center
 	cv::Point2f velocity;     // per frame, for search prediction
 	cv::Mat templ;            // stored pattern (TEMPLATE backend)
@@ -64,7 +65,9 @@ public:
     // parameters (saved in the settings file)
     int backend = TEMPLATE;
     int maxDistance = 40;          // search radius around predicted position (px)
-    int templateSize = 48;         // box side for manually seeded targets (px)
+    int templateSize = 48;         // fallback box side when no blob is under a click (px)
+    bool fitToMask = true;         // derive the box from the foreground mask blob
+    float sizeAdaptRate = 0.20f;   // how fast the box size follows the blob (0=frozen,1=instant)
     float matchThreshold = 0.40f;  // below this the target is considered not found
     float updateThreshold = 0.60f; // above this the template is adapted
     float updateRate = 0.10f;      // template adaptation blend factor
@@ -84,6 +87,11 @@ public:
     std::vector<cv::Point> pendingSeeds; // manual seeds queued from the GUI
     cv::Mat detectionMask;
     std::ofstream outputStream;
+
+    // connected components of the incoming foreground mask, recomputed each
+    // frame; used to derive/refit target boxes from the actual blob pixels
+    cv::Mat ccLabels, ccStats, ccCentroids;
+    int ccCount = 0;
 
     PatternTracker();
     ~PatternTracker();
@@ -108,6 +116,14 @@ private:
     bool TrackTemplate (Target& t, const cv::Mat& frame);
     bool TrackCSRT (Target& t, const cv::Mat& frame);
     bool NearExistingTarget (cv::Point2f p, float radius);
+
+    // mask-blob helpers
+    void ComputeComponents (const cv::Mat& mask);
+    // bounding box of the mask blob at (or nearest, within searchRadius) p
+    bool ComponentBoxNear (cv::Point p, int searchRadius,
+			   cv::Rect& outBox, cv::Point2f& outCentroid);
+    // resize the target box towards its underlying blob, rate-limited
+    void RefitBoxToMask (Target& t);
 };
 
 #endif

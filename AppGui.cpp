@@ -3241,8 +3241,9 @@ void AppGui::DrawPluginDialog(int index)
     else if (PatternTracker* p = dynamic_cast<PatternTracker*>(pp))
     {
         ImGui::TextWrapped("Follows a target by matching its appearance in a "
-                           "local window each frame. Place it after Extract "
-                           "Blobs if you want automatic seeding.");
+                           "local window each frame. The bounding box is taken "
+                           "from the foreground mask blob (needs a background "
+                           "subtractor upstream) and adapts to its size over time.");
         ImGui::Spacing();
 
         // seed by clicking on the video
@@ -3277,11 +3278,30 @@ void AppGui::DrawPluginDialog(int index)
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Max pixels the target may move between frames");
 
-        if (ImGui::InputInt("Template Size (px)", &p->templateSize))
+        changed |= ImGui::Checkbox("Fit box to mask blob", &p->fitToMask);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Take the box from the foreground blob instead of a\n"
+                              "fixed square. Seeds (click or auto) and the per-frame\n"
+                              "box are derived from the mask pixels.");
+        if (p->fitToMask)
+        {
+            changed |= ImGui::SliderFloat("Size Adapt Rate", &p->sizeAdaptRate, 0.0f, 1.0f, "%.2f");
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("How fast the box grows/shrinks toward the blob.\n"
+                                  "0 = frozen size, 1 = snap instantly. Low values\n"
+                                  "keep the box steady when the blob flickers.");
+        }
+
+        if (ImGui::InputInt(p->fitToMask ? "Fallback Size (px)" : "Template Size (px)",
+                            &p->templateSize))
         {
             if (p->templateSize < 8) p->templateSize = 8;
             changed = true;
         }
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip(p->fitToMask
+                ? "Square box size used only when a click lands off every blob"
+                : "Box side for seeded targets");
 
         if (p->backend == PatternTracker::TEMPLATE)
         {
