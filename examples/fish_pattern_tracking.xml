@@ -1,22 +1,41 @@
 <?xml version="1.0"?>
 <!--
-  Example useTracker settings: detect and track a faint moving target
-  (e.g. a fish in turbid water) with the newer plugins.
+  Example useTracker settings: detect and track moving targets (e.g. fish in
+  turbid water) and fit each target box to the real shape of its blob.
 
   Pipeline:
     1. Background Diff Knn  - foreground mask from a KNN background model
     2. Erosion             - remove speckle noise from the mask
-    3. Extract Blobs       - connected components above a size threshold
-    4. Pattern Tracker     - follow each detected blob by its appearance
+    3. Pattern Tracker     - follow each blob by appearance; the bounding box
+                             is taken from the mask blob (Fit box to mask) and
+                             adapts to its size over time (rate-limited)
 
-  Load it with  File -> Load Settings...  then open a video with
-  File -> Open Source...  (or start with  -i yourvideo.mp4).
+  How to run:
+    build/useTracker -p examples/fish_pattern_tracking.xml -i yourvideo.mp4
+  or, in the GUI:  File -> Load Settings...  then  File -> Open Source...
 
-  Tips:
-    - Raise ExtractBlobs MinSize to reject small noise blobs.
-    - In Pattern Tracker you can also tick "Click on video to add targets"
-      and click the target directly instead of relying on auto-seeding.
-    - Output CSV files are written to the current working directory.
+  What to look for:
+    - Each target gets an orange box whose shape/size follows its blob, not a
+      fixed square, and does not snap smaller when the blob flickers.
+    - Targets are auto-seeded from the mask (Seed from detected blobs). You can
+      also tick "Click on video to add targets" in the Pattern Tracker dialog
+      and click a target directly.
+    - A CSV with time/frame/id/x/y/width/height/score is written to tracks.csv
+      in the working directory.
+
+  Tuning (Pattern Tracker dialog):
+    - Threshold (Background Diff Knn): lower = more sensitive / more noise.
+      400 is a good start; drop it if faint targets are missed.
+    - Min Blob Size to Seed: raise to ignore small noise, lower to catch small
+      targets. Should roughly match the smallest target's pixel area.
+    - Size Adapt Rate: 0 = frozen box size, 1 = snap to the blob instantly.
+      0.2 keeps the box steady through brief flicker while still following
+      real size changes.
+    - Search Distance: max pixels a target may move between frames; raise for
+      fast targets.
+    - Match Threshold: lower if targets are dropped too easily; raise if boxes
+      stick to the background.
+    - Switch Backend to CSRT for targets that change scale or rotate a lot.
 -->
 <opencv_storage>
 <Configuration>
@@ -37,8 +56,8 @@
     <Plugin_0>
       <BackgroundDiffKnn>
         <Active>1</Active>
-        <History>300</History>
-        <Threshold>100.</Threshold>
+        <History>250</History>
+        <Threshold>400.</Threshold>
         <ShadowDetection>0</ShadowDetection>
         <LearningRate>-1.</LearningRate>
         <RestrictToZone>0</RestrictToZone>
@@ -46,33 +65,27 @@
     <Plugin_1>
       <Erosion>
         <Active>1</Active>
-        <Size>2</Size></Erosion></Plugin_1>
+        <Size>1</Size></Erosion></Plugin_1>
     <Plugin_2>
-      <ExtractBlobs>
-        <Active>1</Active>
-        <Output>0</Output>
-        <MinSize>400</MinSize>
-        <MaxSize>50000</MaxSize>
-        <RecordLabels>0</RecordLabels>
-        <OutputFilename>"blobs.csv"</OutputFilename></ExtractBlobs></Plugin_2>
-    <Plugin_3>
       <PatternTracker>
         <Active>1</Active>
         <Output>1</Output>
         <Backend>0</Backend>
-        <MaxDistance>60</MaxDistance>
-        <TemplateSize>64</TemplateSize>
-        <MatchThreshold>3.5000000000000000e-01</MatchThreshold>
+        <MaxDistance>50</MaxDistance>
+        <TemplateSize>48</TemplateSize>
+        <FitToMask>1</FitToMask>
+        <SizeAdaptRate>2.0000000000000001e-01</SizeAdaptRate>
+        <MatchThreshold>3.0000000000000000e-01</MatchThreshold>
         <UpdateThreshold>6.0000000000000000e-01</UpdateThreshold>
         <UpdateRate>1.0000000000000001e-01</UpdateRate>
-        <MaxLostFrames>20</MaxLostFrames>
-        <MaxTargets>10</MaxTargets>
+        <MaxLostFrames>15</MaxLostFrames>
+        <MaxTargets>20</MaxTargets>
         <UsePrediction>1</UsePrediction>
         <TrailLength>30</TrailLength>
         <SeedFromDetection>1</SeedFromDetection>
-        <MinBlobSeedSize>400</MinBlobSeedSize>
+        <MinBlobSeedSize>200</MinBlobSeedSize>
         <Additive>0</Additive>
-        <OutputFilename>"tracks.csv"</OutputFilename></PatternTracker></Plugin_3>
+        <OutputFilename>"tracks.csv"</OutputFilename></PatternTracker></Plugin_2>
   </Pipeline>
 </Configuration>
 </opencv_storage>
