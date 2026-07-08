@@ -661,6 +661,13 @@ void AppGui::UpdateEngine()
                 else
                 {
                     pipelineDirty = true;
+                    // loop playback: jump back to the loop start once the
+                    // playhead reaches the loop end
+                    if (loopEnabled && loopStart >= 0 && loopEnd > loopStart &&
+                        ipEngine.GetPresentTime() >= loopEnd)
+                    {
+                        ipEngine.SeekTime(loopStart);
+                    }
                 }
             }
         }
@@ -977,22 +984,25 @@ void AppGui::DrawToolbar()
     ImGui::Spacing();
     ImGui::SameLine();
 
-    // Video slider
-    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 250*dpiScale);
-    if (ImGui::SliderFloat("##VideoSlider", &videoSliderPos, 0.0f, 1.0f, ""))
-    {
-        sliderMoving = true;
-        if (ipEngine.capture->GetFrameCount() > 0)
-        {
-            double totalTime = (double)ipEngine.capture->GetFrameCount() / ipEngine.capture->GetFPS();
-            ipEngine.SeekTime(videoSliderPos * totalTime);
-            pipelineDirty = true;
-        }
-    }
-    if (ImGui::IsItemDeactivatedAfterEdit() || (!ImGui::IsItemActive() && sliderMoving))
-    {
-        sliderMoving = false;
-    }
+    // Video seek bar with hover read-out and timeline markers
+    DrawSeekBar(ImGui::GetContentRegionAvail().x - 330*dpiScale);
+
+    ImGui::SameLine();
+
+    // Marker buttons (bookmark / loop point at the current playhead) + loop toggle
+    if (ImGui::Button("Mark"))
+        bookmarks.push_back(ipEngine.GetPresentTime());
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Add a bookmark at the current frame (or Ctrl+click the bar)");
+    ImGui::SameLine();
+    if (ImGui::Button("Loop+"))
+        AddLoopPoint(ipEngine.GetPresentTime());
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Set the loop start, then end (or Shift+click the bar)");
+    ImGui::SameLine();
+    ImGui::Checkbox("Loop", &loopEnabled);
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Loop playback between the two loop markers");
 
     ImGui::SameLine();
 
@@ -1288,6 +1298,121 @@ void AppGui::DrawRulerOverlay(float imgMinX, float imgMinY, float imgSizeX, floa
     {
         if (rulerAnchored) rulerAnchored = false;
         else if (!rulerMeasurements.empty()) rulerMeasurements.pop_back();
+    }
+}
+
+void AppGui::AddLoopPoint(double t)
+{
+    if (loopStart < 0)      loopStart = t;                 // first point = start
+    else if (loopEnd < 0)                                   // second = end
+    {
+        loopEnd = t;
+        if (loopEnd < loopStart) std::swap(loopStart, loopEnd);
+    }
+    else { loopStart = t; loopEnd = -1.0; }                 // restart a fresh range
+}
+
+// Custom video seek bar: shows a hover read-out (frame + time) so a precise
+// time can be found, draws timeline markers (cyan bookmarks, orange loop
+// region), and supports Ctrl+click to bookmark and Shift+click to set loop
+// points. Plain click/drag seeks; right-click removes the nearest marker.
+void AppGui::DrawSeekBar(float width)
+{
+    if (!ipEngine.capture) return;
+    double fps = ipEngine.capture->GetFPS();
+    long fcount = ipEngine.capture->GetFrameCount();
+    double totalTime = (fps > 0 && fcount > 0) ? (double)fcount / fps : 0.0;
+
+    if (width < 60 * dpiScale) width = 60 * dpiScale;
+    float h = ImGui::GetFrameHeight();
+    ImVec2 p0 = ImGui::GetCursorScreenPos();
+    ImGui::InvisibleButton("##seekbar", ImVec2(width, h));
+    bool hovered = ImGui::IsItemHovered();
+    bool active  = ImGui::IsItemActive();
+    ImGuiIO& io = ImGui::GetIO();
+
+    float x0 = p0.x, x1 = p0.x + width;
+    float ymid = p0.y + h * 0.5f;
+    float trackTop = ymid - 3 * dpiScale, trackBot = ymid + 3 * dpiScale;
+
+    auto timeToX = [&](double t){ return x0 + (totalTime > 0 ? (float)(t / totalTime) : 0.f) * width; };
+    auto xToTime = [&](float x){ float u = (x - x0) / width; u = std::max(0.f, std::min(1.f, u)); return totalTime * u; };
+    auto fmtTime = [&](char* buf, size_t n, double t){
+        long f = (fps > 0) ? (long)(t * fps + 0.5) : 0;
+        int mm = (int)(t / 60.0), ss = (int)t % 60, ms = (int)((t - (long)t) * 1000);
+        snprintf(buf, n, "frame %ld   %02d:%02d.%03d", f, mm, ss, ms);
+    };
+
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    ImU32 colTrack = ImGui::GetColorU32(ImGuiCol_FrameBg);
+    ImU32 colFill  = ImGui::GetColorU32(ImGuiCol_SliderGrab);
+    ImU32 colHead  = ImGui::GetColorU32(ImGuiCol_SliderGrabActive);
+    ImU32 colBook  = IM_COL32(80, 200, 255, 255);   // bookmarks: cyan
+    ImU32 colLoop  = IM_COL32(255, 150, 40, 255);    // loop markers: orange
+
+    dl->AddRectFilled(ImVec2(x0, trackTop), ImVec2(x1, trackBot), colTrack, 2 * dpiScale);
+
+    // loop region shading
+    if (loopStart >= 0 && loopEnd > loopStart)
+        dl->AddRectFilled(ImVec2(timeToX(loopStart), p0.y), ImVec2(timeToX(loopEnd), p0.y + h),
+                          IM_COL32(255, 150, 40, loopEnabled ? 70 : 30));
+
+    // progress fill up to the playhead
+    float px = x0 + videoSliderPos * width;
+    dl->AddRectFilled(ImVec2(x0, trackTop), ImVec2(px, trackBot), colFill, 2 * dpiScale);
+
+    // bookmark ticks
+    for (double t : bookmarks)
+    {
+        float mx = timeToX(t);
+        dl->AddLine(ImVec2(mx, p0.y), ImVec2(mx, p0.y + h), colBook, 2 * dpiScale);
+    }
+    // loop-point ticks
+    if (loopStart >= 0) { float mx = timeToX(loopStart); dl->AddLine(ImVec2(mx, p0.y), ImVec2(mx, p0.y + h), colLoop, 2 * dpiScale); }
+    if (loopEnd   >= 0) { float mx = timeToX(loopEnd);   dl->AddLine(ImVec2(mx, p0.y), ImVec2(mx, p0.y + h), colLoop, 2 * dpiScale); }
+
+    // playhead
+    dl->AddCircleFilled(ImVec2(px, ymid), 5 * dpiScale, colHead);
+
+    auto seekToX = [&](float x){
+        float u = (x - x0) / width; u = std::max(0.f, std::min(1.f, u));
+        videoSliderPos = u; sliderMoving = true;
+        if (fcount > 0) { ipEngine.SeekTime(u * totalTime); pipelineDirty = true; }
+    };
+
+    if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+    {
+        double t = xToTime(io.MousePos.x);
+        if (io.KeyCtrl)       bookmarks.push_back(t);
+        else if (io.KeyShift) AddLoopPoint(t);
+        else                  seekToX(io.MousePos.x);
+    }
+    if (active && !io.KeyCtrl && !io.KeyShift && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+        seekToX(io.MousePos.x);
+    if (sliderMoving && !ImGui::IsMouseDown(ImGuiMouseButton_Left))
+        sliderMoving = false;
+
+    // right-click removes the nearest marker
+    if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+    {
+        float mxm = io.MousePos.x, best = 8 * dpiScale;
+        int which = 0, bi = -1;   // which: 1=loopStart, 2=loopEnd, 3=bookmark
+        for (int i = 0; i < (int)bookmarks.size(); i++)
+        { float d = std::fabs(timeToX(bookmarks[i]) - mxm); if (d < best) { best = d; which = 3; bi = i; } }
+        if (loopStart >= 0) { float d = std::fabs(timeToX(loopStart) - mxm); if (d < best) { best = d; which = 1; } }
+        if (loopEnd   >= 0) { float d = std::fabs(timeToX(loopEnd)   - mxm); if (d < best) { best = d; which = 2; } }
+        if (which == 1) loopStart = -1.0;
+        else if (which == 2) loopEnd = -1.0;
+        else if (which == 3 && bi >= 0) bookmarks.erase(bookmarks.begin() + bi);
+    }
+
+    // hover read-out: frame number + time, plus a guide line at the cursor
+    if (hovered)
+    {
+        char buf[64]; fmtTime(buf, sizeof(buf), xToTime(io.MousePos.x));
+        ImGui::SetTooltip("%s", buf);
+        dl->AddLine(ImVec2(io.MousePos.x, p0.y), ImVec2(io.MousePos.x, p0.y + h),
+                    IM_COL32(255, 255, 255, 90), 1.0f);
     }
 }
 

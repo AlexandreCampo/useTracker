@@ -87,6 +87,13 @@ private:
     struct Measurement { cv::Point2f p1, p2; int shape; };
     std::vector<Measurement> rulerMeasurements;
 
+    // timeline markers: bookmarks (reference points) and a loop region
+    std::vector<double> bookmarks;     // times in seconds
+    double loopStart = -1.0;           // loop region start (s), -1 = unset
+    double loopEnd   = -1.0;           // loop region end (s), -1 = unset
+    bool   loopEnabled = false;        // loop playback between loopStart/loopEnd
+    void AddLoopPoint(double t);       // sets start, then end, then restarts
+
     // Video texture
     GLuint videoTexture = 0;
     int texWidth = 0;
@@ -190,6 +197,7 @@ private:
     void DrawDownscaleControl();
     void DottedScaleSlider();
     void DrawRulerOverlay(float imgMinX, float imgMinY, float imgSizeX, float imgSizeY);
+    void DrawSeekBar(float width);
     void DrawVideoDisplay();
     void DrawTabs();
     void DrawProcessingTab();
