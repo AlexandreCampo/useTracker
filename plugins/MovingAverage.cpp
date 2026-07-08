@@ -102,6 +102,7 @@ void MovingAverage::LoadXML (FileNode& fn)
 	active = (int)fn["Active"];
 	length = (int)fn["Length"];
 	threshold = (int)fn["Threshold"];
+	if (!fn["Centered"].empty()) centered = (int)fn["Centered"];
     }
 }
 
@@ -110,4 +111,5 @@ void MovingAverage::SaveXML (FileStorage& fs)
     fs << "Active" << active;
     fs << "Length" << (int)length;
     fs << "Threshold" << (int)threshold;
+    fs << "Centered" << centered;
 }

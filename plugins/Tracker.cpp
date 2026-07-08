@@ -88,7 +88,7 @@ void Tracker::Apply()
 void Tracker::Replay()
 {
     // locate data
-    unsigned int currentFrame = pipeline->parent->capture->GetFrameNumber();
+    unsigned int currentFrame = pipeline->parent->GetPresentFrameNumber();
 
     // TODO DEBUG
 //    cout << "Tracker : current frame=" << currentFrame << " h-start=" << historyStartFrame << " h-size=" << history.size() << endl;
@@ -145,7 +145,7 @@ void Tracker::Replay()
 void Tracker::Track()
 {
     vector<Blob>& blobs = pipeline->parent->blobs;
-    int frameNumber = pipeline->parent->capture->GetFrameNumber();
+    int frameNumber = pipeline->parent->GetPresentFrameNumber();
 
     // remember previous positions
     previousEntities = entities;
@@ -298,11 +298,11 @@ void Tracker::Track()
 
 
     // save to history
-//    cout << "Tracker : " << "saved data from frame " << pipeline->parent->capture->GetFrameNumber() << endl;
+//    cout << "Tracker : " << "saved data from frame " << pipeline->parent->GetPresentFrameNumber() << endl;
 
     if (history.empty()) historyStartFrame = frameNumber;
 
-//    cout << "Tracked frame " << pipeline->parent->capture->GetFrameNumber() << " hindex" << history.size() / entitiesCount << " hstart = " << historyStartFrame << endl;
+//    cout << "Tracked frame " << pipeline->parent->GetPresentFrameNumber() << " hindex" << history.size() / entitiesCount << " hstart = " << historyStartFrame << endl;
 
     historyEntriesIndex = historyEntries.size();
     historyEntries.push_back(HistoryEntry (frameNumber, history.size()));
@@ -396,8 +396,8 @@ void Tracker::OutputStep ()
 	for (unsigned int e = 0; e < entitiesCount; e++)
 	{
 	    outputStream
-		<< pipeline->parent->capture->GetTime() << "\t"
-		<< pipeline->parent->capture->GetFrameNumber() << "\t"
+		<< pipeline->parent->GetPresentTime() << "\t"
+		<< pipeline->parent->GetPresentFrameNumber() << "\t"
 		<< entities[e].lastFrameDetected << "\t"
 		<< entities[e].lastFrameNotDetected << "\t"
 		<< e << "\t"
@@ -504,7 +504,7 @@ void Tracker::ClearHistory()
 {
 //    cout << "===============================================Clearing history=======================================================================" << endl;
 
-    historyStartFrame = pipeline->parent->capture->GetFrameNumber();
+    historyStartFrame = pipeline->parent->GetPresentFrameNumber();
 //    cout << "H start = " << historyStartFrame << endl;
     history.clear();
     historyEntries.clear();

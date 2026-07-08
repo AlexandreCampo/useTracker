@@ -34,12 +34,17 @@ public:
     cv::Mat oldFrame;
     unsigned int length = 10;
     unsigned int threshold = 5;
+    // when set, the engine presents the frame length/2 behind the pipeline so
+    // the (inherently centered) average of the last "length" masks aligns with
+    // the displayed frame — removing the temporal lag of a trailing average
+    bool centered = false;
 
     MovingAverage();
     ~MovingAverage();
 
     void Reset();
     void Apply();
+    int OutputLatency() { return centered ? (int)(length / 2) : 0; }
     void LoadXML (cv::FileNode& fn);
     void SaveXML (cv::FileStorage& fs);
 

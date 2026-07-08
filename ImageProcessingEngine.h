@@ -38,10 +38,11 @@ struct ImageProcessingEngine
     // the decoder (no latency) and only past frames are cached.
     struct BufferedFrame { long number = 0; double time = 0; cv::Mat image; };
     std::deque<BufferedFrame> frameBuffer;
-    int playIndex = -1;
-    int prefetchAhead = 0;
+    int playIndex = -1;         // process head: the frame the pipeline runs on
+    int prefetchAhead = 0;      // future frames kept decoded (frame look-ahead)
+    int outputLatency = 0;      // frames the present head lags the process head
     int maxPastFrames = 15;
-    long presentNumber = 0;
+    long presentNumber = 0;     // displayed frame (process head - outputLatency)
     double presentTime = 0.0;
 
     // about image processing
@@ -119,14 +120,17 @@ struct ImageProcessingEngine
 
     // prefetch buffer / playback control
     int ComputePrefetch();                 // max PrefetchAhead over active plugins
+    int ComputeOutputLatency();            // max OutputLatency over active plugins
     bool DecodeOne();                       // decode the next frame into the buffer
-    void PresentPlayhead();                 // copy playhead frame into capture->frame
+    void PresentPlayhead();                 // set the process/present frames
     bool AdvanceFrame();                    // step the playhead forward one frame
     bool StepBackward();                    // step back one frame (cached if possible)
     void SeekTime(double t);                // seek + rebuild the buffer
-    cv::Mat GetBufferedImage(int offset);   // frame at playhead+offset (for plugins)
-    // playhead frame number / time (falls back to the capture before the
-    // buffer has been primed)
+    cv::Mat GetBufferedImage(int offset);   // frame at process head+offset (for plugins)
+    cv::Mat GetPresentImage();              // image to display (process head - latency)
+    // process head number: the frame the pipeline runs on (for staticFrame)
+    long GetProcessFrameNumber() { return (playIndex >= 0 && playIndex < (int)frameBuffer.size()) ? frameBuffer[playIndex].number : capture->GetFrameNumber(); }
+    // present (displayed) frame number / time
     long GetPresentFrameNumber() { return frameBuffer.empty() ? capture->GetFrameNumber() : presentNumber; }
     double GetPresentTime() { return frameBuffer.empty() ? capture->GetTime() : presentTime; }
 

@@ -607,9 +607,11 @@ void ImageProcessingEngine::Step(bool drawHud)
     threadsDrawHud = drawHud;
     hud.setTo (0);
 
-    // check if frame is static
+    // check if frame is static — based on the process head (the frame the
+    // pipeline actually runs on), which advances even when the present frame
+    // is held back by the output latency
     lastFrameNumber = frameNumber;
-    frameNumber = GetPresentFrameNumber();
+    frameNumber = GetProcessFrameNumber();
     staticFrame = (frameNumber == lastFrameNumber);
 
     // save a pristine copy of the source frame; on static re-steps restore
@@ -655,6 +657,16 @@ int ImageProcessingEngine::ComputePrefetch()
     return m;
 }
 
+int ImageProcessingEngine::ComputeOutputLatency()
+{
+    int m = 0;
+    for (auto& pl : pipelines)
+	for (auto* p : pl.plugins)
+	    if (p && p->active)
+		m = std::max(m, p->OutputLatency());
+    return m;
+}
+
 bool ImageProcessingEngine::DecodeOne()
 {
     if (!capture->GetNextFrame()) return false;
@@ -669,17 +681,33 @@ bool ImageProcessingEngine::DecodeOne()
 void ImageProcessingEngine::PresentPlayhead()
 {
     if (playIndex < 0 || playIndex >= (int)frameBuffer.size()) return;
-    BufferedFrame& bf = frameBuffer[playIndex];
-    // the pipeline reads capture->frame; copy in place so the per-thread
-    // slice views stay valid
-    bf.image.copyTo(capture->frame);
-    presentNumber = bf.number;
-    presentTime = bf.time;
+
+    // the pipeline runs on the process head; copy it into capture->frame in
+    // place so the per-thread slice views stay valid
+    frameBuffer[playIndex].image.copyTo(capture->frame);
+
+    // the present (displayed) frame lags the process head by outputLatency, so
+    // a centered temporal-mask result aligns with the image shown
+    int pi = playIndex - outputLatency;
+    if (pi < 0) pi = 0;
+    presentNumber = frameBuffer[pi].number;
+    presentTime = frameBuffer[pi].time;
+}
+
+cv::Mat ImageProcessingEngine::GetPresentImage()
+{
+    // no latency: show the (possibly enhanced) process-head frame
+    if (outputLatency <= 0 || frameBuffer.empty()) return capture->frame;
+    int pi = playIndex - outputLatency;
+    if (pi < 0) pi = 0;
+    if (pi >= (int)frameBuffer.size()) pi = (int)frameBuffer.size() - 1;
+    return frameBuffer[pi].image;
 }
 
 bool ImageProcessingEngine::AdvanceFrame()
 {
     prefetchAhead = ComputePrefetch();
+    outputLatency = ComputeOutputLatency();
 
     if (frameBuffer.empty())
     {
@@ -697,8 +725,9 @@ bool ImageProcessingEngine::AdvanceFrame()
     while ((int)frameBuffer.size() - 1 - playIndex < prefetchAhead)
 	if (!DecodeOne()) break;
 
-    // drop old past frames beyond the cache limit
-    while (playIndex > maxPastFrames)
+    // keep enough past frames for the presentation delay + step-back
+    int keepPast = std::max(maxPastFrames, outputLatency + 2);
+    while (playIndex > keepPast)
     {
 	frameBuffer.pop_front();
 	playIndex--;
@@ -740,6 +769,7 @@ void ImageProcessingEngine::SeekTime(double t)
     playIndex = 0;
 
     prefetchAhead = ComputePrefetch();
+    outputLatency = ComputeOutputLatency();
     while ((int)frameBuffer.size() - 1 - playIndex < prefetchAhead)
 	if (!DecodeOne()) break;
 

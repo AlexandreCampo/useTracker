@@ -275,8 +275,8 @@ void SimpleTags::OutputStep()
 	for (unsigned int b = 0; b < pipeline->parent->blobs.size(); b++)
 	{
 	    outputStream
-		<< pipeline->parent->capture->GetTime() << "\t"
-		<< pipeline->parent->capture->GetFrameNumber() << "\t"
+		<< pipeline->parent->GetPresentTime() << "\t"
+		<< pipeline->parent->GetPresentFrameNumber() << "\t"
 		<< pipeline->parent->blobs[b].tagId << "\t"
 		<< pipeline->parent->blobs[b].x << "\t"
 		<< pipeline->parent->blobs[b].y << "\t"

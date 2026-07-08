@@ -35,6 +35,12 @@ virtual void Reset (){};
 // the plugin can read future frames from the shared buffer.
 virtual int PrefetchAhead () { return 0; }
 
+// how many frames this plugin's result lags the frame it processes (0 = none).
+// A centered temporal-mask plugin processes frame t but its output corresponds
+// to frame t-L; the engine presents the frame L behind the pipeline so the
+// (de-lagged) result aligns with the displayed image.
+virtual int OutputLatency () { return 0; }
+
 virtual void Apply () = 0;
 virtual void OpenOutput () {};
 virtual void CloseOutput () {};

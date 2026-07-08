@@ -1,0 +1,15 @@
+# This is a generated file and its contents are an internal implementation detail.
+# The download step will be re-executed if anything in this file changes.
+# No other meaning or use of this file is supported.
+
+method=git
+command=/usr/bin/cmake;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;/home/alex/Documents/useTracker/build/_deps/portable_file_dialogs-subbuild/portable_file_dialogs-populate-prefix/tmp/portable_file_dialogs-populate-gitclone.cmake
+source_dir=/home/alex/Documents/useTracker/build/_deps/portable_file_dialogs-src
+work_dir=/home/alex/Documents/useTracker/build/_deps
+repository=https://github.com/samhocevar/portable-file-dialogs.git
+remote=origin
+init_submodules=TRUE
+recurse_submodules=--recursive
+submodules=
+CMP0097=NEW
+      

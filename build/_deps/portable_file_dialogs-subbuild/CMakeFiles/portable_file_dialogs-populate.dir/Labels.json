@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/alex/Documents/useTracker/build/_deps/portable_file_dialogs-subbuild/CMakeFiles/portable_file_dialogs-populate"
+		},
+		{
+			"file" : "/home/alex/Documents/useTracker/build/_deps/portable_file_dialogs-subbuild/CMakeFiles/portable_file_dialogs-populate.rule"
+		},
+		{
+			"file" : "/home/alex/Documents/useTracker/build/_deps/portable_file_dialogs-subbuild/CMakeFiles/portable_file_dialogs-populate-complete.rule"
+		},
+		{
+			"file" : "/home/alex/Documents/useTracker/build/_deps/portable_file_dialogs-subbuild/portable_file_dialogs-populate-prefix/src/portable_file_dialogs-populate-stamp/portable_file_dialogs-populate-build.rule"
+		},
+		{
+			"file" : "/home/alex/Documents/useTracker/build/_deps/portable_file_dialogs-subbuild/portable_file_dialogs-populate-prefix/src/portable_file_dialogs-populate-stamp/portable_file_dialogs-populate-configure.rule"
+		},
+		{
+			"file" : "/home/alex/Documents/useTracker/build/_deps/portable_file_dialogs-subbuild/portable_file_dialogs-populate-prefix/src/portable_file_dialogs-populate-stamp/portable_file_dialogs-populate-download.rule"
+		},
+		{
+			"file" : "/home/alex/Documents/useTracker/build/_deps/portable_file_dialogs-subbuild/portable_file_dialogs-populate-prefix/src/portable_file_dialogs-populate-stamp/portable_file_dialogs-populate-install.rule"
+		},
+		{
+			"file" : "/home/alex/Documents/useTracker/build/_deps/portable_file_dialogs-subbuild/portable_file_dialogs-populate-prefix/src/portable_file_dialogs-populate-stamp/portable_file_dialogs-populate-mkdir.rule"
+		},
+		{
+			"file" : "/home/alex/Documents/useTracker/build/_deps/portable_file_dialogs-subbuild/portable_file_dialogs-populate-prefix/src/portable_file_dialogs-populate-stamp/portable_file_dialogs-populate-patch.rule"
+		},
+		{
+			"file" : "/home/alex/Documents/useTracker/build/_deps/portable_file_dialogs-subbuild/portable_file_dialogs-populate-prefix/src/portable_file_dialogs-populate-stamp/portable_file_dialogs-populate-test.rule"
+		},
+		{
+			"file" : "/home/alex/Documents/useTracker/build/_deps/portable_file_dialogs-subbuild/portable_file_dialogs-populate-prefix/src/portable_file_dialogs-populate-stamp/portable_file_dialogs-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"portable_file_dialogs-populate"
+		],
+		"name" : "portable_file_dialogs-populate"
+	}
+}

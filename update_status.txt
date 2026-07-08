@@ -1,0 +1,17 @@
+test -d bin/Release || mkdir -p bin/Release
+test -d obj/Release/plugins || mkdir -p obj/Release/plugins
+test -d obj/Release/dialogs || mkdir -p obj/Release/dialogs
+test -d obj/Release/capture || mkdir -p obj/Release/capture
+test -d obj/Release || mkdir -p obj/Release
+g++ -Wall -std=c++11 `wx-config --cflags all` `pkg-config --cflags opencv` -I ./ -I ./plugins -I./capture -I./dialogs -I./arucoColor -pipe -DARUCO -fomit-frame-pointer -fexpensive-optimizations -flto -O3 -std=c++11 -march=native  -c plugins/BackgroundDiffMOG.cpp -o obj/Release/plugins/BackgroundDiffMOG.o
+Package opencv was not found in the pkg-config search path.
+Perhaps you should add the directory containing `opencv.pc'
+to the PKG_CONFIG_PATH environment variable
+Package 'opencv', required by 'virtual:world', not found
+In file included from plugins/BackgroundDiffMOG.h:23,
+                 from plugins/BackgroundDiffMOG.cpp:20:
+./PipelinePlugin.h:5:10: fatal error: opencv2/core/core.hpp: No such file or directory
+    5 | #include <opencv2/core/core.hpp>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make: *** [Makefile:307: obj/Release/plugins/BackgroundDiffMOG.o] Error 1

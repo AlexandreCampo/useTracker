@@ -681,7 +681,7 @@ void AppGui::UpdateEngine()
 
     // Determine which frame to display
     if (activeTab == TAB_PROCESSING)
-        oglScreen = ipEngine.capture->frame;
+        oglScreen = ipEngine.GetPresentImage();   // process head, or delayed for centered plugins
     else if (activeTab == TAB_BACKGROUND)
         oglScreen = ipEngine.background;
     else if (activeTab == TAB_CALIBRATION)
@@ -2235,6 +2235,11 @@ static const char* PluginHelpText(const std::string& name)
                "but laggier.\n"
                "Threshold: how many of the N frames a pixel must be active to be "
                "kept.\n"
+               "Centered (no time lag): a plain (trailing) average lags moving "
+               "objects by about half the window. When Centered is on, the engine "
+               "shows the frame Length/2 behind the pipeline, so the averaged "
+               "mask lines up with the object with no lag (using future frames "
+               "from the buffer). Adds Length/2 frames of latency to playback.\n"
                "Clear History: reset the accumulated frames.";
 
     if (name == "AdaptiveThreshold")
@@ -3384,6 +3389,13 @@ void AppGui::DrawPluginDialog(int index)
             p->SetThreshold((unsigned int)std::max(0, threshold));
             changed = true;
         }
+
+        if (ImGui::Checkbox("Centered (no time lag)", &p->centered))
+            changed = true;
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Delay the displayed frame by half the window so "
+                              "the averaged mask is centered in time (no lag). "
+                              "Needs the frame buffer / adds Length/2 latency.");
 
         if (ImGui::Button("Clear History"))
         {

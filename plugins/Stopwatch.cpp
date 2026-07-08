@@ -177,7 +177,7 @@ int Stopwatch::RecordEvent (unsigned char k)
 	}
 
 	id = events.size();
-	events.push_back(Event(id, shortcuts[s].name, pipeline->parent->capture->GetTime(), type));
+	events.push_back(Event(id, shortcuts[s].name, pipeline->parent->GetPresentTime(), type));
     }
     return id;
 }

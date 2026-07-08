@@ -262,8 +262,8 @@ void ExtractBlobs::OutputStep()
 	    if (b.available)
 	    {
 		outputStream 
-		    << pipeline->parent->capture->GetTime() << "\t" 
-		    << pipeline->parent->capture->GetFrameNumber() << "\t" 
+		    << pipeline->parent->GetPresentTime() << "\t" 
+		    << pipeline->parent->GetPresentFrameNumber() << "\t" 
 		    << b.x << "\t" 
 		    << b.y << "\t" 
 		    << b.angle << "\t" 

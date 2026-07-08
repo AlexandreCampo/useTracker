@@ -1,0 +1,10 @@
+==== Building arucoColor (release) ====
+Creating obj/release
+arucoColor.cpp
+In file included from arucoColor.cpp:2:
+arucoColor.h:10:10: fatal error: opencv2/imgproc/imgproc.hpp: No such file or directory
+   10 | #include "opencv2/imgproc/imgproc.hpp"
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make[1]: *** [arucoColor.make:158: obj/release/arucoColor.o] Error 1
+make: *** [Makefile:30: arucoColor] Error 2

@@ -361,8 +361,8 @@ void PatternTracker::OutputStep()
 {
     if (!outputStream.is_open()) return;
 
-    double time = pipeline->parent->capture->GetTime();
-    long frame = pipeline->parent->capture->GetFrameNumber();
+    double time = pipeline->parent->GetPresentTime();
+    long frame = pipeline->parent->GetPresentFrameNumber();
 
     for (auto& t : targets)
     {
