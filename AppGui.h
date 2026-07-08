@@ -73,10 +73,10 @@ private:
     // at use). Draggable via the splitter between the video area and the panel.
     float controlPanelWidth = 380.0f;
 
-    // input-downscale slider state (applied on release to avoid rebuilding the
-    // engine on every drag frame)
-    float scaleSliderPct = 100.0f;
-    bool  scaleSliderActive = false;
+    // input-downscale slider state: the widget edits downscaleUI live while
+    // dragging and only applies the (heavy) rebuild on release
+    float downscaleUI = 1.0f;
+    bool  draggingScale = false;
 
     // Video texture
     GLuint videoTexture = 0;
@@ -179,6 +179,7 @@ private:
     void DrawMenuBar();
     void DrawToolbar();
     void DrawDownscaleControl();
+    void DottedScaleSlider();
     void DrawVideoDisplay();
     void DrawTabs();
     void DrawProcessingTab();

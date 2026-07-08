@@ -804,51 +804,8 @@ void AppGui::RenderFrame()
     // Quit confirmation
     DrawQuitConfirm();
 
-    // Input-downscale control — bottom right, above the UI-zoom widget
+    // Bottom-right overlay: input-downscale control and UI-zoom, side by side
     DrawDownscaleControl();
-
-    // UI Scale buttons — bottom right corner
-    {
-        ImGuiViewport* vp = ImGui::GetMainViewport();
-        float btnW = 28 * dpiScale;
-        float btnH = 22 * dpiScale;
-        float pad = 4 * dpiScale;
-        char scaleBuf[16];
-        snprintf(scaleBuf, sizeof(scaleBuf), "%.0f%%", dpiScale * 100.0f);
-        float labelW = ImGui::CalcTextSize(scaleBuf).x + pad * 2;
-        float totalW = btnW * 2 + labelW + pad * 2;
-        ImGui::SetNextWindowPos(ImVec2(vp->WorkPos.x + vp->WorkSize.x - totalW - pad,
-                                        vp->WorkPos.y + vp->WorkSize.y - btnH - pad));
-        ImGui::SetNextWindowSize(ImVec2(totalW, btnH));
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(0, 0));
-        if (ImGui::Begin("##UIScale", nullptr,
-            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-            ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
-            ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize))
-        {
-            if (ImGui::Button("-##scale", ImVec2(btnW, btnH)))
-            {
-                float oldScale = dpiScale;
-                dpiScale = std::max(0.5f, dpiScale * 0.9f);
-                std::cerr << "Scale -: " << oldScale << " -> " << dpiScale << std::endl;
-                pendingScaleChange = true;
-            }
-            ImGui::SameLine(0, pad);
-            ImGui::AlignTextToFramePadding();
-            ImGui::Text("%s", scaleBuf);
-            ImGui::SameLine(0, pad);
-            if (ImGui::Button("+##scale", ImVec2(btnW, btnH)))
-            {
-                float oldScale = dpiScale;
-                dpiScale = std::min(4.0f, dpiScale * 1.1f);
-                std::cerr << "Scale +: " << oldScale << " -> " << dpiScale << std::endl;
-                pendingScaleChange = true;
-            }
-        }
-        ImGui::End();
-        ImGui::PopStyleVar(2);
-    }
 
     // Render
     ImGui::Render();
@@ -1061,69 +1018,151 @@ void AppGui::DrawToolbar()
 // output coordinates are rescaled to full resolution.
 void AppGui::DrawDownscaleControl()
 {
-    if (!ipEngine.capture) return;
-
     ImGuiViewport* vp = ImGui::GetMainViewport();
-    float pad   = 4 * dpiScale;
-    float uiRow = 22 * dpiScale;   // height of the UI-zoom widget below us
+    float pad = 4 * dpiScale;
 
-    // anchor the window's bottom-right corner just above the UI-zoom widget
+    // anchor the window's bottom-right corner to the bottom-right of the screen
     ImVec2 anchor(vp->WorkPos.x + vp->WorkSize.x - pad,
-                  vp->WorkPos.y + vp->WorkSize.y - uiRow - pad * 3);
+                  vp->WorkPos.y + vp->WorkSize.y - pad);
     ImGui::SetNextWindowPos(anchor, ImGuiCond_Always, ImVec2(1.0f, 1.0f));
     ImGui::SetNextWindowBgAlpha(0.85f);
 
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(6*dpiScale, 4*dpiScale));
-    if (ImGui::Begin("##Downscale", nullptr,
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8*dpiScale, 5*dpiScale));
+    if (ImGui::Begin("##BottomRightBar", nullptr,
         ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
         ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::AlignTextToFramePadding();
-        ImGui::TextUnformatted("Downscale");
-        if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("Run the pipeline on a smaller frame for faster tuning.\n"
-                              "Output coordinates are rescaled to full resolution.");
-        ImGui::SameLine();
-
-        struct ScaleSnap { const char* label; float v; };
-        static const ScaleSnap snaps[] = {
-            {"1:1", 1.0f}, {"1/2", 0.5f}, {"1/4", 0.25f}, {"1/8", 0.125f} };
-        for (const auto& s : snaps)
+        // --- input-downscale control (only with a source loaded) ---
+        if (ipEngine.capture)
         {
-            bool sel = std::abs(ipEngine.inputScale - s.v) < 1e-3f;
-            if (sel)
-                ImGui::PushStyleColor(ImGuiCol_Button,
-                                      ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
-            if (ImGui::Button(s.label, ImVec2(30*dpiScale, 22*dpiScale)))
+            ImGui::AlignTextToFramePadding();
+            ImGui::TextUnformatted("Downscale");
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Run the pipeline on a smaller frame for faster tuning.\n"
+                                  "Output coordinates are rescaled to full resolution.\n"
+                                  "Drag the dot; it snaps to 1:1, 1/2, 1/4, 1/8.");
+            ImGui::SameLine(0, 8*dpiScale);
+
+            DottedScaleSlider();
+
+            ImGui::SameLine(0, 8*dpiScale);
+            ImGui::AlignTextToFramePadding();
+            ImGui::TextDisabled("%dx%d", ipEngine.ProcWidth(), ipEngine.ProcHeight());
+
+            // --- vertical divider so the two controls are not confused ---
+            ImGui::SameLine(0, 12*dpiScale);
             {
-                ipEngine.SetInputScale(s.v);
-                SyncHudSize();
-                pipelineDirty = true;
+                ImVec2 p = ImGui::GetCursorScreenPos();
+                float h = ImGui::GetFrameHeight();
+                ImGui::GetWindowDrawList()->AddLine(
+                    ImVec2(p.x, p.y + 2*dpiScale), ImVec2(p.x, p.y + h - 2*dpiScale),
+                    ImGui::GetColorU32(ImGuiCol_Separator), 1.0f);
             }
-            if (sel) ImGui::PopStyleColor();
-            ImGui::SameLine();
+            ImGui::SameLine(0, 12*dpiScale);
         }
 
-        // continuous slider (applied on release, so it does not rebuild while dragging)
-        if (!scaleSliderActive)
-            scaleSliderPct = ipEngine.inputScale * 100.0f;
-        ImGui::SetNextItemWidth(90*dpiScale);
-        ImGui::SliderFloat("##InputScale", &scaleSliderPct, 10.0f, 100.0f, "%.0f%%");
-        scaleSliderActive = ImGui::IsItemActive();
-        if (ImGui::IsItemDeactivatedAfterEdit())
+        // --- UI zoom (font / interface size) ---
+        float btnW = 26 * dpiScale, btnH = 22 * dpiScale;
+        char scaleBuf[16];
+        snprintf(scaleBuf, sizeof(scaleBuf), "%.0f%%", dpiScale * 100.0f);
+        ImGui::AlignTextToFramePadding();
+        ImGui::TextUnformatted("UI");
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Interface / font size");
+        ImGui::SameLine(0, 6*dpiScale);
+        if (ImGui::Button("-##uizoom", ImVec2(btnW, btnH)))
         {
-            ipEngine.SetInputScale(scaleSliderPct / 100.0f);
-            SyncHudSize();
-            pipelineDirty = true;
+            dpiScale = std::max(0.5f, dpiScale * 0.9f);
+            pendingScaleChange = true;
         }
-
-        // resulting processing resolution
-        ImGui::SameLine();
-        ImGui::TextDisabled("%dx%d", ipEngine.ProcWidth(), ipEngine.ProcHeight());
+        ImGui::SameLine(0, 4*dpiScale);
+        ImGui::AlignTextToFramePadding();
+        ImGui::TextUnformatted(scaleBuf);
+        ImGui::SameLine(0, 4*dpiScale);
+        if (ImGui::Button("+##uizoom", ImVec2(btnW, btnH)))
+        {
+            dpiScale = std::min(4.0f, dpiScale * 1.1f);
+            pendingScaleChange = true;
+        }
     }
     ImGui::End();
     ImGui::PopStyleVar();
+}
+
+// A slim slider with big dots at 1:1, 1/2, 1/4, 1/8. The axis is the downscale
+// exponent (log2 of the divisor) so those ratios are evenly spaced. Dragging is
+// continuous but snaps to a dot when near it; the (heavy) engine rebuild is
+// applied only on release.
+void AppGui::DottedScaleSlider()
+{
+    const float EMAX = 3.3219f;             // log2(1 / 0.1): min scale 10%
+    const int   NDOTS = 4;                  // 1:1, 1/2, 1/4, 1/8  -> exponents 0..3
+    const char* dotLabels[NDOTS] = {"1:1", "1/2", "1/4", "1/8"};
+
+    float w = 168 * dpiScale;
+    float h = ImGui::GetFrameHeight();
+
+    if (!draggingScale)
+        downscaleUI = ipEngine.inputScale;
+
+    ImVec2 p0 = ImGui::GetCursorScreenPos();
+    ImGui::InvisibleButton("##dottedscale", ImVec2(w, h));
+    bool active = ImGui::IsItemActive();
+    bool hovered = ImGui::IsItemHovered();
+
+    float x0 = p0.x + 10*dpiScale;
+    float x1 = p0.x + w - 10*dpiScale;
+    float ty = p0.y + h * 0.42f;
+
+    auto scaleToX = [&](float scale) {
+        float e = log2f(1.0f / std::max(0.05f, std::min(1.0f, scale)));
+        return x0 + (e / EMAX) * (x1 - x0);
+    };
+
+    if (active)
+    {
+        float t = (ImGui::GetIO().MousePos.x - x0) / std::max(1.0f, (x1 - x0));
+        t = std::max(0.0f, std::min(1.0f, t));
+        float e = t * EMAX;
+        float nearest = std::min((float)(NDOTS - 1), std::round(e));
+        if (std::abs(e - nearest) < 0.18f) e = nearest;   // snap to a dot
+        downscaleUI = 1.0f / powf(2.0f, e);
+        downscaleUI = std::max(0.1f, std::min(1.0f, downscaleUI));
+        draggingScale = true;
+    }
+    else if (draggingScale)                                // released -> apply
+    {
+        draggingScale = false;
+        ipEngine.SetInputScale(downscaleUI);
+        SyncHudSize();
+        pipelineDirty = true;
+    }
+
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    ImU32 colTrack = ImGui::GetColorU32(ImGuiCol_FrameBg);
+    ImU32 colDot   = ImGui::GetColorU32(ImGuiCol_SliderGrab);
+    ImU32 colActive= ImGui::GetColorU32(ImGuiCol_SliderGrabActive);
+    ImU32 colText  = ImGui::GetColorU32(ImGuiCol_TextDisabled);
+
+    dl->AddLine(ImVec2(x0, ty), ImVec2(x1, ty), colTrack, 3*dpiScale);
+
+    float curE = log2f(1.0f / std::max(0.1f, std::min(1.0f, downscaleUI)));
+    for (int i = 0; i < NDOTS; i++)
+    {
+        float dx = x0 + ((float)i / EMAX) * (x1 - x0);
+        bool onDot = std::abs(curE - i) < 0.05f;
+        dl->AddCircleFilled(ImVec2(dx, ty), (onDot ? 6.0f : 4.0f) * dpiScale,
+                            onDot ? colActive : colDot);
+        ImVec2 ts = ImGui::CalcTextSize(dotLabels[i]);
+        dl->AddText(ImVec2(dx - ts.x * 0.5f, p0.y + h - ts.y * 0.5f),
+                    colText, dotLabels[i]);
+    }
+
+    // draggable handle
+    float hx = scaleToX(downscaleUI);
+    dl->AddCircleFilled(ImVec2(hx, ty), (active || hovered ? 7.0f : 5.0f) * dpiScale,
+                        colActive);
 }
 
 // ============================================================================
