@@ -443,6 +443,10 @@ void PatternTracker::Apply()
 
 void PatternTracker::OutputHud (Mat& hud)
 {
+    double os = pipeline->parent->GetOutputScale();
+    auto SP  = [&](cv::Point p){ return cv::Point(cvRound(p.x*os), cvRound(p.y*os)); };
+    auto SR  = [&](cv::Rect r){ return cv::Rect(cvRound(r.x*os), cvRound(r.y*os), cvRound(r.width*os), cvRound(r.height*os)); };
+
     for (auto& t : targets)
     {
 	if (!t.active) continue;
@@ -451,13 +455,13 @@ void PatternTracker::OutputHud (Mat& hud)
 
 	// trail
 	for (size_t i = 1; i < t.trail.size(); i++)
-	    line(hud, t.trail[i - 1], t.trail[i], Scalar(80, 80, 80, 255), 1, LINE_AA);
+	    line(hud, SP(t.trail[i - 1]), SP(t.trail[i]), Scalar(80, 80, 80, 255), 1, LINE_AA);
 
-	rectangle(hud, t.box, color, 2, LINE_AA);
+	rectangle(hud, SR(t.box), color, 2, LINE_AA);
 
 	char label[64];
 	snprintf(label, sizeof(label), "#%d %.2f", t.id, t.score);
-	putText(hud, label, Point(t.box.x, max(12, t.box.y - 4)),
+	putText(hud, label, SP(Point(t.box.x, max(12, t.box.y - 4))),
 		FONT_HERSHEY_SIMPLEX, 0.5, color, 1, LINE_AA);
     }
 }

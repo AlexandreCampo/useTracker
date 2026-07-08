@@ -410,10 +410,14 @@ void YoloDetector::Apply()
 
 void YoloDetector::OutputHud (Mat& hud)
 {
+    double os = pipeline->parent->GetOutputScale();
+    auto SP  = [&](cv::Point p){ return cv::Point(cvRound(p.x*os), cvRound(p.y*os)); };
+    auto SR  = [&](cv::Rect r){ return cv::Rect(cvRound(r.x*os), cvRound(r.y*os), cvRound(r.width*os), cvRound(r.height*os)); };
+
     for (auto& d : detections)
     {
 	Scalar color(0, 220, 0, 255);
-	rectangle(hud, d.box, color, 2, LINE_AA);
+	rectangle(hud, SR(d.box), color, 2, LINE_AA);
 
 	char label[128];
 	snprintf(label, sizeof(label), "%s %.0f%%",
@@ -422,9 +426,11 @@ void YoloDetector::OutputHud (Mat& hud)
 	int baseline = 0;
 	Size ts = getTextSize(label, FONT_HERSHEY_SIMPLEX, 0.5, 1, &baseline);
 	Point org(d.box.x, max(ts.height + 2, d.box.y - 4));
-	rectangle(hud, Rect(org.x, org.y - ts.height - 2, ts.width + 4, ts.height + 6),
+	// scale only the anchor position; text-size-derived dimensions stay unscaled
+	Point orgS = SP(org);
+	rectangle(hud, Rect(orgS.x, orgS.y - ts.height - 2, ts.width + 4, ts.height + 6),
 		  Scalar(0, 0, 0, 200), FILLED);
-	putText(hud, label, Point(org.x + 2, org.y),
+	putText(hud, label, Point(orgS.x + 2, orgS.y),
 		FONT_HERSHEY_SIMPLEX, 0.5, color, 1, LINE_AA);
     }
 }

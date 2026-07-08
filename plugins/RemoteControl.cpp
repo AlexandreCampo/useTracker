@@ -184,6 +184,9 @@ void RemoteControl::Apply()
 
 void RemoteControl::OutputHud (Mat& hud)
 {
+    double os = pipeline->parent->GetOutputScale();
+    auto SP  = [&](cv::Point p){ return cv::Point(cvRound(p.x*os), cvRound(p.y*os)); };
+
     vector<Blob>& blobs = pipeline->parent->blobs;
     for (vector<Blob>::iterator b = blobs.begin(); b != blobs.end(); ++b)
     {
@@ -196,11 +199,11 @@ void RemoteControl::OutputHud (Mat& hud)
 	    pos2.x = b->x + cos(b->angle) * sqlen;
 	    pos2.y = b->y + sin(b->angle) * sqlen;
 
-	    line(hud, pos, pos2, Scalar(255, 0, 127,255), 1);
+	    line(hud, SP(pos), SP(pos2), Scalar(255, 0, 127,255), 1);
 
 	    string str (".RC");
-	    putText(hud, str.c_str(), pos+Point(4,4), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,0,0,255), 2, cv::LINE_AA);
-	    putText(hud, str.c_str(), pos, FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,255,200,255), 2, cv::LINE_AA);
+	    putText(hud, str.c_str(), SP(pos+Point(4,4)), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,0,0,255), 2, cv::LINE_AA);
+	    putText(hud, str.c_str(), SP(pos), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,255,200,255), 2, cv::LINE_AA);
 
 	    int cx, cy;
 	    if (corner == 0)
@@ -224,8 +227,8 @@ void RemoteControl::OutputHud (Mat& hud)
 	    pos.y = cy;
 
 	    str = string (".Goal");
-	    putText(hud, str.c_str(), pos+Point(4,4), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,0,0,255), 2, cv::LINE_AA);
-	    putText(hud, str.c_str(), pos, FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,255,200,255), 2, cv::LINE_AA);
+	    putText(hud, str.c_str(), SP(pos+Point(4,4)), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,0,0,255), 2, cv::LINE_AA);
+	    putText(hud, str.c_str(), SP(pos), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,255,200,255), 2, cv::LINE_AA);
 
 	}
     }

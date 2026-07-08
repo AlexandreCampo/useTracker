@@ -233,6 +233,9 @@ void ExtractBlobs::OutputHud (Mat& hud)
 {
 //    cout << "new output iteration " << endl;
 
+    double os = pipeline->parent->GetOutputScale();
+    auto SP  = [&](cv::Point p){ return cv::Point(cvRound(p.x*os), cvRound(p.y*os)); };
+
     char str[32];
     Point pos;
     vector<Blob>& blobs = pipeline->parent->blobs;
@@ -244,9 +247,9 @@ void ExtractBlobs::OutputHud (Mat& hud)
 	    pos.x = b.x;
 	    pos.y = b.y;
 	    int sqlen = sqrt(b.size) / 2;
-	    rectangle(hud, pos-Point(sqlen,sqlen), pos+Point(sqlen,sqlen), Scalar(127, 127, 127, 255), cv::FILLED);
-	    putText(hud, str, pos+Point(2,2), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,0,0, 255), 2, cv::LINE_AA);
-	    putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,255,200, 255), 2, cv::LINE_AA);
+	    rectangle(hud, SP(pos-Point(sqlen,sqlen)), SP(pos+Point(sqlen,sqlen)), Scalar(127, 127, 127, 255), cv::FILLED);
+	    putText(hud, str, SP(pos+Point(2,2)), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,0,0, 255), 2, cv::LINE_AA);
+	    putText(hud, str, SP(pos), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,255,200, 255), 2, cv::LINE_AA);
 	}
     }
 }

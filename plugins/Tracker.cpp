@@ -314,6 +314,9 @@ void Tracker::Track()
 
 void Tracker::OutputHud (cv::Mat& hud)
 {
+    double os = pipeline->parent->GetOutputScale();
+    auto SP  = [&](cv::Point p){ return cv::Point(cvRound(p.x*os), cvRound(p.y*os)); };
+
     char str[8];
     cv::Point pos;
 
@@ -341,7 +344,7 @@ void Tracker::OutputHud (cv::Mat& hud)
 
 		    if (last[e].x >= 0)
 		    {
-			cv::line(hud, pos, last[e], cv::Scalar(32,32,32,255), 2, cv::LINE_AA);
+			cv::line(hud, SP(pos), SP(last[e]), cv::Scalar(32,32,32,255), 2, cv::LINE_AA);
 		    }
 		    last[e] = pos;
 		}
@@ -365,7 +368,7 @@ void Tracker::OutputHud (cv::Mat& hud)
 
 		    if (last[e].x >= 0)
 		    {
-			cv::line(hud, pos, last[e], cv::Scalar(255,255,255,255), 2, cv::LINE_AA);
+			cv::line(hud, SP(pos), SP(last[e]), cv::Scalar(255,255,255,255), 2, cv::LINE_AA);
 		    }
 		    last[e] = pos;
 		}
@@ -383,8 +386,8 @@ void Tracker::OutputHud (cv::Mat& hud)
 	    sprintf (str, "%d", e);
 	    pos.x = entities[e].x;
 	    pos.y = entities[e].y;
-	    cv::putText(hud, str, pos+cv::Point(2,2), cv::FONT_HERSHEY_SIMPLEX, 0.65, cv::Scalar(0,0,0,255), 2, cv::LINE_AA);
-	    cv::putText(hud, str, pos, cv::FONT_HERSHEY_SIMPLEX, 0.65, cv::Scalar(0,255,200,255), 2, cv::LINE_AA);
+	    cv::putText(hud, str, SP(pos+cv::Point(2,2)), cv::FONT_HERSHEY_SIMPLEX, 0.65, cv::Scalar(0,0,0,255), 2, cv::LINE_AA);
+	    cv::putText(hud, str, SP(pos), cv::FONT_HERSHEY_SIMPLEX, 0.65, cv::Scalar(0,255,200,255), 2, cv::LINE_AA);
 	}
 //    }
 }

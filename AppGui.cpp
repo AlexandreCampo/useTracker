@@ -1209,13 +1209,19 @@ void AppGui::DrawVideoDisplay()
             displayFrame = oglScreen;
         }
 
-        // Overlay HUD if visible
-        if (hudVisible && !ipEngine.hud.empty() && ipEngine.hud.size() == displayFrame.size())
+        // Overlay HUD if visible. The HUD is at source resolution; upscale the
+        // (possibly downscaled) frame to match so the overlay stays crisp and a
+        // fixed size on screen regardless of the processing downscale.
+        if (hudVisible && !ipEngine.hud.empty())
         {
             // displayFrame may still share pixels with the capture frame;
             // copy before drawing on it or we would corrupt the source data
             if (displayFrame.data == oglScreen.data)
                 displayFrame = oglScreen.clone();
+
+            if (displayFrame.size() != ipEngine.hud.size())
+                cv::resize(displayFrame, displayFrame, ipEngine.hud.size(),
+                           0, 0, cv::INTER_LINEAR);
 
             // The HUD is BGRA with alpha channel
             for (int y = 0; y < ipEngine.hud.rows; y++)
@@ -4919,14 +4925,16 @@ void AppGui::DrawErrorPopup()
 // ResetEngine
 // ============================================================================
 
-// (re)create the HUD at the processing resolution so it lines up with the
-// (possibly downscaled) video frame it is drawn over
+// Create the HUD at the SOURCE resolution, independent of the input downscale,
+// so plugin-drawn overlays (boxes, labels) keep a fixed on-screen size and font
+// regardless of the processing scale. Plugins draw at source coordinates (they
+// scale their processing-space positions by GetOutputScale()).
 void AppGui::SyncHudSize()
 {
     if (!ipEngine.capture) return;
-    int w = ipEngine.ProcWidth();
-    int h = ipEngine.ProcHeight();
-    if (w <= 0 || h <= 0) { w = ipEngine.capture->width; h = ipEngine.capture->height; }
+    int w = ipEngine.capture->width;
+    int h = ipEngine.capture->height;
+    if (w <= 0 || h <= 0) return;
     hud.create(h, w, CV_8UC4);
     hudApp.create(h, w, CV_8UC4);
     ipEngine.hud = hud;

@@ -198,6 +198,9 @@ void SimpleTags::Apply()
 
 void SimpleTags::OutputHud(Mat& hud)
 {
+    double os = pipeline->parent->GetOutputScale();
+    auto SP  = [&](cv::Point p){ return cv::Point(cvRound(p.x*os), cvRound(p.y*os)); };
+
     char str[32];
     Point pos;
     Point pos2;
@@ -213,9 +216,9 @@ void SimpleTags::OutputHud(Mat& hud)
 	    pos2.x = b->x + cos(b->angle) * sqlen;
 	    pos2.y = b->y + sin(b->angle) * sqlen;
 
-	    line(hud, pos, pos2, Scalar(255, 0, 127,255), 1);
-	    putText(hud, str, pos+Point(4,4), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,0,0,255), 2, cv::LINE_AA);
-	    putText(hud, str, pos, FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,255,200,255), 2, cv::LINE_AA);
+	    line(hud, SP(pos), SP(pos2), Scalar(255, 0, 127,255), 1);
+	    putText(hud, str, SP(pos+Point(4,4)), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,0,0,255), 2, cv::LINE_AA);
+	    putText(hud, str, SP(pos), FONT_HERSHEY_SIMPLEX, 0.65, Scalar(0,255,200,255), 2, cv::LINE_AA);
 	}
     }
 
