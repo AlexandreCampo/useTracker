@@ -33,6 +33,11 @@ void MovingAverage::Reset()
     movingAverage = Mat::zeros (pipeline->height, pipeline->width, CV_8UC1);
     framesSum = Mat::zeros (pipeline->height, pipeline->width, CV_32F);
     oldFrame = Mat::zeros (pipeline->height, pipeline->width, CV_32F);
+    // clear the queued masks: keeping stale (possibly different-size) frames
+    // across a reset desyncs the running sum and throws size errors when the
+    // slice size changes (e.g. toggling the input downscale)
+    std::queue<cv::Mat> empty;
+    std::swap(frames, empty);
 }
 
 MovingAverage::~MovingAverage ()
@@ -41,6 +46,18 @@ MovingAverage::~MovingAverage ()
 
 void MovingAverage::Apply()
 {
+    // self-heal if the slice size changed under us (input downscale toggled,
+    // source reopened): rebuild the buffers and drop the stale queue so the
+    // running sum stays consistent with the current mask size
+    if (framesSum.size() != pipeline->marked.size())
+    {
+	movingAverage = Mat::zeros (pipeline->marked.size(), CV_8UC1);
+	framesSum = Mat::zeros (pipeline->marked.size(), CV_32F);
+	oldFrame = Mat::zeros (pipeline->marked.size(), CV_32F);
+	std::queue<cv::Mat> empty;
+	std::swap(frames, empty);
+    }
+
     if (!pipeline->parent->staticFrame)
     {
 	// record marked in the queue

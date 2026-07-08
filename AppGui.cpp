@@ -5080,6 +5080,14 @@ void AppGui::TestAdvance()
             ss >> testMouseX >> testMouseY;
             continue; // instant, no frame consumed
         }
+        if (op == "scale")   // test aid: set the input downscale directly
+        {
+            float s = 1.0f; ss >> s;
+            ipEngine.SetInputScale(s);
+            SyncHudSize();
+            pipelineDirty = true;
+            return;
+        }
         if (op == "click")
         {
             std::string btn; ss >> btn;

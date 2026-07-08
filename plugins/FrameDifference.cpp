@@ -43,6 +43,12 @@ void FrameDifference::Reset()
 
 void FrameDifference::Apply()
 {
+    // self-heal if the slice size changed (input downscale toggled / source
+    // reopened) so the stored buffers stay consistent with the current frame
+    if (previousFrame.size() != pipeline->frame.size() ||
+	previousMarked.size() != pipeline->marked.size())
+	Reset();
+
     if (usePipeline)
     {
         if (!pipeline->parent->staticFrame)
