@@ -768,17 +768,29 @@ int ImageProcessingEngine::ComputeOutputLatency()
 bool ImageProcessingEngine::DecodeOne()
 {
     if (!capture->GetNextFrame()) return false;
+    // a corrupt/partial decode (e.g. missing reference frames while seeking
+    // fast) can hand back an empty frame; never buffer it
+    if (capture->frame.empty()) return false;
+
+    // store the frame at processing resolution: downscale the decoded frame
+    // into the buffer (the decoder's capture->frame stays at source size)
+    cv::Mat img;
+    if (inputScale < 0.999f && procWidth > 0 &&
+	(capture->frame.cols != procWidth || capture->frame.rows != procHeight))
+	cv::resize(capture->frame, img,
+		   cv::Size(procWidth, procHeight), 0, 0, cv::INTER_AREA);
+    else
+	capture->frame.copyTo(img);
+
+    // reject a frame whose size does not match the established processing size:
+    // buffering it would later reallocate procFrame and leave the per-thread
+    // pipeline slices dangling / mismatched (seen as arithm size errors)
+    if (!procFrame.empty() && img.size() != procFrame.size()) return false;
+
     BufferedFrame bf;
     bf.number = capture->GetFrameNumber();
     bf.time = capture->GetTime();
-    // store the frame at processing resolution: downscale the decoded frame
-    // into the buffer (the decoder's capture->frame stays at source size)
-    if (inputScale < 0.999f && procWidth > 0 &&
-	(capture->frame.cols != procWidth || capture->frame.rows != procHeight))
-	cv::resize(capture->frame, bf.image,
-		   cv::Size(procWidth, procHeight), 0, 0, cv::INTER_AREA);
-    else
-	capture->frame.copyTo(bf.image);
+    bf.image = std::move(img);
     frameBuffer.push_back(std::move(bf));
     return true;
 }
@@ -788,8 +800,12 @@ void ImageProcessingEngine::PresentPlayhead()
     if (playIndex < 0 || playIndex >= (int)frameBuffer.size()) return;
 
     // the pipeline runs on the process head; copy it into the stable procFrame
-    // in place so the per-thread slice views stay valid
-    frameBuffer[playIndex].image.copyTo(procFrame);
+    // in place so the per-thread slice views stay valid. Only accept a frame
+    // that matches procFrame's size, otherwise procFrame would be reallocated
+    // and the slices would dangle (keep the last good frame instead).
+    cv::Mat& img = frameBuffer[playIndex].image;
+    if (!img.empty() && (procFrame.empty() || img.size() == procFrame.size()))
+	img.copyTo(procFrame);
 
     // the present (displayed) frame lags the process head by outputLatency, so
     // a centered temporal-mask result aligns with the image shown
