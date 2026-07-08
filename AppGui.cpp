@@ -1004,6 +1004,26 @@ void AppGui::DrawToolbar()
 
     ImGui::SameLine();
 
+    // Ruler / measure tool
+    if (ImGui::Checkbox("Ruler", &rulerActive))
+    {
+        // drop any measurements when the tool is switched off
+        if (!rulerActive) { rulerMeasurements.clear(); rulerAnchored = false; }
+    }
+    if (ImGui::IsItemHovered())
+        ImGui::SetTooltip("Measure distances/boxes in pixels on the video.\n"
+                          "Left click sets the first point, click again to finish;\n"
+                          "right click cancels or removes the last measurement.");
+    if (rulerActive)
+    {
+        ImGui::SameLine();
+        ImGui::SetNextItemWidth(64 * dpiScale);
+        const char* shapes[] = { "Line", "Rect" };
+        ImGui::Combo("##rulershape", &rulerShape, shapes, 2);
+    }
+
+    ImGui::SameLine();
+
     // Processing blending slider
     ImGui::SetNextItemWidth(80*dpiScale);
     ImGui::SliderFloat("##Blend", &processingBlending, 0.0f, 1.0f, "%.1f");
@@ -1165,6 +1185,112 @@ void AppGui::DottedScaleSlider()
                         colActive);
 }
 
+// Ruler / measure tool overlay. Draws saved and in-progress measurements over
+// the video and reports their size in SOURCE pixels (with the processing-space
+// value in parentheses when the input is downscaled). imgMin/imgSize are the
+// on-screen rectangle of the video image; the current zoom UV window is used so
+// measurements track pan/zoom. Must be called right after the video ImGui::Image
+// so IsItemHovered()/mouse tests still refer to it.
+void AppGui::DrawRulerOverlay(float imgMinX, float imgMinY, float imgSizeX, float imgSizeY)
+{
+    if (!ipEngine.capture) return;
+    float W = (float)ipEngine.capture->width;
+    float H = (float)ipEngine.capture->height;
+    if (W <= 0 || H <= 0 || imgSizeX <= 0 || imgSizeY <= 0) return;
+
+    auto screenToSource = [&](ImVec2 s, cv::Point2f& out) -> bool
+    {
+        float nx = (s.x - imgMinX) / imgSizeX;
+        float ny = (s.y - imgMinY) / imgSizeY;
+        out.x = (zoomStartX + nx * (zoomEndX - zoomStartX)) * W;
+        out.y = (zoomStartY + ny * (zoomEndY - zoomStartY)) * H;
+        return (nx >= 0 && nx <= 1 && ny >= 0 && ny <= 1);
+    };
+    auto sourceToScreen = [&](cv::Point2f p) -> ImVec2
+    {
+        float nx = (p.x / W - zoomStartX) / std::max(1e-6f, (zoomEndX - zoomStartX));
+        float ny = (p.y / H - zoomStartY) / std::max(1e-6f, (zoomEndY - zoomStartY));
+        return ImVec2(imgMinX + nx * imgSizeX, imgMinY + ny * imgSizeY);
+    };
+
+    ImDrawList* dl = ImGui::GetWindowDrawList();
+    const ImU32 col = IM_COL32(255, 220, 40, 255);
+
+    auto drawLabel = [&](ImVec2 at, const char* txt)
+    {
+        ImVec2 ts = ImGui::CalcTextSize(txt);
+        ImVec2 p(at.x + 8 * dpiScale, at.y + 6 * dpiScale);
+        dl->AddRectFilled(ImVec2(p.x - 3, p.y - 2), ImVec2(p.x + ts.x + 3, p.y + ts.y + 2),
+                          IM_COL32(0, 0, 0, 170), 3.0f);
+        dl->AddText(p, col, txt);
+    };
+
+    auto drawMeasure = [&](cv::Point2f a, cv::Point2f b, int shape)
+    {
+        ImVec2 sa = sourceToScreen(a), sb = sourceToScreen(b);
+        float sc = ipEngine.inputScale;
+        char buf[160];
+        if (shape == 0) // line
+        {
+            dl->AddLine(sa, sb, col, 2.0f * dpiScale);
+            dl->AddCircleFilled(sa, 3.5f * dpiScale, col);
+            dl->AddCircleFilled(sb, 3.5f * dpiScale, col);
+            float dx = b.x - a.x, dy = b.y - a.y;
+            float len = std::sqrt(dx * dx + dy * dy);
+            if (sc < 0.999f)
+                snprintf(buf, sizeof(buf), "%.0f px  (proc %.0f)   dx %.0f  dy %.0f",
+                         len, len * sc, std::fabs(dx), std::fabs(dy));
+            else
+                snprintf(buf, sizeof(buf), "%.0f px   dx %.0f  dy %.0f",
+                         len, std::fabs(dx), std::fabs(dy));
+            drawLabel(ImVec2((sa.x + sb.x) * 0.5f, (sa.y + sb.y) * 0.5f), buf);
+        }
+        else // rectangle
+        {
+            ImVec2 r0(std::min(sa.x, sb.x), std::min(sa.y, sb.y));
+            ImVec2 r1(std::max(sa.x, sb.x), std::max(sa.y, sb.y));
+            dl->AddRect(r0, r1, col, 0, 0, 2.0f * dpiScale);
+            float w = std::fabs(b.x - a.x), h = std::fabs(b.y - a.y);
+            if (sc < 0.999f)
+                snprintf(buf, sizeof(buf), "%.0f x %.0f px  (proc %.0f x %.0f)",
+                         w, h, w * sc, h * sc);
+            else
+                snprintf(buf, sizeof(buf), "%.0f x %.0f px", w, h);
+            drawLabel(ImVec2(r0.x, r0.y - ImGui::GetTextLineHeight() - 4 * dpiScale), buf);
+        }
+    };
+
+    // saved measurements
+    for (auto& m : rulerMeasurements)
+        drawMeasure(m.p1, m.p2, m.shape);
+
+    if (!ImGui::IsItemHovered()) return;
+
+    cv::Point2f cur;
+    bool inside = screenToSource(ImGui::GetMousePos(), cur);
+
+    // live cursor read-out
+    char posbuf[48];
+    snprintf(posbuf, sizeof(posbuf), "%.0f, %.0f", cur.x, cur.y);
+    drawLabel(ImGui::GetMousePos(), posbuf);
+
+    // in-progress measurement follows the cursor
+    if (rulerAnchored)
+        drawMeasure(rulerP1, cur, rulerShape);
+
+    // left click: place first point, then finalize; right click: cancel / undo
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && inside)
+    {
+        if (!rulerAnchored) { rulerP1 = cur; rulerAnchored = true; }
+        else { rulerMeasurements.push_back({rulerP1, cur, rulerShape}); rulerAnchored = false; }
+    }
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+    {
+        if (rulerAnchored) rulerAnchored = false;
+        else if (!rulerMeasurements.empty()) rulerMeasurements.pop_back();
+    }
+}
+
 // ============================================================================
 // DrawVideoDisplay
 // ============================================================================
@@ -1287,8 +1413,12 @@ void AppGui::DrawVideoDisplay()
             return (out.x >= 0 && out.x < texWidth && out.y >= 0 && out.y < texHeight);
         };
 
+        // Ruler / measure tool (takes over mouse interaction while active)
+        if (rulerActive)
+            DrawRulerOverlay(itemMinAbs.x, itemMinAbs.y, itemSizeAbs.x, itemSizeAbs.y);
+
         // PatternTracker click-to-seed mode
-        bool seedMode = (patternSeedPluginIndex >= 0 &&
+        bool seedMode = (!rulerActive && patternSeedPluginIndex >= 0 &&
                          !ipEngine.pipelines.empty() &&
                          patternSeedPluginIndex < (int)ipEngine.pipelines[ipEngine.threadsCount].plugins.size());
         if (seedMode && ImGui::IsItemHovered())

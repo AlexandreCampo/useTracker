@@ -78,6 +78,15 @@ private:
     float downscaleUI = 1.0f;
     bool  draggingScale = false;
 
+    // ruler / measure tool: draw lines or rectangles over the video and read
+    // their size in pixels, to help tune pixel-valued parameters
+    bool rulerActive = false;
+    int  rulerShape = 0;            // 0 = line, 1 = rectangle
+    bool rulerAnchored = false;     // first point placed, waiting for the second
+    cv::Point2f rulerP1;
+    struct Measurement { cv::Point2f p1, p2; int shape; };
+    std::vector<Measurement> rulerMeasurements;
+
     // Video texture
     GLuint videoTexture = 0;
     int texWidth = 0;
@@ -180,6 +189,7 @@ private:
     void DrawToolbar();
     void DrawDownscaleControl();
     void DottedScaleSlider();
+    void DrawRulerOverlay(float imgMinX, float imgMinY, float imgSizeX, float imgSizeY);
     void DrawVideoDisplay();
     void DrawTabs();
     void DrawProcessingTab();
