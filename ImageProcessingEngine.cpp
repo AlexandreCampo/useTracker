@@ -875,12 +875,51 @@ bool ImageProcessingEngine::StepBackward()
 	return true;
     }
 
-    // not cached: seek (the user may have to wait)
-    double fps = capture->GetFPS();
-    double target = presentTime - (fps > 0 ? 1.0 / fps : 0.04);
-    if (target < 0) target = 0;
-    SeekTime(target);
+    // limit hit: instead of re-seeking one frame back (which the decoder does
+    // by decoding from the previous keyframe every single time — slow and
+    // noisy), refill a whole chunk ending at the previous frame in one seek so
+    // the next many back-steps are served from the cache
+    long tgt = GetProcessFrameNumber() - 1;
+    if (tgt < 0) return false;
+    RefillBackward(tgt);
     return true;
+}
+
+// Rebuild the buffer as a chunk that ends a little after targetFrame: seek once
+// to keepPast frames before it, then decode forward to fill past + target +
+// prefetch. The process head lands on targetFrame, so subsequent StepBackward
+// calls are cached until the chunk is exhausted.
+void ImageProcessingEngine::RefillBackward(long targetFrame)
+{
+    prefetchAhead = ComputePrefetch();
+    outputLatency = ComputeOutputLatency();
+    int keepPast = std::max(maxPastFrames, outputLatency + 2);
+
+    long start = targetFrame - keepPast;
+    if (start < 0) start = 0;
+    double fps = capture->GetFPS();
+    if (fps <= 0) fps = 25.0;
+
+    capture->GetFrame((double)start / fps);   // the single backward seek
+    frameBuffer.clear();
+    playIndex = -1;
+
+    long needUpTo = targetFrame + prefetchAhead;
+    // bound the decode loop so a bad seek can never spin forever
+    int budget = (int)(needUpTo - start) + prefetchAhead + 16;
+    while (budget-- > 0)
+    {
+	if (!DecodeOne()) break;
+	if (frameBuffer.back().number >= needUpTo) break;
+    }
+    if (frameBuffer.empty()) return;
+
+    // land the process head on targetFrame (nearest buffered frame <= target)
+    playIndex = 0;
+    for (int i = 0; i < (int)frameBuffer.size(); i++)
+	if (frameBuffer[i].number <= targetFrame) playIndex = i;
+
+    PresentPlayhead();
 }
 
 void ImageProcessingEngine::SeekTime(double t)

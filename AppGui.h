@@ -94,6 +94,12 @@ private:
     bool   loopEnabled = false;        // loop playback between loopStart/loopEnd
     void AddLoopPoint(double t);       // sets start, then end, then restarts
 
+    // backward stepping: when the buffer limit is hit a chunk must be re-read
+    // (slow), so it is deferred one frame to show a loading indicator first
+    bool pendingRewind = false;
+    int  rewindLoadingTicks = 0;
+    void RequestStepBackward();
+
     // Video texture
     GLuint videoTexture = 0;
     int texWidth = 0;

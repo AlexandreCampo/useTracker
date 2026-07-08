@@ -538,14 +538,8 @@ void AppGui::HandleShortcut(SDL_Keycode key, bool ctrl)
         break;
 
     case SDLK_LEFT:
-        // Pause and step backward one frame (served from the buffer if cached)
-        play = false;
-        ipEngine.capture->Pause();
-        if (ipEngine.capture->GetFrameCount() > 0)
-        {
-            ipEngine.StepBackward();
-            pipelineDirty = true;
-        }
+        // Pause and step backward one frame (cached, or a deferred chunk re-read)
+        RequestStepBackward();
         break;
 
     case SDLK_EQUALS:  // + or = key
@@ -615,6 +609,24 @@ void AppGui::HandleShortcut(SDL_Keycode key, bool ctrl)
 void AppGui::UpdateEngine()
 {
     if (!ipEngine.capture) return;
+
+    // Deferred backward chunk re-read: the first pass just shows the loading
+    // indicator (drawn this frame), the second pass does the actual (blocking)
+    // refill, so the user sees feedback rather than a silent freeze.
+    if (pendingRewind)
+    {
+        rewindLoadingTicks++;
+        if (rewindLoadingTicks == 2)     // after a frame of the loading bar...
+        {
+            ipEngine.StepBackward();     // ...perform the (blocking) chunk refill
+            pipelineDirty = true;
+        }
+        if (rewindLoadingTicks >= 4)     // keep the bar up a moment, then clear
+        {
+            pendingRewind = false;
+            rewindLoadingTicks = 0;
+        }
+    }
 
     // Update pipeline snapshot position
     unsigned int oldSnapshotPos = ipEngine.snapshotPos;
@@ -933,15 +945,7 @@ void AppGui::DrawToolbar()
 
     // Step backward (pause and go back one frame, cached if possible)
     if (ImGui::Button("<##step_back", ImVec2(24*dpiScale, 24*dpiScale)))
-    {
-        play = false;
-        ipEngine.capture->Pause();
-        if (ipEngine.capture->GetFrameCount() > 0)
-        {
-            ipEngine.StepBackward();
-            pipelineDirty = true;
-        }
-    }
+        RequestStepBackward();
 
     ImGui::SameLine();
 
@@ -1301,6 +1305,26 @@ void AppGui::DrawRulerOverlay(float imgMinX, float imgMinY, float imgSizeX, floa
     }
 }
 
+// Step back one frame. If the previous frame is cached it is instant; if the
+// buffer limit is hit it needs a (slower) chunk re-read, which is deferred one
+// frame so a loading indicator can be shown first.
+void AppGui::RequestStepBackward()
+{
+    play = false;
+    if (ipEngine.capture) ipEngine.capture->Pause();
+    if (!ipEngine.capture || ipEngine.capture->GetFrameCount() <= 0) return;
+
+    if (ipEngine.CanStepBackwardCached())
+    {
+        ipEngine.StepBackward();
+        pipelineDirty = true;
+    }
+    else
+    {
+        pendingRewind = true;   // heavy: handled in UpdateEngine after showing the bar
+    }
+}
+
 void AppGui::AddLoopPoint(double t)
 {
     if (loopStart < 0)      loopStart = t;                 // first point = start
@@ -1541,6 +1565,25 @@ void AppGui::DrawVideoDisplay()
         // Ruler / measure tool (takes over mouse interaction while active)
         if (rulerActive)
             DrawRulerOverlay(itemMinAbs.x, itemMinAbs.y, itemSizeAbs.x, itemSizeAbs.y);
+
+        // Loading indicator while a backward chunk is being re-read from disk
+        if (pendingRewind)
+        {
+            ImDrawList* dl = ImGui::GetWindowDrawList();
+            float bw = 240 * dpiScale, bh = 46 * dpiScale;
+            ImVec2 c(itemMinAbs.x + itemSizeAbs.x * 0.5f, itemMinAbs.y + itemSizeAbs.y * 0.5f);
+            ImVec2 r0(c.x - bw * 0.5f, c.y - bh * 0.5f), r1(c.x + bw * 0.5f, c.y + bh * 0.5f);
+            dl->AddRectFilled(r0, r1, IM_COL32(0, 0, 0, 200), 6 * dpiScale);
+            dl->AddRect(r0, r1, IM_COL32(255, 220, 40, 220), 6 * dpiScale, 0, 1.5f);
+            const char* txt = "Loading frames...";
+            ImVec2 ts = ImGui::CalcTextSize(txt);
+            dl->AddText(ImVec2(c.x - ts.x * 0.5f, r0.y + 6 * dpiScale), IM_COL32(255, 255, 255, 255), txt);
+            // indeterminate progress stripe
+            float by = r1.y - 12 * dpiScale, bxl = r0.x + 12 * dpiScale, bxr = r1.x - 12 * dpiScale;
+            dl->AddRectFilled(ImVec2(bxl, by), ImVec2(bxr, by + 5 * dpiScale), IM_COL32(70, 70, 70, 255), 2);
+            dl->AddRectFilled(ImVec2(bxl, by), ImVec2(bxl + (bxr - bxl) * 0.55f, by + 5 * dpiScale),
+                              IM_COL32(255, 220, 40, 255), 2);
+        }
 
         // PatternTracker click-to-seed mode
         bool seedMode = (!rulerActive && patternSeedPluginIndex >= 0 &&

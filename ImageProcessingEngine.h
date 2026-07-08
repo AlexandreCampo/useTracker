@@ -153,6 +153,10 @@ struct ImageProcessingEngine
     void PresentPlayhead();                 // set the process/present frames
     bool AdvanceFrame();                    // step the playhead forward one frame
     bool StepBackward();                    // step back one frame (cached if possible)
+    // step back is cached: true when the previous frame is already buffered
+    bool CanStepBackwardCached() { return playIndex > 0; }
+    // rebuild the buffer as a chunk ending at targetFrame (one seek + prefetch)
+    void RefillBackward(long targetFrame);
     void SeekTime(double t);                // seek + rebuild the buffer
     cv::Mat GetBufferedImage(int offset);   // frame at process head+offset (for plugins)
     cv::Mat GetPresentImage();              // image to display (process head - latency)
