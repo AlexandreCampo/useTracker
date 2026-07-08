@@ -78,6 +78,10 @@ private:
     float downscaleUI = 1.0f;
     bool  draggingScale = false;
 
+    // the composited video texture is expensive to rebuild (HUD alpha blend +
+    // GPU upload); only redo it when the displayed image actually changes
+    bool videoDirty = true;
+
     // ruler / measure tool: draw lines or rectangles over the video and read
     // their size in pixels, to help tune pixel-valued parameters
     bool rulerActive = false;

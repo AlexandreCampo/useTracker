@@ -467,8 +467,7 @@ int AppGui::Run()
         // scripted input for automated GUI tests
         TestAdvance();
 
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
+        auto handleEvent = [&](SDL_Event& event)
         {
             ImGui_ImplSDL2_ProcessEvent(&event);
 
@@ -489,7 +488,25 @@ int AppGui::Run()
                 bool ctrl = (event.key.keysym.mod & KMOD_CTRL) != 0;
                 HandleShortcut(event.key.keysym.sym, ctrl);
             }
+        };
+
+        // Idle throttling: when nothing is animating (paused, no pending work,
+        // not scripted) block until an event arrives instead of busy-spinning,
+        // which keeps CPU near zero while paused. Otherwise poll and run full
+        // speed (vsync-capped).
+        bool busy = play || pendingRewind || ipEngine.refilling ||
+                    pipelineDirty || videoDirty || testMode ||
+                    ImGui::GetIO().WantTextInput || activeTab == TAB_CALIBRATION;
+
+        SDL_Event event;
+        if (!busy)
+        {
+            // wake at least every 200 ms so ImGui animations still tick
+            if (SDL_WaitEventTimeout(&event, 200))
+                handleEvent(event);
         }
+        while (SDL_PollEvent(&event))
+            handleEvent(event);
 
         UpdateEngine();
         RenderFrame();
@@ -700,11 +717,13 @@ void AppGui::UpdateEngine()
         {
             ipEngine.Step(hudVisible);
             pipelineDirty = false;
+            videoDirty = true;   // the processed frame changed -> redraw texture
         }
     }
     else if (activeTab == TAB_CALIBRATION)
     {
         ipEngine.capture->Calibrate();
+        videoDirty = true;       // calibration view updates continuously
     }
 
     // Determine which frame to display
@@ -716,6 +735,10 @@ void AppGui::UpdateEngine()
         oglScreen = ipEngine.capture->CalibrationGetFrame();
     else if (activeTab == TAB_PROCFRAME)
         oglScreen = ipEngine.zoneMap;
+
+    // switching the displayed view changes the source image
+    static int lastVideoTab = -1;
+    if (activeTab != lastVideoTab) { videoDirty = true; lastVideoTab = activeTab; }
 
     // Update the video slider position
     if (!sliderMoving && ipEngine.capture->GetFrameCount() > 0)
@@ -1021,6 +1044,7 @@ void AppGui::DrawToolbar()
     if (ImGui::Checkbox("HUD", &hudVisible))
     {
         pipelineDirty = true; // the HUD is drawn during pipeline processing
+        videoDirty = true;
     }
 
     ImGui::SameLine();
@@ -1047,7 +1071,8 @@ void AppGui::DrawToolbar()
 
     // Processing blending slider
     ImGui::SetNextItemWidth(80*dpiScale);
-    ImGui::SliderFloat("##Blend", &processingBlending, 0.0f, 1.0f, "%.1f");
+    if (ImGui::SliderFloat("##Blend", &processingBlending, 0.0f, 1.0f, "%.1f"))
+        videoDirty = true;
     if (ImGui::IsItemHovered())
         ImGui::SetTooltip("Processing blending");
 
@@ -1465,7 +1490,10 @@ void AppGui::DrawVideoDisplay()
         if (anyActivePlugin) break;
     }
 
-    if (!oglScreen.empty())
+    // Only rebuild the composited texture when the image actually changed:
+    // the HUD alpha-blend is a full-frame per-pixel loop and the upload is a
+    // GPU transfer, both wasteful to repeat every frame while paused.
+    if (!oglScreen.empty() && (videoDirty || videoTexture == 0))
     {
         if (processingBlending > 0.001f && anyActivePlugin &&
             activeTab == TAB_PROCESSING && !ipEngine.pipelineSnapshot.empty())
@@ -1510,25 +1538,28 @@ void AppGui::DrawVideoDisplay()
                 cv::resize(displayFrame, displayFrame, ipEngine.hud.size(),
                            0, 0, cv::INTER_LINEAR);
 
-            // The HUD is BGRA with alpha channel
+            // The HUD is BGRA with alpha channel (row-pointer access — much
+            // faster than per-pixel .at<>())
             for (int y = 0; y < ipEngine.hud.rows; y++)
             {
+                const cv::Vec4b* hrow = ipEngine.hud.ptr<cv::Vec4b>(y);
+                cv::Vec3b* drow = displayFrame.ptr<cv::Vec3b>(y);
                 for (int x = 0; x < ipEngine.hud.cols; x++)
                 {
-                    cv::Vec4b hudPixel = ipEngine.hud.at<cv::Vec4b>(y, x);
-                    if (hudPixel[3] > 0)
+                    unsigned char a = hrow[x][3];
+                    if (a > 0)
                     {
-                        float alpha = hudPixel[3] / 255.0f;
-                        cv::Vec3b& dst = displayFrame.at<cv::Vec3b>(y, x);
-                        dst[0] = (unsigned char)(dst[0] * (1 - alpha) + hudPixel[0] * alpha);
-                        dst[1] = (unsigned char)(dst[1] * (1 - alpha) + hudPixel[1] * alpha);
-                        dst[2] = (unsigned char)(dst[2] * (1 - alpha) + hudPixel[2] * alpha);
+                        int ia = 255 - a;
+                        drow[x][0] = (unsigned char)((drow[x][0] * ia + hrow[x][0] * a) / 255);
+                        drow[x][1] = (unsigned char)((drow[x][1] * ia + hrow[x][1] * a) / 255);
+                        drow[x][2] = (unsigned char)((drow[x][2] * ia + hrow[x][2] * a) / 255);
                     }
                 }
             }
         }
 
         UploadVideoTexture(displayFrame);
+        videoDirty = false;
     }
 
     if (videoTexture != 0 && texWidth > 0 && texHeight > 0)
