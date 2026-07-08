@@ -885,41 +885,68 @@ bool ImageProcessingEngine::StepBackward()
     return true;
 }
 
-// Rebuild the buffer as a chunk that ends a little after targetFrame: seek once
-// to keepPast frames before it, then decode forward to fill past + target +
-// prefetch. The process head lands on targetFrame, so subsequent StepBackward
-// calls are cached until the chunk is exhausted.
-void ImageProcessingEngine::RefillBackward(long targetFrame)
+// Begin rebuilding the buffer as a chunk that ends a little after targetFrame:
+// one backward seek to keepPast frames before it, then (via PumpRefill) decode
+// forward to fill past + target + prefetch. Decoding forward after a single
+// seek is clean, unlike re-seeking one frame back at a time.
+void ImageProcessingEngine::BeginRefillBackward(long targetFrame)
 {
     prefetchAhead = ComputePrefetch();
     outputLatency = ComputeOutputLatency();
     int keepPast = std::max(maxPastFrames, outputLatency + 2);
 
-    long start = targetFrame - keepPast;
-    if (start < 0) start = 0;
+    refillTarget = targetFrame;
+    refillStart = targetFrame - keepPast;
+    if (refillStart < 0) refillStart = 0;
+    refillNeedUpTo = targetFrame + prefetchAhead;
+
     double fps = capture->GetFPS();
     if (fps <= 0) fps = 25.0;
-
-    capture->GetFrame((double)start / fps);   // the single backward seek
+    capture->GetFrame((double)refillStart / fps);   // the single backward seek
     frameBuffer.clear();
     playIndex = -1;
+    refilling = true;
+}
 
-    long needUpTo = targetFrame + prefetchAhead;
-    // bound the decode loop so a bad seek can never spin forever
-    int budget = (int)(needUpTo - start) + prefetchAhead + 16;
-    while (budget-- > 0)
+// Decode up to `batch` frames of the pending chunk. Returns true when the chunk
+// is complete (and lands the process head on the target frame).
+bool ImageProcessingEngine::PumpRefill(int batch)
+{
+    if (!refilling) return true;
+    for (int i = 0; i < batch; i++)
     {
-	if (!DecodeOne()) break;
-	if (frameBuffer.back().number >= needUpTo) break;
+	if (!DecodeOne()) { refilling = false; break; }
+	if (frameBuffer.back().number >= refillNeedUpTo) { refilling = false; break; }
     }
-    if (frameBuffer.empty()) return;
+    if (!refilling)   // finished (or decode stopped): land on the target frame
+    {
+	if (!frameBuffer.empty())
+	{
+	    playIndex = 0;
+	    for (int i = 0; i < (int)frameBuffer.size(); i++)
+		if (frameBuffer[i].number <= refillTarget) playIndex = i;
+	    PresentPlayhead();
+	}
+	return true;
+    }
+    return false;
+}
 
-    // land the process head on targetFrame (nearest buffered frame <= target)
-    playIndex = 0;
-    for (int i = 0; i < (int)frameBuffer.size(); i++)
-	if (frameBuffer[i].number <= targetFrame) playIndex = i;
+float ImageProcessingEngine::RefillProgress()
+{
+    long total = refillNeedUpTo - refillStart + 1;
+    if (total <= 0) return 1.0f;
+    float p = (float)frameBuffer.size() / (float)total;
+    return std::min(1.0f, std::max(0.0f, p));
+}
 
-    PresentPlayhead();
+// synchronous convenience wrapper (used by the non-deferred StepBackward path)
+void ImageProcessingEngine::RefillBackward(long targetFrame)
+{
+    BeginRefillBackward(targetFrame);
+    int guard = (int)(refillNeedUpTo - refillStart) + prefetchAhead + 64;
+    while (refilling && guard-- > 0) PumpRefill(64);
+    refilling = false;
 }
 
 void ImageProcessingEngine::SeekTime(double t)

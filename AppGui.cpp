@@ -615,17 +615,24 @@ void AppGui::UpdateEngine()
     // refill, so the user sees feedback rather than a silent freeze.
     if (pendingRewind)
     {
-        rewindLoadingTicks++;
-        if (rewindLoadingTicks == 2)     // after a frame of the loading bar...
+        // Progressive backward chunk re-read: kick it off, then decode a small
+        // batch each frame so the loading bar shows real progress. When the
+        // chunk is ready the process head lands on the previous frame.
+        if (!ipEngine.refilling)
         {
-            ipEngine.StepBackward();     // ...perform the (blocking) chunk refill
-            pipelineDirty = true;
+            long tgt = ipEngine.GetProcessFrameNumber() - 1;
+            if (tgt < 0) { pendingRewind = false; return; }
+            ipEngine.BeginRefillBackward(tgt);
         }
-        if (rewindLoadingTicks >= 4)     // keep the bar up a moment, then clear
+        bool done = ipEngine.PumpRefill(6);
+        rewindLoadingTicks++;
+        if (done)
         {
             pendingRewind = false;
             rewindLoadingTicks = 0;
+            pipelineDirty = true;
         }
+        return;   // don't run normal playback/step while rebuilding the buffer
     }
 
     // Update pipeline snapshot position
@@ -1575,13 +1582,15 @@ void AppGui::DrawVideoDisplay()
             ImVec2 r0(c.x - bw * 0.5f, c.y - bh * 0.5f), r1(c.x + bw * 0.5f, c.y + bh * 0.5f);
             dl->AddRectFilled(r0, r1, IM_COL32(0, 0, 0, 200), 6 * dpiScale);
             dl->AddRect(r0, r1, IM_COL32(255, 220, 40, 220), 6 * dpiScale, 0, 1.5f);
-            const char* txt = "Loading frames...";
+            float prog = ipEngine.RefillProgress();
+            char txt[48];
+            snprintf(txt, sizeof(txt), "Loading frames... %d%%", (int)(prog * 100.0f + 0.5f));
             ImVec2 ts = ImGui::CalcTextSize(txt);
             dl->AddText(ImVec2(c.x - ts.x * 0.5f, r0.y + 6 * dpiScale), IM_COL32(255, 255, 255, 255), txt);
-            // indeterminate progress stripe
+            // real progress bar
             float by = r1.y - 12 * dpiScale, bxl = r0.x + 12 * dpiScale, bxr = r1.x - 12 * dpiScale;
-            dl->AddRectFilled(ImVec2(bxl, by), ImVec2(bxr, by + 5 * dpiScale), IM_COL32(70, 70, 70, 255), 2);
-            dl->AddRectFilled(ImVec2(bxl, by), ImVec2(bxl + (bxr - bxl) * 0.55f, by + 5 * dpiScale),
+            dl->AddRectFilled(ImVec2(bxl, by), ImVec2(bxr, by + 6 * dpiScale), IM_COL32(70, 70, 70, 255), 2);
+            dl->AddRectFilled(ImVec2(bxl, by), ImVec2(bxl + (bxr - bxl) * prog, by + 6 * dpiScale),
                               IM_COL32(255, 220, 40, 255), 2);
         }
 

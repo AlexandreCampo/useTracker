@@ -44,9 +44,16 @@ struct ImageProcessingEngine
     int playIndex = -1;         // process head: the frame the pipeline runs on
     int prefetchAhead = 0;      // future frames kept decoded (frame look-ahead)
     int outputLatency = 0;      // frames the present head lags the process head
-    int maxPastFrames = 15;
+    int maxPastFrames = 45;     // cached past frames for fast step-back
     long presentNumber = 0;     // displayed frame (process head - outputLatency)
     double presentTime = 0.0;
+
+    // progressive backward refill (driven one batch per frame so a real
+    // progress bar can be shown while the chunk is re-read from disk)
+    bool refilling = false;
+    long refillTarget = 0;      // frame the process head should land on
+    long refillStart = 0;       // first frame of the chunk being decoded
+    long refillNeedUpTo = 0;    // decode until this frame number is buffered
 
     // input downscaling: the pipeline runs on frames scaled by inputScale
     // (1.0 = full resolution). Downscaling speeds up parameter tuning. All
@@ -157,6 +164,10 @@ struct ImageProcessingEngine
     bool CanStepBackwardCached() { return playIndex > 0; }
     // rebuild the buffer as a chunk ending at targetFrame (one seek + prefetch)
     void RefillBackward(long targetFrame);
+    // progressive variant: begin, then pump a batch per frame until done
+    void BeginRefillBackward(long targetFrame);
+    bool PumpRefill(int batch);             // returns true when the chunk is ready
+    float RefillProgress();                 // 0..1 fraction of the chunk decoded
     void SeekTime(double t);                // seek + rebuild the buffer
     cv::Mat GetBufferedImage(int offset);   // frame at process head+offset (for plugins)
     cv::Mat GetPresentImage();              // image to display (process head - latency)
