@@ -59,6 +59,8 @@ public:
 	cv::Ptr<cv::Tracker> tracker; // CSRT backend
 	float score = 0.0f;       // last match confidence
 	int lostFrames = 0;
+	bool confirmed = false;   // false = candidate (orange), true = live (green)
+	int detectedCount = 0;    // consecutive detections toward confirmation
 	std::deque<cv::Point> trail;
     };
 
@@ -79,6 +81,8 @@ public:
     int minBlobSeedSize = 50;      // minimum blob area to auto-seed a target
     bool seedFromYolo = false;     // auto-seed from a YoloDetector's detections
     float yoloConfidence = 0.5f;   // minimum YOLO confidence to seed a target
+    int confirmDetections = 1;     // detections needed before a candidate goes live
+    bool showCandidates = true;    // draw unconfirmed candidates on the HUD
     bool additive = false;
     std::string outputFilename;
 

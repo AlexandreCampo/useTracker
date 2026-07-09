@@ -3813,6 +3813,19 @@ void AppGui::DrawPluginDialog(int index)
         if (p->seedFromYolo)
             changed |= ImGui::SliderFloat("Min Confidence", &p->yoloConfidence, 0.0f, 1.0f, "%.2f");
 
+        ImGui::Separator();
+        changed |= ImGui::InputInt("Confirm after N detections", &p->confirmDetections);
+        if (p->confirmDetections < 1) p->confirmDetections = 1;
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("A new target is a candidate (orange) until it has been\n"
+                              "detected on this many consecutive frames, then it goes\n"
+                              "live (green). Candidates are not stamped into the mask\n"
+                              "or written to output, and a candidate that misses a\n"
+                              "frame is discarded. 1 = live immediately.");
+        changed |= ImGui::Checkbox("Show candidates", &p->showCandidates);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Draw unconfirmed candidate targets (orange) on the HUD.");
+
         changed |= ImGui::Checkbox("Additive", &p->additive);
 
         char ptOut[INPUT_BUF_SIZE];

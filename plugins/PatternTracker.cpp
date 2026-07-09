@@ -188,6 +188,10 @@ void PatternTracker::SeedTarget (const Rect& box, const Mat& frame)
     t.velocity = Point2f(0, 0);
     t.score = 1.0f;
     t.lostFrames = 0;
+    // a new target starts as a candidate; it goes live after confirmDetections
+    // successful detections (confirmDetections <= 1 means live immediately)
+    t.detectedCount = 0;
+    t.confirmed = (confirmDetections <= 1);
 
     if (backend == CSRT)
     {
@@ -436,8 +440,17 @@ void PatternTracker::Apply()
 	    if (found)
 	    {
 		t.lostFrames = 0;
+		t.detectedCount++;
+		if (!t.confirmed && t.detectedCount >= confirmDetections)
+		    t.confirmed = true;     // candidate has been seen enough -> live
 		t.trail.push_back(Point((int)t.pos.x, (int)t.pos.y));
 		while ((int)t.trail.size() > trailLength) t.trail.pop_front();
+	    }
+	    else if (!t.confirmed)
+	    {
+		// a candidate must be detected on consecutive frames; one miss and
+		// it is discarded (this is how noise is rejected before going live)
+		t.active = false;
 	    }
 	    else
 	    {
@@ -464,11 +477,12 @@ void PatternTracker::Apply()
 		      targets.end());
     }
 
-    // 4. stamp the tracked targets into the marked mask
+    // 4. stamp the live targets into the marked mask (candidates are provisional
+    // and do not contribute to the mask or downstream output)
     detectionMask.setTo(0);
     for (auto& t : targets)
     {
-	if (!t.active) continue;
+	if (!t.active || !t.confirmed) continue;
 	Point center((int)t.pos.x, (int)t.pos.y);
 	Size axes(max(1, t.box.width / 2), max(1, t.box.height / 2));
 	ellipse(detectionMask, center, axes, 0, 0, 360, Scalar(255), FILLED);
@@ -489,8 +503,11 @@ void PatternTracker::OutputHud (Mat& hud)
     for (auto& t : targets)
     {
 	if (!t.active) continue;
+	if (!t.confirmed && !showCandidates) continue;
 
-	Scalar color(0, 200, 255, 255);
+	// candidates are orange, confirmed (live) targets are green
+	Scalar color = t.confirmed ? Scalar(0, 220, 0, 255)     // green
+				   : Scalar(0, 140, 255, 255);  // orange
 
 	// trail
 	for (size_t i = 1; i < t.trail.size(); i++)
@@ -499,7 +516,10 @@ void PatternTracker::OutputHud (Mat& hud)
 	rectangle(hud, SR(t.box), color, 2, LINE_AA);
 
 	char label[64];
-	snprintf(label, sizeof(label), "#%d %.2f", t.id, t.score);
+	if (t.confirmed)
+	    snprintf(label, sizeof(label), "#%d %.2f", t.id, t.score);
+	else
+	    snprintf(label, sizeof(label), "? %d/%d", t.detectedCount, confirmDetections);
 	putText(hud, label, SP(Point(t.box.x, max(12, t.box.y - 4))),
 		FONT_HERSHEY_SIMPLEX, 0.5, color, 1, LINE_AA);
     }
@@ -532,7 +552,7 @@ void PatternTracker::OutputStep()
 
     for (auto& t : targets)
     {
-	if (!t.active) continue;
+	if (!t.active || !t.confirmed) continue;   // only live targets are output
 	outputStream
 	    << time << "\t" << frame << "\t" << t.id << "\t"
 	    << (int)round(t.pos.x * os) << "\t" << (int)round(t.pos.y * os) << "\t"
@@ -563,6 +583,8 @@ void PatternTracker::LoadXML (FileNode& fn)
 	if (!fn["MinBlobSeedSize"].empty()) minBlobSeedSize = (int)fn["MinBlobSeedSize"];
 	if (!fn["SeedFromYolo"].empty()) seedFromYolo = (int)fn["SeedFromYolo"];
 	if (!fn["YoloConfidence"].empty()) yoloConfidence = (float)fn["YoloConfidence"];
+	if (!fn["ConfirmDetections"].empty()) confirmDetections = (int)fn["ConfirmDetections"];
+	if (!fn["ShowCandidates"].empty()) showCandidates = (int)fn["ShowCandidates"];
 	additive = (int)fn["Additive"];
 	outputFilename = (string)fn["OutputFilename"];
 
@@ -593,6 +615,8 @@ void PatternTracker::SaveXML (FileStorage& fs)
     fs << "MinBlobSeedSize" << minBlobSeedSize;
     fs << "SeedFromYolo" << seedFromYolo;
     fs << "YoloConfidence" << yoloConfidence;
+    fs << "ConfirmDetections" << confirmDetections;
+    fs << "ShowCandidates" << showCandidates;
     fs << "Additive" << additive;
     fs << "OutputFilename" << outputFilename;
 }
