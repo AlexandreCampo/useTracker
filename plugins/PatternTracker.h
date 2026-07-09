@@ -83,6 +83,8 @@ public:
     float yoloConfidence = 0.5f;   // minimum YOLO confidence to seed a target
     int confirmDetections = 1;     // detections needed before a candidate goes live
     bool showCandidates = true;    // draw unconfirmed candidates on the HUD
+    bool mergeOverlapping = true;  // drop the weaker of two overlapping targets
+    float mergeOverlap = 0.4f;     // box IoU above which two targets are merged
     bool additive = false;
     std::string outputFilename;
 

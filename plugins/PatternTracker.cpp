@@ -82,6 +82,14 @@ static Rect BoxAround (Point2f p, int side, const Mat& frame)
     return box & Rect(0, 0, frame.cols, frame.rows);
 }
 
+// intersection-over-union of two boxes (0 = disjoint, 1 = identical)
+static float BoxIoU (const Rect& a, const Rect& b)
+{
+    float inter = (float)(a & b).area();
+    if (inter <= 0.0f) return 0.0f;
+    return inter / (float)(a.area() + b.area() - inter);
+}
+
 bool PatternTracker::NearExistingTarget (Point2f p, float radius)
 {
     for (auto& t : targets)
@@ -475,6 +483,41 @@ void PatternTracker::Apply()
 	targets.erase(remove_if(targets.begin(), targets.end(),
 				[](const Target& t) { return !t.active; }),
 		      targets.end());
+
+	// merge overlapping targets: a blob that split into two (spawning two
+	// targets) and later rejoined leaves both targets on the same blob. When
+	// two boxes overlap enough, drop the weaker one so a single target
+	// survives. "Stronger" = confirmed over candidate, then more detections,
+	// then fewer lost frames, then older (lower id).
+	if (mergeOverlapping)
+	{
+	    auto stronger = [](const Target& a, const Target& b) -> bool
+	    {
+		if (a.confirmed != b.confirmed)         return a.confirmed;
+		if (a.detectedCount != b.detectedCount) return a.detectedCount > b.detectedCount;
+		if (a.lostFrames != b.lostFrames)       return a.lostFrames < b.lostFrames;
+		return a.id < b.id;
+	    };
+	    for (size_t i = 0; i < targets.size(); i++)
+	    {
+		if (!targets[i].active) continue;
+		for (size_t j = i + 1; j < targets.size(); j++)
+		{
+		    if (!targets[j].active) continue;
+		    if (BoxIoU(targets[i].box, targets[j].box) < mergeOverlap) continue;
+		    if (stronger(targets[i], targets[j]))
+			targets[j].active = false;
+		    else
+		    {
+			targets[i].active = false;
+			break;   // target i is gone, move to the next i
+		    }
+		}
+	    }
+	    targets.erase(remove_if(targets.begin(), targets.end(),
+				    [](const Target& t) { return !t.active; }),
+			  targets.end());
+	}
     }
 
     // 4. stamp the live targets into the marked mask (candidates are provisional
@@ -585,6 +628,8 @@ void PatternTracker::LoadXML (FileNode& fn)
 	if (!fn["YoloConfidence"].empty()) yoloConfidence = (float)fn["YoloConfidence"];
 	if (!fn["ConfirmDetections"].empty()) confirmDetections = (int)fn["ConfirmDetections"];
 	if (!fn["ShowCandidates"].empty()) showCandidates = (int)fn["ShowCandidates"];
+	if (!fn["MergeOverlapping"].empty()) mergeOverlapping = (int)fn["MergeOverlapping"];
+	if (!fn["MergeOverlap"].empty()) mergeOverlap = (float)fn["MergeOverlap"];
 	additive = (int)fn["Additive"];
 	outputFilename = (string)fn["OutputFilename"];
 
@@ -617,6 +662,8 @@ void PatternTracker::SaveXML (FileStorage& fs)
     fs << "YoloConfidence" << yoloConfidence;
     fs << "ConfirmDetections" << confirmDetections;
     fs << "ShowCandidates" << showCandidates;
+    fs << "MergeOverlapping" << mergeOverlapping;
+    fs << "MergeOverlap" << mergeOverlap;
     fs << "Additive" << additive;
     fs << "OutputFilename" << outputFilename;
 }

@@ -3858,6 +3858,19 @@ void AppGui::DrawPluginDialog(int index)
         if (ImGui::IsItemHovered())
             ImGui::SetTooltip("Draw unconfirmed candidate targets (orange) on the HUD.");
 
+        changed |= ImGui::Checkbox("Merge overlapping", &p->mergeOverlapping);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("When two targets overlap (a blob that split then\n"
+                              "rejoined), drop the weaker one so a single target\n"
+                              "survives. Keeps the confirmed / older / better-tracked one.");
+        if (p->mergeOverlapping)
+        {
+            changed |= ImGui::SliderFloat("Merge Overlap (IoU)", &p->mergeOverlap, 0.05f, 1.0f, "%.2f");
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("Box overlap (intersection-over-union) above which\n"
+                                  "two targets are treated as the same and merged.");
+        }
+
         changed |= ImGui::Checkbox("Additive", &p->additive);
 
         char ptOut[INPUT_BUF_SIZE];
