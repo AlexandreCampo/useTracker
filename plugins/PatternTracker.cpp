@@ -498,21 +498,27 @@ void PatternTracker::Apply()
 		if (a.lostFrames != b.lostFrames)       return a.lostFrames < b.lostFrames;
 		return a.id < b.id;
 	    };
+	    // The weaker of an overlapping pair accumulates overlap frames; it is
+	    // only merged away once the overlap has persisted for mergeDelay frames
+	    // (0 = immediately). If they separate before that, the counter resets,
+	    // so two distinct targets that briefly cross are not merged.
 	    for (size_t i = 0; i < targets.size(); i++)
 	    {
 		if (!targets[i].active) continue;
-		for (size_t j = i + 1; j < targets.size(); j++)
+		bool overlapsStronger = false;
+		for (size_t j = 0; j < targets.size(); j++)
 		{
-		    if (!targets[j].active) continue;
+		    if (j == i || !targets[j].active) continue;
 		    if (BoxIoU(targets[i].box, targets[j].box) < mergeOverlap) continue;
-		    if (stronger(targets[i], targets[j]))
-			targets[j].active = false;
-		    else
-		    {
-			targets[i].active = false;
-			break;   // target i is gone, move to the next i
-		    }
+		    if (stronger(targets[j], targets[i])) { overlapsStronger = true; break; }
 		}
+		if (overlapsStronger)
+		{
+		    targets[i].overlapFrames++;
+		    if (targets[i].overlapFrames > mergeDelay) targets[i].active = false;
+		}
+		else
+		    targets[i].overlapFrames = 0;
 	    }
 	    targets.erase(remove_if(targets.begin(), targets.end(),
 				    [](const Target& t) { return !t.active; }),
@@ -630,6 +636,7 @@ void PatternTracker::LoadXML (FileNode& fn)
 	if (!fn["ShowCandidates"].empty()) showCandidates = (int)fn["ShowCandidates"];
 	if (!fn["MergeOverlapping"].empty()) mergeOverlapping = (int)fn["MergeOverlapping"];
 	if (!fn["MergeOverlap"].empty()) mergeOverlap = (float)fn["MergeOverlap"];
+	if (!fn["MergeDelay"].empty()) mergeDelay = (int)fn["MergeDelay"];
 	additive = (int)fn["Additive"];
 	outputFilename = (string)fn["OutputFilename"];
 
@@ -664,6 +671,7 @@ void PatternTracker::SaveXML (FileStorage& fs)
     fs << "ShowCandidates" << showCandidates;
     fs << "MergeOverlapping" << mergeOverlapping;
     fs << "MergeOverlap" << mergeOverlap;
+    fs << "MergeDelay" << mergeDelay;
     fs << "Additive" << additive;
     fs << "OutputFilename" << outputFilename;
 }

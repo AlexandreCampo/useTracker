@@ -61,6 +61,7 @@ public:
 	int lostFrames = 0;
 	bool confirmed = false;   // false = candidate (orange), true = live (green)
 	int detectedCount = 0;    // consecutive detections toward confirmation
+	int overlapFrames = 0;    // consecutive frames overlapping a stronger target
 	std::deque<cv::Point> trail;
     };
 
@@ -85,6 +86,7 @@ public:
     bool showCandidates = true;    // draw unconfirmed candidates on the HUD
     bool mergeOverlapping = true;  // drop the weaker of two overlapping targets
     float mergeOverlap = 0.4f;     // box IoU above which two targets are merged
+    int mergeDelay = 0;            // frames the overlap must persist before merging
     bool additive = false;
     std::string outputFilename;
 

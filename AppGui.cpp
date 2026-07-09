@@ -3869,6 +3869,12 @@ void AppGui::DrawPluginDialog(int index)
             if (ImGui::IsItemHovered())
                 ImGui::SetTooltip("Box overlap (intersection-over-union) above which\n"
                                   "two targets are treated as the same and merged.");
+            changed |= ImGui::InputInt("Merge Delay (frames)", &p->mergeDelay);
+            if (p->mergeDelay < 0) p->mergeDelay = 0;
+            if (ImGui::IsItemHovered())
+                ImGui::SetTooltip("The overlap must persist for this many frames before\n"
+                                  "the weaker target is merged away. Prevents merging two\n"
+                                  "distinct targets that only briefly cross. 0 = immediate.");
         }
 
         changed |= ImGui::Checkbox("Additive", &p->additive);
