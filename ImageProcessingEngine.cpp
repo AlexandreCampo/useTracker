@@ -906,29 +906,76 @@ void ImageProcessingEngine::BeginRefillBackward(long targetFrame)
     frameBuffer.clear();
     playIndex = -1;
     refilling = true;
+    refillProcessing = false;
+    refillProcessIdx = 0;
+    refillTargetIdx = 0;
 }
 
-// Decode up to `batch` frames of the pending chunk. Returns true when the chunk
-// is complete (and lands the process head on the target frame).
+// land the process head on the target frame and finish the refill
+void ImageProcessingEngine::FinishRefill()
+{
+    if (!frameBuffer.empty())
+    {
+	playIndex = 0;
+	for (int i = 0; i < (int)frameBuffer.size(); i++)
+	    if (frameBuffer[i].number <= refillTarget) playIndex = i;
+	PresentPlayhead();
+    }
+    refilling = false;
+    refillProcessing = false;
+}
+
+// Advance the pending chunk by up to `batch` frames of work. First decodes the
+// chunk; then, if a centered plugin delays the display, re-processes the chunk
+// forward so every frame has a cached processed image (and temporal plugin
+// state is rebuilt). Returns true when the chunk is fully ready.
 bool ImageProcessingEngine::PumpRefill(int batch)
 {
     if (!refilling) return true;
-    for (int i = 0; i < batch; i++)
+
+    if (!refillProcessing)
     {
-	if (!DecodeOne()) { refilling = false; break; }
-	if (frameBuffer.back().number >= refillNeedUpTo) { refilling = false; break; }
-    }
-    if (!refilling)   // finished (or decode stopped): land on the target frame
-    {
-	if (!frameBuffer.empty())
+	// --- decode phase ---
+	bool decodeDone = false;
+	for (int i = 0; i < batch; i++)
 	{
-	    playIndex = 0;
-	    for (int i = 0; i < (int)frameBuffer.size(); i++)
-		if (frameBuffer[i].number <= refillTarget) playIndex = i;
-	    PresentPlayhead();
+	    if (!DecodeOne()) { decodeDone = true; break; }
+	    if (frameBuffer.back().number >= refillNeedUpTo) { decodeDone = true; break; }
 	}
-	return true;
+	if (decodeDone)
+	{
+	    if (frameBuffer.empty()) { refilling = false; return true; }
+	    // locate the target frame in the buffer
+	    refillTargetIdx = 0;
+	    for (int i = 0; i < (int)frameBuffer.size(); i++)
+		if (frameBuffer[i].number <= refillTarget) refillTargetIdx = i;
+	    if (outputLatency > 0)
+	    {
+		refillProcessing = true;   // move to the re-process phase
+		refillProcessIdx = 0;
+	    }
+	    else
+	    {
+		FinishRefill();            // no delayed display -> just land
+		return true;
+	    }
+	}
+	return false;
     }
+
+    // --- re-process phase: run the pipeline forward to fill .processed ---
+    bool savedOutput = output;
+    output = false;                    // don't emit CSV rows during warm-up
+    for (int i = 0; i < batch && refillProcessIdx <= refillTargetIdx; i++)
+    {
+	playIndex = refillProcessIdx;
+	PresentPlayhead();
+	Step(false);
+	refillProcessIdx++;
+    }
+    output = savedOutput;
+
+    if (refillProcessIdx > refillTargetIdx) { FinishRefill(); return true; }
     return false;
 }
 
@@ -936,17 +983,24 @@ float ImageProcessingEngine::RefillProgress()
 {
     long total = refillNeedUpTo - refillStart + 1;
     if (total <= 0) return 1.0f;
-    float p = (float)frameBuffer.size() / (float)total;
-    return std::min(1.0f, std::max(0.0f, p));
+    // decode is the first half, re-processing (if any) the second half
+    bool twoPhase = (outputLatency > 0);
+    float decode = std::min(1.0f, (float)frameBuffer.size() / (float)total);
+    if (!twoPhase) return decode;
+    float proc = (refillTargetIdx > 0)
+	? std::min(1.0f, (float)refillProcessIdx / (float)(refillTargetIdx + 1))
+	: (refillProcessing ? 1.0f : 0.0f);
+    return refillProcessing ? 0.5f + 0.5f * proc : 0.5f * decode;
 }
 
 // synchronous convenience wrapper (used by the non-deferred StepBackward path)
 void ImageProcessingEngine::RefillBackward(long targetFrame)
 {
     BeginRefillBackward(targetFrame);
-    int guard = (int)(refillNeedUpTo - refillStart) + prefetchAhead + 64;
+    // two phases (decode + optional re-process), so allow twice the chunk length
+    int guard = 2 * ((int)(refillNeedUpTo - refillStart) + prefetchAhead) + 64;
     while (refilling && guard-- > 0) PumpRefill(64);
-    refilling = false;
+    if (refilling) FinishRefill();   // backstop
 }
 
 void ImageProcessingEngine::SeekTime(double t)

@@ -54,6 +54,12 @@ struct ImageProcessingEngine
     long refillTarget = 0;      // frame the process head should land on
     long refillStart = 0;       // first frame of the chunk being decoded
     long refillNeedUpTo = 0;    // decode until this frame number is buffered
+    // second phase: when a centered plugin delays the display, the freshly
+    // decoded chunk has no cached processed frames, so it is re-processed
+    // forward to repopulate them (and rebuild temporal plugin state)
+    bool refillProcessing = false;
+    int  refillProcessIdx = 0;  // next buffer index to (re)process
+    int  refillTargetIdx = 0;   // buffer index of the target frame
 
     // input downscaling: the pipeline runs on frames scaled by inputScale
     // (1.0 = full resolution). Downscaling speeds up parameter tuning. All
@@ -167,7 +173,8 @@ struct ImageProcessingEngine
     // progressive variant: begin, then pump a batch per frame until done
     void BeginRefillBackward(long targetFrame);
     bool PumpRefill(int batch);             // returns true when the chunk is ready
-    float RefillProgress();                 // 0..1 fraction of the chunk decoded
+    void FinishRefill();                    // land the process head on the target
+    float RefillProgress();                 // 0..1 fraction of the chunk ready
     void SeekTime(double t);                // seek + rebuild the buffer
     cv::Mat GetBufferedImage(int offset);   // frame at process head+offset (for plugins)
     cv::Mat GetPresentImage();              // image to display (process head - latency)
