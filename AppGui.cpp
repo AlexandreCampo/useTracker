@@ -1847,7 +1847,17 @@ void AppGui::DrawProcessingTab()
     if (!ipEngine.pipelines.empty())
         pipelineSize = (int)ipEngine.pipelines[0].plugins.size();
 
-    ImGui::BeginChild("PipelineList", ImVec2(0, 200*dpiScale), true);
+    // The Pipeline list and the Available Plugins list share the panel height:
+    // the pipeline list has a draggable height, the plugins list fills the rest.
+    float totalAvail = ImGui::GetContentRegionAvail().y;
+    float minList = 60 * dpiScale;
+    float maxPh = totalAvail - 180 * dpiScale;   // leave room for buttons + plugins list
+    if (maxPh < minList) maxPh = minList;
+    float ph = pipelineListHeight * dpiScale;
+    if (ph < minList) ph = minList;
+    if (ph > maxPh) ph = maxPh;
+
+    ImGui::BeginChild("PipelineList", ImVec2(0, ph), true);
     for (int i = 0; i < pipelineSize; i++)
     {
         // Get the plugin pointer (may be null in threaded pipeline, use single-threaded)
@@ -1891,6 +1901,26 @@ void AppGui::DrawProcessingTab()
         ImGui::PopID();
     }
     ImGui::EndChild();
+
+    // Draggable splitter to resize the pipeline list (and thus the plugins list)
+    {
+        ImGui::InvisibleButton("##pipeSplit", ImVec2(-1, 6 * dpiScale));
+        if (ImGui::IsItemHovered() || ImGui::IsItemActive())
+            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
+        if (ImGui::IsItemActive())
+        {
+            pipelineListHeight += ImGui::GetIO().MouseDelta.y / dpiScale;
+            if (pipelineListHeight < minList / dpiScale) pipelineListHeight = minList / dpiScale;
+            if (pipelineListHeight > maxPh / dpiScale) pipelineListHeight = maxPh / dpiScale;
+        }
+        ImVec2 gmin = ImGui::GetItemRectMin(), gmax = ImGui::GetItemRectMax();
+        float cy = (gmin.y + gmax.y) * 0.5f, cx = (gmin.x + gmax.x) * 0.5f;
+        ImU32 col = ImGui::GetColorU32(ImGui::IsItemActive() ? ImGuiCol_SeparatorActive
+                                                             : ImGuiCol_Separator);
+        ImGui::GetWindowDrawList()->AddLine(ImVec2(gmin.x + 4, cy), ImVec2(gmax.x - 4, cy), col, 1.0f);
+        ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(cx - 12*dpiScale, cy - 1.5f*dpiScale),
+                                                  ImVec2(cx + 12*dpiScale, cy + 1.5f*dpiScale), col, 1.0f);
+    }
 
     // Pipeline control buttons
     if (ImGui::Button("Settings...") && selectedPipelineItem >= 0 &&
@@ -1986,7 +2016,9 @@ void AppGui::DrawProcessingTab()
         }
     };
 
-    ImGui::BeginChild("AvailablePlugins", ImVec2(0, 220*dpiScale), true);
+    // fill the remaining panel height, leaving room for the Add Plugin button
+    float pluginsFooter = ImGui::GetFrameHeightWithSpacing();
+    ImGui::BeginChild("AvailablePlugins", ImVec2(0, -pluginsFooter), true);
 
     // track which plugins land in a category so we can gather the rest
     std::vector<bool> categorized(availablePluginNames.size(), false);

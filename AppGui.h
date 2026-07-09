@@ -73,6 +73,11 @@ private:
     // at use). Draggable via the splitter between the video area and the panel.
     float controlPanelWidth = 380.0f;
 
+    // height of the Pipeline list on the Processing tab (unscaled px). The
+    // Available Plugins list below fills the rest of the panel; a splitter
+    // between them adjusts both.
+    float pipelineListHeight = 200.0f;
+
     // input-downscale slider state: the widget edits downscaleUI live while
     // dragging and only applies the (heavy) rebuild on release
     float downscaleUI = 1.0f;
