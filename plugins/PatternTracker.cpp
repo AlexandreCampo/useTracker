@@ -109,9 +109,10 @@ void PatternTracker::ComputeComponents (const Mat& mask)
 }
 
 // find the mask blob under p; if p is on background, search outward in rings up
-// to searchRadius for the nearest foreground pixel. Returns its bounding box.
+// to searchRadius for the nearest foreground pixel. Returns its bounding box,
+// centroid and pixel area.
 bool PatternTracker::ComponentBoxNear (Point p, int searchRadius,
-				       Rect& outBox, Point2f& outCentroid)
+				       Rect& outBox, Point2f& outCentroid, int& outArea)
 {
     if (ccCount <= 1 || ccLabels.empty()) return false;
     const int W = ccLabels.cols, H = ccLabels.rows;
@@ -148,18 +149,17 @@ bool PatternTracker::ComponentBoxNear (Point p, int searchRadius,
 		  ccStats.at<int>(lab, CC_STAT_HEIGHT));
     outCentroid = Point2f((float)ccCentroids.at<double>(lab, 0),
 			  (float)ccCentroids.at<double>(lab, 1));
+    outArea = ccStats.at<int>(lab, CC_STAT_AREA);
     return true;
 }
 
-// grow/shrink the reported box towards the underlying blob, rate-limited so a
-// flickering blob does not make the box jump. When no blob is found this frame
-// (occlusion / flicker) the last size is kept and the box just follows pos.
-void PatternTracker::RefitBoxToMask (Target& t)
+// grow/shrink the reported box towards the underlying blob (already looked up),
+// rate-limited so a flickering blob does not make the box jump. When no blob is
+// found this frame (occlusion / flicker) the last size is kept and the box just
+// follows pos.
+void PatternTracker::RefitBoxToMask (Target& t, bool hasBlob, const Rect& blobBox)
 {
-    Rect blobBox;
-    Point2f blobCentroid;
-    if (ComponentBoxNear(Point((int)t.pos.x, (int)t.pos.y), maxDistance,
-			 blobBox, blobCentroid))
+    if (hasBlob)
     {
 	t.boxSizeF.width  += sizeAdaptRate * (blobBox.width  - t.boxSizeF.width);
 	t.boxSizeF.height += sizeAdaptRate * (blobBox.height - t.boxSizeF.height);
@@ -338,7 +338,8 @@ void PatternTracker::Apply()
     {
 	Rect blobBox;
 	Point2f blobCentroid;
-	if (fitToMask && ComponentBoxNear(p, maxDistance, blobBox, blobCentroid))
+	int blobArea = 0;
+	if (fitToMask && ComponentBoxNear(p, maxDistance, blobBox, blobCentroid, blobArea))
 	    SeedTarget(blobBox, frame);
 	else
 	    SeedTarget(BoxAround(Point2f(p.x, p.y), templateSize, frame), frame);
@@ -394,6 +395,20 @@ void PatternTracker::Apply()
 	    bool found = (backend == CSRT) ? TrackCSRT(t, frame)
 					   : TrackTemplate(t, frame);
 
+	    // look up the mask blob under the (tracked) position once
+	    Rect blobBox;
+	    Point2f blobCentroid;
+	    int blobArea = 0;
+	    bool hasBlob = fitToMask &&
+		ComponentBoxNear(Point((int)t.pos.x, (int)t.pos.y), maxDistance,
+				 blobBox, blobCentroid, blobArea);
+
+	    // a target only counts as detected if it sits on a blob of at least
+	    // the minimum size; otherwise a few noise pixels would keep a dead
+	    // target alive forever. Only enforced when the mask is available.
+	    if (found && fitToMask && (!hasBlob || blobArea < minBlobSeedSize))
+		found = false;
+
 	    if (found)
 	    {
 		t.lostFrames = 0;
@@ -409,9 +424,9 @@ void PatternTracker::Apply()
 	    }
 
 	    // refit the reported box to the underlying mask blob (rate-limited).
-	    // On a frame with no blob it keeps the last size and follows pos.
+	    // On a frame with no (big enough) blob it keeps the last size.
 	    if (fitToMask && t.active)
-		RefitBoxToMask(t);
+		RefitBoxToMask(t, hasBlob && blobArea >= minBlobSeedSize, blobBox);
 
 	    // drop a target whose center has left the frame
 	    if (t.pos.x < 0 || t.pos.x >= frame.cols ||

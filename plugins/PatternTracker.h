@@ -119,11 +119,13 @@ private:
 
     // mask-blob helpers
     void ComputeComponents (const cv::Mat& mask);
-    // bounding box of the mask blob at (or nearest, within searchRadius) p
+    // bounding box + pixel area of the mask blob at (or nearest, within
+    // searchRadius) p
     bool ComponentBoxNear (cv::Point p, int searchRadius,
-			   cv::Rect& outBox, cv::Point2f& outCentroid);
-    // resize the target box towards its underlying blob, rate-limited
-    void RefitBoxToMask (Target& t);
+			   cv::Rect& outBox, cv::Point2f& outCentroid, int& outArea);
+    // resize the target box towards its underlying blob (already looked up),
+    // rate-limited
+    void RefitBoxToMask (Target& t, bool hasBlob, const cv::Rect& blobBox);
 };
 
 #endif

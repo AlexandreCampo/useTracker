@@ -3797,8 +3797,13 @@ void AppGui::DrawPluginDialog(int index)
 
         ImGui::Separator();
         changed |= ImGui::Checkbox("Seed from detected blobs", &p->seedFromDetection);
-        if (p->seedFromDetection)
-            changed |= ImGui::InputInt("Min Blob Size to Seed", &p->minBlobSeedSize);
+        changed |= ImGui::InputInt("Min Blob Size", &p->minBlobSeedSize);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Minimum mask-blob area (px). Applies all the time:\n"
+                              "used to seed new targets AND, each frame, a target\n"
+                              "whose blob falls below this is treated as undetected\n"
+                              "(so noise cannot keep a dead target alive).\n"
+                              "Requires 'Fit box to mask'.");
 
         changed |= ImGui::Checkbox("Additive", &p->additive);
 
