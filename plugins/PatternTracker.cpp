@@ -163,22 +163,38 @@ bool PatternTracker::ComponentBoxNear (Point p, int searchRadius,
     return true;
 }
 
-// grow/shrink the reported box towards the underlying blob (already looked up),
-// rate-limited so a flickering blob does not make the box jump. When no blob is
-// found this frame (occlusion / flicker) the last size is kept and the box just
-// follows pos.
+// Fit the reported box to the underlying mask blob (already looked up). Each
+// edge grows immediately to contain the blob (so the whole blob — e.g. a fish
+// tail — is always inside the box) and contracts only slowly (rate-limited), so
+// a flickering / shrinking blob does not make the box jitter. When no blob is
+// found this frame (occlusion / flicker) the box keeps its size and follows the
+// tracked position.
 void PatternTracker::RefitBoxToMask (Target& t, bool hasBlob, const Rect& blobBox)
 {
     if (hasBlob)
     {
-	t.boxSizeF.width  += sizeAdaptRate * (blobBox.width  - t.boxSizeF.width);
-	t.boxSizeF.height += sizeAdaptRate * (blobBox.height - t.boxSizeF.height);
+	float cl = t.boxF.x, ct = t.boxF.y;
+	float cr = t.boxF.x + t.boxF.width, cb = t.boxF.y + t.boxF.height;
+	float bl = (float)blobBox.x, bt = (float)blobBox.y;
+	float br = (float)(blobBox.x + blobBox.width), bb = (float)(blobBox.y + blobBox.height);
+
+	// grow instantly outwards, shrink slowly inwards, per edge
+	float nl = (bl < cl) ? bl : cl + sizeAdaptRate * (bl - cl);
+	float nt = (bt < ct) ? bt : ct + sizeAdaptRate * (bt - ct);
+	float nr = (br > cr) ? br : cr + sizeAdaptRate * (br - cr);
+	float nb = (bb > cb) ? bb : cb + sizeAdaptRate * (bb - cb);
+
+	t.boxF = Rect2f(nl, nt, std::max(8.0f, nr - nl), std::max(8.0f, nb - nt));
+    }
+    else
+    {
+	// no blob: keep the size, follow the tracked (coasting) position
+	t.boxF.x = t.pos.x - t.boxF.width / 2.0f;
+	t.boxF.y = t.pos.y - t.boxF.height / 2.0f;
     }
 
-    float w = max(8.0f, t.boxSizeF.width);
-    float h = max(8.0f, t.boxSizeF.height);
-    Rect b((int)round(t.pos.x - w / 2.0f), (int)round(t.pos.y - h / 2.0f),
-	   (int)round(w), (int)round(h));
+    Rect b((int)round(t.boxF.x), (int)round(t.boxF.y),
+	   (int)round(t.boxF.width), (int)round(t.boxF.height));
     t.box = b & Rect(0, 0, pipeline->width, pipeline->height);
 }
 
@@ -191,7 +207,7 @@ void PatternTracker::SeedTarget (const Rect& box, const Mat& frame)
     t.id = nextId++;
     t.active = true;
     t.box = box;
-    t.boxSizeF = Size2f((float)box.width, (float)box.height);
+    t.boxF = Rect2f((float)box.x, (float)box.y, (float)box.width, (float)box.height);
     t.pos = Point2f(box.x + box.width / 2.0f, box.y + box.height / 2.0f);
     t.velocity = Point2f(0, 0);
     t.score = 1.0f;
@@ -532,7 +548,7 @@ void PatternTracker::Apply()
     for (auto& t : targets)
     {
 	if (!t.active || !t.confirmed) continue;
-	Point center((int)t.pos.x, (int)t.pos.y);
+	Point center(t.box.x + t.box.width / 2, t.box.y + t.box.height / 2);
 	Size axes(max(1, t.box.width / 2), max(1, t.box.height / 2));
 	ellipse(detectionMask, center, axes, 0, 0, 360, Scalar(255), FILLED);
     }

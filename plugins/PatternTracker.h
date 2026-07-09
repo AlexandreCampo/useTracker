@@ -52,8 +52,8 @@ public:
 	int id = 0;
 	bool active = false;
 	cv::Rect box;             // current bounding box, frame coordinates
-	cv::Size2f boxSizeF;      // smoothed box size (float, rate-limited to the mask blob)
-	cv::Point2f pos;          // box center
+	cv::Rect2f boxF;          // smoothed float box, tracks the mask blob's bounds
+	cv::Point2f pos;          // appearance-tracked position
 	cv::Point2f velocity;     // per frame, for search prediction
 	cv::Mat templ;            // stored pattern (TEMPLATE backend)
 	cv::Ptr<cv::Tracker> tracker; // CSRT backend
