@@ -82,6 +82,8 @@ private:
     // GPU upload); only redo it when the displayed image actually changes
     bool videoDirty = true;
 
+    float testWheel = 0.0f;   // scripted mouse-wheel delta (test harness)
+
     // ruler / measure tool: draw lines or rectangles over the video and read
     // their size in pixels, to help tune pixel-valued parameters
     bool rulerActive = false;

@@ -1719,8 +1719,14 @@ void AppGui::DrawVideoDisplay()
                 zoomStartY = std::max(0.0f, zoomStartY);
             }
 
-            // Pan with middle mouse button
-            if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle))
+            // Pan by dragging: middle button always, or left button when
+            // zoomed in and no tool is using the left click (ruler, pattern
+            // seeding, white-point pick, ROI editing)
+            bool zoomedIn = (zoomEndX - zoomStartX < 0.999f) ||
+                            (zoomEndY - zoomStartY < 0.999f);
+            bool leftPan = zoomedIn && !rulerActive && !seedMode && !pickMode &&
+                           !roiEditing && ImGui::IsMouseDragging(ImGuiMouseButton_Left);
+            if (ImGui::IsMouseDragging(ImGuiMouseButton_Middle) || leftPan)
             {
                 ImVec2 delta = ImGui::GetIO().MouseDelta;
                 ImVec2 itemSize = ImGui::GetItemRectSize();
@@ -1741,11 +1747,18 @@ void AppGui::DrawVideoDisplay()
 
                 zoomStartX = std::max(0.0f, zoomStartX);
                 zoomStartY = std::max(0.0f, zoomStartY);
+
+                ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeAll);
+            }
+            else if (zoomedIn && !rulerActive && !seedMode && !pickMode && !roiEditing)
+            {
+                // hint that the image can be grabbed to pan
+                ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
             }
 
-            // Double-click to reset zoom (disabled while seeding targets,
-            // picking a white point or editing ROIs, where left click is used)
-            if (!seedMode && !pickMode && !roiEditing &&
+            // Double-click to reset zoom (disabled while a tool uses the left
+            // click: ruler, seeding targets, white-point pick, ROI editing)
+            if (!rulerActive && !seedMode && !pickMode && !roiEditing &&
                 ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
             {
                 zoomStartX = 0.0f; zoomStartY = 0.0f;
@@ -5165,6 +5178,22 @@ void AppGui::TestAdvance()
             ss >> testMouseX >> testMouseY;
             continue; // instant, no frame consumed
         }
+        if (op == "scroll")  // test aid: inject a mouse-wheel delta (zoom)
+        {
+            float w = 0.0f; ss >> w; testWheel = w;
+            return;
+        }
+        if (op == "press")   // test aid: hold a mouse button (for drags)
+        {
+            std::string btn; ss >> btn;
+            if (btn == "right") testRightDown = true; else testLeftDown = true;
+            return;
+        }
+        if (op == "release") // test aid: release held mouse buttons
+        {
+            testLeftDown = false; testRightDown = false;
+            return;
+        }
         if (op == "scale")   // test aid: set the input downscale directly
         {
             float s = 1.0f; ss >> s;
@@ -5224,6 +5253,7 @@ void AppGui::TestInjectInput()
     io.AddMousePosEvent(testMouseX, testMouseY);
     io.AddMouseButtonEvent(0, testLeftDown);
     io.AddMouseButtonEvent(1, testRightDown);
+    if (testWheel != 0.0f) { io.AddMouseWheelEvent(0.0f, testWheel); testWheel = 0.0f; }
 
     if (testKey >= 0)
     {
