@@ -77,6 +77,8 @@ public:
     int trailLength = 30;
     bool seedFromDetection = false;
     int minBlobSeedSize = 50;      // minimum blob area to auto-seed a target
+    bool seedFromYolo = false;     // auto-seed from a YoloDetector's detections
+    float yoloConfidence = 0.5f;   // minimum YOLO confidence to seed a target
     bool additive = false;
     std::string outputFilename;
 

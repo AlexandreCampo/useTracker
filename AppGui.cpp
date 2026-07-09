@@ -3805,6 +3805,14 @@ void AppGui::DrawPluginDialog(int index)
                               "(so noise cannot keep a dead target alive).\n"
                               "Requires 'Fit box to mask'.");
 
+        changed |= ImGui::Checkbox("Seed from YOLO", &p->seedFromYolo);
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("Auto-create targets from a YOLO Detector placed\n"
+                              "earlier in the pipeline, one per detection above the\n"
+                              "confidence threshold (not already tracked).");
+        if (p->seedFromYolo)
+            changed |= ImGui::SliderFloat("Min Confidence", &p->yoloConfidence, 0.0f, 1.0f, "%.2f");
+
         changed |= ImGui::Checkbox("Additive", &p->additive);
 
         char ptOut[INPUT_BUF_SIZE];

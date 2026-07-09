@@ -20,7 +20,9 @@
 #include "PatternTracker.h"
 
 #include "ImageProcessingEngine.h"
+#include "Pipeline.h"
 #include "Blob.h"
+#include "YoloDetector.h"
 
 #include <iostream>
 #include <algorithm>
@@ -384,6 +386,28 @@ void PatternTracker::Apply()
 	}
     }
 
+    // 2b. automatic seeds from a YoloDetector placed earlier in the pipeline:
+    // one target per detection above the confidence threshold, not already
+    // tracked. The detector's boxes are in the same (processing) coordinates.
+    if (seedFromYolo)
+    {
+	for (auto* pp : pipeline->plugins)
+	{
+	    YoloDetector* yolo = dynamic_cast<YoloDetector*>(pp);
+	    if (!yolo || !yolo->active) continue;
+	    for (auto& d : yolo->detections)
+	    {
+		if (d.confidence < yoloConfidence) continue;
+		Point2f cen(d.box.x + d.box.width / 2.0f,
+			    d.box.y + d.box.height / 2.0f);
+		if (NearExistingTarget(cen, (float)maxDistance)) continue;
+		Rect box = d.box & Rect(0, 0, frame.cols, frame.rows);
+		if (box.width >= 8 && box.height >= 8)
+		    SeedTarget(box, frame);
+	    }
+	}
+    }
+
     // 3. advance existing targets, but only on a real new frame; on a static
     // frame (paused / replayed) keep the last positions
     if (!pipeline->parent->staticFrame)
@@ -537,6 +561,8 @@ void PatternTracker::LoadXML (FileNode& fn)
 	if (!fn["TrailLength"].empty()) trailLength = (int)fn["TrailLength"];
 	if (!fn["SeedFromDetection"].empty()) seedFromDetection = (int)fn["SeedFromDetection"];
 	if (!fn["MinBlobSeedSize"].empty()) minBlobSeedSize = (int)fn["MinBlobSeedSize"];
+	if (!fn["SeedFromYolo"].empty()) seedFromYolo = (int)fn["SeedFromYolo"];
+	if (!fn["YoloConfidence"].empty()) yoloConfidence = (float)fn["YoloConfidence"];
 	additive = (int)fn["Additive"];
 	outputFilename = (string)fn["OutputFilename"];
 
@@ -565,6 +591,8 @@ void PatternTracker::SaveXML (FileStorage& fs)
     fs << "TrailLength" << trailLength;
     fs << "SeedFromDetection" << seedFromDetection;
     fs << "MinBlobSeedSize" << minBlobSeedSize;
+    fs << "SeedFromYolo" << seedFromYolo;
+    fs << "YoloConfidence" << yoloConfidence;
     fs << "Additive" << additive;
     fs << "OutputFilename" << outputFilename;
 }
