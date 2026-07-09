@@ -266,13 +266,19 @@ void YoloDetector::RunInference()
     }
     if (outputs.empty()) return;
 
+    // Pick the detection tensor. A segmentation model (YOLOv8/YOLOE-seg) emits
+    // two outputs: the detection head (3D: 1 x A x B) and a 4D prototype-mask
+    // tensor (1 x 32 x H x W). Prefer a 3D output so we never decode the masks.
+    Mat out = outputs[0];
+    for (const Mat& o : outputs)
+	if (o.dims == 3) { out = o; break; }
+
     // ---- decode: support both YOLOv5 and YOLOv8/v11 layouts ----
     // The raw output is a 3D tensor 1 x A x B. YOLOv5 has A = num boxes and
     // each row is [cx, cy, w, h, objectness, class scores...]. YOLOv8/v11
     // has B = num boxes and each column is [cx, cy, w, h, class scores...]
     // (no objectness). We detect the orientation and presence of objectness
     // from the tensor shape.
-    Mat out = outputs[0];
     if (out.dims == 3)
 	out = out.reshape(1, out.size[1]); // A x B
 
@@ -312,6 +318,15 @@ void YoloDetector::RunInference()
 	numClasses = numAttrs - classOffset;
 	if (numClasses <= 0) return;
     }
+
+    // If a class-names list is provided and the tensor carries MORE class
+    // channels than names, the extra trailing channels are not classes: for an
+    // instance-segmentation model (YOLOv8/YOLOE-seg) the layout is
+    // [box(4), classes(nc), mask_coeffs(32)], so capping to the known class
+    // count reads the real class scores and ignores the mask coefficients,
+    // letting a seg model be used as a plain detector.
+    if (!classNames.empty() && (int)classNames.size() < numClasses)
+	numClasses = (int)classNames.size();
 
     vector<Rect> boxes;
     vector<float> confidences;
