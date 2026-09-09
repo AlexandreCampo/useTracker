@@ -1,0 +1,184 @@
+name: build
+
+on:
+  push:
+    branches: [master, 2026_update]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write        # the release job attaches artifacts to a tag
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Linux. Built inside containers rather than on the runner image so the glibc
+  # baseline is explicit: the AppImage is built on the oldest supported release
+  # and therefore runs on every newer distribution, Manjaro and Arch included.
+  # ---------------------------------------------------------------------------
+  linux:
+    name: Linux (${{ matrix.image }})
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: ubuntu:22.04
+            appimage: true
+          - image: ubuntu:24.04
+            appimage: false
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      APPIMAGE_EXTRACT_AND_RUN: 1     # linuxdeploy without FUSE
+
+    steps:
+      - name: Install container tooling
+        run: |
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends \
+            ca-certificates curl file git sudo desktop-file-utils
+
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: ./scripts/install-deps.sh -y
+
+      - name: Build and package (.deb, .tar.gz)
+        run: ./scripts/build.sh --build-dir build-ci --package
+
+      - name: Build AppImage
+        if: matrix.appimage
+        env:
+          BUILD_DIR: build-ci     # reuse the objects from the step above
+        run: ./packaging/linux/build-appimage.sh
+
+      - name: Smoke test
+        run: ./build-ci/useTracker --version
+
+      - name: Name the artifacts
+        id: names
+        run: echo "slug=$(echo '${{ matrix.image }}' | tr ':.' '--')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ steps.names.outputs.slug }}
+          path: dist/*
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # macOS. Homebrew has no universal bottles, so each architecture is built on
+  # its own runner. Skipped on pull requests to keep them cheap.
+  # ---------------------------------------------------------------------------
+  macos:
+    name: macOS (${{ matrix.arch }})
+    if: github.event_name != 'pull_request'
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    continue-on-error: ${{ matrix.optional }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-latest    # Apple Silicon
+            arch: arm64
+            optional: false
+          - runner: macos-13        # Intel; retired at some point by GitHub
+            arch: x86_64
+            optional: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: ./scripts/install-deps.sh -y
+
+      - name: Build .dmg
+        run: ./packaging/macos/build-macos.sh
+
+      - name: Smoke test
+        run: ./build-macos/useTracker.app/Contents/MacOS/useTracker --version
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-${{ matrix.arch }}
+          path: dist/*
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Windows. Dependencies come from vcpkg; the GitHub Actions binary cache keeps
+  # the OpenCV build off the critical path after the first run.
+  # ---------------------------------------------------------------------------
+  windows:
+    name: Windows (x64)
+    if: github.event_name != 'pull_request'
+    runs-on: windows-latest
+    timeout-minutes: 180
+    env:
+      VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Export vcpkg cache credentials
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - name: Build .zip and installer
+        shell: pwsh
+        run: |
+          $env:VCPKG_ROOT = $env:VCPKG_INSTALLATION_ROOT
+          .\packaging\windows\build-windows.ps1
+
+      - name: Smoke test
+        shell: pwsh
+        run: .\build-windows\Release\useTracker.exe --version
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64
+          path: dist/*
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # Publish everything on a v* tag.
+  # ---------------------------------------------------------------------------
+  release:
+    name: Release
+    needs: [linux, macos, windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Collect
+        run: |
+          mkdir -p release
+          find artifacts -type f -exec mv -t release {} +
+          ls -la release
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          generate_release_notes: true
+          body: |
+            ### Which file do I want?
+
+            | Platform | File |
+            |---|---|
+            | Any Linux (Ubuntu, Manjaro, Arch, Fedora, Debian…) | `useTracker-*-x86_64.AppImage` — `chmod +x` and run |
+            | Ubuntu / Debian | `usetracker_*_amd64.deb` — matches the Ubuntu release in the file name |
+            | macOS | `useTracker-*-Darwin-*.dmg` — arm64 for Apple Silicon, x86_64 for Intel |
+            | Windows | `useTracker-*-Windows-x64.zip`, or the `.exe` installer |
+            | Arch / Manjaro, built locally | `packaging/arch/PKGBUILD` — `makepkg -si` |

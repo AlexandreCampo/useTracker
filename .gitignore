@@ -1,6 +1,15 @@
 # Build directories / CMake output
 /build/
 build/
+build-*/
+AppDir/
+
+# Packaged artifacts
+/dist/
+*.AppImage
+*.deb
+*.rpm
+*.dmg
 
 # Compiled objects, libraries, dependency files
 *.o
@@ -9,7 +18,6 @@ build/
 *.obj
 *.lo
 *.slo
-obj/
 
 # Editor / IDE
 compile_commands.json
@@ -18,9 +26,24 @@ compile_commands.json
 imgui.ini
 
 # Local runtime output / scratch
-update_status.txt
 blobs.csv
 settings.xml
 
 # The executable
 /useTracker
+
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Sample footage — large media belongs outside the repository
+*.MP4
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Website — kept in this working tree for convenience, but versioned in its own
+# private repository. Ignoring it here also stops git treating the nested repo
+# as a gitlink.
+website/

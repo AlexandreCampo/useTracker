@@ -40,61 +40,83 @@ Set the confidence / NMS thresholds and an optional class filter (comma-separate
 
 A **Compute Target** can be selected (CPU / OpenCL / OpenCL FP16 / Vulkan). The GPU targets are used only if a working OpenCL or Vulkan runtime is present and can run the model — the plugin probes the target on load and silently falls back to the CPU otherwise. On an integrated GPU expect a modest speed-up over the multi-threaded CPU path; CPU inference runs at a few fps at 640×640, suited to offline analysis rather than live 25 fps capture. NVIDIA CUDA is only available if OpenCV itself was built with CUDA.
 
+## Installing
+
+Prebuilt binaries for every release are on the
+[releases page](https://github.com/AlexandreCampo/useTracker/releases).
+
+| Your system | Download | How to run it |
+|---|---|---|
+| Any Linux — Ubuntu, Manjaro, Arch, Fedora, Debian… | `useTracker-*.AppImage` | `chmod +x useTracker-*.AppImage && ./useTracker-*.AppImage` |
+| Ubuntu / Debian | `usetracker_*_amd64.deb` | `sudo apt install ./usetracker_*_amd64.deb` |
+| Fedora / openSUSE | `usetracker-*.rpm` | `sudo dnf install ./usetracker-*.rpm` |
+| Arch / Manjaro | build it natively | `cd packaging/arch && makepkg -si` |
+| macOS | `useTracker-*-Darwin-*.dmg` | open the disk image, drag the app to Applications |
+| Windows | `useTracker-*-Windows-x64.zip` | unzip anywhere, run `useTracker.exe` |
+
+The AppImage is self-contained: it carries its own OpenCV, FFmpeg and SDL2, so
+it keeps working after a system upgrade changes those libraries — useful on
+rolling-release distributions.
+
+On macOS the app is not notarised; on first launch, right-click it and choose
+*Open* (or run `xattr -dr com.apple.quarantine /Applications/useTracker.app`).
+
 ## Building
 
 ### Prerequisites
 
-- **CMake** 3.20+
+- **CMake** 3.21+
 - **C++17** compiler (GCC 12+, Clang 15+, MSVC 2022)
-- **OpenCV 4.x** with contrib modules (bgsegm, objdetect)
+- **OpenCV** 4.2+ or 5.x, with contrib modules (bgsegm, xphoto, tracking)
 - **SDL2**
-- **FFmpeg** (libavformat, libavcodec, libswscale, libavutil)
+- **FFmpeg** 4.4+ (libavformat, libavcodec, libswscale, libavutil)
 
-The following are fetched automatically via CMake FetchContent:
-- Dear ImGui (v1.91.8)
-- CLI11 (v2.4.2)
-- portable-file-dialogs
+Tested from Ubuntu 22.04 (OpenCV 4.5, FFmpeg 4.4) to current Arch/Manjaro
+(OpenCV 5.0, FFmpeg 9).
 
-### Linux
+Dear ImGui, CLI11 and portable-file-dialogs are fetched automatically by CMake
+and need no system package.
+
+### Linux and macOS
 
 ```bash
-# Install dependencies (Arch/Manjaro)
-sudo pacman -S cmake opencv sdl2 ffmpeg
-
-# Install dependencies (Ubuntu/Debian)
-sudo apt install cmake libopencv-dev libopencv-contrib-dev libsdl2-dev libavformat-dev libavcodec-dev libswscale-dev libavutil-dev
-
-# Build
-mkdir build && cd build
-cmake ..
-make -j$(nproc)
+./scripts/install-deps.sh     # apt, pacman, dnf, zypper or Homebrew — detected
+./scripts/build.sh            # release build into build/
+./build/useTracker
 ```
+
+`scripts/build.sh` takes `--type Debug`, `--jobs N`, `--prefix DIR`, `--install`,
+`--package`, `--bluetooth` and `--clean`; `--help` lists them all.
 
 ### Windows
 
 ```powershell
-# Using vcpkg
-vcpkg install opencv4[contrib] sdl2 ffmpeg
-mkdir build && cd build
-cmake .. -DCMAKE_TOOLCHAIN_FILE=[vcpkg-root]/scripts/buildsystems/vcpkg.cmake
-cmake --build . --config Release
+.\packaging\windows\build-windows.ps1
 ```
 
-### macOS
+Dependencies come from vcpkg, which the script bootstraps if `VCPKG_ROOT` is not
+already set. The first build compiles OpenCV from source and takes about an hour.
 
-```bash
-brew install cmake opencv sdl2 ffmpeg
-mkdir build && cd build
-cmake ..
-make -j$(sysctl -n hw.ncpu)
-```
-
-### CMake Options
+### CMake options
 
 | Option | Default | Description |
 |--------|---------|-------------|
 | `USE_BLUETOOTH` | OFF | Enable Bluetooth remote control (Linux only, requires libbluetooth) |
 | `USE_ARUCO_COLOR` | ON | Build the custom ArucoColor marker library |
+| `USETRACKER_BUNDLE_DEPS` | ON for macOS/Windows | Copy third-party libraries into the install tree |
+| `USETRACKER_MACOS_SIGN_IDENTITY` | `-` (ad-hoc) | codesign identity for the macOS bundle |
+
+### Building the distributable packages
+
+```bash
+./scripts/build.sh --package              # .tar.gz, .deb, .rpm — for this distribution
+./packaging/linux/build-appimage.sh       # one binary that runs on any distribution
+./packaging/linux/build-in-docker.sh      # the same, in a container — needs only Docker
+./packaging/macos/build-macos.sh          # useTracker.app in a .dmg
+```
+
+Artifacts land in `dist/`. See [packaging/README.md](packaging/README.md) for the
+details, including which distribution to build on and how releases are cut.
 
 ## Usage
 

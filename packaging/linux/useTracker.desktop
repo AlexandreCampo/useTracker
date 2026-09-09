@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=useTracker
+GenericName=Video Tracking
+Comment=Real-time image processing and blob tracking for scientific experiments
+Exec=useTracker %F
+Icon=useTracker
+Terminal=false
+Categories=Science;
+Keywords=tracking;video;blob;opencv;aruco;yolo;ethology;behaviour;
+MimeType=video/mp4;video/x-msvideo;video/quicktime;video/x-matroska;image/png;image/jpeg;
+StartupNotify=true
+StartupWMClass=useTracker

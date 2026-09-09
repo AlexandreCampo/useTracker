@@ -61,7 +61,9 @@ void RecordVideo::OpenOutput ()
         std::cerr << "Memory error" << std::endl;
         return;
     }
-    format_context->oformat = output_format;
+    // AVFormatContext::oformat only became const in FFmpeg 5.0; the cast keeps
+    // this compiling against the 4.x still shipped by Ubuntu 22.04 and Debian 12.
+    format_context->oformat = const_cast<AVOutputFormat*>(output_format);
 
     /* find the video encoder */
     codec = avcodec_find_encoder(AV_CODEC_ID_H264);

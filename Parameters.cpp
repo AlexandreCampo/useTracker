@@ -33,6 +33,10 @@ void Parameters::parseCommandLine (int argc, char** argv)
 {
     CLI::App app{"USE Tracker - real-time image processing and blob tracking"};
 
+#ifdef USETRACKER_VERSION
+    app.set_version_flag("-v,--version", "useTracker " USETRACKER_VERSION);
+#endif
+
     app.add_flag("-n,--nogui", nogui, "Command line only, disable graphical interface");
     app.add_option("-p,--parameters", parametersFilename, "Configuration file with parameters in xml format");
     app.add_option("-i,--inputfile", inputFilenames, "Use specified video file(s)")->expected(-1);

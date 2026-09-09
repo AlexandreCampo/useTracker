@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>useTracker</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b3a4b"/>
+      <stop offset="1" stop-color="#0b1a24"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="8" y="8" width="240" height="240" rx="46" fill="url(#bg)"/>
+  <rect x="8" y="8" width="240" height="240" rx="46" fill="none" stroke="#2f6b86" stroke-width="3"/>
+
+  <!-- trajectory of a tracked target -->
+  <path d="M46 196 C 78 168, 84 120, 118 104 S 172 96, 196 66"
+        fill="none" stroke="#5ad1e8" stroke-width="6" stroke-linecap="round"
+        stroke-dasharray="1 17" opacity="0.85"/>
+
+  <!-- fading trail of past detections -->
+  <circle cx="60"  cy="182" r="9"  fill="#5ad1e8" opacity="0.25"/>
+  <circle cx="92"  cy="140" r="11" fill="#5ad1e8" opacity="0.45"/>
+  <circle cx="130" cy="104" r="13" fill="#5ad1e8" opacity="0.7"/>
+
+  <!-- current target -->
+  <circle cx="182" cy="80" r="17" fill="#ffb347"/>
+
+  <!-- tracking bracket around the current target -->
+  <g fill="none" stroke="#ffb347" stroke-width="7" stroke-linecap="round">
+    <path d="M144 60 v-16 h16"/>
+    <path d="M220 60 v-16 h-16"/>
+    <path d="M144 100 v16 h16"/>
+    <path d="M220 100 v16 h-16"/>
+  </g>
+</svg>

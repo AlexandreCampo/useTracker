@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.usetracker.useTracker</id>
+  <name>useTracker</name>
+  <summary>Real-time image processing and blob tracking for scientific experiments</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <developer id="org.usetracker">
+    <name>Alexandre Campo</name>
+  </developer>
+
+  <description>
+    <p>
+      useTracker opens images, videos and USB cameras and runs a pipeline of
+      plugins on them. Pipelines are built by stacking plugins; each one refines
+      a shared mask that downstream plugins such as Extract Blobs and Track Blobs
+      consume.
+    </p>
+    <p>Available plugins include:</p>
+    <ul>
+      <li>Blob extraction and multi-target tracking</li>
+      <li>Pattern tracking by template matching or CSRT</li>
+      <li>Deep-learning object detection with ONNX YOLO models</li>
+      <li>ArUco and colour marker detection</li>
+      <li>Background subtraction (MOG, MOG2, GMG, KNN, GSOC)</li>
+      <li>Image enhancement (white balance, CLAHE, curves, dehaze, denoise)</li>
+      <li>Zones of interest, H264 recording and CSV export</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">useTracker.desktop</launchable>
+  <url type="homepage">https://github.com/AlexandreCampo/useTracker</url>
+  <url type="bugtracker">https://github.com/AlexandreCampo/useTracker/issues</url>
+
+  <categories>
+    <category>Science</category>
+    <category>Education</category>
+    <category>Video</category>
+  </categories>
+
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+  </supports>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="2.0.0" date="2026-08-17">
+      <description>
+        <p>
+          Cross-platform release: CMake build, SDL2 and Dear ImGui interface,
+          modern FFmpeg and OpenCV 4/5 support, and prebuilt binaries for Linux,
+          macOS and Windows.
+        </p>
+      </description>
+    </release>
+  </releases>
+</component>

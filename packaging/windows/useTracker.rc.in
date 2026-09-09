@@ -1,0 +1,5 @@
+// Windows resource script: gives useTracker.exe its icon in Explorer and the
+// task bar. CMake expands @USETRACKER_ICO@ to an absolute path and compiles the
+// result — a relative path here would be resolved against the compiler's working
+// directory, not this file's location.
+IDI_ICON1 ICON "@USETRACKER_ICO@"

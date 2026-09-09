@@ -9,6 +9,11 @@
 
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
+// OpenCV 5 moved contour geometry (contourArea, approxPolyDP, isContourConvex,
+// getPerspectiveTransform) out of imgproc into the new geometry module;
+// calib3d.hpp is the compatibility header that pulls it in on 5.x and the real
+// thing on 4.x.
+#include <opencv2/calib3d.hpp>
 
 
 namespace ac

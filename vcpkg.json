@@ -1,20 +1,21 @@
 {
+    "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
     "name": "usetracker",
-    "version-string": "2.0.0",
-    "description": "Real-time image processing and blob tracking application",
+    "version": "2.0.0",
+    "description": "Real-time image processing and blob tracking for scientific experiments",
+    "homepage": "https://github.com/AlexandreCampo/useTracker",
+    "license": "GPL-3.0-or-later",
     "dependencies": [
         {
             "name": "opencv4",
-            "features": ["contrib"]
+            "default-features": true,
+            "features": [
+                "contrib",
+                "dnn",
+                "ffmpeg"
+            ]
         },
         "sdl2",
-        "imgui",
-        {
-            "name": "imgui",
-            "features": ["sdl2-binding", "opengl3-binding"]
-        },
-        "cli11",
-        "portable-file-dialogs",
         "ffmpeg"
     ]
 }

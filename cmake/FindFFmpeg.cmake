@@ -1,32 +1,50 @@
 # FindFFmpeg.cmake
-# Locate FFmpeg libraries: libavformat, libavcodec, libswscale, libavutil
+# Locate the FFmpeg libraries useTracker needs: libavformat, libavcodec,
+# libswscale, libavutil.
+#
+# pkg-config is asked first — Linux distributions, Homebrew and vcpkg (with
+# pkgconf) all ship .pc files, and they carry the right include/library dirs for
+# non-standard prefixes such as /opt/homebrew. A plain header/library search is
+# used as a fallback so the module still works without pkg-config (e.g. MSVC).
 #
 # Defines:
 #   FFmpeg_FOUND
 #   FFmpeg_INCLUDE_DIRS
 #   FFmpeg_LIBRARIES
-#   FFmpeg::avformat, FFmpeg::avcodec, FFmpeg::swscale, FFmpeg::avutil (imported targets)
+#   FFmpeg_LIBRARY_DIRS          (useful to seed macOS bundle fixup)
+#   FFmpeg::avformat, FFmpeg::avcodec, FFmpeg::swscale, FFmpeg::avutil
 
 include(FindPackageHandleStandardArgs)
 
-# Helper macro to find individual FFmpeg components
-macro(_ffmpeg_find_component _component _header)
-    find_path(${_component}_INCLUDE_DIR
-        NAMES ${_header}
+find_package(PkgConfig QUIET)
+
+set(_ffmpeg_components avformat avcodec swscale avutil)
+
+foreach(_comp IN LISTS _ffmpeg_components)
+    if(PKG_CONFIG_FOUND)
+        pkg_check_modules(PC_${_comp} QUIET lib${_comp})
+    endif()
+
+    # libavformat/avformat.h, libavcodec/avcodec.h, libswscale/swscale.h, ...
+    find_path(${_comp}_INCLUDE_DIR
+        NAMES lib${_comp}/${_comp}.h
+        HINTS ${PC_${_comp}_INCLUDE_DIRS}
         PATH_SUFFIXES ffmpeg
     )
-    find_library(${_component}_LIBRARY
-        NAMES ${_component}
+    find_library(${_comp}_LIBRARY
+        NAMES ${_comp}
+        HINTS ${PC_${_comp}_LIBRARY_DIRS}
     )
-    if(${_component}_INCLUDE_DIR AND ${_component}_LIBRARY)
-        set(${_component}_FOUND TRUE)
-    endif()
-endmacro()
 
-_ffmpeg_find_component(avformat libavformat/avformat.h)
-_ffmpeg_find_component(avcodec  libavcodec/avcodec.h)
-_ffmpeg_find_component(swscale  libswscale/swscale.h)
-_ffmpeg_find_component(avutil   libavutil/avutil.h)
+    if(${_comp}_INCLUDE_DIR AND ${_comp}_LIBRARY)
+        set(${_comp}_FOUND TRUE)
+    endif()
+endforeach()
+
+# avutil carries the version we report; it is bumped in lockstep with the rest.
+if(PC_avutil_VERSION)
+    set(FFmpeg_VERSION "${PC_avutil_VERSION}")
+endif()
 
 find_package_handle_standard_args(FFmpeg
     REQUIRED_VARS
@@ -34,26 +52,21 @@ find_package_handle_standard_args(FFmpeg
         avcodec_LIBRARY  avcodec_INCLUDE_DIR
         swscale_LIBRARY  swscale_INCLUDE_DIR
         avutil_LIBRARY   avutil_INCLUDE_DIR
+    VERSION_VAR FFmpeg_VERSION
 )
 
 if(FFmpeg_FOUND)
-    set(FFmpeg_INCLUDE_DIRS
-        ${avformat_INCLUDE_DIR}
-        ${avcodec_INCLUDE_DIR}
-        ${swscale_INCLUDE_DIR}
-        ${avutil_INCLUDE_DIR}
-    )
-    list(REMOVE_DUPLICATES FFmpeg_INCLUDE_DIRS)
+    set(FFmpeg_INCLUDE_DIRS "")
+    set(FFmpeg_LIBRARIES    "")
+    set(FFmpeg_LIBRARY_DIRS "")
 
-    set(FFmpeg_LIBRARIES
-        ${avformat_LIBRARY}
-        ${avcodec_LIBRARY}
-        ${swscale_LIBRARY}
-        ${avutil_LIBRARY}
-    )
+    foreach(_comp IN LISTS _ffmpeg_components)
+        list(APPEND FFmpeg_INCLUDE_DIRS "${${_comp}_INCLUDE_DIR}")
+        list(APPEND FFmpeg_LIBRARIES    "${${_comp}_LIBRARY}")
 
-    # Create imported targets
-    foreach(_comp avformat avcodec swscale avutil)
+        get_filename_component(_dir "${${_comp}_LIBRARY}" DIRECTORY)
+        list(APPEND FFmpeg_LIBRARY_DIRS "${_dir}")
+
         if(NOT TARGET FFmpeg::${_comp})
             add_library(FFmpeg::${_comp} UNKNOWN IMPORTED)
             set_target_properties(FFmpeg::${_comp} PROPERTIES
@@ -62,6 +75,9 @@ if(FFmpeg_FOUND)
             )
         endif()
     endforeach()
+
+    list(REMOVE_DUPLICATES FFmpeg_INCLUDE_DIRS)
+    list(REMOVE_DUPLICATES FFmpeg_LIBRARY_DIRS)
 endif()
 
 mark_as_advanced(

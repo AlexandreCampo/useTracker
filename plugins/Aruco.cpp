@@ -19,6 +19,11 @@
 
 #include "Aruco.h"
 
+// contourArea lives in imgproc on OpenCV 4 and in the new geometry module on
+// OpenCV 5; calib3d.hpp reaches it on both.
+#include <opencv2/imgproc.hpp>
+#include <opencv2/calib3d.hpp>
+
 #include "Blob.h"
 #include "ImageProcessingEngine.h"
 

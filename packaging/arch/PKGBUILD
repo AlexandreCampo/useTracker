@@ -1,0 +1,40 @@
+# Maintainer: Alexandre Campo <alexandre.campo@gmail.com>
+#
+# Build a native Arch / Manjaro / EndeavourOS package:
+#
+#     cd packaging/arch && makepkg -si
+#
+# This links against the OpenCV, FFmpeg and SDL2 of the machine it is built on,
+# which is what you want on a rolling-release distribution. For a binary that
+# does not care about the host's library versions, use the AppImage instead.
+#
+# Note: the build downloads Dear ImGui, CLI11 and portable-file-dialogs through
+# CMake's FetchContent, so it needs network access at build time.
+
+pkgname=usetracker
+pkgver=2.0.0
+pkgrel=1
+pkgdesc="Real-time image processing and blob tracking for scientific experiments"
+arch=('x86_64' 'aarch64')
+url="https://github.com/AlexandreCampo/useTracker"
+license=('GPL-3.0-or-later')
+depends=('opencv' 'ffmpeg' 'sdl2-compat' 'hicolor-icon-theme')
+makedepends=('cmake' 'git' 'pkgconf' 'glu')
+optdepends=('bluez-libs: Bluetooth remote control (rebuild with -DUSE_BLUETOOTH=ON)')
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
+# Replace with the real checksum when tagging a release:
+#   makepkg -g >> PKGBUILD
+sha256sums=('SKIP')
+
+build() {
+    cmake -B build -S "$srcdir/useTracker-$pkgver" \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -Wno-dev
+    cmake --build build
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+}

@@ -25,6 +25,9 @@
 
 #include "opencv2/features2d.hpp"
 #include "opencv2/calib3d.hpp"
+// OpenCV 5 moved chessboard/circle-grid detection out of calib3d into objdetect;
+// including both keeps the file valid on 4.x and 5.x.
+#include <opencv2/objdetect.hpp>
 #include <opencv2/stitching.hpp>
 
 #include "Utils.h"
