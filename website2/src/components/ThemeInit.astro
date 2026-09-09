@@ -1,0 +1,19 @@
+---
+import { themes, themeKey, densityKey } from '../lib/appearance';
+---
+{/* Apply preferences before paint. Also replaces Starlight's theme provider. */}
+<script is:inline define:vars={{ themeNames: themes.map(theme => theme.id), themeKey, densityKey }}>
+  (() => {
+    let theme = 'lab';
+    let density = 'compact';
+    try {
+      const storedTheme = localStorage.getItem(themeKey);
+      const storedDensity = localStorage.getItem(densityKey);
+      if (themeNames.includes(storedTheme)) theme = storedTheme;
+      if (storedDensity === 'compact' || storedDensity === 'spacious') density = storedDensity;
+    } catch { /* Storage is optional. */ }
+    document.documentElement.dataset.siteTheme = theme;
+    document.documentElement.dataset.density = density;
+    document.documentElement.dataset.theme = theme === 'darkroom' ? 'dark' : 'light';
+  })();
+</script>

@@ -1,0 +1,98 @@
+---
+import { themes } from '../lib/appearance';
+import Icon from './Icon.astro';
+const id = `appearance-${Math.random().toString(36).slice(2, 10)}`;
+---
+<theme-switcher>
+  <button class="appearance-trigger" type="button" popovertarget={id} aria-label="Choose theme and spacing">
+    <span class="appearance-signal" aria-hidden="true"></span><span>Themes</span><Icon name="tune" size={16} />
+  </button>
+  <div id={id} class="appearance-panel" popover="auto" aria-label="Theme and spacing preview">
+    <div class="appearance-heading"><div><strong>Try a different direction</strong><p>Temporary design preview</p></div><button type="button" popovertarget={id} popovertargetaction="hide" aria-label="Close theme chooser">×</button></div>
+    <fieldset class="appearance-themes"><legend>Visual identity</legend>
+      {themes.map(theme => <label class="appearance-option">
+        <span class="appearance-swatches" aria-hidden="true">{theme.colors.map(color => <i style={{ background: color }}></i>)}</span>
+        <span><strong>{theme.name}</strong><small>{theme.description}</small></span>
+        <input type="radio" name={`${id}-theme`} value={theme.id} checked={theme.id === 'lab'} data-theme-option />
+      </label>)}
+    </fieldset>
+    <fieldset class="appearance-density"><legend>Page spacing</legend><div>
+      <label><input type="radio" name={`${id}-density`} value="compact" checked data-density-option /><span>Compact</span></label>
+      <label><input type="radio" name={`${id}-density`} value="spacious" data-density-option /><span>Spacious</span></label>
+    </div><p>Compact uses more screen width and less vertical space.</p></fieldset>
+    <button type="button" class="appearance-reset" data-appearance-reset>Compare with the first version <span aria-hidden="true">↗</span></button>
+    <span class="appearance-status" role="status" aria-live="polite"></span>
+  </div>
+</theme-switcher>
+
+<script>
+  import { themes, isTheme, applyAppearance, type Density, type Theme } from '../lib/appearance';
+  class ThemeSwitcher extends HTMLElement {
+    private sync = () => {
+      const root = document.documentElement;
+      this.querySelectorAll<HTMLInputElement>('[data-theme-option]').forEach(input => input.checked = input.value === root.dataset.siteTheme);
+      this.querySelectorAll<HTMLInputElement>('[data-density-option]').forEach(input => input.checked = input.value === root.dataset.density);
+      const name = themes.find(theme => theme.id === root.dataset.siteTheme)?.name ?? 'Lab bench';
+      this.querySelector('.appearance-trigger')?.setAttribute('title', `Current theme: ${name}`);
+    };
+    connectedCallback() {
+      this.sync();
+      document.addEventListener('usetracker:appearance', this.sync);
+      this.addEventListener('change', event => {
+        const input = event.target;
+        if (!(input instanceof HTMLInputElement)) return;
+        const root = document.documentElement;
+        const theme = input.hasAttribute('data-theme-option') && isTheme(input.value) ? input.value : root.dataset.siteTheme as Theme;
+        const density = input.hasAttribute('data-density-option') ? input.value as Density : root.dataset.density as Density;
+        applyAppearance(theme, density);
+        this.querySelector('.appearance-status')!.textContent = `${themes.find(item => item.id === theme)!.name} theme, ${density} spacing.`;
+      });
+      this.querySelector('[data-appearance-reset]')!.addEventListener('click', () => {
+        applyAppearance('original', 'spacious');
+        this.querySelector('.appearance-status')!.textContent = 'First shot theme with the original spacing.';
+      });
+    }
+    disconnectedCallback() { document.removeEventListener('usetracker:appearance', this.sync); }
+  }
+  if (!customElements.get('theme-switcher')) customElements.define('theme-switcher', ThemeSwitcher);
+</script>
+
+<style>
+  theme-switcher { display: inline-flex; flex-shrink: 0; font-family: Arial, Helvetica, sans-serif; font-weight: 400; line-height: 1.5; letter-spacing: 0; }
+  .appearance-trigger { display: flex; align-items: center; justify-content: center; gap: 9px; min-height: 38px; padding: 7px 12px; background: var(--ui-surface); border: 1px solid var(--ui-line-strong); border-radius: 3px; color: var(--ui-ink); font: 13px Arial, Helvetica, sans-serif; cursor: pointer; white-space: nowrap; }
+  .appearance-trigger:hover { background: var(--ui-wash); }
+  .appearance-signal { width: 8px; height: 8px; background: var(--ui-accent); }
+  .appearance-panel { position: fixed; inset: 82px 24px auto auto; width: min(382px, calc(100vw - 32px)); max-height: calc(100dvh - 106px); margin: 0; overflow-y: auto; overscroll-behavior: contain; box-sizing: border-box; padding: 20px; color: var(--ui-ink); background: var(--ui-surface); border: 1px solid var(--ui-line-strong); border-radius: 4px; box-shadow: 0 14px 60px #0003; font: 13px/1.5 Arial, Helvetica, sans-serif; text-align: left; }
+  .appearance-panel *, .appearance-panel *::before, .appearance-panel *::after { box-sizing: border-box; }
+  .appearance-heading { display: flex; align-items: start; justify-content: space-between; gap: 12px; margin-bottom: 17px; }
+  .appearance-heading strong { font-size: 16px; font-weight: 600; }
+  .appearance-heading p { margin: 3px 0 0; font-size: 12px; color: var(--ui-muted); }
+  .appearance-heading button { width: 30px; height: 30px; border: 0; background: var(--ui-wash); color: var(--ui-ink); font: 23px/1 Arial, sans-serif; cursor: pointer; flex-shrink: 0; }
+  fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+  legend { padding: 0; font-size: 11px; font-weight: 600; margin-bottom: 9px; color: var(--ui-muted); }
+  .appearance-option { display: grid; grid-template-columns: 30px 1fr 16px; align-items: center; gap: 12px; cursor: pointer; padding: 10px 9px; border: 1px solid transparent; border-bottom-color: var(--ui-line); }
+  .appearance-option:hover { background: var(--ui-wash); }
+  .appearance-option:has(input:checked) { border: 1px solid var(--ui-accent); background: var(--ui-accent-soft); }
+  .appearance-option strong { font-size: 13px; font-weight: 600; display: block; }
+  .appearance-option small { display: block; margin-top: 2px; font-size: 10px; color: var(--ui-muted); }
+  .appearance-option input { appearance: auto; margin: 0; width: 15px; height: 15px; accent-color: var(--ui-accent); cursor: pointer; }
+  .appearance-swatches { display: flex; flex-wrap: wrap; width: 26px; border: 1px solid #80808060; }
+  .appearance-swatches i { display: block; width: 12px; height: 12px; }
+  .appearance-swatches i:first-child { width: 24px; }
+  .appearance-density { margin-top: 19px; }
+  .appearance-density > div { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--ui-line-strong); }
+  .appearance-density label { cursor: pointer; text-align: center; position: relative; }
+  .appearance-density label + label { border-left: 1px solid var(--ui-line-strong); }
+  .appearance-density input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .appearance-density span { display: block; padding: 8px 10px; font-size: 12px; }
+  .appearance-density input:checked + span { background: var(--ui-ink); color: var(--ui-paper); }
+  .appearance-density input:focus-visible + span { outline: 2px solid var(--ui-accent); outline-offset: -4px; }
+  .appearance-density p { margin: 7px 0 0; font-size: 10px; color: var(--ui-muted); }
+  .appearance-reset { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 14px 0 0; margin-top: 15px; border: 0; border-top: 1px solid var(--ui-line); color: var(--ui-ink); background: transparent; font: 12px Arial, Helvetica, sans-serif; text-align: left; cursor: pointer; }
+  .appearance-reset:hover { color: var(--ui-accent); }
+  .appearance-trigger:focus-visible, .appearance-panel button:focus-visible, .appearance-option input:focus-visible { outline: 2px solid var(--ui-accent); outline-offset: 3px; }
+  .appearance-status { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  @media (max-width: 760px) { .appearance-panel { top: 74px; right: 16px; max-height: calc(100dvh - 90px); } .appearance-trigger { gap: 7px; padding-inline: 9px; font-size: 12px; } }
+  @media (max-width: 380px) { .appearance-trigger > svg { display: none; } }
+  @media print { theme-switcher { display: none; } }
+</style>

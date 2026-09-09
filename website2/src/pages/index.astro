@@ -3,8 +3,11 @@ import Brand from '../components/Brand.astro';
 import Icon from '../components/Icon.astro';
 import TrackingDemo from '../components/TrackingDemo.astro';
 import Workflow from '../components/Workflow.astro';
+import ThemeInit from '../components/ThemeInit.astro';
+import ThemeSwitcher from '../components/ThemeSwitcher.astro';
 import { local, repository } from '../lib/links';
 import '../styles/home.css';
+import '../styles/themes.css';
 const plugins = [
   { number: '01', name: 'Image enhancement', text: 'Recover useful detail before detection: white balance, local contrast, colour curves and dehazing.', tags: ['White Balance', 'CLAHE', 'Curves', 'Dehaze'], href: 'plugins/enhancement/' },
   { number: '02', name: 'Background & segmentation', text: 'Separate the subjects from the scene, then clean the foreground mask with simple morphological operations.', tags: ['KNN', 'GSOC', 'MOG2', 'Erosion'], href: 'plugins/background/' },
@@ -19,7 +22,7 @@ const citation = `@software{usetracker,
 }`;
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" data-site-theme="lab" data-density="compact">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -31,14 +34,16 @@ const citation = `@software{usetracker,
     <link rel="icon" type="image/svg+xml" href={local('favicon.svg')} />
     <link rel="canonical" href={new URL(import.meta.env.BASE_URL, Astro.site)} />
     <title>useTracker — From movement to measurement</title>
+    <ThemeInit />
   </head>
-  <body>
+  <body class="home-page">
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <div class="container header-inner">
         <Brand />
         <nav class="desktop-nav" aria-label="Main navigation"><a href="#workflow">How it works</a><a href={local('docs/')}>Documentation</a><a href="#project">The project</a></nav>
         <a class="header-github" href={repository}><Icon name="github" size={18} /><span>GitHub</span><Icon name="external" size={15} /></a>
+        <ThemeSwitcher />
         <button type="button" class="menu-toggle" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation"><span></span><span></span></button>
       </div>
       <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation" hidden><a href="#workflow">How it works</a><a href={local('docs/')}>Documentation</a><a href="#project">The project</a><a href={repository}>Source on GitHub ↗</a></nav>
@@ -46,7 +51,7 @@ const citation = `@software{usetracker,
     <main id="main">
       <section class="hero container" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <p class="eyebrow"><span class="tiny-dot"></span> OPEN SOFTWARE. CURIOUS MINDS.</p>
+          <p class="eyebrow"><span class="tiny-dot"></span> OPEN-SOURCE VIDEO ANALYSIS</p>
           <h1 id="hero-title">From movement<br />to <em>measurement.</em></h1>
           <p class="hero-description">A practical toolkit for tracking animals and other moving things. Turn your recordings into trajectories, detections and data you can work with.</p>
           <div class="hero-actions"><a class="button button-primary" href={local('start/install/')}>Get started <Icon name="arrow" size={18} /></a><a class="button button-quiet" href={local('docs/')}><Icon name="book" size={18} /> Read the docs</a></div>

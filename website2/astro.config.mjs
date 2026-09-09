@@ -49,9 +49,11 @@ export default defineConfig({
       //   baseUrl: 'https://gitlab.com/<group>/<project>/-/edit/main/'
 
       lastUpdated: true,
-      customCss: ['./src/styles/custom.css'],
+      customCss: ['./src/styles/custom.css', './src/styles/themes.css'],
       components: {
         SiteTitle: './src/components/DocsSiteTitle.astro',
+        ThemeProvider: './src/components/ThemeInit.astro',
+        ThemeSelect: './src/components/ThemeSwitcher.astro',
       },
 
       sidebar: [

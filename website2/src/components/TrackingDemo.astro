@@ -44,7 +44,14 @@
     let mode = 'trajectories';
     let last = 0;
     let request = 0;
-    const colors = ['#a6d6bd', '#ceddaf', '#78b5ab', '#e0c496', '#a3c8b2', '#86bcb5', '#d5d5a1', '#a5c3d0', '#9bbaa2', '#c1d29d', '#85bdb2', '#d6bc8d'];
+    function readPalette() {
+      const style = getComputedStyle(document.documentElement);
+      const value = (name: string) => style.getPropertyValue(`--plot-${name}`).trim();
+      return { background: value('bg'), arena: value('arena'), grid: value('grid'), line: value('line'),
+        text: value('text'), colors: value('tracks').split(',').map(color => color.trim()) };
+    }
+    let palette = readPalette();
+    let colors = palette.colors;
 
     function position(i: number, t: number) {
       const a = i * 2.39996;
@@ -58,22 +65,36 @@
       if (!ctx) return;
       ctx.setTransform(2, 0, 0, 2, 0, 0);
       ctx.clearRect(0, 0, 640, 480);
-      ctx.fillStyle = '#16392f';
+      ctx.fillStyle = palette.background;
       ctx.fillRect(0, 0, 640, 480);
-      ctx.fillStyle = '#345347';
+      ctx.fillStyle = palette.grid;
       for (let x = 20; x < 640; x += 20) for (let y = 20; y < 480; y += 20) {
         ctx.beginPath(); ctx.arc(x, y, .65, 0, Math.PI * 2); ctx.fill();
       }
       ctx.beginPath(); ctx.ellipse(320, 240, 216, 207, 0, 0, Math.PI * 2);
-      ctx.fillStyle = '#1c4135'; ctx.fill(); ctx.strokeStyle = '#587361'; ctx.lineWidth = .8; ctx.stroke();
+      ctx.fillStyle = palette.arena; ctx.fill(); ctx.strokeStyle = palette.line; ctx.lineWidth = .8; ctx.stroke();
       ctx.beginPath(); ctx.ellipse(320, 240, 223, 214, 0, 0, Math.PI * 2);
-      ctx.strokeStyle = '#355746'; ctx.setLineDash([2, 5]); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = palette.grid; ctx.setLineDash([2, 5]); ctx.stroke(); ctx.setLineDash([]);
+      if (document.documentElement.dataset.siteTheme !== 'original') {
+        // Registration marks relate the visual identity to image measurement.
+        ctx.strokeStyle = palette.line; ctx.lineWidth = .7;
+        for (let x = 40; x < 640; x += 40) {
+          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, x % 160 === 0 ? 10 : 5); ctx.stroke();
+          if (x % 160 === 0) { ctx.font = '9px "IBM Plex Mono", monospace'; ctx.fillStyle = palette.text; ctx.fillText(String(x), x + 5, 14); }
+        }
+        for (let y = 40; y < 440; y += 40) {
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(y % 160 === 0 ? 10 : 5, y); ctx.stroke();
+          if (y % 160 === 0) { ctx.fillStyle = palette.text; ctx.fillText(String(y), 14, y + 3); }
+        }
+        ctx.strokeStyle = palette.grid; ctx.setLineDash([3, 7]); ctx.beginPath();
+        ctx.moveTo(320, 29); ctx.lineTo(320, 451); ctx.moveTo(100, 240); ctx.lineTo(540, 240); ctx.stroke(); ctx.setLineDash([]);
+      }
       if (mode === 'zones') {
         ctx.save(); ctx.beginPath(); ctx.ellipse(320, 240, 215, 206, 0, 0, Math.PI * 2); ctx.clip();
-        ctx.fillStyle = '#acd9b916'; ctx.fillRect(100, 30, 220, 430);
-        ctx.fillStyle = '#e0c49615'; ctx.fillRect(320, 30, 220, 430);
-        ctx.strokeStyle = '#9bb4a3'; ctx.setLineDash([5, 6]); ctx.beginPath(); ctx.moveTo(320, 30); ctx.lineTo(320, 450); ctx.stroke(); ctx.setLineDash([]);
-        ctx.font = '10px "IBM Plex Mono", monospace'; ctx.fillStyle = '#c7d9c3';
+        ctx.fillStyle = `${colors[0]}16`; ctx.fillRect(100, 30, 220, 430);
+        ctx.fillStyle = `${colors[3]}15`; ctx.fillRect(320, 30, 220, 430);
+        ctx.strokeStyle = palette.line; ctx.setLineDash([5, 6]); ctx.beginPath(); ctx.moveTo(320, 30); ctx.lineTo(320, 450); ctx.stroke(); ctx.setLineDash([]);
+        ctx.font = '10px "IBM Plex Mono", monospace'; ctx.fillStyle = palette.text;
         ctx.fillText('ZONE 01', 194, 105); ctx.fillText('ZONE 02', 384, 105); ctx.restore();
       }
       // These deterministic paths explain the output modes; they are not experimental data.
@@ -94,7 +115,7 @@
         ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
         ctx.fillStyle = colors[i]; ctx.beginPath(); ctx.ellipse(0, 0, 7.5, 3, 0, 0, Math.PI * 2); ctx.fill();
         ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(-12, -4); ctx.lineTo(-10, 0); ctx.lineTo(-12, 4); ctx.closePath(); ctx.fill();
-        ctx.fillStyle = '#17382e'; ctx.beginPath(); ctx.arc(4, -1, .8, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        ctx.fillStyle = palette.background; ctx.beginPath(); ctx.arc(4, -1, .8, 0, Math.PI * 2); ctx.fill(); ctx.restore();
         if (mode === 'detection') {
           ctx.strokeStyle = colors[i]; ctx.lineWidth = .9; ctx.strokeRect(p.x - 16, p.y - 14, 32, 28);
         }
@@ -102,7 +123,7 @@
         ctx.fillText(String(i + 1).padStart(2, '0'), p.x + 12, p.y - 10);
         if (i === 3) {
           if (mode === 'trajectories') {
-            ctx.beginPath(); ctx.arc(p.x, p.y, 16, 0, Math.PI * 2); ctx.strokeStyle = '#e0c49666'; ctx.lineWidth = .7; ctx.stroke();
+            ctx.beginPath(); ctx.arc(p.x, p.y, 16, 0, Math.PI * 2); ctx.strokeStyle = `${colors[3]}66`; ctx.lineWidth = .7; ctx.stroke();
           }
           xValue.textContent = p.x.toFixed(1); yValue.textContent = p.y.toFixed(1);
         }
@@ -140,6 +161,7 @@
     new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; syncPlayback(); }, { threshold: .05 }).observe(root);
     document.addEventListener('visibilitychange', syncPlayback);
     reducedMotion.addEventListener('change', () => { playing = !reducedMotion.matches; syncPlayback(); });
+    document.addEventListener('usetracker:appearance', () => { palette = readPalette(); colors = palette.colors; draw(); });
     draw(); syncPlayback();
   }
 </script>

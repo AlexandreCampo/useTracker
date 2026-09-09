@@ -22,8 +22,8 @@ npm run preview      # preview the production build on port 4322
 
 ## What changed
 
-- A custom homepage with warm paper colours, forest green, IBM Plex Sans, and
-  Instrument Serif; responsive layouts down to small phones.
+- A custom homepage with five switchable visual identities, plus independent
+  compact/spacious density controls; responsive layouts down to small phones.
 - An interactive canvas illustration with trajectory, detection, and zone views,
   a pause/play control, and a seekable timeline. The paths are simulated and
   labelled as such, not experimental results or a screenshot of the app.
@@ -41,6 +41,29 @@ npm run preview      # preview the production build on port 4322
 two interactive diagrams live in `src/components/`. `src/styles/home.css` styles
 the homepage; `src/styles/custom.css` styles the documentation. The documentation
 articles remain in `src/content/docs/`.
+
+## Temporary theme comparison
+
+The first design is saved in commit **`1605be9`**. The **Themes** button offers:
+
+| Direction | Typography and palette |
+| --- | --- |
+| Lab bench (default) | Plain sans serif, graphite and signal orange; crop brackets and instrument ticks |
+| Journal | Georgia, book paper and oxblood; a traditional publication style |
+| Blueprint | IBM Plex Sans, white and cobalt; light technical figures |
+| Darkroom | Monospaced headings, charcoal and amber; an instrument display |
+| First shot | Original green palette and Instrument Serif accents |
+
+**Compact** uses more horizontal space, larger body text and less vertical padding.
+**Spacious** keeps the first layout's spacing. The **Compare with the first
+version** button selects First shot + Spacious together. Theme and density are
+saved locally and applied before paint on both the homepage and documentation.
+
+Preset metadata lives in `src/lib/appearance.ts`; colours, typography, and density
+rules live in `src/styles/themes.css`. `ThemeInit.astro` applies saved preferences,
+and `ThemeSwitcher.astro` supplies the temporary chooser. The canvas reads its
+palette from the same CSS variables, without resetting playback or the selected
+display mode. No new dependencies are required.
 
 There are no analytics, remote font requests, or external runtime services. The
 animation pauses when offscreen or in a background tab. Reduced-motion settings
