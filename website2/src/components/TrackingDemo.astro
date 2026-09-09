@@ -1,0 +1,145 @@
+<figure class="tracking-figure" aria-labelledby="tracking-caption">
+  <div class="tracking-demo" data-tracking-demo>
+    <div class="demo-heading"><span><span class="status-dot"></span> The observation arena</span><span class="demo-dimension">640 × 480 px</span></div>
+    <div class="demo-tabs" role="group" aria-label="Illustration display mode">
+      <button type="button" data-mode="trajectories" aria-pressed="true">Trajectories</button>
+      <button type="button" data-mode="detection" aria-pressed="false">Detection</button>
+      <button type="button" data-mode="zones" aria-pressed="false">Zones</button>
+      <span class="demo-view-label">TOP VIEW <span>↙</span></span>
+    </div>
+    <div class="arena">
+      <canvas width="1280" height="960" role="img" aria-label="Animated illustration of twelve simulated animals moving through an arena. Switch modes to see trajectories, detection boxes, or zones of interest."></canvas>
+      <span class="arena-origin">0, 0</span>
+      <span class="arena-scale"><i></i>100 px</span>
+      <div class="arena-key"><span></span><span data-legend>Individual trajectories</span></div>
+    </div>
+    <div class="demo-transport">
+      <button type="button" class="play-toggle" aria-label="Pause illustration" data-play><svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M4 3v8M10 3v8" stroke="currentColor" stroke-width="2" /></svg></button>
+      <span class="demo-clock" data-time>00:08.00</span>
+      <label class="sr-only" for="demo-timeline">Illustration time</label>
+      <input id="demo-timeline" type="range" min="0" max="60" value="8" step="0.1" aria-valuetext="8 seconds" />
+      <span class="demo-duration">01:00</span>
+      <span class="demo-count">12 individuals</span>
+    </div>
+    <div class="demo-data"><span><i></i> SAMPLE POSITION</span><span>id <b>04</b></span><span>x <b data-x>—</b></span><span>y <b data-y>—</b></span><span class="data-unit">px</span></div>
+  </div>
+  <figcaption id="tracking-caption"><span><span class="figure-number">FIG. 01</span> Interactive illustration · simulated trajectories</span></figcaption>
+</figure>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-tracking-demo]');
+  if (root) {
+    const canvas = root.querySelector('canvas')!;
+    const ctx = canvas.getContext('2d');
+    const slider = root.querySelector<HTMLInputElement>('input')!;
+    const play = root.querySelector<HTMLButtonElement>('[data-play]')!;
+    const clock = root.querySelector<HTMLElement>('[data-time]')!;
+    const xValue = root.querySelector<HTMLElement>('[data-x]')!;
+    const yValue = root.querySelector<HTMLElement>('[data-y]')!;
+    const legend = root.querySelector<HTMLElement>('[data-legend]')!;
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    let playing = !reducedMotion.matches;
+    let visible = true;
+    let time = 8;
+    let mode = 'trajectories';
+    let last = 0;
+    let request = 0;
+    const colors = ['#a6d6bd', '#ceddaf', '#78b5ab', '#e0c496', '#a3c8b2', '#86bcb5', '#d5d5a1', '#a5c3d0', '#9bbaa2', '#c1d29d', '#85bdb2', '#d6bc8d'];
+
+    function position(i: number, t: number) {
+      const a = i * 2.39996;
+      const radius = 74 + (i % 4) * 27;
+      const phase = t * (0.075 + (i % 3) * 0.013) + a;
+      return { x: 320 + Math.cos(phase) * radius + Math.sin(t * 0.21 + a) * 33,
+        y: 237 + Math.sin(phase) * radius * .85 + Math.cos(t * .16 + a * 2) * 26 };
+    }
+
+    function draw() {
+      if (!ctx) return;
+      ctx.setTransform(2, 0, 0, 2, 0, 0);
+      ctx.clearRect(0, 0, 640, 480);
+      ctx.fillStyle = '#16392f';
+      ctx.fillRect(0, 0, 640, 480);
+      ctx.fillStyle = '#345347';
+      for (let x = 20; x < 640; x += 20) for (let y = 20; y < 480; y += 20) {
+        ctx.beginPath(); ctx.arc(x, y, .65, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.beginPath(); ctx.ellipse(320, 240, 216, 207, 0, 0, Math.PI * 2);
+      ctx.fillStyle = '#1c4135'; ctx.fill(); ctx.strokeStyle = '#587361'; ctx.lineWidth = .8; ctx.stroke();
+      ctx.beginPath(); ctx.ellipse(320, 240, 223, 214, 0, 0, Math.PI * 2);
+      ctx.strokeStyle = '#355746'; ctx.setLineDash([2, 5]); ctx.stroke(); ctx.setLineDash([]);
+      if (mode === 'zones') {
+        ctx.save(); ctx.beginPath(); ctx.ellipse(320, 240, 215, 206, 0, 0, Math.PI * 2); ctx.clip();
+        ctx.fillStyle = '#acd9b916'; ctx.fillRect(100, 30, 220, 430);
+        ctx.fillStyle = '#e0c49615'; ctx.fillRect(320, 30, 220, 430);
+        ctx.strokeStyle = '#9bb4a3'; ctx.setLineDash([5, 6]); ctx.beginPath(); ctx.moveTo(320, 30); ctx.lineTo(320, 450); ctx.stroke(); ctx.setLineDash([]);
+        ctx.font = '10px "IBM Plex Mono", monospace'; ctx.fillStyle = '#c7d9c3';
+        ctx.fillText('ZONE 01', 194, 105); ctx.fillText('ZONE 02', 384, 105); ctx.restore();
+      }
+      // These deterministic paths explain the output modes; they are not experimental data.
+      for (let i = 0; i < 12; i++) {
+        const p = position(i, time);
+        const next = position(i, time + .08);
+        const angle = Math.atan2(next.y - p.y, next.x - p.x);
+        if (mode === 'trajectories') {
+          for (let s = 0; s < 40; s++) {
+            const a = position(i, time - 8 + s * .2);
+            const b = position(i, time - 8 + (s + 1) * .2);
+            ctx.globalAlpha = .06 + s / 40 * .66;
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = colors[i]; ctx.lineWidth = 1.15; ctx.stroke();
+          }
+          ctx.globalAlpha = 1;
+        }
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(angle);
+        ctx.fillStyle = colors[i]; ctx.beginPath(); ctx.ellipse(0, 0, 7.5, 3, 0, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-5, 0); ctx.lineTo(-12, -4); ctx.lineTo(-10, 0); ctx.lineTo(-12, 4); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#17382e'; ctx.beginPath(); ctx.arc(4, -1, .8, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+        if (mode === 'detection') {
+          ctx.strokeStyle = colors[i]; ctx.lineWidth = .9; ctx.strokeRect(p.x - 16, p.y - 14, 32, 28);
+        }
+        ctx.font = '9px "IBM Plex Mono", monospace'; ctx.fillStyle = colors[i];
+        ctx.fillText(String(i + 1).padStart(2, '0'), p.x + 12, p.y - 10);
+        if (i === 3) {
+          if (mode === 'trajectories') {
+            ctx.beginPath(); ctx.arc(p.x, p.y, 16, 0, Math.PI * 2); ctx.strokeStyle = '#e0c49666'; ctx.lineWidth = .7; ctx.stroke();
+          }
+          xValue.textContent = p.x.toFixed(1); yValue.textContent = p.y.toFixed(1);
+        }
+      }
+      clock.textContent = `${String(Math.floor(time / 60)).padStart(2, '0')}:${(time % 60).toFixed(2).padStart(5, '0')}`;
+      slider.value = String(time);
+      slider.setAttribute('aria-valuetext', `${time.toFixed(1)} seconds`);
+      slider.style.setProperty('--progress', `${time / 60 * 100}%`);
+    }
+
+    function tick(now: number) {
+      request = 0;
+      if (!playing || !visible || document.hidden) return;
+      if (last) time = (time + Math.min((now - last) / 1000, .1)) % 60;
+      last = now; draw(); request = requestAnimationFrame(tick);
+    }
+    function syncPlayback() {
+      play.setAttribute('aria-label', playing ? 'Pause illustration' : 'Play illustration');
+      play.innerHTML = playing
+        ? '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="M4 3v8M10 3v8" stroke="currentColor" stroke-width="2"/></svg>'
+        : '<svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"><path d="m4 2 8 5-8 5Z" fill="currentColor"/></svg>';
+      cancelAnimationFrame(request); request = 0; last = 0;
+      if (playing && visible && !document.hidden) request = requestAnimationFrame(tick);
+    }
+    play.addEventListener('click', () => { playing = !playing; syncPlayback(); });
+    slider.addEventListener('input', () => { time = Number(slider.value); playing = false; syncPlayback(); draw(); });
+    root.querySelectorAll<HTMLButtonElement>('[data-mode]').forEach(button => {
+      button.addEventListener('click', () => {
+        mode = button.dataset.mode!;
+        root.querySelectorAll('[data-mode]').forEach(el => el.setAttribute('aria-pressed', String(el === button)));
+        legend.textContent = mode === 'zones' ? 'Regions of interest' : mode === 'detection' ? 'Detected individuals' : 'Individual trajectories';
+        draw();
+      });
+    });
+    new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; syncPlayback(); }, { threshold: .05 }).observe(root);
+    document.addEventListener('visibilitychange', syncPlayback);
+    reducedMotion.addEventListener('change', () => { playing = !reducedMotion.matches; syncPlayback(); });
+    draw(); syncPlayback();
+  }
+</script>

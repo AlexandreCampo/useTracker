@@ -1,0 +1,39 @@
+---
+title: A field guide to useTracker
+description: Set up useTracker, build your first image-processing pipeline, and take measurements from video into your research.
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+useTracker turns video into measurements through a sequence of image-processing
+plugins. This guide covers the operations, the practical choices, and the limits
+you need to understand before using the output in an analysis.
+
+## Start with one recording
+
+<CardGrid>
+  <LinkCard title="Install useTracker" description="Packages, platform support, and building from source." href="../start/install/" />
+  <LinkCard title="Your first analysis" description="Open a video, build a pipeline, and save your measurements." href="../start/first-analysis/" />
+  <LinkCard title="Example pipelines" description="Starting points for arenas, underwater footage, and tagged individuals." href="../start/examples/" />
+  <LinkCard title="Know the limitations" description="Camera requirements, identity swaps, and current issues." href="../project/known-issues/" />
+</CardGrid>
+
+## Understand the process
+
+1. **Prepare the image.** Open your source and define [zones of interest](/guide/zones-background/). Use [enhancement](/plugins/enhancement/) if the footage needs it.
+2. **Build the pipeline.** Choose [background subtraction](/plugins/background/) and [segmentation](/plugins/segmentation/) operations, then add [detection and tracking](/plugins/tracking/).
+3. **Inspect the output.** Understand [what each plugin writes](/reference/output-files/), including the distinction between measured and predicted positions.
+4. **Repeat the analysis.** Save your [settings file](/reference/settings-file/) and use [batch processing](/guide/batch/) for the rest of the dataset.
+
+## Find a reference
+
+<CardGrid>
+  <LinkCard title="Plugin reference" description="What each plugin does, its parameters, and how it fits in a pipeline." href="../plugins/" />
+  <LinkCard title="Command line" description="Run useTracker without the interface and automate your analysis." href="../reference/cli/" />
+</CardGrid>
+
+## Working with the project
+
+useTracker is maintained by Alexandre Campo as time allows. Read the
+[history and credits](/project/history/), find [citation guidance](/project/history/#citing-it),
+or [contribute an example, fix, or improvement](/project/contributing/).

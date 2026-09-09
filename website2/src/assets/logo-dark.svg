@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" role="img" aria-label="useTracker">
+  <!-- reticle: a tracked target box with its motion trail passing through -->
+  <path d="M3 9V3h6M23 3h6v6M29 23v6h-6M9 29H3v-6" fill="none" stroke="#ffdc28" stroke-width="1.6" stroke-linecap="square"/>
+  <path d="M2 24C7 24 9 12 16 12s9 8 14 4" fill="none" stroke="#3ddc84" stroke-width="1.6" stroke-linecap="round" opacity="0.85"/>
+  <circle cx="16" cy="12" r="3.4" fill="#3ddc84"/>
+  <circle cx="16" cy="12" r="6.2" fill="none" stroke="#3ddc84" stroke-width="1" opacity="0.4"/>
+</svg>

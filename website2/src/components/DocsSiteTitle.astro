@@ -1,0 +1,10 @@
+---
+import Brand from './Brand.astro';
+---
+<div class="docs-brand"><Brand /><span>FIELD GUIDE</span></div>
+<style>
+  .docs-brand { display: flex; align-items: center; gap: 20px; }
+  .docs-brand > span { border-left: 1px solid var(--sl-color-hairline); padding-left: 20px; font: 8px 'IBM Plex Mono', monospace; letter-spacing: 1.2px; color: var(--sl-color-gray-3); }
+  :global([data-theme='dark']) .docs-brand :global(.brand) { color: #d6e5c5; }
+  @media (max-width: 1100px) { .docs-brand > span { display: none; } }
+</style>

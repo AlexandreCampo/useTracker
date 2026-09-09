@@ -1,0 +1,79 @@
+@import '@fontsource-variable/ibm-plex-sans/index.css';
+@import '@fontsource/ibm-plex-mono/latin-400.css';
+@import '@fontsource/ibm-plex-mono/latin-500.css';
+@import '@fontsource/instrument-serif/latin-400-italic.css';
+
+:root {
+  --sl-font: 'IBM Plex Sans Variable', system-ui, sans-serif;
+  --sl-font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --sl-content-width: 47rem;
+  --sl-sidebar-width: 17rem;
+  --sl-text-code: .8rem;
+  --sl-text-h1: 2.65rem;
+  --sl-text-h2: 1.7rem;
+  --sl-text-h3: 1.2rem;
+  --sl-color-accent-low: #233f30;
+  --sl-color-accent: #9dc789;
+  --sl-color-accent-high: #d5e6c2;
+  --sl-color-white: #e8eddf;
+  --sl-color-gray-1: #dce4d3;
+  --sl-color-gray-2: #becab4;
+  --sl-color-gray-3: #91a087;
+  --sl-color-gray-4: #607257;
+  --sl-color-gray-5: #364b31;
+  --sl-color-gray-6: #22351f;
+  --sl-color-black: #172719;
+  --sl-color-bg: #172719;
+  --sl-color-bg-nav: #172719;
+  --sl-color-bg-sidebar: #1a2b1b;
+  --sl-color-bg-inline-code: #263923;
+  --sl-color-hairline: #344630;
+  --sl-color-hairline-light: #344630;
+}
+:root[data-theme='light'] {
+  --sl-color-accent-low: #e0e9d4;
+  --sl-color-accent: #356044;
+  --sl-color-accent-high: #244532;
+  --sl-color-white: #233a30;
+  --sl-color-gray-1: #344638;
+  --sl-color-gray-2: #4f604a;
+  --sl-color-gray-3: #607053;
+  --sl-color-gray-4: #88977b;
+  --sl-color-gray-5: #cbd5be;
+  --sl-color-gray-6: #e7eddf;
+  --sl-color-gray-7: #f0f3e9;
+  --sl-color-black: #fafbf5;
+  --sl-color-bg: #f7f7f0;
+  --sl-color-bg-nav: #f5f5ee;
+  --sl-color-bg-sidebar: #eff2e7;
+  --sl-color-bg-inline-code: #e9eedf;
+  --sl-color-hairline: #d9dfcd;
+  --sl-color-hairline-light: #d9dfcd;
+}
+html { font-synthesis: none; -webkit-font-smoothing: antialiased; }
+::selection { background: var(--sl-color-accent-low); color: var(--sl-color-accent-high); }
+.sl-markdown-content { line-height: 1.85; font-size: .96rem; }
+h1#_top { font-weight: 450; letter-spacing: -1.3px; line-height: 1.16; }
+.sl-markdown-content h2 { font-weight: 450; letter-spacing: -.55px; }
+.sl-markdown-content h3 { font-weight: 500; }
+.sl-markdown-content .sl-heading-wrapper.level-h2 { border-top: 1px solid var(--sl-color-hairline); padding-top: 1.5rem; margin-top: 2.5rem; }
+.sl-markdown-content a { text-underline-offset: 4px; }
+.sl-markdown-content table { display: block; width: 100%; overflow-x: auto; border-collapse: collapse; font-size: .82rem; line-height: 1.65; }
+.sl-markdown-content th { font-weight: 500; color: var(--sl-color-white); }
+.sl-markdown-content td, .sl-markdown-content th { padding: .6rem .8rem; border-color: var(--sl-color-hairline); vertical-align: top; }
+.sl-markdown-content tbody tr:nth-child(odd) { background: var(--sl-color-gray-7, var(--sl-color-gray-6)); }
+.sl-markdown-content code { font-size: .84em; }
+.sl-markdown-content table code { white-space: nowrap; }
+.sl-markdown-content kbd { font-family: var(--sl-font-mono); font-size: .8em; padding: .1em .4em; border: 1px solid var(--sl-color-gray-5); border-radius: 3px; background: var(--sl-color-bg-inline-code); }
+.sl-markdown-content img { border: 1px solid var(--sl-color-hairline); border-radius: 5px; }
+.sl-markdown-content figure { margin: 1.5rem 0; }
+.sl-markdown-content figcaption { font-size: .8rem; margin-top: .5rem; color: var(--sl-color-gray-3); }
+.starlight-aside { border-inline-start-width: 2px; border-radius: 0 4px 4px 0; font-size: .9rem; }
+.sidebar-content a { font-size: .83rem; }
+.sidebar-content a[aria-current='page'] { border-radius: 3px; }
+.sidebar-content summary { font-size: .88rem; }
+.sl-link-card { border-radius: 4px; box-shadow: none; background: var(--sl-color-bg-sidebar); }
+.sl-link-card:hover { border-color: var(--sl-color-gray-4); }
+.pagination-links a { box-shadow: none; border-radius: 4px; }
+@media (max-width: 50rem) { :root { --sl-text-h1: 2.1rem; } .sl-markdown-content { font-size: .92rem; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

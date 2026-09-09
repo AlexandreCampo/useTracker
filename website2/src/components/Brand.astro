@@ -1,0 +1,20 @@
+---
+import { local } from '../lib/links';
+interface Props { inverse?: boolean }
+const { inverse = false } = Astro.props;
+---
+<a href={local()} class:list={['brand', { inverse }]} aria-label="useTracker home">
+  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+    <path d="M8 3H3v5m21-5h5v5M3 24v5h5m16 0h5v-5" stroke="currentColor" stroke-width="1.5" />
+    <path d="M3 23c6 0 5-13 13-13 6 0 6 12 13 7" stroke="currentColor" stroke-width="1.5" />
+    <circle cx="16" cy="10" r="3.5" fill="currentColor" />
+  </svg>
+  <span>use<span class="brand-weight">Tracker</span><span class="brand-dot">.</span></span>
+</a>
+<style>
+  .brand { display: inline-flex; gap: 11px; align-items: center; color: #183f34; text-decoration: none; white-space: nowrap; font-family: 'IBM Plex Sans Variable', sans-serif; font-size: 23px; letter-spacing: -.9px; font-weight: 400; }
+  .brand-weight { font-weight: 600; }
+  .brand-dot { color: #526e61; }
+  .inverse { color: #f5f5eb; }
+  .inverse .brand-dot { color: #afd3a5; }
+</style>

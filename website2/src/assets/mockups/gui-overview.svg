@@ -1,0 +1,237 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" width="1280" height="800"
+     font-family="IBM Plex Mono, ui-monospace, monospace" role="img"
+     aria-label="Mockup of the useTracker main window: menu bar, playback toolbar, video area with tracking overlay, and the right-hand panel showing the Processing tab with the pipeline and the available-plugin list.">
+  <title>useTracker main window (mockup)</title>
+
+  <defs>
+    <linearGradient id="tank" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#123b42"/>
+      <stop offset="0.55" stop-color="#0d2c33"/>
+      <stop offset="1" stop-color="#081d22"/>
+    </linearGradient>
+    <radialGradient id="vig" cx="0.5" cy="0.45" r="0.75">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0.45"/>
+    </radialGradient>
+    <clipPath id="videoClip"><rect x="16" y="86" width="890" height="608"/></clipPath>
+  </defs>
+
+  <!-- window chrome -->
+  <rect width="1280" height="800" fill="#0a0d0c"/>
+  <rect x="0" y="0" width="1280" height="28" fill="#151d1b"/>
+  <circle cx="18" cy="14" r="4.5" fill="#3a4642"/><circle cx="34" cy="14" r="4.5" fill="#3a4642"/><circle cx="50" cy="14" r="4.5" fill="#3a4642"/>
+  <text x="70" y="18" font-size="11" fill="#8b9a94">useTracker 2.0.0 — MVI_0078.MP4</text>
+
+  <!-- menu bar -->
+  <rect x="0" y="28" width="1280" height="24" fill="#111817"/>
+  <text x="16" y="44" font-size="11.5" fill="#c8d3ce">File</text>
+  <text x="58" y="44" font-size="11.5" fill="#c8d3ce">Help</text>
+
+  <!-- toolbar -->
+  <rect x="0" y="52" width="1280" height="34" fill="#0e1413"/>
+  <g font-size="10.5" fill="#c8d3ce">
+    <rect x="12" y="58" width="42" height="22" rx="2" fill="#2a1615" stroke="#5e2b28"/>
+    <circle cx="24" cy="69" r="4" fill="#ff5f52"/><text x="32" y="73" fill="#ff8a80">REC</text>
+    <rect x="60" y="58" width="42" height="22" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="70" y="73">Stop</text>
+    <rect x="108" y="58" width="30" height="22" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="117" y="73">|&lt;</text>
+    <rect x="142" y="58" width="24" height="22" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="151" y="73">&lt;</text>
+    <rect x="170" y="58" width="30" height="22" rx="2" fill="#20302c" stroke="#3ddc84"/><text x="182" y="73" fill="#3ddc84">▶</text>
+    <rect x="204" y="58" width="24" height="22" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="213" y="73">&gt;</text>
+    <rect x="232" y="58" width="30" height="22" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="241" y="73">&gt;|</text>
+  </g>
+
+  <!-- seek bar with bookmarks and loop range -->
+  <rect x="276" y="64" width="560" height="10" rx="2" fill="#1a2422" stroke="#2c3b37"/>
+  <rect x="276" y="64" width="196" height="10" rx="2" fill="#26413a"/>
+  <rect x="404" y="62" width="132" height="14" fill="#ffdc28" opacity="0.13"/>
+  <g stroke="#ffdc28" stroke-width="1.5">
+    <line x1="404" y1="60" x2="404" y2="78"/><line x1="536" y1="60" x2="536" y2="78"/>
+  </g>
+  <g fill="#4dd0e1"><rect x="330" y="60" width="2" height="18"/><rect x="612" y="60" width="2" height="18"/><rect x="702" y="60" width="2" height="18"/></g>
+  <circle cx="472" cy="69" r="6" fill="#e9eeeb"/>
+  <text x="276" y="57" font-size="8.5" fill="#6b7873">00:00</text>
+  <text x="812" y="57" font-size="8.5" fill="#6b7873" text-anchor="end">02:24</text>
+
+  <g font-size="10.5" fill="#c8d3ce">
+    <rect x="846" y="58" width="38" height="22" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="853" y="73">Mark</text>
+    <rect x="888" y="58" width="44" height="22" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="895" y="73">Loop+</text>
+    <rect x="938" y="62" width="13" height="13" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="956" y="73">Loop</text>
+    <rect x="990" y="62" width="13" height="13" rx="2" fill="#3ddc84"/><path d="M993 68.5l2.5 2.5 4-5" stroke="#0a0d0c" stroke-width="1.6" fill="none"/><text x="1008" y="73">HUD</text>
+    <rect x="1042" y="62" width="13" height="13" rx="2" fill="#ffdc28"/><path d="M1045 68.5l2.5 2.5 4-5" stroke="#0a0d0c" stroke-width="1.6" fill="none"/><text x="1060" y="73">Ruler</text>
+    <rect x="1098" y="58" width="50" height="22" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="1105" y="73">Line ▾</text>
+    <rect x="1156" y="63" width="80" height="11" rx="5" fill="#1a2422" stroke="#2c3b37"/>
+    <circle cx="1206" cy="68.5" r="6" fill="#8b9a94"/>
+    <text x="1244" y="73" fill="#6b7873">0.6</text>
+  </g>
+
+  <!-- ================= video area ================= -->
+  <g clip-path="url(#videoClip)">
+    <rect x="16" y="86" width="890" height="608" fill="url(#tank)"/>
+    <!-- scene texture: substrate and plants, so the mockup reads as footage -->
+    <g opacity="0.5" fill="#0b262b">
+      <ellipse cx="180" cy="676" rx="240" ry="46"/><ellipse cx="640" cy="686" rx="300" ry="40"/>
+    </g>
+    <g stroke="#14454b" stroke-width="3" fill="none" opacity="0.6">
+      <path d="M120 690c-8-60 14-96 4-140"/><path d="M148 690c6-52-16-86-4-124"/>
+      <path d="M786 690c10-70-16-104-2-150"/><path d="M818 690c-8-56 18-88 6-128"/>
+    </g>
+    <g opacity="0.25" fill="#5fd3e0">
+      <circle cx="300" cy="220" r="2"/><circle cx="520" cy="160" r="1.5"/><circle cx="700" cy="300" r="2.5"/>
+      <circle cx="220" cy="420" r="1.5"/><circle cx="640" cy="500" r="2"/><circle cx="420" cy="600" r="1.5"/>
+    </g>
+    <rect x="16" y="86" width="890" height="608" fill="url(#vig)"/>
+
+    <!-- targets: fish-like blobs -->
+    <g fill="#cfe6d9" opacity="0.92">
+      <path d="M300 300c22-14 52-14 70 0-18 14-48 14-70 0zm-4 0l-16-11v22z"/>
+      <path d="M560 430c20-13 48-13 64 0-16 13-44 13-64 0zm-4 0l-15-10v20z"/>
+      <path d="M700 210c18-11 42-11 56 0-14 11-38 11-56 0zm-3 0l-13-9v18z"/>
+      <path d="M420 560c17-11 40-11 54 0-14 11-37 11-54 0zm-3 0l-13-9v18z"/>
+    </g>
+
+    <!-- HUD: confirmed tracks (green) with trails and ids -->
+    <g fill="none" stroke="#3ddc84" stroke-width="1.6">
+      <rect x="288" y="282" width="98" height="36"/>
+      <rect x="548" y="414" width="90" height="32"/>
+      <rect x="686" y="196" width="82" height="28"/>
+    </g>
+    <g stroke="#3ddc84" stroke-width="1.4" fill="none" opacity="0.75">
+      <path d="M168 386c40-34 78-70 168-92"/>
+      <path d="M452 512c30-32 62-58 140-76"/>
+      <path d="M596 128c22 26 56 50 108 68"/>
+    </g>
+    <g fill="#3ddc84" font-size="11">
+      <text x="288" y="276">id 0  s 0.91</text><text x="548" y="408">id 1  s 0.88</text><text x="686" y="190">id 2  s 0.84</text>
+    </g>
+
+    <!-- HUD: unconfirmed candidate (orange) -->
+    <rect x="408" y="544" width="82" height="32" fill="none" stroke="#ff8a3d" stroke-width="1.6" stroke-dasharray="5 3"/>
+    <text x="408" y="538" font-size="11" fill="#ff8a3d">candidate</text>
+
+    <!-- ruler measurement overlay -->
+    <g stroke="#ffdc28" stroke-width="1.8">
+      <line x1="340" y1="640" x2="600" y2="600"/>
+      <circle cx="340" cy="640" r="3.5" fill="#ffdc28"/><circle cx="600" cy="600" r="3.5" fill="#ffdc28"/>
+    </g>
+    <rect x="446" y="606" width="184" height="17" fill="#000" opacity="0.7"/>
+    <text x="452" y="618" font-size="10.5" fill="#ffdc28">263 px  dx 260  dy 40</text>
+
+    <!-- zone polygon -->
+    <path d="M60 140h300v180H60z" fill="#4dd0e1" opacity="0.07"/>
+    <path d="M60 140h300v180H60z" fill="none" stroke="#4dd0e1" stroke-width="1.4" stroke-dasharray="6 4"/>
+    <text x="66" y="134" font-size="10.5" fill="#4dd0e1">zone 1</text>
+  </g>
+  <rect x="16" y="86" width="890" height="608" fill="none" stroke="#1f2a27"/>
+
+  <!-- status line -->
+  <text x="18" y="710" font-size="11" fill="#8b9a94">Time: 00:41  Frame: 1247 / 3600  FPS: 25.0  Speed: 1x</text>
+
+  <!-- ================= right panel ================= -->
+  <rect x="918" y="86" width="346" height="608" fill="#0e1413" stroke="#1f2a27"/>
+
+  <!-- tabs -->
+  <g font-size="10.5">
+    <rect x="918" y="86" width="86" height="26" fill="#18211e" stroke="#1f2a27"/><text x="930" y="103" fill="#ffdc28">Processing</text>
+    <text x="1016" y="103" fill="#6b7873">Background</text>
+    <text x="1104" y="103" fill="#6b7873">Calibration</text>
+    <text x="1186" y="103" fill="#6b7873">Frame</text>
+  </g>
+
+  <text x="932" y="132" font-size="12" fill="#e9eeeb">Pipeline</text>
+  <line x1="928" y1="140" x2="1254" y2="140" stroke="#1f2a27"/>
+
+  <!-- pipeline list -->
+  <rect x="928" y="148" width="326" height="182" fill="#0a0f0e" stroke="#1f2a27"/>
+  <g font-size="11">
+    <g>
+      <rect x="936" y="156" width="11" height="11" rx="2" fill="#3ddc84"/><path d="M938.5 161.5l2 2 3.5-4" stroke="#0a0d0c" stroke-width="1.4" fill="none"/>
+      <text x="955" y="166" fill="#c8d3ce">0: White Balance</text>
+    </g>
+    <g>
+      <rect x="936" y="178" width="11" height="11" rx="2" fill="#3ddc84"/><path d="M938.5 183.5l2 2 3.5-4" stroke="#0a0d0c" stroke-width="1.4" fill="none"/>
+      <text x="955" y="188" fill="#c8d3ce">1: Clahe</text>
+    </g>
+    <g>
+      <rect x="932" y="196" width="318" height="18" fill="#1f2f2a"/>
+      <rect x="936" y="200" width="11" height="11" rx="2" fill="#3ddc84"/><path d="M938.5 205.5l2 2 3.5-4" stroke="#0a0d0c" stroke-width="1.4" fill="none"/>
+      <text x="955" y="210" fill="#ffdc28">2: Background Diff Knn</text>
+      <text x="1240" y="210" fill="#ffdc28" text-anchor="end">◂</text>
+    </g>
+    <g>
+      <rect x="936" y="222" width="11" height="11" rx="2" fill="#3ddc84"/><path d="M938.5 227.5l2 2 3.5-4" stroke="#0a0d0c" stroke-width="1.4" fill="none"/>
+      <text x="955" y="232" fill="#c8d3ce">3: Erosion</text>
+    </g>
+    <g>
+      <rect x="936" y="244" width="11" height="11" rx="2" fill="#1a2422" stroke="#2c3b37"/>
+      <text x="955" y="254" fill="#55635e">4: Moving Average</text>
+    </g>
+    <g>
+      <rect x="936" y="266" width="11" height="11" rx="2" fill="#3ddc84"/><path d="M938.5 271.5l2 2 3.5-4" stroke="#0a0d0c" stroke-width="1.4" fill="none"/>
+      <text x="955" y="276" fill="#c8d3ce">5: Extract Blobs</text>
+    </g>
+    <g>
+      <rect x="936" y="288" width="11" height="11" rx="2" fill="#3ddc84"/><path d="M938.5 293.5l2 2 3.5-4" stroke="#0a0d0c" stroke-width="1.4" fill="none"/>
+      <text x="955" y="298" fill="#c8d3ce">6: Pattern Tracker</text>
+    </g>
+    <g>
+      <rect x="936" y="310" width="11" height="11" rx="2" fill="#3ddc84"/><path d="M938.5 315.5l2 2 3.5-4" stroke="#0a0d0c" stroke-width="1.4" fill="none"/>
+      <text x="955" y="320" fill="#c8d3ce">7: Record Video</text>
+    </g>
+  </g>
+
+  <!-- splitter -->
+  <line x1="1076" y1="337" x2="1106" y2="337" stroke="#2c3b37" stroke-width="3"/>
+
+  <!-- pipeline buttons -->
+  <g font-size="10.5" fill="#c8d3ce">
+    <rect x="928" y="346" width="66" height="22" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="937" y="361">Settings…</text>
+    <rect x="1000" y="346" width="58" height="22" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="1010" y="361">Remove</text>
+    <rect x="1064" y="346" width="34" height="22" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="1074" y="361">Up</text>
+    <rect x="1104" y="346" width="46" height="22" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="1113" y="361">Down</text>
+  </g>
+
+  <text x="932" y="392" font-size="12" fill="#e9eeeb">Available Plugins</text>
+  <line x1="928" y1="400" x2="1254" y2="400" stroke="#1f2a27"/>
+
+  <!-- available plugins tree -->
+  <rect x="928" y="408" width="326" height="248" fill="#0a0f0e" stroke="#1f2a27"/>
+  <g font-size="11">
+    <text x="938" y="424" fill="#8b9a94">▾ Enhancement</text>
+    <text x="952" y="440" fill="#c8d3ce">Clahe</text>
+    <text x="952" y="456" fill="#c8d3ce">Curves</text>
+    <text x="952" y="472" fill="#c8d3ce">White Balance</text>
+    <text x="952" y="488" fill="#c8d3ce">Dehaze</text>
+    <text x="938" y="510" fill="#8b9a94">▾ Background Subtraction</text>
+    <text x="952" y="526" fill="#c8d3ce">Background Diff Knn</text>
+    <text x="952" y="542" fill="#c8d3ce">Background Diff Gsoc</text>
+    <text x="938" y="564" fill="#8b9a94">▸ Threshold &amp; Segmentation</text>
+    <text x="938" y="586" fill="#8b9a94">▸ Morphology</text>
+    <text x="938" y="608" fill="#8b9a94">▾ Markers &amp; Patterns</text>
+    <text x="952" y="624" fill="#c8d3ce">Pattern Tracker</text>
+    <text x="952" y="640" fill="#c8d3ce">Yolo Detector</text>
+  </g>
+  <g font-size="10.5" fill="#c8d3ce">
+    <rect x="928" y="664" width="76" height="22" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="938" y="679">Add Plugin</text>
+  </g>
+
+  <!-- bottom-right: downscale + UI zoom -->
+  <rect x="742" y="722" width="522" height="34" rx="2" fill="#131a18" stroke="#1f2a27" opacity="0.95"/>
+  <g font-size="10.5" fill="#c8d3ce">
+    <text x="754" y="743">Downscale</text>
+    <line x1="822" y1="738" x2="962" y2="738" stroke="#1a2422" stroke-width="3"/>
+    <g fill="#2fae6a"><circle cx="822" cy="738" r="4"/><circle cx="868" cy="738" r="4"/><circle cx="914" cy="738" r="4"/><circle cx="960" cy="738" r="4"/></g>
+    <circle cx="868" cy="738" r="6" fill="#3ddc84"/>
+    <g font-size="8" fill="#6b7873">
+      <text x="815" y="752">1:1</text><text x="860" y="752">1/2</text><text x="906" y="752">1/4</text><text x="952" y="752">1/8</text>
+    </g>
+    <text x="978" y="743" fill="#6b7873">960x540</text>
+    <line x1="1046" y1="728" x2="1046" y2="750" stroke="#2c3b37"/>
+    <text x="1062" y="743">UI</text>
+    <rect x="1082" y="728" width="24" height="20" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="1091" y="743">-</text>
+    <text x="1116" y="743">100%</text>
+    <rect x="1158" y="728" width="24" height="20" rx="2" fill="#1a2422" stroke="#2c3b37"/><text x="1167" y="743">+</text>
+  </g>
+
+  <!-- mockup watermark, so nobody mistakes this for a screenshot -->
+  <text x="1264" y="790" font-size="9" fill="#3a4642" text-anchor="end" letter-spacing="0.14em">MOCKUP — REPLACE WITH SCREENSHOT</text>
+</svg>

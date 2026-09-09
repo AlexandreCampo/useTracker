@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 520" width="880" height="520"
+     font-family="IBM Plex Mono, ui-monospace, monospace" role="img"
+     aria-label="Mockup of polygon zone editing on the video. Two closed polygons are labelled region 1 and region 2, a third is being drawn with the next segment following the cursor, and one vertex is hovered ready to be dragged or deleted.">
+  <title>Editing Zones of Interest polygons on the video (mockup)</title>
+
+  <rect width="880" height="520" fill="#0a0d0c"/>
+
+  <!-- video -->
+  <rect x="16" y="16" width="848" height="452" fill="#10201c"/>
+  <g opacity="0.55" fill="#16302a">
+    <ellipse cx="240" cy="430" rx="260" ry="52"/><ellipse cx="700" cy="440" rx="240" ry="44"/>
+  </g>
+  <g opacity="0.4" stroke="#1d4038" stroke-width="2" fill="none">
+    <path d="M120 468c-6-70 12-110 2-160"/><path d="M760 468c10-80-14-118-2-170"/>
+  </g>
+  <rect x="16" y="16" width="848" height="452" fill="none" stroke="#1f2a27"/>
+
+  <!-- region 1: closed polygon -->
+  <path d="M80 80 L300 66 L326 210 L104 232 Z" fill="#4dd0e1" opacity="0.09"/>
+  <path d="M80 80 L300 66 L326 210 L104 232 Z" fill="none" stroke="#4dd0e1" stroke-width="1.8"/>
+  <g fill="#4dd0e1"><circle cx="80" cy="80" r="4"/><circle cx="300" cy="66" r="4"/><circle cx="326" cy="210" r="4"/><circle cx="104" cy="232" r="4"/></g>
+  <rect x="80" y="52" width="72" height="16" fill="#000" opacity="0.65"/>
+  <text x="86" y="64" font-size="10.5" fill="#4dd0e1">region 1</text>
+
+  <!-- region 2: closed polygon, different region number -->
+  <path d="M470 250 L690 232 L716 386 L494 404 Z" fill="#3ddc84" opacity="0.09"/>
+  <path d="M470 250 L690 232 L716 386 L494 404 Z" fill="none" stroke="#3ddc84" stroke-width="1.8"/>
+  <g fill="#3ddc84"><circle cx="470" cy="250" r="4"/><circle cx="690" cy="232" r="4"/><circle cx="716" cy="386" r="4"/><circle cx="494" cy="404" r="4"/></g>
+  <rect x="470" y="222" width="72" height="16" fill="#000" opacity="0.65"/>
+  <text x="476" y="234" font-size="10.5" fill="#3ddc84">region 2</text>
+
+  <!-- polygon in progress: open, rubber-band segment to the cursor -->
+  <polyline points="150,300 250,286 292,368" fill="none" stroke="#ffdc28" stroke-width="1.8"/>
+  <line x1="292" y1="368" x2="196" y2="418" stroke="#ffdc28" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <g fill="#ffdc28"><circle cx="150" cy="300" r="4"/><circle cx="250" cy="286" r="4"/><circle cx="292" cy="368" r="4"/></g>
+  <!-- first vertex highlighted: clicking it closes the polygon -->
+  <circle cx="150" cy="300" r="9" fill="none" stroke="#ffdc28" stroke-width="1.4"/>
+  <rect x="164" y="290" width="150" height="16" fill="#000" opacity="0.7"/>
+  <text x="170" y="302" font-size="10" fill="#ffdc28">click here to close</text>
+
+  <!-- cursor -->
+  <g stroke="#ffffff" stroke-width="1.6">
+    <line x1="188" y1="418" x2="204" y2="418"/><line x1="196" y1="410" x2="196" y2="426"/>
+  </g>
+
+  <!-- hovered vertex on region 2, with the right-click hint -->
+  <circle cx="690" cy="232" r="9" fill="none" stroke="#ff8a3d" stroke-width="1.6"/>
+  <rect x="704" y="200" width="152" height="30" fill="#000" opacity="0.75"/>
+  <text x="710" y="212" font-size="9.5" fill="#ff8a3d">drag to move</text>
+  <text x="710" y="225" font-size="9.5" fill="#ff8a3d">right-click to delete</text>
+
+  <!-- caption strip -->
+  <rect x="16" y="482" width="848" height="24" rx="2" fill="#131a18" stroke="#1f2a27"/>
+  <text x="28" y="498" font-size="10" fill="#8b9a94">Select the Zones of Interest plugin in the pipeline to edit on the video. Region 0 and un-painted areas are ignored downstream.</text>
+
+  <text x="864" y="516" font-size="9" fill="#3a4642" text-anchor="end" letter-spacing="0.14em">MOCKUP</text>
+</svg>

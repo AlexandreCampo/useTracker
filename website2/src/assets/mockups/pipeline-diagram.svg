@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 560" width="1180" height="560"
+     font-family="IBM Plex Mono, ui-monospace, monospace" role="img"
+     aria-label="Diagram of the useTracker pipeline. A source frame enters, enhancement plugins modify the frame in place, detector plugins write into a shared binary mask, morphology plugins refine that mask, Extract Blobs turns the mask into a blob list, and trackers turn blobs into identified entities written to CSV. A pristine copy of the source frame is kept for recording.">
+  <title>The useTracker pipeline: one frame buffer, one mask buffer</title>
+
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#55635e"/>
+    </marker>
+    <marker id="arY" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#ffdc28"/>
+    </marker>
+    <marker id="arC" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#4dd0e1"/>
+    </marker>
+    <marker id="arG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0 0L10 5L0 10z" fill="#3ddc84"/>
+    </marker>
+  </defs>
+
+  <rect width="1180" height="560" fill="#0a0d0c"/>
+  <g stroke="#131a18">
+    <path d="M0 40h1180M0 80h1180M0 120h1180M0 160h1180M0 200h1180M0 240h1180M0 280h1180M0 320h1180M0 360h1180M0 400h1180M0 440h1180M0 480h1180M0 520h1180"/>
+  </g>
+
+  <!-- ============ source ============ -->
+  <rect x="24" y="196" width="128" height="86" rx="3" fill="#131a18" stroke="#2c3b37"/>
+  <text x="88" y="228" font-size="12" fill="#e9eeeb" text-anchor="middle">Source</text>
+  <text x="88" y="246" font-size="9.5" fill="#8b9a94" text-anchor="middle">video · camera</text>
+  <text x="88" y="260" font-size="9.5" fill="#8b9a94" text-anchor="middle">image · stitched</text>
+  <text x="88" y="188" font-size="9" fill="#6b7873" text-anchor="middle" letter-spacing="0.12em">DECODER</text>
+
+  <!-- pristine copy branch -->
+  <path d="M152 216 L 232 216 L 232 96" stroke="#55635e" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+  <rect x="164" y="56" width="152" height="40" rx="3" fill="#0e1413" stroke="#2c3b37" stroke-dasharray="4 3"/>
+  <text x="240" y="74" font-size="10" fill="#8b9a94" text-anchor="middle">sourceFrame</text>
+  <text x="240" y="88" font-size="9" fill="#6b7873" text-anchor="middle">pristine copy, untouched</text>
+
+  <!-- ============ lane labels ============ -->
+  <text x="300" y="152" font-size="9.5" fill="#ffdc28" letter-spacing="0.14em">LANE 1 — frame (colour image, modified in place)</text>
+  <text x="300" y="336" font-size="9.5" fill="#4dd0e1" letter-spacing="0.14em">LANE 2 — marked (binary mask, refined in place)</text>
+
+  <!-- lane 1: enhancement -->
+  <path d="M152 240 L 300 240 L 300 196" stroke="#ffdc28" stroke-width="1.6" fill="none" marker-end="url(#arY)"/>
+  <g>
+    <rect x="300" y="160" width="150" height="60" rx="3" fill="#1c1a10" stroke="#ffdc28"/>
+    <text x="375" y="182" font-size="11.5" fill="#ffdc28" text-anchor="middle">Enhancement</text>
+    <text x="375" y="198" font-size="9" fill="#c9b878" text-anchor="middle">White Balance · Curves</text>
+    <text x="375" y="211" font-size="9" fill="#c9b878" text-anchor="middle">Clahe · Dehaze · Denoise</text>
+  </g>
+
+  <!-- lane 1 continues into detectors -->
+  <path d="M450 190 L 520 190" stroke="#ffdc28" stroke-width="1.6" marker-end="url(#arY)"/>
+  <text x="485" y="182" font-size="8.5" fill="#c9b878" text-anchor="middle">reads</text>
+
+  <!-- detectors: read frame, write mask -->
+  <rect x="520" y="160" width="160" height="60" rx="3" fill="#131a18" stroke="#8b9a94"/>
+  <text x="600" y="182" font-size="11.5" fill="#e9eeeb" text-anchor="middle">Detectors</text>
+  <text x="600" y="198" font-size="9" fill="#8b9a94" text-anchor="middle">Background Diff · Colour</text>
+  <text x="600" y="211" font-size="9" fill="#8b9a94" text-anchor="middle">Aruco · Yolo · Threshold</text>
+
+  <!-- detectors write into the mask lane -->
+  <path d="M600 220 L 600 296" stroke="#4dd0e1" stroke-width="1.6" fill="none" marker-end="url(#arC)"/>
+  <text x="612" y="262" font-size="8.5" fill="#4dd0e1">writes mask</text>
+
+  <!-- lane 2: the mask -->
+  <rect x="300" y="296" width="380" height="52" rx="3" fill="#0d1c1f" stroke="#4dd0e1" stroke-dasharray="3 3"/>
+  <text x="330" y="326" font-size="11" fill="#4dd0e1">marked — one shared binary mask per pipeline</text>
+
+  <!-- morphology refines mask -->
+  <path d="M680 322 L 740 322" stroke="#4dd0e1" stroke-width="1.6" marker-end="url(#arC)"/>
+  <rect x="740" y="292" width="146" height="60" rx="3" fill="#0d1c1f" stroke="#4dd0e1"/>
+  <text x="813" y="314" font-size="11.5" fill="#4dd0e1" text-anchor="middle">Morphology</text>
+  <text x="813" y="330" font-size="9" fill="#7fc4ce" text-anchor="middle">Erosion · Dilation</text>
+  <text x="813" y="343" font-size="9" fill="#7fc4ce" text-anchor="middle">Moving Average</text>
+
+  <!-- extract blobs -->
+  <path d="M886 322 L 946 322" stroke="#4dd0e1" stroke-width="1.6" marker-end="url(#arC)"/>
+  <rect x="946" y="292" width="150" height="60" rx="3" fill="#131a18" stroke="#8b9a94"/>
+  <text x="1021" y="316" font-size="11.5" fill="#e9eeeb" text-anchor="middle">Extract Blobs</text>
+  <text x="1021" y="334" font-size="9" fill="#8b9a94" text-anchor="middle">mask → blobs[]</text>
+
+  <!-- blobs to trackers -->
+  <path d="M1021 352 L 1021 396 L 700 396" stroke="#3ddc84" stroke-width="1.6" fill="none" marker-end="url(#arG)"/>
+  <text x="860" y="388" font-size="8.5" fill="#3ddc84" text-anchor="middle">blobs[] — position, size, angle, zone</text>
+
+  <rect x="540" y="404" width="160" height="60" rx="3" fill="#0f2019" stroke="#3ddc84"/>
+  <text x="620" y="426" font-size="11.5" fill="#3ddc84" text-anchor="middle">Trackers</text>
+  <text x="620" y="442" font-size="9" fill="#8fd8b0" text-anchor="middle">Track Blobs (identity)</text>
+  <text x="620" y="455" font-size="9" fill="#8fd8b0" text-anchor="middle">Pattern Tracker (appearance)</text>
+
+  <!-- outputs -->
+  <path d="M540 434 L 470 434" stroke="#3ddc84" stroke-width="1.6" marker-end="url(#arG)"/>
+  <rect x="300" y="404" width="170" height="60" rx="3" fill="#131a18" stroke="#2c3b37"/>
+  <text x="385" y="426" font-size="11.5" fill="#e9eeeb" text-anchor="middle">Output</text>
+  <text x="385" y="442" font-size="9" fill="#8b9a94" text-anchor="middle">CSV tracks · blobs</text>
+  <text x="385" y="455" font-size="9" fill="#8b9a94" text-anchor="middle">H.264 video · snapshots</text>
+
+  <!-- recording reads the pristine frame -->
+  <path d="M240 96 L 240 404" stroke="#55635e" stroke-width="1.3" stroke-dasharray="4 4" fill="none" marker-end="url(#ar)"/>
+  <text x="150" y="250" font-size="8.5" fill="#6b7873">Record Video encodes</text>
+  <text x="150" y="263" font-size="8.5" fill="#6b7873">the original, never</text>
+  <text x="150" y="276" font-size="8.5" fill="#6b7873">the enhanced view</text>
+
+  <!-- zone gate -->
+  <rect x="24" y="404" width="200" height="60" rx="3" fill="#131a18" stroke="#2c3b37"/>
+  <text x="124" y="426" font-size="11.5" fill="#e9eeeb" text-anchor="middle">Zones of Interest</text>
+  <text x="124" y="442" font-size="9" fill="#8b9a94" text-anchor="middle">zoneMap gates every</text>
+  <text x="124" y="455" font-size="9" fill="#8b9a94" text-anchor="middle">stage above</text>
+  <path d="M124 404 L 124 348" stroke="#55635e" stroke-width="1.3" stroke-dasharray="4 4" fill="none" marker-end="url(#ar)"/>
+
+  <!-- HUD note -->
+  <rect x="740" y="404" width="356" height="60" rx="3" fill="#0e1413" stroke="#2c3b37" stroke-dasharray="4 3"/>
+  <text x="756" y="424" font-size="10" fill="#8b9a94">HUD — every plugin may draw its own overlay</text>
+  <text x="756" y="440" font-size="9" fill="#6b7873">Drawn on a separate layer. Toggling it off changes nothing</text>
+  <text x="756" y="453" font-size="9" fill="#6b7873">about the numbers written to disk.</text>
+
+  <!-- footer: ordering law -->
+  <line x1="24" y1="498" x2="1156" y2="498" stroke="#1f2a27"/>
+  <text x="24" y="522" font-size="10.5" fill="#ffdc28" letter-spacing="0.1em">ORDER IS THE ALGORITHM</text>
+  <text x="24" y="540" font-size="10" fill="#8b9a94">Plugins run strictly top to bottom. The same list, in a different order, is a different method — which is exactly why the list is the thing you publish.</text>
+</svg>

@@ -1,0 +1,43 @@
+---
+import Icon from './Icon.astro';
+import { local } from '../lib/links';
+const steps = [
+  { title: 'Start with what you observe.', label: 'Prepare', text: 'Open a video or connect a camera. Define your arena and improve contrast where the recording needs it.', link: 'guide/zones-background/', linkLabel: 'Sources, zones & background', plugins: ['Zones of Interest', 'White Balance', 'CLAHE'], file: '01 / PREPARE THE FRAME', note: 'Give detection a useful starting point.' },
+  { title: 'Build a pipeline. Watch it work.', label: 'Detect & track', text: 'Stack image-processing plugins and tune their parameters while watching the result. Each operation feeds the next.', link: 'guide/pipelines/', linkLabel: 'How pipelines work', plugins: ['Background Diff KNN', 'Erosion', 'Extract Blobs', 'Track Blobs'], file: '02 / FOLLOW THE INDIVIDUALS', note: 'Inspect each step, from foreground to trajectory.' },
+  { title: 'Take the analysis further.', label: 'Export & repeat', text: 'Export measurements as tab-separated text. Save your settings, then process the next recording with the same pipeline.', link: 'guide/batch/', linkLabel: 'Batch processing & output', plugins: ['Track Blobs', 'Tab-separated output', 'Saved settings → next video'], file: '03 / FROM FRAMES TO DATA', note: 'Bring the output into R, Python or your own tools.' },
+];
+---
+<div class="workflow" data-workflow>
+  <div class="workflow-tabs" role="tablist" aria-label="Analysis workflow">
+    {steps.map((step, i) => <button type="button" role="tab" id={`step-${i}`} aria-controls={`step-panel-${i}`} aria-selected={i === 1 ? 'true' : 'false'} tabindex={i === 1 ? 0 : -1} data-step={i}><span>0{i + 1}</span>{step.label}<Icon name="arrow" size={18} /></button>)}
+  </div>
+  {steps.map((step, i) => <div role="tabpanel" id={`step-panel-${i}`} aria-labelledby={`step-${i}`} hidden={i !== 1} tabindex="0" class="workflow-panel">
+    <div class="workflow-copy"><h3>{step.title}</h3><p>{step.text}</p><a class="text-link" href={local(step.link)}>{step.linkLabel}<Icon name="arrow" size={17} /></a></div>
+    <div class="pipeline"><div class="pipeline-heading"><span>{step.file}</span><Icon name="layers" size={17} /></div><div class="pipeline-nodes">{step.plugins.map((plugin, j) => <div class:list={['pipeline-node', { 'node-output': j === step.plugins.length - 1 }]}><span class="node-index">{String(j + 1).padStart(2, '0')}</span><span>{plugin}</span><Icon name="check" size={14} /></div>)}</div><p class="pipeline-note">{step.note}</p></div>
+  </div>)}
+</div>
+<script>
+  const workflow = document.querySelector('[data-workflow]');
+  if (workflow) {
+    const tabs = [...workflow.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    function select(index: number) {
+      tabs.forEach((tab, i) => {
+        tab.setAttribute('aria-selected', String(i === index));
+        tab.tabIndex = i === index ? 0 : -1;
+        document.getElementById(tab.getAttribute('aria-controls')!)!.hidden = i !== index;
+      });
+    }
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => select(i));
+      tab.addEventListener('keydown', event => {
+        let next = i;
+        if (event.key === 'ArrowRight') next = (i + 1) % tabs.length;
+        else if (event.key === 'ArrowLeft') next = (i + tabs.length - 1) % tabs.length;
+        else if (event.key === 'Home') next = 0;
+        else if (event.key === 'End') next = tabs.length - 1;
+        else return;
+        event.preventDefault(); select(next); tabs[next].focus();
+      });
+    });
+  }
+</script>

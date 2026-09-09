@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 480" width="860" height="480"
+     font-family="IBM Plex Mono, ui-monospace, monospace" role="img"
+     aria-label="Mockup of a plugin settings dialog. The left column holds the Active and Output checkboxes and the plugin parameters; the right column is the built-in parameter help panel, opened with the question-mark button.">
+  <title>Plugin settings dialog with the help panel open (mockup)</title>
+
+  <rect width="860" height="480" fill="#0a0d0c"/>
+  <rect x="12" y="12" width="836" height="456" rx="3" fill="#131a18" stroke="#2c3b37"/>
+
+  <!-- title bar -->
+  <rect x="12" y="12" width="836" height="28" rx="3" fill="#18211e"/>
+  <text x="26" y="31" font-size="11.5" fill="#e9eeeb">Background Diff Knn [2]</text>
+  <text x="834" y="31" font-size="12" fill="#8b9a94" text-anchor="end">✕</text>
+
+  <!-- help toggle -->
+  <rect x="404" y="50" width="22" height="20" rx="2" fill="#1f2a27" stroke="#ffdc28"/>
+  <text x="415" y="64" font-size="11" fill="#ffdc28" text-anchor="middle">▸</text>
+
+  <!-- ================= left column: controls ================= -->
+  <g font-size="11">
+    <rect x="30" y="80" width="12" height="12" rx="2" fill="#3ddc84"/><path d="M32.5 86l2 2 4-4.5" stroke="#0a0d0c" stroke-width="1.5" fill="none"/>
+    <text x="50" y="90" fill="#c8d3ce">Active</text>
+
+    <rect x="30" y="104" width="12" height="12" rx="2" fill="#1a2422" stroke="#2c3b37"/>
+    <text x="50" y="114" fill="#c8d3ce">Output</text>
+  </g>
+
+  <line x1="30" y1="132" x2="404" y2="132" stroke="#1f2a27"/>
+
+  <g font-size="11">
+    <!-- History -->
+    <text x="30" y="156" fill="#8b9a94">History</text>
+    <rect x="150" y="146" width="180" height="16" rx="2" fill="#0a0f0e" stroke="#2c3b37"/>
+    <rect x="150" y="146" width="86" height="16" rx="2" fill="#26413a"/>
+    <text x="240" y="158" fill="#e9eeeb">500</text>
+
+    <!-- Dist2 Threshold -->
+    <text x="30" y="186" fill="#8b9a94">Dist2 Threshold</text>
+    <rect x="150" y="176" width="180" height="16" rx="2" fill="#0a0f0e" stroke="#2c3b37"/>
+    <rect x="150" y="176" width="62" height="16" rx="2" fill="#26413a"/>
+    <text x="240" y="188" fill="#e9eeeb">400.0</text>
+
+    <!-- Shadow detection -->
+    <rect x="30" y="204" width="12" height="12" rx="2" fill="#1a2422" stroke="#2c3b37"/>
+    <text x="50" y="214" fill="#c8d3ce">Shadow Detection</text>
+
+    <!-- Learning rate -->
+    <text x="30" y="242" fill="#8b9a94">Learning Rate</text>
+    <rect x="150" y="232" width="180" height="16" rx="2" fill="#0a0f0e" stroke="#2c3b37"/>
+    <text x="240" y="244" fill="#e9eeeb">-1.0</text>
+    <text x="150" y="262" font-size="9" fill="#6b7873">-1 = automatic</text>
+
+    <line x1="30" y1="282" x2="404" y2="282" stroke="#1f2a27"/>
+
+    <!-- zone controls, common to detectors -->
+    <rect x="30" y="298" width="12" height="12" rx="2" fill="#1a2422" stroke="#2c3b37"/>
+    <text x="50" y="308" fill="#c8d3ce">Additive</text>
+    <text x="150" y="308" font-size="9" fill="#6b7873">OR into the mask instead of AND</text>
+
+    <rect x="30" y="324" width="12" height="12" rx="2" fill="#1a2422" stroke="#2c3b37"/>
+    <text x="50" y="334" fill="#c8d3ce">Restrict to Zone</text>
+    <rect x="196" y="322" width="60" height="16" rx="2" fill="#0a0f0e" stroke="#2c3b37"/>
+    <text x="226" y="334" fill="#55635e" text-anchor="middle">0</text>
+
+    <rect x="30" y="360" width="70" height="22" rx="2" fill="#1a2422" stroke="#2c3b37"/>
+    <text x="65" y="375" fill="#c8d3ce" text-anchor="middle">Reset</text>
+  </g>
+
+  <!-- ================= divider ================= -->
+  <line x1="432" y1="50" x2="432" y2="450" stroke="#1f2a27"/>
+
+  <!-- ================= right column: help panel ================= -->
+  <text x="456" y="66" font-size="9.5" fill="#ffdc28" letter-spacing="0.14em">PARAMETER HELP</text>
+  <g font-size="10.5" fill="#c8d3ce">
+    <text x="456" y="92" fill="#e9eeeb">Background Diff KNN</text>
+    <text x="456" y="118">K-nearest-neighbours background subtractor.</text>
+    <text x="456" y="133">Fast and robust; a good default on difficult</text>
+    <text x="456" y="148">footage.</text>
+
+    <text x="456" y="176" fill="#ffdc28">History (def 500):</text>
+    <text x="456" y="191">frames remembered; higher = more stable,</text>
+    <text x="456" y="206">slower to adapt.</text>
+
+    <text x="456" y="234" fill="#ffdc28">Dist2 Threshold (def 400):</text>
+    <text x="456" y="249">squared colour distance for a pixel to match</text>
+    <text x="456" y="264">the background. Lower = more sensitive (more</text>
+    <text x="456" y="279">foreground and noise); higher = stricter.</text>
+    <text x="456" y="294">Try ~100 for faint targets.</text>
+
+    <text x="456" y="322" fill="#ffdc28">Shadow Detection:</text>
+    <text x="456" y="337">mark shadows separately instead of foreground.</text>
+
+    <text x="456" y="365" fill="#ffdc28">Learning Rate (def -1 = automatic):</text>
+    <text x="456" y="380">adaptation speed. Frozen while paused.</text>
+
+    <text x="456" y="408" fill="#8b9a94">Additive / Restrict to Zone: as in the other</text>
+    <text x="456" y="423" fill="#8b9a94">detectors.</text>
+  </g>
+
+  <text x="848" y="474" font-size="9" fill="#3a4642" text-anchor="end" letter-spacing="0.14em">MOCKUP — REPLACE WITH SCREENSHOT</text>
+</svg>

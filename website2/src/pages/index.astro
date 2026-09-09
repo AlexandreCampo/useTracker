@@ -1,0 +1,101 @@
+---
+import Brand from '../components/Brand.astro';
+import Icon from '../components/Icon.astro';
+import TrackingDemo from '../components/TrackingDemo.astro';
+import Workflow from '../components/Workflow.astro';
+import { local, repository } from '../lib/links';
+import '../styles/home.css';
+const plugins = [
+  { number: '01', name: 'Image enhancement', text: 'Recover useful detail before detection: white balance, local contrast, colour curves and dehazing.', tags: ['White Balance', 'CLAHE', 'Curves', 'Dehaze'], href: 'plugins/enhancement/' },
+  { number: '02', name: 'Background & segmentation', text: 'Separate the subjects from the scene, then clean the foreground mask with simple morphological operations.', tags: ['KNN', 'GSOC', 'MOG2', 'Erosion'], href: 'plugins/background/' },
+  { number: '03', name: 'Detection & tracking', text: 'Extract blobs, follow appearance, or detect ArUco markers. Add your own ONNX model when the experiment calls for it.', tags: ['Track Blobs', 'CSRT', 'ArUco', 'YOLO'], href: 'plugins/tracking/' },
+  { number: '04', name: 'Zones, recording & output', text: 'Define regions of interest, record processed video and export measurements for the next stage of your analysis.', tags: ['Polygon zones', 'H.264', 'Text output'], href: 'plugins/output/' },
+];
+const citation = `@software{usetracker,
+  author  = {Campo, Alexandre},
+  title   = {useTracker},
+  url     = {https://github.com/AlexandreCampo/useTracker},
+  note    = {GNU General Public License v3}
+}`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Open-source video tracking for research. Build an image-processing pipeline, follow animals and other moving objects, and export measurements with useTracker." />
+    <meta name="theme-color" content="#f5f5ee" />
+    <meta property="og:title" content="useTracker — From movement to measurement" />
+    <meta property="og:description" content="An open-source toolkit for tracking animals and exploring movement. Built through years of collective-behaviour research." />
+    <meta property="og:type" content="website" />
+    <link rel="icon" type="image/svg+xml" href={local('favicon.svg')} />
+    <link rel="canonical" href={new URL(import.meta.env.BASE_URL, Astro.site)} />
+    <title>useTracker — From movement to measurement</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="container header-inner">
+        <Brand />
+        <nav class="desktop-nav" aria-label="Main navigation"><a href="#workflow">How it works</a><a href={local('docs/')}>Documentation</a><a href="#project">The project</a></nav>
+        <a class="header-github" href={repository}><Icon name="github" size={18} /><span>GitHub</span><Icon name="external" size={15} /></a>
+        <button type="button" class="menu-toggle" aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation"><span></span><span></span></button>
+      </div>
+      <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation" hidden><a href="#workflow">How it works</a><a href={local('docs/')}>Documentation</a><a href="#project">The project</a><a href={repository}>Source on GitHub ↗</a></nav>
+    </header>
+    <main id="main">
+      <section class="hero container" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="tiny-dot"></span> OPEN SOFTWARE. CURIOUS MINDS.</p>
+          <h1 id="hero-title">From movement<br />to <em>measurement.</em></h1>
+          <p class="hero-description">A practical toolkit for tracking animals and other moving things. Turn your recordings into trajectories, detections and data you can work with.</p>
+          <div class="hero-actions"><a class="button button-primary" href={local('start/install/')}>Get started <Icon name="arrow" size={18} /></a><a class="button button-quiet" href={local('docs/')}><Icon name="book" size={18} /> Read the docs</a></div>
+          <p class="hero-note">Free to use. Open to inspect. Yours to adapt.<br /><span>GPL v3 <i>·</i> Built with OpenCV <i>·</i> Since 2015</span></p>
+        </div>
+        <TrackingDemo />
+      </section>
+      <div class="research-strip container"><span class="mono-label">ROOTED IN RESEARCH</span><div><span>Collective behaviour</span><i>＋</i><span>Animal tracking</span><i>＋</i><span>Experimental robotics</span></div><a href={local('project/history/')}>From the lab at ULB<Icon name="external" size={15} /></a></div>
+
+      <section class="section container" id="workflow" aria-labelledby="workflow-title">
+        <div class="section-heading"><div><p class="eyebrow"><span class="section-number">01 /</span> THE WORKFLOW</p><h2 id="workflow-title">An analysis you can <em>see.</em></h2></div><p>Work visually. Understand each operation.<br />Then run the same process across your recordings.</p></div>
+        <Workflow />
+        <div class="principles"><div><Icon name="tune" size={23} /><h3>Adjust it in context.</h3><p>Change parameters while the video plays. See what helps, and what doesn’t.</p></div><div><Icon name="layers" size={23} /><h3>Choose your methods.</h3><p>Start with classical image processing. Add markers or a learned detector when useful.</p></div><div><Icon name="file" size={23} /><h3>Keep the recipe.</h3><p>Save the pipeline in a settings file. Share it with your data, and run it from the command line.</p></div></div>
+      </section>
+
+      <section class="toolkit-section" id="toolkit" aria-labelledby="toolkit-title"><div class="container toolkit-layout">
+        <div class="toolkit-intro"><p class="eyebrow"><span class="section-number">02 /</span> A SMALL TOOLBOX, MANY USES</p><h2 id="toolkit-title">The right pieces<br />for your <em>question.</em></h2><p>An analysis is a sequence of plugins. Combine the operations your footage needs, from the first frame to the final measurement.</p><a class="text-link" href={local('plugins/')}>Explore the plugin reference <Icon name="arrow" size={18} /></a><div class="toolkit-footnote"><Icon name="code" size={18} /><span>C++ under the hood.<br />A visual interface at your desk.</span></div></div>
+        <div class="plugin-list">{plugins.map((plugin, i) => <details class="plugin-item" open={i === 0}><summary><span class="plugin-number">{plugin.number}</span><h3>{plugin.name}</h3><Icon name="plus" size={19} /></summary><div class="plugin-content"><p>{plugin.text}</p><div class="plugin-tags">{plugin.tags.map(tag => <span>{tag}</span>)}</div><a class="text-link" href={local(plugin.href)}>Read the reference <Icon name="arrow" size={15} /></a></div></details>)}</div>
+      </div></section>
+
+      <section class="section container research-section" id="project" aria-labelledby="project-title">
+        <div class="research-copy"><p class="eyebrow"><span class="section-number">03 /</span> FROM THE LAB</p><h2 id="project-title">Built around<br /><em>real experiments.</em></h2><p>useTracker began in 2015 at the Unit of Social Ecology at Université libre de Bruxelles. Ants, cockroaches, fish, tadpoles and robots have shaped it ever since.</p><p>It’s a general-purpose tool, developed by Alexandre Campo and maintained as time allows. The source is open, the methods are inspectable, and useful contributions are welcome.</p><a class="text-link" href={local('project/history/')}>Meet the project <Icon name="arrow" size={18} /></a></div>
+        <aside class="field-note"><div class="field-note-heading"><span class="mono-label">A NOTE ON FIT</span><span class="note-mark">↗</span></div><h3>Good science starts with<br />knowing your tools.</h3><p>useTracker works best with fixed cameras and subjects that stand out from their background. You choose the pipeline and tune the parameters.</p><ul><li>Long overlaps can cause identity swaps.</li><li>Outputs describe objects, not body landmarks.</li><li>Linux receives the most testing.</li></ul><a class="text-link" href={local('project/known-issues/')}>Read the limitations <Icon name="arrow" size={17} /></a></aside>
+      </section>
+
+      <section class="getting-started container" aria-labelledby="start-title"><div><p class="eyebrow">YOUR NEXT EXPERIMENT</p><h2 id="start-title">Bring a recording.<br /><em>Start exploring.</em></h2><p>The first-analysis guide takes you from an open video<br class="desktop-break" /> to your first exported measurements.</p><a class="button button-primary" href={local('start/first-analysis/')}>Run your first analysis <Icon name="arrow" size={18} /></div><div class="start-links"><a href={local('start/install/')}><span class="start-link-icon"><Icon name="download" size={21} /></span><span><strong>Install useTracker</strong><small>Packages and building from source</small></span><Icon name="arrow" size={20} /></a><a href={local('start/examples/')}><span class="start-link-icon"><Icon name="layers" size={21} /></span><span><strong>Start with an example</strong><small>Pipelines for common experiments</small></span><Icon name="arrow" size={20} /></a><a href={local('project/contributing/')}><span class="start-link-icon"><Icon name="code" size={21} /></span><span><strong>Add something useful</strong><small>Code, examples and documentation</small></span><Icon name="arrow" size={20} /></a></div></section>
+
+      <section class="citation-row container" aria-label="Cite useTracker"><div><Icon name="book" size={21} /><p><strong>Using useTracker in your research?</strong><span>Cite the software and include the version or commit you used.</span></p></div><button type="button" class="text-link" data-citation-open>Get the citation <Icon name="external" size={17} /></button></section>
+    </main>
+    <footer class="site-footer"><div class="container footer-main"><div><Brand inverse /><p>A little more understanding,<br />one frame at a time.</p></div><div class="footer-links"><a href={local('docs/')}>Documentation</a><a href={repository}>Source code <Icon name="external" size={13} /></a><a href={local('project/contributing/')}>Contribute</a><a href={local('project/known-issues/')}>Known issues</a></div><div class="footer-note"><span class="status-dot"></span> Independent research software<br /><span>Developed by Alexandre Campo<br />Shared under the GNU GPL v3.</span></div></div><div class="container footer-bottom"><span>Universal Simultaneous Event Tracker</span><span>Made for research. Open by nature.</span><a href="#main">Back to top ↑</a></div></footer>
+
+    <dialog class="citation-dialog" aria-labelledby="citation-title"><div class="dialog-heading"><span class="mono-label">CITING THE SOFTWARE</span><button class="dialog-close" type="button" aria-label="Close citation">×</button></div><h2 id="citation-title">Give your methods<br />a <em>reference.</em></h2><p>Include the version or commit you used. There is no useTracker paper yet; cite the software directly.</p><pre><code id="citation-text">{citation}</code></pre><div class="dialog-actions"><button type="button" class="button button-primary" data-copy-citation>Copy BibTeX <Icon name="file" size={16} /></button><a class="text-link" href={local('project/history/#citing-it')}>Citation notes <Icon name="arrow" size={16} /></a></div><p class="copy-status" role="status" aria-live="polite"></p></dialog>
+    <script>
+      const menu = document.querySelector<HTMLButtonElement>('.menu-toggle')!;
+      const nav = document.querySelector<HTMLElement>('#mobile-nav')!;
+      function closeMenu() { menu.setAttribute('aria-expanded', 'false'); menu.setAttribute('aria-label', 'Open navigation'); nav.hidden = true; }
+      menu.addEventListener('click', () => { const open = menu.getAttribute('aria-expanded') !== 'true'; menu.setAttribute('aria-expanded', String(open)); menu.setAttribute('aria-label', open ? 'Close navigation' : 'Open navigation'); nav.hidden = !open; });
+      nav.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
+      document.addEventListener('keydown', event => { if (event.key === 'Escape' && !nav.hidden) { closeMenu(); menu.focus(); } });
+      matchMedia('(min-width: 761px)').addEventListener('change', event => { if (event.matches) closeMenu(); });
+      const dialog = document.querySelector<HTMLDialogElement>('.citation-dialog')!;
+      document.querySelector('[data-citation-open]')!.addEventListener('click', () => dialog.showModal());
+      dialog.querySelector('.dialog-close')!.addEventListener('click', () => dialog.close());
+      dialog.addEventListener('click', event => { const rect = dialog.getBoundingClientRect(); if (event.target === dialog && (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom)) dialog.close(); });
+      document.querySelector('[data-copy-citation]')!.addEventListener('click', async () => {
+        const status = document.querySelector<HTMLElement>('.copy-status')!;
+        try { await navigator.clipboard.writeText(document.querySelector('#citation-text')!.textContent!); status.textContent = 'BibTeX copied to clipboard.'; }
+        catch { const range = document.createRange(); range.selectNodeContents(document.querySelector('#citation-text')!); const selection = window.getSelection(); selection?.removeAllRanges(); selection?.addRange(range); status.textContent = 'Text selected. Press Ctrl+C (or ⌘C) to copy.'; }
+      });
+    </script>
+  </body>
+</html>
