@@ -163,6 +163,7 @@ struct ImageProcessingEngine
     int ComputePrefetch();                 // max PrefetchAhead over active plugins
     int ComputeOutputLatency();            // max OutputLatency over active plugins
     bool DecodeOne();                       // decode the next frame into the buffer
+    void RefreshCurrentFrame();             // show the already decoded frame after opening/resetting
     void PresentPlayhead();                 // set the process/present frames
     bool AdvanceFrame();                    // step the playhead forward one frame
     bool StepBackward();                    // step back one frame (cached if possible)

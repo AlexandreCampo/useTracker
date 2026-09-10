@@ -19,11 +19,13 @@
 
 #include "AppGui.h"
 #include "App.h"
+#include "ui/Darkroom.h"
 
 #include <SDL.h>
 #include <GL/gl.h>
 
 #include "imgui.h"
+#include "imgui_internal.h" // custom persistence for workspace size and splitters
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_opengl3.h"
 
@@ -132,7 +134,8 @@ bool AppGui::InitSDL()
     // Check for display environment before SDL_Init (which may crash without one)
     const char* display = getenv("DISPLAY");
     const char* wayland = getenv("WAYLAND_DISPLAY");
-    if (!display && !wayland)
+    const char* driver = getenv("SDL_VIDEODRIVER");
+    if (!display && !wayland && (!driver || std::strcmp(driver, "offscreen") != 0))
     {
         std::cerr << "Error: No display server found (DISPLAY/WAYLAND_DISPLAY not set). "
                   << "Use -n/--nogui for headless mode." << std::endl;
@@ -160,11 +163,25 @@ bool AppGui::InitSDL()
     if (SDL_GetCurrentDisplayMode(0, &dm) == 0)
     {
         // Size window to 80% of the display
-        windowWidth = (int)(dm.w * 0.8f);
-        windowHeight = (int)(dm.h * 0.8f);
+        windowWidth = std::max(960, std::min(1600, (int)(dm.w * 0.8f)));
+        windowHeight = std::max(640, std::min(1000, (int)(dm.h * 0.8f)));
     }
 
     Uint32 windowFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+    // SDL's offscreen surface cannot grow after creation. Allocate enough for
+    // every scripted size so framebuffer screenshots also exercise large layouts.
+    if (driver && std::strcmp(driver, "offscreen")==0 && !parameters.testScript.empty())
+    {
+        std::ifstream script(parameters.testScript);
+        std::string line;
+        while (std::getline(script,line))
+        {
+            std::istringstream command(line);
+            std::string op; int w=0,h=0;
+            if (command >> op >> w >> h && op=="resize")
+            { windowWidth=std::max(windowWidth,w); windowHeight=std::max(windowHeight,h); }
+        }
+    }
     window = SDL_CreateWindow(
         "USE Tracker",
         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -177,6 +194,8 @@ bool AppGui::InitSDL()
         return false;
     }
 
+    SDL_SetWindowMinimumSize(window, 960, 640);
+    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
     gl_context = SDL_GL_CreateContext(window);
     if (!gl_context)
     {
@@ -203,6 +222,29 @@ bool AppGui::InitImGui()
 
     ImGui::StyleColorsDark();
 
+    // Keep UI tests deterministic and separate from the user's saved workspace.
+    if (!parameters.testScript.empty()) ImGui::GetIO().IniFilename = nullptr;
+    ImGuiSettingsHandler settings;
+    settings.TypeName = "useTracker";
+    settings.TypeHash = ImHashStr(settings.TypeName);
+    settings.UserData = this;
+    settings.ReadOpenFn = [](ImGuiContext*, ImGuiSettingsHandler* h, const char* name) -> void* {
+        return std::strcmp(name,"Darkroom")==0 ? h->UserData : nullptr;
+    };
+    settings.ReadLineFn = [](ImGuiContext*, ImGuiSettingsHandler*, void* entry, const char* line) {
+        auto* app=static_cast<AppGui*>(entry);
+        float value=0;
+        if (sscanf(line,"Scale=%f",&value)==1 && std::isfinite(value)) app->dpiScale=std::clamp(value,.75f,2.f);
+        if (sscanf(line,"Panel=%f",&value)==1 && std::isfinite(value)) app->controlPanelWidth=std::clamp(value,280.f,900.f);
+        if (sscanf(line,"Pipeline=%f",&value)==1 && std::isfinite(value)) app->pipelineListHeight=std::clamp(value,90.f,900.f);
+    };
+    settings.WriteAllFn = [](ImGuiContext*, ImGuiSettingsHandler* h, ImGuiTextBuffer* out) {
+        auto* app=static_cast<AppGui*>(h->UserData);
+        out->appendf("[useTracker][Darkroom]\nScale=%.2f\nPanel=%.1f\nPipeline=%.1f\n\n",
+                     app->dpiScale,app->controlPanelWidth,app->pipelineListHeight);
+    };
+    ImGui::AddSettingsHandler(&settings);
+
     // Detect DPI scale
     // Method 1: framebuffer vs window size ratio (works for HiDPI/Retina)
     int ww, wh, fw, fh;
@@ -220,6 +262,7 @@ bool AppGui::InitImGui()
 
     if (detectedScale < 1.0f) detectedScale = 1.0f;
     dpiScale = detectedScale;
+    if (ImGui::GetIO().IniFilename) ImGui::LoadIniSettingsFromDisk(ImGui::GetIO().IniFilename);
 
     ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
     ImGui_ImplOpenGL3_Init("#version 150");
@@ -233,30 +276,19 @@ bool AppGui::InitImGui()
 // ApplyUIScale — rebuild font and style for current dpiScale
 // ============================================================================
 
+float AppGui::MaxUIScale() const
+{
+    int w=0,h=0;
+    SDL_GetWindowSize(window,&w,&h);
+    return std::clamp(std::min(w/960.f,h/640.f),.75f,2.f);
+}
+
 void AppGui::ApplyUIScale()
 {
-    ImGuiIO& io = ImGui::GetIO();
-
-    // Rebuild font at the new scale
-    io.Fonts->Clear();
-    ImFontConfig fontCfg;
-    fontCfg.SizePixels = 13.0f * dpiScale;
-    fontCfg.OversampleH = 2;
-    fontCfg.OversampleV = 2;
-    io.Fonts->AddFontDefault(&fontCfg);
-    io.FontGlobalScale = 1.0f;
-    io.Fonts->Build();
+    dpiScale=std::clamp(dpiScale,.75f,MaxUIScale());
+    Darkroom::Apply(dpiScale);
     ImGui_ImplOpenGL3_DestroyFontsTexture();
     ImGui_ImplOpenGL3_CreateFontsTexture();
-
-    // Reset ALL style values to defaults (StyleColorsDark only resets colors, not sizes)
-    ImGui::GetStyle() = ImGuiStyle();
-    ImGui::StyleColorsDark();
-    ImGuiStyle& style = ImGui::GetStyle();
-    style.FrameRounding = 4.0f;
-    style.GrabRounding = 4.0f;
-    style.WindowRounding = 6.0f;
-    style.ScaleAllSizes(dpiScale);
 }
 
 // ============================================================================
@@ -474,6 +506,14 @@ int AppGui::Run()
             if (event.type == SDL_QUIT)
                 RequestQuit();
 
+            if (event.type == SDL_DROPFILE)
+            {
+                if (!fileBrowser.visible && !showQuitConfirm &&
+                    !ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
+                    OpenSourceFile(event.drop.file);
+                SDL_free(event.drop.file);
+            }
+
             if (event.type == SDL_WINDOWEVENT &&
                 event.window.event == SDL_WINDOWEVENT_CLOSE &&
                 event.window.windowID == SDL_GetWindowID(window))
@@ -483,7 +523,8 @@ int AppGui::Run()
             // field or navigating the in-app file browser (which uses the
             // arrow / Enter / Esc keys for its own navigation)
             if (event.type == SDL_KEYDOWN && !ImGui::GetIO().WantTextInput &&
-                !fileBrowser.visible && !showQuitConfirm)
+                !fileBrowser.visible && !showQuitConfirm && !ImGui::IsAnyItemActive() &&
+                !ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
             {
                 bool ctrl = (event.key.keysym.mod & KMOD_CTRL) != 0;
                 HandleShortcut(event.key.keysym.sym, ctrl);
@@ -523,7 +564,7 @@ int AppGui::Run()
 
     ipEngine.CloseOutput();
 
-    return 0;
+    return testFailed ? 1 : 0;
 }
 
 // ============================================================================
@@ -532,6 +573,8 @@ int AppGui::Run()
 
 void AppGui::HandleShortcut(SDL_Keycode key, bool ctrl)
 {
+    if (!HasSource() && !(ctrl && (key==SDLK_o || key==SDLK_l || key==SDLK_s)) && key!=SDLK_ESCAPE)
+        return;
     if (!ipEngine.capture) return;
 
     switch (key)
@@ -577,9 +620,11 @@ void AppGui::HandleShortcut(SDL_Keycode key, bool ctrl)
     case SDLK_BACKSPACE:
         // Stop: reset to beginning
         ipEngine.capture->Stop();
-        ipEngine.frameBuffer.clear();
-        ipEngine.playIndex = -1;
+        ipEngine.RefreshCurrentFrame();
         play = false;
+        output = false;
+        ipEngine.CloseOutput();
+        pendingRewind = false;
         pipelineDirty = true;
         break;
 
@@ -754,114 +799,93 @@ void AppGui::UpdateEngine()
 
 void AppGui::RenderFrame()
 {
+    if (dpiScale>MaxUIScale()) pendingScaleChange=true;
     if (pendingScaleChange)
     {
         ApplyUIScale();
         pendingScaleChange = false;
     }
-
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL2_NewFrame();
-
-    // scripted test input overrides the real mouse/keys (added after the SDL
-    // backend so it wins for this frame)
-    if (testMode)
-        TestInjectInput();
-
+    if (testMode) TestInjectInput();
     ImGui::NewFrame();
 
-    // Full-window dockspace-like layout
     ImGuiViewport* viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(viewport->WorkPos);
     ImGui::SetNextWindowSize(viewport->WorkSize);
-
-    ImGuiWindowFlags hostFlags = ImGuiWindowFlags_NoTitleBar |
-                                  ImGuiWindowFlags_NoCollapse |
-                                  ImGuiWindowFlags_NoResize |
-                                  ImGuiWindowFlags_NoMove |
-                                  ImGuiWindowFlags_NoBringToFrontOnFocus |
-                                  ImGuiWindowFlags_NoNavFocus |
-                                  ImGuiWindowFlags_MenuBar;
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(4*dpiScale, 4*dpiScale));
-
+    ImGuiWindowFlags hostFlags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
+        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus |
+        ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoScrollbar |
+        ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings;
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8*dpiScale, 8*dpiScale));
     ImGui::Begin("##MainWindow", nullptr, hostFlags);
     ImGui::PopStyleVar(3);
-
     DrawMenuBar();
-    DrawToolbar();
 
-    // Split: left = video, splitter, right = tabs. The panel width is
-    // draggable via the splitter and persists in controlPanelWidth.
-    ImVec2 contentRegion = ImGui::GetContentRegionAvail();
-    float splitterW = 6.0f * dpiScale;
-    // keep the panel within sane bounds for the current window size
-    float minPanel = 220.0f * dpiScale;
-    float maxPanel = contentRegion.x - 200.0f * dpiScale;
-    if (maxPanel < minPanel) maxPanel = minPanel;
-    float panelWidth = controlPanelWidth * dpiScale;
-    if (panelWidth < minPanel) panelWidth = minPanel;
-    if (panelWidth > maxPanel) panelWidth = maxPanel;
+    ImVec2 region = ImGui::GetContentRegionAvail();
+    const float gap = 7*dpiScale;
+    const float height = std::max(120.f, region.y - ImGui::GetFrameHeightWithSpacing() - 8*dpiScale);
+    // The inspector remains useful on a laptop; the canvas gets extra width on a large screen.
+    const float maxPanel = std::max(280*dpiScale, region.x - 400*dpiScale - gap);
+    const float minPanel = std::min(360*dpiScale, maxPanel);
+    float panelWidth = std::clamp(controlPanelWidth*dpiScale, minPanel, maxPanel);
+    const float videoWidth = std::max(100.f, region.x-panelWidth-gap);
 
-    // Video display on the left
-    ImGui::BeginChild("VideoArea", ImVec2(contentRegion.x - panelWidth - splitterW, 0), false);
+    ImGui::BeginChild("VideoWorkspace", ImVec2(videoWidth, height), ImGuiChildFlags_Borders,
+                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    DrawVideoTools();
+    const float transportHeight = 2*ImGui::GetFrameHeightWithSpacing() +
+        ImGui::GetTextLineHeightWithSpacing() + 10*dpiScale;
+    float canvasHeight = std::max(60.f, ImGui::GetContentRegionAvail().y - transportHeight);
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, Darkroom::Canvas);
+    ImGui::BeginChild("VideoCanvas", ImVec2(0, canvasHeight), ImGuiChildFlags_Borders,
+                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
     DrawVideoDisplay();
     ImGui::EndChild();
-
-    ImGui::SameLine();
-
-    // Draggable splitter
-    ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_Separator));
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetStyleColorVec4(ImGuiCol_SeparatorHovered));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImGui::GetStyleColorVec4(ImGuiCol_SeparatorActive));
-    ImGui::Button("##panelSplitter", ImVec2(splitterW, ImGui::GetContentRegionAvail().y));
-    ImGui::PopStyleColor(3);
-    if (ImGui::IsItemHovered() || ImGui::IsItemActive())
-        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
-    if (ImGui::IsItemActive())
-    {
-        // dragging left widens the panel, right narrows it
-        controlPanelWidth -= ImGui::GetIO().MouseDelta.x / dpiScale;
-        if (controlPanelWidth < minPanel / dpiScale) controlPanelWidth = minPanel / dpiScale;
-        if (controlPanelWidth > maxPanel / dpiScale) controlPanelWidth = maxPanel / dpiScale;
-    }
-
-    ImGui::SameLine();
-
-    // Control panel on the right
-    ImGui::BeginChild("ControlPanel", ImVec2(panelWidth, 0), true);
-    DrawTabs();
+    ImGui::PopStyleColor();
+    DrawToolbar();
     ImGui::EndChild();
 
+    ImGui::SameLine(0, 0);
+    ImGui::InvisibleButton("##panelSplitter", ImVec2(gap, height));
+    if (ImGui::IsItemHovered() || ImGui::IsItemActive())
+    {
+        ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeEW);
+        auto a=ImGui::GetItemRectMin(), b=ImGui::GetItemRectMax();
+        ImGui::GetWindowDrawList()->AddLine(ImVec2((a.x+b.x)/2,a.y+8*dpiScale),
+            ImVec2((a.x+b.x)/2,b.y-8*dpiScale), ImGui::GetColorU32(Darkroom::Amber));
+    }
+    if (ImGui::IsItemActive())
+        controlPanelWidth = std::clamp(panelWidth/dpiScale - ImGui::GetIO().MouseDelta.x/dpiScale,
+                                       minPanel/dpiScale, maxPanel/dpiScale);
+    ImGui::SameLine(0, 0);
+    ImGui::BeginChild("ControlPanel", ImVec2(panelWidth, height), ImGuiChildFlags_Borders);
+    Darkroom::Label("ANALYSIS");
+    ImGui::SameLine(ImGui::GetWindowWidth()-159*dpiScale);
+    if (ImGui::Button("Load...", ImVec2(66*dpiScale,0))) LoadSettings();
+    Darkroom::Hint("Load a pipeline and analysis settings (Ctrl+L)");
+    ImGui::SameLine();
+    if (ImGui::Button("Save...", ImVec2(66*dpiScale,0))) SaveSettings();
+    Darkroom::Hint("Save a reproducible XML configuration (Ctrl+S)");
+    DrawTabs();
+    ImGui::EndChild();
+    ImGui::Separator();
+    DrawDownscaleControl();
     ImGui::End();
 
-    // Draw plugin dialogs
-    for (int i = 0; i < (int)pipelineDialogOpen.size(); i++)
-    {
-        if (pipelineDialogOpen[i])
-            DrawPluginDialog(i);
-    }
-
-    // In-app file browser (fallback when no native dialog backend is available)
+    for (int i=0; i<(int)pipelineDialogOpen.size(); ++i)
+        if (pipelineDialogOpen[i]) DrawPluginDialog(i);
     DrawFileBrowser();
-
-    // Error message popup
     DrawErrorPopup();
-
-    // Quit confirmation
     DrawQuitConfirm();
 
-    // Bottom-right overlay: input-downscale control and UI-zoom, side by side
-    DrawDownscaleControl();
-
-    // Render
     ImGui::Render();
     int w, h;
-    SDL_GetWindowSize(window, &w, &h);
+    SDL_GL_GetDrawableSize(window, &w, &h);
     glViewport(0, 0, w, h);
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(Darkroom::Paper.x, Darkroom::Paper.y, Darkroom::Paper.z, 1);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
@@ -874,53 +898,97 @@ void AppGui::DrawMenuBar()
 {
     if (ImGui::BeginMenuBar())
     {
+        ImVec2 mark = ImGui::GetCursorScreenPos();
+        mark.y += 3*dpiScale;
+        Darkroom::Mark(mark, 15*dpiScale);
+        ImGui::Dummy(ImVec2(21*dpiScale, 20*dpiScale));
+        ImGui::PushFont(Darkroom::Mono);
+        ImGui::TextUnformatted("useTracker");
+        ImGui::PopFont();
+        ImGui::Dummy(ImVec2(16*dpiScale, 0));
         if (ImGui::BeginMenu("File"))
         {
-            if (ImGui::MenuItem("Open Source..."))
-                OpenSource();
-            if (ImGui::MenuItem("Save Source..."))
-                SaveSource();
+            if (ImGui::MenuItem("Open video or image...", "Ctrl+O")) OpenSource();
+            if (ImGui::MenuItem("Save source configuration...")) SaveSource();
             ImGui::Separator();
-            if (ImGui::MenuItem("Load Settings..."))
-                LoadSettings();
-            if (ImGui::MenuItem("Save Settings..."))
-                SaveSettings();
+            if (ImGui::MenuItem("Load analysis...", "Ctrl+L")) LoadSettings();
+            if (ImGui::MenuItem("Save analysis...", "Ctrl+S")) SaveSettings();
             ImGui::Separator();
-            if (ImGui::MenuItem("Quit"))
-                RequestQuit();
+            if (ImGui::MenuItem("Quit", "Esc")) RequestQuit();
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("View"))
+        {
+            if (ImGui::MenuItem("Fit image")) { zoomStartX=zoomStartY=0; zoomEndX=zoomEndY=1; }
+            if (ImGui::MenuItem("Tracking overlays", nullptr, &hudVisible))
+                pipelineDirty = videoDirty = true;
+            ImGui::Separator();
+            ImGui::TextDisabled("Interface size");
+            for (float scale : {0.85f, 1.f, 1.15f, 1.25f, 1.5f, 1.75f, 2.f})
+            {
+                char text[24]; snprintf(text, sizeof(text), "%.0f%%", scale*100);
+                ImGui::BeginDisabled(scale>MaxUIScale());
+                if (ImGui::MenuItem(text, nullptr, std::fabs(dpiScale-scale)<.01f))
+                { dpiScale=scale; pendingScaleChange=true; }
+                ImGui::EndDisabled();
+                if (scale>MaxUIScale()) Darkroom::Hint("Enlarge the window to use this interface size.");
+            }
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Help"))
         {
-            if (ImGui::MenuItem("About"))
-            {
-                // OpenPopup cannot be called from inside the menu scope
-                // (ID stack mismatch), defer it below
-                showAbout = true;
-            }
+            if (ImGui::MenuItem("Keyboard & mouse")) showShortcuts=true;
+            if (ImGui::MenuItem("About useTracker")) showAbout=true;
             ImGui::EndMenu();
+        }
+        if (ImGui::GetWindowWidth()>800*dpiScale)
+        {
+            ImGui::SameLine(ImGui::GetWindowWidth()-210*dpiScale);
+            Darkroom::Label("DARKROOM / " USETRACKER_VERSION);
         }
         ImGui::EndMenuBar();
     }
-
-    if (showAbout)
+    if (showAbout) { ImGui::OpenPopup("About useTracker"); showAbout=false; }
+    if (ImGui::BeginPopupModal("About useTracker", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::OpenPopup("AboutPopup");
-        showAbout = false;
+        ImGui::PushFont(Darkroom::Heading);
+        ImGui::TextUnformatted("useTracker");
+        ImGui::PopFont();
+        Darkroom::Label("UNIVERSAL SIMULTANEOUS EVENT TRACKER");
+        ImGui::Separator();
+        ImGui::TextUnformatted("Open source tools for video analysis and tracking.");
+        ImGui::Text("Version %s  /  Darkroom interface", USETRACKER_VERSION);
+        ImGui::TextDisabled("SDL2 / Dear ImGui / OpenCV / FFmpeg");
+        ImGui::TextUnformatted("Copyright (C) 2015 Alexandre Campo. GNU GPL v3.");
+        ImGui::TextDisabled("Liberation Sans & Mono: SIL Open Font License 1.1.");
+        ImGui::Separator();
+        if (Darkroom::AccentButton("Close", ImVec2(100*dpiScale,0))) ImGui::CloseCurrentPopup();
+        ImGui::EndPopup();
     }
-
-    // About popup
-    if (ImGui::BeginPopupModal("AboutPopup", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+    if (showShortcuts) { ImGui::OpenPopup("Keyboard & mouse"); showShortcuts=false; }
+    if (ImGui::BeginPopupModal("Keyboard & mouse", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
     {
-        ImGui::Text("USE Tracker");
-        ImGui::Separator();
-        ImGui::Text("Universal Simultaneous Event Tracker");
-        ImGui::Text("Built with SDL2 + Dear ImGui + OpenCV");
-        ImGui::Text("Copyright (C) 2015 Alexandre Campo");
-        ImGui::Text("Licensed under GNU GPL v3");
-        ImGui::Separator();
-        if (ImGui::Button("OK", ImVec2(120*dpiScale, 0)))
-            ImGui::CloseCurrentPopup();
+        const char* rows[][2] = {
+            {"Space", "Play / pause"}, {"Left / Right", "Previous / next frame"},
+            {"Backspace", "Stop and return to the beginning"}, {"- / +", "Slower / faster playback"},
+            {"Ctrl+O", "Open a video or image"}, {"Ctrl+L / Ctrl+S", "Load / save analysis"},
+            {"Ctrl+R", "Enable / disable configured outputs"}, {"Mouse wheel", "Zoom at the pointer"},
+            {"Drag image", "Pan when zoomed"}, {"Double-click image", "Fit image"},
+            {"Ctrl+click timeline", "Add bookmark"}, {"Shift+click timeline", "Set loop start / end"},
+            {"Right-click marker", "Remove timeline marker"}, {"Double-click stage", "Edit stage parameters"}};
+        if (ImGui::BeginTable("Shortcuts", 2, ImGuiTableFlags_RowBg, ImVec2(520*dpiScale,0)))
+        {
+            ImGui::TableSetupColumn("Key", ImGuiTableColumnFlags_WidthFixed, 190*dpiScale);
+            ImGui::TableSetupColumn("Action");
+            for (auto& row : rows)
+            {
+                ImGui::TableNextRow(); ImGui::TableNextColumn();
+                ImGui::PushFont(Darkroom::Mono); ImGui::TextUnformatted(row[0]); ImGui::PopFont();
+                ImGui::TableNextColumn(); ImGui::TextUnformatted(row[1]);
+            }
+            ImGui::EndTable();
+        }
+        if (ImGui::Button("Close", ImVec2(100*dpiScale,0))) ImGui::CloseCurrentPopup();
         ImGui::EndPopup();
     }
 }
@@ -929,231 +997,222 @@ void AppGui::DrawMenuBar()
 // DrawToolbar
 // ============================================================================
 
-void AppGui::DrawToolbar()
+bool AppGui::HasSource() const
 {
-    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4*dpiScale, 4*dpiScale));
-
-    // Record button
-    bool isOutputting = output;
-    if (isOutputting)
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
-    if (ImGui::Button(isOutputting ? "REC*" : "REC", ImVec2(40*dpiScale, 24*dpiScale)))
-    {
-        output = !output;
-        if (output)
-            ipEngine.OpenOutput();
-        else
-            ipEngine.CloseOutput();
-    }
-    if (isOutputting)
-        ImGui::PopStyleColor();
-
-    ImGui::SameLine();
-
-    // Stop
-    if (ImGui::Button("Stop", ImVec2(40*dpiScale, 24*dpiScale)))
-    {
-        ipEngine.capture->Stop();
-        ipEngine.frameBuffer.clear();
-        ipEngine.playIndex = -1;
-        play = false;
-        output = false;
-        ipEngine.CloseOutput();
-        pipelineDirty = true;
-    }
-
-    ImGui::SameLine();
-
-    // Decrease play speed
-    if (ImGui::Button("|<##speed_down", ImVec2(30*dpiScale, 24*dpiScale)))
-    {
-        if (playSpeed > -4) playSpeed--;
-        ipEngine.capture->SetPlaySpeed(playSpeed);
-    }
-
-    ImGui::SameLine();
-
-    // Step backward (pause and go back one frame, cached if possible)
-    if (ImGui::Button("<##step_back", ImVec2(24*dpiScale, 24*dpiScale)))
-        RequestStepBackward();
-
-    ImGui::SameLine();
-
-    // Play/Pause
-    const char* playLabel = play ? "||##play_pause" : ">##play_pause";
-    if (ImGui::Button(playLabel, ImVec2(30*dpiScale, 24*dpiScale)))
-    {
-        play = !play;
-        playSpeed = 0;
-        ipEngine.capture->SetPlaySpeed(0);
-        if (play)
-            ipEngine.capture->Play();
-        else
-            ipEngine.capture->Pause();
-        pipelineDirty = true;
-    }
-
-    ImGui::SameLine();
-
-    // Step forward (pause and advance one frame)
-    if (ImGui::Button(">##step_fwd", ImVec2(24*dpiScale, 24*dpiScale)))
-    {
-        play = false;
-        ipEngine.capture->Pause();
-        ipEngine.GetNextFrame();
-        pipelineDirty = true;
-    }
-
-    ImGui::SameLine();
-
-    // Increase play speed
-    if (ImGui::Button(">|##speed_up", ImVec2(30*dpiScale, 24*dpiScale)))
-    {
-        if (playSpeed < 4) playSpeed++;
-        ipEngine.capture->SetPlaySpeed(playSpeed);
-    }
-
-
-    ImGui::SameLine();
-    ImGui::Spacing();
-    ImGui::SameLine();
-
-    // Video seek bar with hover read-out and timeline markers
-    DrawSeekBar(ImGui::GetContentRegionAvail().x - 330*dpiScale);
-
-    ImGui::SameLine();
-
-    // Marker buttons (bookmark / loop point at the current playhead) + loop toggle
-    if (ImGui::Button("Mark"))
-        bookmarks.push_back(ipEngine.GetPresentTime());
-    if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("Add a bookmark at the current frame (or Ctrl+click the bar)");
-    ImGui::SameLine();
-    if (ImGui::Button("Loop+"))
-        AddLoopPoint(ipEngine.GetPresentTime());
-    if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("Set the loop start, then end (or Shift+click the bar)");
-    ImGui::SameLine();
-    ImGui::Checkbox("Loop", &loopEnabled);
-    if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("Loop playback between the two loop markers");
-
-    ImGui::SameLine();
-
-    // HUD toggle
-    if (ImGui::Checkbox("HUD", &hudVisible))
-    {
-        pipelineDirty = true; // the HUD is drawn during pipeline processing
-        videoDirty = true;
-    }
-
-    ImGui::SameLine();
-
-    // Ruler / measure tool
-    if (ImGui::Checkbox("Ruler", &rulerActive))
-    {
-        // drop any measurements when the tool is switched off
-        if (!rulerActive) { rulerMeasurements.clear(); rulerAnchored = false; }
-    }
-    if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("Measure distances/boxes in pixels on the video.\n"
-                          "Left click sets the first point, click again to finish;\n"
-                          "right click cancels or removes the last measurement.");
-    if (rulerActive)
-    {
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(64 * dpiScale);
-        const char* shapes[] = { "Line", "Rect" };
-        ImGui::Combo("##rulershape", &rulerShape, shapes, 2);
-    }
-
-    ImGui::SameLine();
-
-    // Processing blending slider
-    ImGui::SetNextItemWidth(80*dpiScale);
-    if (ImGui::SliderFloat("##Blend", &processingBlending, 0.0f, 1.0f, "%.1f"))
-        videoDirty = true;
-    if (ImGui::IsItemHovered())
-        ImGui::SetTooltip("Processing blending");
-
-    ImGui::PopStyleVar();
+    return ipEngine.capture && ipEngine.capture->type != Capture::NONE &&
+        dynamic_cast<CaptureDefault*>(ipEngine.capture) == nullptr;
 }
 
-// Input-downscale control, anchored bottom-right just above the UI-zoom widget.
-// Runs the whole pipeline on a smaller frame for faster parameter tuning;
-// output coordinates are rescaled to full resolution.
-void AppGui::DrawDownscaleControl()
+void AppGui::DrawVideoTools()
 {
-    ImGuiViewport* vp = ImGui::GetMainViewport();
-    float pad = 4 * dpiScale;
-
-    // anchor the window's bottom-right corner to the bottom-right of the screen
-    ImVec2 anchor(vp->WorkPos.x + vp->WorkSize.x - pad,
-                  vp->WorkPos.y + vp->WorkSize.y - pad);
-    ImGui::SetNextWindowPos(anchor, ImGuiCond_Always, ImVec2(1.0f, 1.0f));
-    ImGui::SetNextWindowBgAlpha(0.85f);
-
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8*dpiScale, 5*dpiScale));
-    if (ImGui::Begin("##BottomRightBar", nullptr,
-        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar |
-        ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_AlwaysAutoResize))
+    const bool source = HasSource();
+    const std::string fullName = source ? ipEngine.capture->GetName() : "No source loaded";
+    const std::string name = source ? std::filesystem::path(fullName).filename().string() : fullName;
+    const float openWidth = 77*dpiScale;
+    // Clip long names independently so the Open button stays in reach.
+    ImGui::BeginChild("SourceName", ImVec2(std::max(30.f,ImGui::GetContentRegionAvail().x-openWidth-7*dpiScale),
+                      ImGui::GetFrameHeight()), ImGuiChildFlags_None,
+                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextUnformatted(name.c_str());
+    Darkroom::Hint(fullName.c_str());
+    ImGui::EndChild();
+    ImGui::SameLine();
+    if (ImGui::Button("Open...", ImVec2(openWidth,0))) OpenSource();
+    Darkroom::Hint("Open a video or image (Ctrl+O). You can also drop a file on the window.");
+    if (source)
     {
-        // --- input-downscale control (only with a source loaded) ---
-        if (ipEngine.capture)
+        ImGui::PushFont(Darkroom::Mono);
+        if (ipEngine.capture->type==Capture::IMAGE)
+            ImGui::TextColored(Darkroom::Muted,"%d x %d  /  STILL IMAGE",ipEngine.capture->width,ipEngine.capture->height);
+        else
+            ImGui::TextColored(Darkroom::Muted, "%d x %d  /  %.2f fps", ipEngine.capture->width,
+                                ipEngine.capture->height, ipEngine.capture->GetFPS());
+        ImGui::PopFont();
+    }
+    else Darkroom::Label("VIDEO / IMAGE / LIVE CAPTURE");
+    ImGui::Separator();
+    ImGui::BeginDisabled(!source);
+    int mode = processingBlending<.001f ? 0 : (processingBlending>.999f ? 2 : 1);
+    const char* modes[] = {"Image", "Blend", "Mask"};
+    ImGui::BeginDisabled(activeTab!=TAB_PROCESSING);
+    ImGui::SetNextItemWidth(101*dpiScale);
+    if (ImGui::Combo("##ViewMode", &mode, modes, 3))
+    { processingBlending = mode==0 ? 0.f : (mode==2 ? 1.f : .5f); videoDirty=true; }
+    Darkroom::Hint("Image: video with enhancement plugins applied.\nBlend / Mask: inspect the mask at the selected pipeline stage.");
+    ImGui::EndDisabled();
+    ImGui::SameLine();
+    if (ImGui::Checkbox("Overlays", &hudVisible)) pipelineDirty = videoDirty = true;
+    Darkroom::Hint("Show tracking labels, detections and other plugin overlays.");
+    ImGui::SameLine();
+    if (Darkroom::IconButton("##fit", Darkroom::Icon::Fit, "Fit image (or double-click the image)", dpiScale))
+    { zoomStartX=zoomStartY=0; zoomEndX=zoomEndY=1; }
+    ImGui::SameLine();
+    if (ImGui::Button("Tools")) ImGui::OpenPopup("ImageTools");
+    if (ImGui::BeginPopup("ImageTools"))
+    {
+        if (ImGui::Checkbox("Measure on image", &rulerActive))
+        { if (!rulerActive) { rulerMeasurements.clear(); rulerAnchored=false; } }
+        Darkroom::Hint("Click two points on the image. Right-click cancels or removes the last measurement.");
+        if (rulerActive)
         {
-            ImGui::AlignTextToFramePadding();
-            ImGui::TextUnformatted("Downscale");
-            if (ImGui::IsItemHovered())
-                ImGui::SetTooltip("Run the pipeline on a smaller frame for faster tuning.\n"
-                                  "Output coordinates are rescaled to full resolution.\n"
-                                  "Drag the dot; it snaps to 1:1, 1/2, 1/4, 1/8.");
-            ImGui::SameLine(0, 8*dpiScale);
-
-            DottedScaleSlider();
-
-            ImGui::SameLine(0, 8*dpiScale);
-            ImGui::AlignTextToFramePadding();
-            ImGui::TextDisabled("%dx%d", ipEngine.ProcWidth(), ipEngine.ProcHeight());
-
-            // --- vertical divider so the two controls are not confused ---
-            ImGui::SameLine(0, 12*dpiScale);
-            {
-                ImVec2 p = ImGui::GetCursorScreenPos();
-                float h = ImGui::GetFrameHeight();
-                ImGui::GetWindowDrawList()->AddLine(
-                    ImVec2(p.x, p.y + 2*dpiScale), ImVec2(p.x, p.y + h - 2*dpiScale),
-                    ImGui::GetColorU32(ImGuiCol_Separator), 1.0f);
-            }
-            ImGui::SameLine(0, 12*dpiScale);
+            ImGui::SetNextItemWidth(160*dpiScale);
+            ImGui::Combo("Shape", &rulerShape, "Line\0Rectangle\0");
+            if (ImGui::Button("Clear measurements")) { rulerMeasurements.clear(); rulerAnchored=false; }
         }
+        ImGui::Separator();
+        ImGui::SetNextItemWidth(180*dpiScale);
+        if (ImGui::SliderFloat("Blend", &processingBlending, 0.f, 1.f, "%.2f")) videoDirty=true;
+        ImGui::EndPopup();
+    }
+    ImGui::EndDisabled();
+    if (source && ImGui::GetWindowWidth()>600*dpiScale)
+    {
+        ImGui::SameLine(ImGui::GetWindowWidth()-168*dpiScale);
+        ImGui::AlignTextToFramePadding();
+        ImGui::PushFont(Darkroom::Mono);
+        if (activeTab==TAB_PROCESSING && PluginAt(selectedPipelineItem))
+            ImGui::TextColored(Darkroom::Amber,"Preview / stage %02d",selectedPipelineItem+1);
+        else ImGui::TextDisabled("%s",activeTab==TAB_BACKGROUND ? "BACKGROUND" :
+            (activeTab==TAB_CALIBRATION ? "CALIBRATION" : (activeTab==TAB_PROCFRAME ? "ZONE MAP" : "SOURCE IMAGE")));
+        ImGui::PopFont();
+    }
+}
 
-        // --- UI zoom (font / interface size) ---
-        float btnW = 26 * dpiScale, btnH = 22 * dpiScale;
-        char scaleBuf[16];
-        snprintf(scaleBuf, sizeof(scaleBuf), "%.0f%%", dpiScale * 100.0f);
-        ImGui::AlignTextToFramePadding();
-        ImGui::TextUnformatted("UI");
-        if (ImGui::IsItemHovered())
-            ImGui::SetTooltip("Interface / font size");
-        ImGui::SameLine(0, 6*dpiScale);
-        if (ImGui::Button("-##uizoom", ImVec2(btnW, btnH)))
+void AppGui::DrawWelcome()
+{
+    ImVec2 room = ImGui::GetContentRegionAvail();
+    float width = std::min(370*dpiScale, room.x);
+    float left = ImGui::GetCursorPosX() + std::max(0.f, (room.x-width)*.5f);
+    ImGui::SetCursorPos(ImVec2(left, ImGui::GetCursorPosY()+std::max(0.f,(room.y-240*dpiScale)*.44f)));
+    Darkroom::Mark(ImGui::GetCursorScreenPos(), 34*dpiScale);
+    ImGui::Dummy(ImVec2(34*dpiScale, 47*dpiScale));
+    ImGui::SetCursorPosX(left);
+    Darkroom::Label("OBSERVE / PROCESS / TRACK");
+    ImGui::SetCursorPosX(left);
+    ImGui::PushFont(Darkroom::Heading);
+    ImGui::TextUnformatted("Start with a source.");
+    ImGui::PopFont();
+    ImGui::SetCursorPosX(left);
+    ImGui::PushTextWrapPos(left+width);
+    ImGui::TextColored(Darkroom::Muted, "Open a video or image, then build an analysis pipeline in the panel on the right.");
+    ImGui::PopTextWrapPos();
+    ImGui::Spacing();
+    ImGui::SetCursorPosX(left);
+    if (Darkroom::AccentButton("Open video or image...", ImVec2(std::min(width,210*dpiScale), 36*dpiScale))) OpenSource();
+    ImGui::SetCursorPosX(left);
+    ImGui::TextDisabled("or drop a file here  /  Ctrl+O");
+}
+
+void AppGui::DrawToolbar()
+{
+    const bool source = HasSource();
+    const bool seekable = source && ipEngine.capture->GetFrameCount()>1;
+    ImGui::BeginDisabled(!seekable);
+    DrawSeekBar(ImGui::GetContentRegionAvail().x);
+    ImGui::EndDisabled();
+    ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(5*dpiScale, 5*dpiScale));
+    ImGui::BeginDisabled(!source || ipEngine.capture->type==Capture::IMAGE);
+    if (Darkroom::IconButton("##stop", Darkroom::Icon::Stop, "Stop and return to start (Backspace)", dpiScale))
+        HandleShortcut(SDLK_BACKSPACE, false);
+    ImGui::SameLine();
+    ImGui::BeginDisabled(!seekable);
+    if (Darkroom::IconButton("##previous", Darkroom::Icon::Previous, "Previous frame (Left arrow)", dpiScale))
+        RequestStepBackward();
+    ImGui::EndDisabled();
+    ImGui::SameLine();
+    if (Darkroom::AccentButton(play ? "Pause" : "Play", ImVec2(65*dpiScale,0))) HandleShortcut(SDLK_SPACE, false);
+    Darkroom::Hint("Play / pause (Space)");
+    ImGui::SameLine();
+    if (Darkroom::IconButton("##next", Darkroom::Icon::Next, "Next frame (Right arrow)", dpiScale))
+        HandleShortcut(SDLK_RIGHT, false);
+    ImGui::SameLine();
+    const char* speeds[] = {"1/16x", "1/8x", "1/4x", "1/2x", "1x", "2x", "4x", "8x", "16x"};
+    int speed=playSpeed+4;
+    ImGui::SetNextItemWidth(68*dpiScale);
+    if (ImGui::Combo("##speed", &speed, speeds, 9))
+    { playSpeed=speed-4; ipEngine.capture->SetPlaySpeed(playSpeed); }
+    Darkroom::Hint("Playback speed (- / +). The source frame rate is shown above the image.");
+    ImGui::EndDisabled();
+    ImGui::SameLine();
+    ImGui::BeginDisabled(!seekable);
+    if (ImGui::Button("Marks")) ImGui::OpenPopup("TimelineMarks");
+    if (ImGui::BeginPopup("TimelineMarks"))
+    {
+        if (ImGui::MenuItem("Add bookmark", "Ctrl+click bar")) bookmarks.push_back(ipEngine.GetPresentTime());
+        if (ImGui::MenuItem(loopStart<0 ? "Set loop start" : (loopEnd<0 ? "Set loop end" : "Start a new loop"), "Shift+click bar"))
+            AddLoopPoint(ipEngine.GetPresentTime());
+        if (ImGui::MenuItem("Clear all marks")) { bookmarks.clear(); loopStart=loopEnd=-1; loopEnabled=false; }
+        ImGui::EndPopup();
+    }
+    ImGui::SameLine();
+    ImGui::BeginDisabled(loopStart<0 || loopEnd<=loopStart);
+    ImGui::Checkbox("Loop", &loopEnabled);
+    Darkroom::Hint("Set two loop points from Marks or Shift+click the timeline, then enable looping.");
+    ImGui::EndDisabled();
+    ImGui::EndDisabled();
+    ImGui::PopStyleVar();
+
+    ImGui::PushFont(Darkroom::Mono);
+    if (source)
+    {
+        double time = std::max(0., ipEngine.GetPresentTime());
+        long count = ipEngine.capture->GetFrameCount();
+        ImGui::TextColored(play ? Darkroom::Green : Darkroom::Muted, "%s  %02d:%02d.%03d",
+            play ? "PLAY" : "HOLD", (int)time/60, (int)time%60, (int)(time*1000)%1000);
+        if (ImGui::GetContentRegionAvail().x>120*dpiScale)
         {
-            dpiScale = std::max(0.5f, dpiScale * 0.9f);
-            pendingScaleChange = true;
-        }
-        ImGui::SameLine(0, 4*dpiScale);
-        ImGui::AlignTextToFramePadding();
-        ImGui::TextUnformatted(scaleBuf);
-        ImGui::SameLine(0, 4*dpiScale);
-        if (ImGui::Button("+##uizoom", ImVec2(btnW, btnH)))
-        {
-            dpiScale = std::min(4.0f, dpiScale * 1.1f);
-            pendingScaleChange = true;
+            ImGui::SameLine();
+            if (count>0) ImGui::TextDisabled(" /  %ld of %ld", ipEngine.GetPresentFrameNumber(), count);
+            else ImGui::TextDisabled(" /  frame %ld", ipEngine.GetPresentFrameNumber());
         }
     }
-    ImGui::End();
-    ImGui::PopStyleVar();
+    else ImGui::TextDisabled("Ready when you are.");
+    ImGui::PopFont();
+}
+
+// A reserved status bar: controls never cover the image or the plugin library.
+void AppGui::DrawDownscaleControl()
+{
+    ImGui::AlignTextToFramePadding();
+    Darkroom::Label("PROCESSING");
+    ImGui::SameLine();
+    ImGui::BeginDisabled(!HasSource());
+    DottedScaleSlider();
+    Darkroom::Hint("Processing resolution. Smaller frames make tuning faster; output coordinates stay at source resolution.");
+    ImGui::EndDisabled();
+    ImGui::SameLine();
+    ImGui::AlignTextToFramePadding();
+    ImGui::PushFont(Darkroom::Mono);
+    if (HasSource()) ImGui::TextDisabled("%d x %d", ipEngine.ProcWidth(), ipEngine.ProcHeight());
+    else ImGui::TextDisabled("No source");
+    ImGui::PopFont();
+    ImGui::SameLine(0, 18*dpiScale);
+    ImGui::BeginDisabled(!HasSource());
+    const bool wasOutput = output;
+    if (wasOutput) ImGui::PushStyleColor(ImGuiCol_Text, Darkroom::Red);
+    if (ImGui::Button(output ? "Outputs enabled" : "Write outputs", ImVec2(136*dpiScale,0)))
+        HandleShortcut(SDLK_r, true);
+    if (wasOutput) ImGui::PopStyleColor();
+    Darkroom::Hint("Enable / disable files and other outputs configured in active pipeline stages (Ctrl+R).");
+    ImGui::EndDisabled();
+    const float uiWidth=163*dpiScale;
+    if (ImGui::GetContentRegionAvail().x>uiWidth)
+        ImGui::SameLine(ImGui::GetWindowWidth()-uiWidth-8*dpiScale);
+    else ImGui::SameLine();
+    ImGui::AlignTextToFramePadding();
+    ImGui::TextDisabled("UI");
+    ImGui::SameLine();
+    if (ImGui::Button("-##uizoom", ImVec2(26*dpiScale,0)))
+    { dpiScale=std::max(.75f,dpiScale-.1f); pendingScaleChange=true; }
+    ImGui::SameLine();
+    ImGui::TextDisabled("%.0f%%", dpiScale*100);
+    ImGui::SameLine();
+    ImGui::BeginDisabled(dpiScale>=MaxUIScale()-.01f);
+    if (ImGui::Button("+##uizoom", ImVec2(26*dpiScale,0)))
+    { dpiScale=std::min(2.f,dpiScale+.1f); pendingScaleChange=true; }
+    ImGui::EndDisabled();
+    Darkroom::Hint("Larger interface text. Enlarge the window for more room.");
 }
 
 // A slim slider with big dots at 1:1, 1/2, 1/4, 1/8. The axis is the downscale
@@ -1403,8 +1462,8 @@ void AppGui::DrawSeekBar(float width)
     ImU32 colTrack = ImGui::GetColorU32(ImGuiCol_FrameBg);
     ImU32 colFill  = ImGui::GetColorU32(ImGuiCol_SliderGrab);
     ImU32 colHead  = ImGui::GetColorU32(ImGuiCol_SliderGrabActive);
-    ImU32 colBook  = IM_COL32(80, 200, 255, 255);   // bookmarks: cyan
-    ImU32 colLoop  = IM_COL32(255, 150, 40, 255);    // loop markers: orange
+    ImU32 colBook  = IM_COL32(135, 198, 215, 255);
+    ImU32 colLoop  = ImGui::GetColorU32(Darkroom::Amber);
 
     dl->AddRectFilled(ImVec2(x0, trackTop), ImVec2(x1, trackBot), colTrack, 2 * dpiScale);
 
@@ -1478,6 +1537,7 @@ void AppGui::DrawSeekBar(float width)
 
 void AppGui::DrawVideoDisplay()
 {
+    if (!HasSource()) { DrawWelcome(); return; }
     // Blend source frame with processing snapshot if needed
     cv::Mat displayFrame;
 
@@ -1580,6 +1640,9 @@ void AppGui::DrawVideoDisplay()
         ImVec2 uv0(zoomStartX, zoomStartY);
         ImVec2 uv1(zoomEndX, zoomEndY);
 
+        ImVec2 cursor = ImGui::GetCursorPos();
+        ImGui::SetCursorPos(ImVec2(cursor.x + (avail.x-displayW)*.5f,
+                                   cursor.y + (avail.y-displayH)*.5f));
         ImGui::Image((ImTextureID)(intptr_t)videoTexture,
                      ImVec2(displayW, displayH),
                      uv0, uv1);
@@ -1771,25 +1834,6 @@ void AppGui::DrawVideoDisplay()
         ImGui::Text("No video source loaded.");
     }
 
-    // Status line
-    if (ipEngine.capture)
-    {
-        int totalSec = (int)ipEngine.GetPresentTime();
-        int minutes = totalSec / 60;
-        int seconds = totalSec % 60;
-        long frameNum = ipEngine.GetPresentFrameNumber();
-        long frameCount = ipEngine.capture->GetFrameCount();
-
-        char speedStr[32] = "1x";
-        if (playSpeed > 0)
-            snprintf(speedStr, sizeof(speedStr), "%dx", 1 << playSpeed);
-        else if (playSpeed < 0)
-            snprintf(speedStr, sizeof(speedStr), "1/%dx", 1 << (-playSpeed));
-
-        ImGui::Text("Time: %02d:%02d  Frame: %ld / %ld  FPS: %.1f  Speed: %s",
-                     minutes, seconds, frameNum, frameCount,
-                     ipEngine.capture->GetFPS(), speedStr);
-    }
 }
 
 // ============================================================================
@@ -1799,9 +1843,9 @@ void AppGui::DrawVideoDisplay()
 void AppGui::DrawTabs()
 {
     int prevTab = activeTab;
-    if (ImGui::BeginTabBar("##MainTabs"))
+    if (ImGui::BeginTabBar("##MainTabs", ImGuiTabBarFlags_FittingPolicyScroll))
     {
-        if (ImGui::BeginTabItem("Processing"))
+        if (ImGui::BeginTabItem("Pipeline"))
         {
             activeTab = TAB_PROCESSING;
             DrawProcessingTab();
@@ -1810,19 +1854,25 @@ void AppGui::DrawTabs()
         if (ImGui::BeginTabItem("Background"))
         {
             activeTab = TAB_BACKGROUND;
+            ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x*.52f);
             DrawBackgroundTab();
+            ImGui::PopItemWidth();
             ImGui::EndTabItem();
         }
         if (ImGui::BeginTabItem("Calibration"))
         {
             activeTab = TAB_CALIBRATION;
+            ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x*.52f);
             DrawCalibrationTab();
+            ImGui::PopItemWidth();
             ImGui::EndTabItem();
         }
-        if (ImGui::BeginTabItem("Processing Frame"))
+        if (ImGui::BeginTabItem("Timing"))
         {
             activeTab = TAB_PROCFRAME;
+            ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x*.52f);
             DrawProcessingFrameTab();
+            ImGui::PopItemWidth();
             ImGui::EndTabItem();
         }
         ImGui::EndTabBar();
@@ -1837,231 +1887,273 @@ void AppGui::DrawTabs()
 // DrawProcessingTab
 // ============================================================================
 
+namespace
+{
+std::string PluginTitle(const std::string& key)
+{
+    static const std::map<std::string, std::string> titles = {
+        {"Clahe", "Local contrast (CLAHE)"}, {"BackgroundDiffKnn", "Background / KNN"},
+        {"BackgroundDiffMog", "Background / MOG"}, {"BackgroundDiffMog2", "Background / MOG2"},
+        {"BackgroundDiffGmg", "Background / GMG"}, {"BackgroundDiffGsoc", "Background / GSOC"},
+        {"YoloDetector", "YOLO detector"}, {"Aruco", "ArUco markers"}, {"ArucoColor", "Color ArUco markers"},
+        {"ZonesOfInterest", "Zones of interest"}, {"GetBlobsAngles", "Blob orientation"}};
+    auto found=titles.find(key);
+    if (found!=titles.end()) return found->second;
+    std::string result;
+    for (unsigned i=0; i<key.size(); ++i)
+    {
+        unsigned char c=key[i];
+        if (i && std::isupper(c)) { result+=' '; result+=(char)std::tolower(c); }
+        else result+=(char)c;
+    }
+    return result;
+}
+const char* PluginSummary(const std::string& key)
+{
+    static const std::map<std::string, const char*> text = {
+        {"Clahe", "Recover local contrast"}, {"Curves", "Adjust tones and color channels"},
+        {"WhiteBalance", "Correct a color cast"}, {"Denoise", "Reduce spatial noise"},
+        {"TemporalDenoise", "Reduce noise across frames"}, {"Sharpen", "Bring out edges and detail"},
+        {"Dehaze", "Reduce haze and backscatter"}, {"BackgroundDifference", "Compare with a reference background"},
+        {"FrameDifference", "Find changes between frames"}, {"MovingAverage", "Estimate a rolling background"},
+        {"BackgroundDiffKnn", "Separate moving objects with KNN"}, {"BackgroundDiffMog", "Model a changing background"},
+        {"BackgroundDiffMog2", "Adaptive background and shadow detection"},
+        {"BackgroundDiffGmg", "Statistical background subtraction"}, {"BackgroundDiffGsoc", "Adaptive foreground extraction"},
+        {"AdaptiveThreshold", "Segment using local brightness"}, {"ColorSegmentation", "Select a range of colors"},
+        {"Erosion", "Remove small foreground regions"}, {"Dilation", "Expand and connect foreground regions"},
+        {"SafeErosion", "Shrink regions while preserving blobs"}, {"ExtractBlobs", "Turn a mask into detected objects"},
+        {"GetBlobsAngles", "Estimate object orientation"}, {"PatternTracker", "Follow visual patterns across frames"},
+        {"TrackBlobs", "Link detected objects into trajectories"}, {"YoloDetector", "Detect objects with an ONNX model"},
+        {"ZonesOfInterest", "Limit analysis to regions of interest"}, {"Aruco", "Locate and identify fiducial markers"},
+        {"ArucoColor", "Identify colored fiducial markers"}, {"SimpleTags", "Detect simple visual tags"},
+        {"RecordVideo", "Write the processed video"}, {"RecordPixels", "Export pixel data"},
+        {"TakeSnapshots", "Save individual frames"}, {"Stopwatch", "Measure events over time"},
+        {"RemoteControl", "Send events to external hardware"}};
+    auto found=text.find(key);
+    return found==text.end() ? "Configure this processing stage" : found->second;
+}
+}
+
+PipelinePlugin* AppGui::PluginAt(int index)
+{
+    if (index<0 || ipEngine.pipelines.empty() || index>=(int)ipEngine.pipelines[0].plugins.size()) return nullptr;
+    for (auto& pipeline : ipEngine.pipelines)
+        if (pipeline.plugins[index]) return pipeline.plugins[index];
+    return nullptr;
+}
+
+void AppGui::MovePipelinePlugin(int from, int to)
+{
+    if (!PluginAt(from) || !PluginAt(to) || from==to) return;
+    auto plugins=ipEngine.Erase(from);
+    ipEngine.Insert(to, plugins, false);
+    for (auto* states : {&pipelineDialogOpen, &pipelineHelpOpen})
+    {
+        bool value=(*states)[from];
+        states->erase(states->begin()+from);
+        states->insert(states->begin()+to, value);
+    }
+    auto remap=[&](int& index) {
+        if (index==from) index=to;
+        else if (from<to && index>from && index<=to) --index;
+        else if (from>to && index>=to && index<from) ++index;
+    };
+    remap(selectedPipelineItem);
+    remap(patternSeedPluginIndex);
+    remap(whitePickPluginIndex);
+    pipelineDirty=true;
+    ipEngine.takeSnapshot=true;
+    scrollToPipelineSelection=true;
+}
+
+void AppGui::RemovePipelinePlugin(int index)
+{
+    if (!PluginAt(index)) return;
+    auto plugins=ipEngine.Erase(index);
+    for (auto* plugin : plugins)
+        if (plugin) { plugin->CloseOutput(); delete plugin; }
+    pipelineDialogOpen.erase(pipelineDialogOpen.begin()+index);
+    pipelineHelpOpen.erase(pipelineHelpOpen.begin()+index);
+    auto remap=[&](int& value) { if (value==index) value=-1; else if (value>index) --value; };
+    remap(patternSeedPluginIndex);
+    remap(whitePickPluginIndex);
+    if (selectedPipelineItem==index)
+    {
+        selectedPipelineItem=std::min(index,(int)pipelineDialogOpen.size()-1);
+        roiEditing=false; roiActivePolygon=roiSelectedPolygon=roiDragPoly=roiDragPoint=-1;
+    }
+    else if (selectedPipelineItem>index) --selectedPipelineItem;
+    pipelineDirty=true;
+    ipEngine.takeSnapshot=true;
+}
+
 void AppGui::DrawProcessingTab()
 {
-    ImGui::Text("Pipeline");
-    ImGui::Separator();
+    int count=ipEngine.pipelines.empty() ? 0 : (int)ipEngine.pipelines[0].plugins.size();
+    int enabled=0;
+    for (int i=0; i<count; ++i) if (auto* p=PluginAt(i)) enabled+=p->active;
+    ImGui::AlignTextToFramePadding();
+    Darkroom::Label("PIPELINE");
+    ImGui::SameLine();
+    ImGui::TextDisabled("%d stages / %d active", count, enabled);
 
-    // Pipeline list
-    int pipelineSize = 0;
-    if (!ipEngine.pipelines.empty())
-        pipelineSize = (int)ipEngine.pipelines[0].plugins.size();
-
-    // The Pipeline list and the Available Plugins list share the panel height:
-    // the pipeline list has a draggable height, the plugins list fills the rest.
-    float totalAvail = ImGui::GetContentRegionAvail().y;
-    float minList = 60 * dpiScale;
-    float maxPh = totalAvail - 180 * dpiScale;   // leave room for buttons + plugins list
-    if (maxPh < minList) maxPh = minList;
-    float ph = pipelineListHeight * dpiScale;
-    if (ph < minList) ph = minList;
-    if (ph > maxPh) ph = maxPh;
-
-    ImGui::BeginChild("PipelineList", ImVec2(0, ph), true);
-    for (int i = 0; i < pipelineSize; i++)
+    float total=ImGui::GetContentRegionAvail().y;
+    float maxHeight=std::max(90*dpiScale,total-238*dpiScale);
+    float ph=std::clamp((count ? pipelineListHeight : 154.f)*dpiScale, 90*dpiScale, maxHeight);
+    ImGui::PushStyleColor(ImGuiCol_ChildBg, Darkroom::Paper);
+    ImGui::BeginChild("PipelineList", ImVec2(0,ph), ImGuiChildFlags_Borders);
+    if (count==0)
     {
-        // Get the plugin pointer (may be null in threaded pipeline, use single-threaded)
-        PipelinePlugin* pp = ipEngine.pipelines[0].plugins[i];
-        if (!pp) pp = ipEngine.pipelines[ipEngine.threadsCount].plugins[i];
-
+        ImGui::Dummy(ImVec2(0,10*dpiScale));
+        ImGui::TextUnformatted("Build your analysis, stage by stage.");
+        ImGui::TextWrapped("Find a plugin below and add it to the pipeline. Stages run from top to bottom.");
+        ImGui::Spacing();
+        ImGui::TextDisabled("Already have a configuration?");
+        if (ImGui::Button("Load analysis...")) LoadSettings();
+    }
+    int moveFrom=-1, moveTo=-1;
+    for (int i=0; i<count; ++i)
+    {
+        auto* pp=PluginAt(i);
         if (!pp) continue;
-
-        bool isActive = pp->active;
-        std::string label = std::to_string(i) + ": " +
-                           CamelCaseToText(pp->registryName);
-
-        // Checkbox for active state
         ImGui::PushID(i);
-        if (ImGui::Checkbox("##active", &isActive))
+        ImVec2 row=ImGui::GetCursorPos();
+        ImGui::SetCursorPosY(row.y+7*dpiScale);
+        bool active=pp->active;
+        if (ImGui::Checkbox("##active", &active))
         {
-            // Set active on all pipeline copies
-            for (unsigned int p = 0; p <= ipEngine.threadsCount; p++)
-            {
-                if (ipEngine.pipelines[p].plugins[i])
-                    ipEngine.pipelines[p].plugins[i]->active = isActive;
-            }
-            pipelineDirty = true;
+            for (auto& pipeline : ipEngine.pipelines)
+                if (pipeline.plugins[i]) pipeline.plugins[i]->active=active;
+            pipelineDirty=true;
         }
+        Darkroom::Hint("Enable / bypass this stage");
         ImGui::SameLine();
-
-        bool isSelected = (selectedPipelineItem == i);
-        if (ImGui::Selectable(label.c_str(), isSelected))
+        ImGui::SetCursorPosY(row.y);
+        bool selected=selectedPipelineItem==i;
+        if (ImGui::Selectable("##stage", selected, ImGuiSelectableFlags_AllowDoubleClick, ImVec2(0,43*dpiScale)))
         {
-            selectedPipelineItem = i;
-            ipEngine.takeSnapshot = true;
-            pipelineDirty = true;
+            selectedPipelineItem=i;
+            pipelineDirty=true; ipEngine.takeSnapshot=true;
+            if (ImGui::IsMouseDoubleClicked(0)) pipelineDialogOpen[i]=true;
         }
-
-        // Double-click to open dialog
-        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+        Darkroom::Hint("Select to preview this stage. Double-click to edit. Drag to reorder.");
+        ImVec2 a=ImGui::GetItemRectMin(), b=ImGui::GetItemRectMax();
+        auto* draw=ImGui::GetWindowDrawList();
+        draw->PushClipRect(a,b,true);
+        if (selected) draw->AddRectFilled(a,ImVec2(a.x+2*dpiScale,b.y),ImGui::GetColorU32(Darkroom::Amber));
+        char number[16]; snprintf(number,sizeof(number),"%02d",i+1);
+        draw->AddText(Darkroom::Mono,Darkroom::Mono->FontSize,ImVec2(a.x+8*dpiScale,a.y+6*dpiScale),
+                      ImGui::GetColorU32(selected ? Darkroom::Amber : Darkroom::Muted),number);
+        std::string title=PluginTitle(pp->registryName);
+        draw->AddText(ImVec2(a.x+36*dpiScale,a.y+3*dpiScale),ImGui::GetColorU32(active ? Darkroom::Ink : Darkroom::Muted),title.c_str());
+        draw->AddText(ImVec2(a.x+36*dpiScale,a.y+23*dpiScale),ImGui::GetColorU32(Darkroom::Muted),PluginSummary(pp->registryName));
+        draw->PopClipRect();
+        if (ImGui::BeginDragDropSource())
         {
-            if (i < (int)pipelineDialogOpen.size())
-                pipelineDialogOpen[i] = true;
+            ImGui::SetDragDropPayload("PIPELINE_STAGE",&i,sizeof(i));
+            ImGui::TextUnformatted(title.c_str());
+            ImGui::EndDragDropSource();
         }
+        if (ImGui::BeginDragDropTarget())
+        {
+            if (const auto* payload=ImGui::AcceptDragDropPayload("PIPELINE_STAGE"))
+            { moveFrom=*(const int*)payload->Data; moveTo=i; }
+            ImGui::EndDragDropTarget();
+        }
+        if (selected && scrollToPipelineSelection) ImGui::SetScrollHereY(.5f);
         ImGui::PopID();
     }
+    scrollToPipelineSelection=false;
     ImGui::EndChild();
+    ImGui::PopStyleColor();
+    if (moveFrom>=0) MovePipelinePlugin(moveFrom,moveTo);
 
-    // Draggable splitter to resize the pipeline list (and thus the plugins list)
-    {
-        ImGui::InvisibleButton("##pipeSplit", ImVec2(-1, 6 * dpiScale));
-        if (ImGui::IsItemHovered() || ImGui::IsItemActive())
-            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
-        if (ImGui::IsItemActive())
-        {
-            pipelineListHeight += ImGui::GetIO().MouseDelta.y / dpiScale;
-            if (pipelineListHeight < minList / dpiScale) pipelineListHeight = minList / dpiScale;
-            if (pipelineListHeight > maxPh / dpiScale) pipelineListHeight = maxPh / dpiScale;
-        }
-        ImVec2 gmin = ImGui::GetItemRectMin(), gmax = ImGui::GetItemRectMax();
-        float cy = (gmin.y + gmax.y) * 0.5f, cx = (gmin.x + gmax.x) * 0.5f;
-        ImU32 col = ImGui::GetColorU32(ImGui::IsItemActive() ? ImGuiCol_SeparatorActive
-                                                             : ImGuiCol_Separator);
-        ImGui::GetWindowDrawList()->AddLine(ImVec2(gmin.x + 4, cy), ImVec2(gmax.x - 4, cy), col, 1.0f);
-        ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(cx - 12*dpiScale, cy - 1.5f*dpiScale),
-                                                  ImVec2(cx + 12*dpiScale, cy + 1.5f*dpiScale), col, 1.0f);
-    }
+    ImGui::InvisibleButton("##pipeSplit", ImVec2(-1,5*dpiScale));
+    if (ImGui::IsItemHovered() || ImGui::IsItemActive()) ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
+    if (ImGui::IsItemActive()) pipelineListHeight=std::clamp(ph/dpiScale+ImGui::GetIO().MouseDelta.y/dpiScale,90.f,maxHeight/dpiScale);
+    auto a=ImGui::GetItemRectMin(), b=ImGui::GetItemRectMax();
+    float center=(a.x+b.x)*.5f;
+    ImGui::GetWindowDrawList()->AddLine(ImVec2(center-16*dpiScale,a.y+2*dpiScale),
+        ImVec2(center+16*dpiScale,a.y+2*dpiScale),ImGui::GetColorU32(ImGuiCol_Separator),2*dpiScale);
 
-    // Pipeline control buttons
-    if (ImGui::Button("Settings...") && selectedPipelineItem >= 0 &&
-        selectedPipelineItem < (int)pipelineDialogOpen.size())
-    {
-        pipelineDialogOpen[selectedPipelineItem] = true;
-    }
+    ImGui::BeginDisabled(!PluginAt(selectedPipelineItem));
+    if (ImGui::Button("Edit parameters...", ImVec2(std::max(110*dpiScale,ImGui::GetContentRegionAvail().x-117*dpiScale),0)))
+        pipelineDialogOpen[selectedPipelineItem]=true;
     ImGui::SameLine();
-
-    if (ImGui::Button("Remove") && selectedPipelineItem >= 0 &&
-        selectedPipelineItem < pipelineSize)
-    {
-        auto pfv = ipEngine.Erase(selectedPipelineItem);
-        for (auto* p : pfv)
-            delete p;
-        if (selectedPipelineItem < (int)pipelineDialogOpen.size())
-            pipelineDialogOpen.erase(pipelineDialogOpen.begin() + selectedPipelineItem);
-        if (selectedPipelineItem >= (int)ipEngine.pipelines[0].plugins.size())
-            selectedPipelineItem = (int)ipEngine.pipelines[0].plugins.size() - 1;
-        pipelineDirty = true;
-    }
+    ImGui::BeginDisabled(selectedPipelineItem<=0);
+    if (Darkroom::IconButton("##moveUp",Darkroom::Icon::Up,"Move stage up",dpiScale))
+        MovePipelinePlugin(selectedPipelineItem,selectedPipelineItem-1);
+    ImGui::EndDisabled();
     ImGui::SameLine();
-
-    if (ImGui::Button("Up") && selectedPipelineItem > 0 &&
-        selectedPipelineItem < pipelineSize)
-    {
-        auto pfv = ipEngine.Erase(selectedPipelineItem);
-        bool dialogState = false;
-        if (selectedPipelineItem < (int)pipelineDialogOpen.size())
-        {
-            dialogState = pipelineDialogOpen[selectedPipelineItem];
-            pipelineDialogOpen.erase(pipelineDialogOpen.begin() + selectedPipelineItem);
-        }
-        selectedPipelineItem--;
-        ipEngine.Insert(selectedPipelineItem, pfv, false);
-        pipelineDialogOpen.insert(pipelineDialogOpen.begin() + selectedPipelineItem, dialogState);
-        pipelineDirty = true;
-    }
+    ImGui::BeginDisabled(selectedPipelineItem>=count-1);
+    if (Darkroom::IconButton("##moveDown",Darkroom::Icon::Down,"Move stage down",dpiScale))
+        MovePipelinePlugin(selectedPipelineItem,selectedPipelineItem+1);
+    ImGui::EndDisabled();
     ImGui::SameLine();
-
-    if (ImGui::Button("Down") && selectedPipelineItem >= 0 &&
-        selectedPipelineItem < pipelineSize - 1)
-    {
-        auto pfv = ipEngine.Erase(selectedPipelineItem);
-        bool dialogState = false;
-        if (selectedPipelineItem < (int)pipelineDialogOpen.size())
-        {
-            dialogState = pipelineDialogOpen[selectedPipelineItem];
-            pipelineDialogOpen.erase(pipelineDialogOpen.begin() + selectedPipelineItem);
-        }
-        selectedPipelineItem++;
-        ipEngine.Insert(selectedPipelineItem, pfv, false);
-        pipelineDialogOpen.insert(pipelineDialogOpen.begin() + selectedPipelineItem, dialogState);
-        pipelineDirty = true;
-    }
-
-    ImGui::Spacing();
+    if (Darkroom::IconButton("##remove",Darkroom::Icon::Remove,"Remove selected stage",dpiScale))
+        RemovePipelinePlugin(selectedPipelineItem);
+    ImGui::EndDisabled();
     ImGui::Separator();
-    ImGui::Text("Available Plugins");
-
-    // Plugins grouped by function. The order here defines the display order;
-    // any registered plugin not listed below is collected under "Other" so
-    // newly-added plugins never silently disappear from the list.
-    struct PluginCategory { const char* name; std::vector<std::string> keys; };
-    static const std::vector<PluginCategory> categories = {
-        { "Enhancement",           { "Clahe", "Curves", "WhiteBalance", "Denoise",
-                                     "TemporalDenoise", "Sharpen", "Dehaze" } },
-        { "Background Subtraction",{ "BackgroundDifference", "FrameDifference", "MovingAverage",
-                                     "BackgroundDiffMog", "BackgroundDiffMog2", "BackgroundDiffGmg",
-                                     "BackgroundDiffGsoc", "BackgroundDiffKnn" } },
-        { "Threshold & Segmentation", { "AdaptiveThreshold", "ColorSegmentation" } },
-        { "Morphology",            { "Erosion", "Dilation", "SafeErosion" } },
-        { "Blobs",                 { "ExtractBlobs", "GetBlobsAngles" } },
-        { "Markers & Patterns",    { "Aruco", "ArucoColor", "SimpleTags",
-                                     "PatternTracker", "YoloDetector" } },
-        { "Tracking",              { "TrackBlobs" } },
-        { "Zones",                 { "ZonesOfInterest" } },
-        { "Recording & Output",    { "RecordVideo", "RecordPixels", "TakeSnapshots",
-                                     "Stopwatch", "RemoteControl" } },
+    Darkroom::Label("PLUGIN LIBRARY");
+    ImGui::SetNextItemWidth(-1);
+    ImGui::InputTextWithHint("##PluginSearch","Search plugins, e.g. background...",pluginSearch,sizeof(pluginSearch));
+    std::string needle=pluginSearch;
+    std::transform(needle.begin(),needle.end(),needle.begin(),[](unsigned char c){return (char)std::tolower(c);});
+    auto matches=[&](const std::string& key, const char* category) {
+        std::string haystack=key+" "+PluginTitle(key)+" "+PluginSummary(key)+" "+category;
+        std::transform(haystack.begin(),haystack.end(),haystack.begin(),[](unsigned char c){return (char)std::tolower(c);});
+        return haystack.find(needle)!=std::string::npos;
     };
-
-    // renders one selectable entry for a plugin key (index into availablePluginNames)
-    auto drawEntry = [&](int i)
-    {
-        std::string displayName = CamelCaseToText(availablePluginNames[i]);
-        bool isSelected = (selectedAvailablePlugin == i);
-        if (ImGui::Selectable(displayName.c_str(), isSelected))
-            selectedAvailablePlugin = i;
-        if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(0))
+    struct Category { const char* name; std::vector<std::string> keys; };
+    static const std::vector<Category> categories={
+        {"Enhance",{"Clahe","Curves","WhiteBalance","Denoise","TemporalDenoise","Sharpen","Dehaze"}},
+        {"Background",{"BackgroundDifference","FrameDifference","MovingAverage","BackgroundDiffMog","BackgroundDiffMog2","BackgroundDiffGmg","BackgroundDiffGsoc","BackgroundDiffKnn"}},
+        {"Segment & clean",{"AdaptiveThreshold","ColorSegmentation","Erosion","Dilation","SafeErosion"}},
+        {"Detect & track",{"ExtractBlobs","GetBlobsAngles","Aruco","ArucoColor","SimpleTags","PatternTracker","YoloDetector","TrackBlobs"}},
+        {"Regions",{"ZonesOfInterest"}},
+        {"Record & export",{"RecordVideo","RecordPixels","TakeSnapshots","Stopwatch","RemoteControl"}}};
+    std::vector<bool> categorized(availablePluginNames.size(),false);
+    bool anyMatch=false, selectedVisible=false;
+    auto entry=[&](int i) {
+        anyMatch=true;
+        if (selectedAvailablePlugin==i) selectedVisible=true;
+        const auto& key=availablePluginNames[i];
+        std::string title=PluginTitle(key);
+        ImGui::PushID(i);
+        if (ImGui::Selectable(title.c_str(),selectedAvailablePlugin==i,ImGuiSelectableFlags_AllowDoubleClick,ImVec2(0,22*dpiScale)))
         {
-            cv::FileNode fn;
-            AddPipelinePlugin(availablePluginNames[i], fn);
+            selectedAvailablePlugin=i; selectedVisible=true;
+            if (ImGui::IsMouseDoubleClicked(0)) { cv::FileNode node; AddPipelinePlugin(key,node); }
         }
+        Darkroom::Hint(PluginSummary(key));
+        ImGui::PopID();
     };
-
-    // fill the remaining panel height, leaving room for the Add Plugin button
-    float pluginsFooter = ImGui::GetFrameHeightWithSpacing();
-    ImGui::BeginChild("AvailablePlugins", ImVec2(0, -pluginsFooter), true);
-
-    // track which plugins land in a category so we can gather the rest
-    std::vector<bool> categorized(availablePluginNames.size(), false);
-    for (const auto& cat : categories)
+    ImGui::BeginChild("AvailablePlugins",ImVec2(0,std::max(45.f,ImGui::GetContentRegionAvail().y-ImGui::GetFrameHeightWithSpacing())),ImGuiChildFlags_Borders);
+    for (const auto& category : categories)
     {
-        // gather the indices of this category's plugins that are registered
         std::vector<int> members;
-        for (const auto& key : cat.keys)
-        {
-            for (int i = 0; i < (int)availablePluginNames.size(); i++)
-                if (availablePluginNames[i] == key)
+        for (const auto& key : category.keys)
+            for (int i=0; i<(int)availablePluginNames.size(); ++i)
+                if (availablePluginNames[i]==key)
                 {
-                    members.push_back(i);
-                    categorized[i] = true;
+                    categorized[i]=true;
+                    if (matches(key,category.name)) members.push_back(i);
                     break;
                 }
-        }
         if (members.empty()) continue;
-        if (ImGui::CollapsingHeader(cat.name, ImGuiTreeNodeFlags_DefaultOpen))
-        {
-            ImGui::Indent(ImGui::GetStyle().IndentSpacing * 0.5f);
-            for (int i : members) drawEntry(i);
-            ImGui::Unindent(ImGui::GetStyle().IndentSpacing * 0.5f);
-        }
+        anyMatch=true;
+        if (!needle.empty()) ImGui::SetNextItemOpen(true,ImGuiCond_Always);
+        if (ImGui::CollapsingHeader(category.name,ImGuiTreeNodeFlags_DefaultOpen))
+        { for (int i : members) entry(i); }
     }
-    // anything not placed in a category
-    std::vector<int> others;
-    for (int i = 0; i < (int)availablePluginNames.size(); i++)
-        if (!categorized[i]) others.push_back(i);
-    if (!others.empty() && ImGui::CollapsingHeader("Other", ImGuiTreeNodeFlags_DefaultOpen))
-    {
-        ImGui::Indent(ImGui::GetStyle().IndentSpacing * 0.5f);
-        for (int i : others) drawEntry(i);
-        ImGui::Unindent(ImGui::GetStyle().IndentSpacing * 0.5f);
-    }
+    for (int i=0; i<(int)availablePluginNames.size(); ++i)
+        if (!categorized[i] && matches(availablePluginNames[i],"Other")) entry(i);
+    if (!anyMatch) { ImGui::TextUnformatted("No matching plugins."); ImGui::TextWrapped("Try a name or a task, such as contrast, blobs or video."); }
     ImGui::EndChild();
-
-    if (ImGui::Button("Add Plugin") && selectedAvailablePlugin >= 0 &&
-        selectedAvailablePlugin < (int)availablePluginNames.size())
-    {
-        cv::FileNode fn;
-        AddPipelinePlugin(availablePluginNames[selectedAvailablePlugin], fn);
-    }
+    ImGui::BeginDisabled(!selectedVisible);
+    if (Darkroom::AccentButton("+ Add to pipeline",ImVec2(-1,0)))
+    { cv::FileNode node; AddPipelinePlugin(availablePluginNames[selectedAvailablePlugin],node); }
+    ImGui::EndDisabled();
 }
 
 // ============================================================================
@@ -2070,7 +2162,8 @@ void AppGui::DrawProcessingTab()
 
 void AppGui::DrawBackgroundTab()
 {
-    ImGui::Text("Background Calculation");
+    Darkroom::Label("REFERENCE BACKGROUND");
+    ImGui::TextWrapped("Estimate a reference image from your recording, or load one from disk.");
     ImGui::Separator();
 
     // Method selection
@@ -2336,13 +2429,17 @@ void AppGui::DrawCalibrationTab()
 
 void AppGui::DrawProcessingFrameTab()
 {
-    ImGui::Text("Processing Frame Settings");
+    Darkroom::Label("ANALYSIS INTERVAL");
+    ImGui::TextWrapped("Limit processing to part of the recording. Times are in seconds; zero duration uses the remainder.");
     ImGui::Separator();
 
-    ImGui::InputFloat("Start Time", &ipEngine.startTime, 0.1f, 1.0f, "%.2f");
-    ImGui::InputFloat("Duration", &ipEngine.durationTime, 0.1f, 1.0f, "%.2f");
-    ImGui::InputFloat("Timestep", &ipEngine.timestep, 0.001f, 0.01f, "%.3f");
-    ImGui::Checkbox("Use Time Boundaries", &ipEngine.useTimeBoundaries);
+    if (ImGui::InputFloat("Start (s)", &ipEngine.startTime, 0.1f, 1.0f, "%.2f")) pipelineDirty=true;
+    if (ImGui::InputFloat("Duration (s)", &ipEngine.durationTime, 0.1f, 1.0f, "%.2f")) pipelineDirty=true;
+    if (ImGui::InputFloat("Timestep (s)", &ipEngine.timestep, 0.001f, 0.01f, "%.3f")) pipelineDirty=true;
+    if (ImGui::Checkbox("Use time boundaries", &ipEngine.useTimeBoundaries)) pipelineDirty=true;
+    ipEngine.startTime=std::max(0.f,ipEngine.startTime);
+    ipEngine.durationTime=std::max(0.f,ipEngine.durationTime);
+    ipEngine.timestep=std::max(0.f,ipEngine.timestep);
 }
 
 // ============================================================================
@@ -3031,8 +3128,8 @@ void AppGui::DrawPluginDialog(int index)
     if (!pp) pp = ipEngine.pipelines[ipEngine.threadsCount].plugins[index];
     if (!pp) return;
 
-    std::string title = CamelCaseToText(pp->registryName) +
-                        " [" + std::to_string(index) + "]###PluginDlg" + std::to_string(index);
+    std::string title = PluginTitle(pp->registryName) +
+                        " / stage " + std::to_string(index+1) + "###PluginDlg" + std::to_string(index);
     bool open = pipelineDialogOpen[index];
 
     // per-dialog help-panel state
@@ -3051,7 +3148,8 @@ void AppGui::DrawPluginDialog(int index)
     ImGui::SetNextWindowPos(ImVec2(workMin.x + 80*dpiScale + stagger,
                                    workMin.y + 80*dpiScale + stagger),
                             ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(400*dpiScale, 350*dpiScale), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(520*dpiScale, 480*dpiScale), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSizeConstraints(ImVec2(300*dpiScale,200*dpiScale),dvp->WorkSize);
     if (!ImGui::Begin(title.c_str(), &open))
     {
         pipelineDialogOpen[index] = open;
@@ -3089,7 +3187,7 @@ void AppGui::DrawPluginDialog(int index)
         {
             helpOpen = !helpOpen;
             // widen the dialog for the help panel, or shrink it back when folding
-            ImGui::SetWindowSize(ImVec2((helpOpen ? 720.0f : 400.0f) * dpiScale,
+            ImGui::SetWindowSize(ImVec2(std::min((helpOpen ? 900.0f : 520.0f) * dpiScale, dvp->WorkSize.x),
                                         ImGui::GetWindowHeight()));
         }
         if (index < (int)pipelineHelpOpen.size())
@@ -3098,7 +3196,9 @@ void AppGui::DrawPluginDialog(int index)
 
     // left column holds all the controls; help panel (if open) sits on the right
     if (helpOpen)
-        ImGui::BeginChild("##ctrls", ImVec2(360*dpiScale, 0), false);
+        ImGui::BeginChild("##ctrls", ImVec2(std::min(460*dpiScale,ImGui::GetContentRegionAvail().x*.57f), 0), false);
+
+    ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x*.52f);
 
     // Common controls
     bool isActive = pp->active;
@@ -3110,6 +3210,7 @@ void AppGui::DrawPluginDialog(int index)
         pipelineDirty = true;
     }
 
+    ImGui::SameLine();
     bool isOutput = pp->output;
     if (ImGui::Checkbox("Output", &isOutput))
     {
@@ -3118,6 +3219,8 @@ void AppGui::DrawPluginDialog(int index)
                 ipEngine.pipelines[p].plugins[index]->output = isOutput;
         pipelineDirty = true;
     }
+
+    Darkroom::Hint("Include this stage when Write outputs is enabled in the bottom bar.");
 
     ImGui::Separator();
 
@@ -4578,6 +4681,7 @@ void AppGui::DrawPluginDialog(int index)
     }
 
     // close the controls column and draw the help panel on the right
+    ImGui::PopItemWidth();
     if (helpOpen)
     {
         ImGui::EndChild();
@@ -4657,6 +4761,22 @@ void AppGui::OpenSourceFile(const std::string& filename)
 
 void AppGui::ChangeCapture(Capture* newCapture)
 {
+    ipEngine.CloseOutput();
+    output = false;
+    pendingRewind = false;
+    bookmarks.clear();
+    loopStart = loopEnd = -1;
+    loopEnabled = false;
+    rulerMeasurements.clear();
+    rulerAnchored = false;
+    patternSeedPluginIndex = whitePickPluginIndex = -1;
+    roiEditing = false;
+    roiActivePolygon = roiSelectedPolygon = roiDragPoly = roiDragPoint = -1;
+    zoomStartX = zoomStartY = 0;
+    zoomEndX = zoomEndY = 1;
+    videoSliderPos = 0;
+    sliderMoving = false;
+    playSpeed = 0;
     // detach the plugins: the engine reset destroys and recreates the
     // pipelines, and we do not want to lose the pipeline built by the user
     std::vector<std::vector<PipelinePlugin*>> savedPlugins;
@@ -4676,6 +4796,7 @@ void AppGui::ChangeCapture(Capture* newCapture)
     for (auto& pfv : savedPlugins)
         ipEngine.PushBack(pfv, true);
 
+    ipEngine.RefreshCurrentFrame();
     SyncHudSize();
     ipEngine.takeSnapshot = true;
 
@@ -4794,7 +4915,7 @@ void AppGui::OpenFileDialog(const std::string& title, FileBrowser::Mode mode,
                             std::function<void(const std::string&)> onSelect)
 {
     // use the native dialogs if a backend (zenity, kdialog, ...) is installed
-    if (pfd::settings::available())
+    if (!testMode && pfd::settings::available())
     {
         if (mode == FileBrowser::OPEN)
         {
@@ -4855,6 +4976,7 @@ void AppGui::OpenFileDialog(const std::string& title, FileBrowser::Mode mode,
 
     snprintf(fileBrowser.nameBuf, sizeof(fileBrowser.nameBuf), "%s",
              std::filesystem::path(defaultName).filename().string().c_str());
+    fileBrowser.focusName = mode == FileBrowser::SAVE;
 
     RefreshFileBrowser();
 }
@@ -5199,6 +5321,11 @@ void AppGui::DrawQuitConfirm()
 static bool MapTestKey(const std::string& name, ImGuiKey& ik, SDL_Keycode& sk, bool& shortcut)
 {
     shortcut = false;
+    if (name.size()==1 && name[0]>='a' && name[0]<='z')
+    {
+        ik=(ImGuiKey)(ImGuiKey_A+name[0]-'a'); sk=SDLK_a+name[0]-'a';
+        shortcut=true; return true;
+    }
     if (name == "space")  { ik = ImGuiKey_Space;      sk = SDLK_SPACE;  shortcut = true; return true; }
     if (name == "left")   { ik = ImGuiKey_LeftArrow;  sk = SDLK_LEFT;   shortcut = true; return true; }
     if (name == "right")  { ik = ImGuiKey_RightArrow; sk = SDLK_RIGHT;  shortcut = true; return true; }
@@ -5250,10 +5377,67 @@ void AppGui::TestAdvance()
         std::istringstream ss(testScript[testPc++]);
         std::string op; ss >> op;
 
+        if (op == "resize")
+        {
+            int w=1280, h=800; ss >> w >> h;
+            SDL_SetWindowSize(window,w,h);
+            return;
+        }
+        if (op == "ui-scale")
+        {
+            float scale=1; ss >> scale;
+            dpiScale=std::clamp(scale,.75f,2.f); pendingScaleChange=true;
+            return;
+        }
+        if (op == "text")
+        {
+            std::string text; std::getline(ss >> std::ws,text);
+            ImGui::GetIO().AddInputCharactersUTF8(text.c_str());
+            return;
+        }
+        if (op == "expect")
+        {
+            std::string property, expected, actual; ss >> property;
+            std::getline(ss >> std::ws,expected);
+            if (property == "pipeline")
+            {
+                for (int i=0; auto* p=PluginAt(i); ++i)
+                { if (i) actual+=' '; actual+=p->registryName; }
+            }
+            else if (property == "selected")
+                actual=PluginAt(selectedPipelineItem) ? PluginAt(selectedPipelineItem)->registryName : "none";
+            else if (property == "playing") actual=play ? "true" : "false";
+            else if (property == "output") actual=output ? "true" : "false";
+            else if (property == "frame") actual=std::to_string(ipEngine.GetPresentFrameNumber());
+            else if (property == "source") actual=HasSource() ? "loaded" : "empty";
+            else if (property == "error") actual=errorMessage.empty() ? "none" : "present";
+            else if (property == "view")
+            {
+                const char* names[]={"pipeline","background","calibration","timing"};
+                actual=names[activeTab];
+            }
+            else if (property == "preview")
+            {
+                cv::Mat frame=ipEngine.GetPresentImage();
+                cv::Scalar mean=frame.empty() ? cv::Scalar() : cv::mean(frame);
+                actual=mean[0]+mean[1]+mean[2]>3 ? "visible" : "black";
+            }
+            else if (property == "zoom") actual=zoomEndX-zoomStartX<.999f ? "zoomed" : "fit";
+            else { actual="unknown property"; }
+            if (actual!=expected)
+            {
+                std::cerr << "GUI CHECK FAILED: " << property << ": expected [" << expected
+                          << "], got [" << actual << "]" << std::endl;
+                testFailed=true; running=false; return;
+            }
+            std::cerr << "GUI check passed: " << property << " = " << actual << std::endl;
+            continue;
+        }
+
         if (op == "move")
         {
             ss >> testMouseX >> testMouseY;
-            continue; // instant, no frame consumed
+            return; // allow hover to settle before clicking overlap-aware tabs
         }
         if (op == "scroll")  // test aid: inject a mouse-wheel delta (zoom)
         {
@@ -5304,9 +5488,10 @@ void AppGui::TestAdvance()
             ImGuiKey ik; SDL_Keycode sk; bool sc;
             if (MapTestKey(k, ik, sk, sc))
             {
-                testKey = ik; testKeyReleaseIn = 2;
+                testKey = ik; testKeyReleaseIn = 2; testKeyCtrl=ctrl;
                 ImGuiIO& io = ImGui::GetIO();
-                if (sc && !io.WantTextInput && !fileBrowser.visible && !showQuitConfirm)
+                if (sc && !io.WantTextInput && !fileBrowser.visible && !showQuitConfirm &&
+                    !ImGui::IsAnyItemActive() && !ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId | ImGuiPopupFlags_AnyPopupLevel))
                     HandleShortcut(sk, ctrl);
             }
             testWaitFrames = 1;
@@ -5334,10 +5519,12 @@ void AppGui::TestInjectInput()
 
     if (testKey >= 0)
     {
+        io.AddKeyEvent(ImGuiMod_Ctrl,testKeyCtrl);
         io.AddKeyEvent((ImGuiKey)testKey, true);
         if (testKeyReleaseIn > 0 && --testKeyReleaseIn == 0)
         {
             io.AddKeyEvent((ImGuiKey)testKey, false);
+            io.AddKeyEvent(ImGuiMod_Ctrl,false);
             testKey = -1;
         }
     }
@@ -5412,6 +5599,11 @@ void AppGui::ResetEngine()
 
 void AppGui::ResetEngine(Parameters& params)
 {
+    ipEngine.CloseOutput();
+    output = false;
+    play = false;
+    if (ipEngine.capture) ipEngine.capture->Pause();
+    pendingRewind = false;
     ipEngine.Reset(params);
 
     if (ipEngine.capture)
@@ -5422,6 +5614,10 @@ void AppGui::ResetEngine(Parameters& params)
 
     // Clean up pipeline dialogs
     pipelineDialogOpen.clear();
+    pipelineHelpOpen.clear();
+    selectedPipelineItem = -1;
+    patternSeedPluginIndex = whitePickPluginIndex = -1;
+    roiEditing = false;
 
     // Reload plugins from parameters
     cv::FileNode fn = params.rootNode["Pipeline"];
@@ -5434,6 +5630,7 @@ void AppGui::ResetEngine(Parameters& params)
             AddPipelinePlugin(pluginNode.name(), pluginNode);
         }
     }
+    ipEngine.RefreshCurrentFrame();
 }
 
 // ============================================================================
@@ -5460,14 +5657,20 @@ bool AppGui::AddPipelinePlugin(const std::string& name, cv::FileNode& fn, int po
     {
         ipEngine.PushBack(pfv, true);
         pipelineDialogOpen.push_back(false);
+        pipelineHelpOpen.push_back(false);
+        selectedPipelineItem = (int)pipelineDialogOpen.size()-1;
     }
     else
     {
         ipEngine.Insert(pos, pfv, true);
         pipelineDialogOpen.insert(pipelineDialogOpen.begin() + pos, false);
+        pipelineHelpOpen.insert(pipelineHelpOpen.begin() + pos, false);
+        selectedPipelineItem = pos;
     }
 
     pipelineDirty = true;
+    scrollToPipelineSelection = true;
+    ipEngine.takeSnapshot = true;
 
     return true;
 }

@@ -71,12 +71,12 @@ private:
 
     // width of the right-hand control panel (in unscaled px; *dpiScale applied
     // at use). Draggable via the splitter between the video area and the panel.
-    float controlPanelWidth = 380.0f;
+    float controlPanelWidth = 420.0f;
 
     // height of the Pipeline list on the Processing tab (unscaled px). The
     // Available Plugins list below fills the rest of the panel; a splitter
     // between them adjusts both.
-    float pipelineListHeight = 200.0f;
+    float pipelineListHeight = 240.0f;
 
     // input-downscale slider state: the widget edits downscaleUI live while
     // dragging and only applies the (heavy) rebuild on release
@@ -125,7 +125,7 @@ private:
     bool hudVisible = true;
     bool output = false;
     int playSpeed = 0;
-    float processingBlending = 0.5f;
+    float processingBlending = 0.0f;
     // set whenever the pipeline must be (re)processed: new frame, seek,
     // plugin parameter change, pipeline edit, ... — cleared after Step()
     bool pipelineDirty = true;
@@ -142,6 +142,8 @@ private:
     // Pipeline dialog state
     int selectedPipelineItem = -1;
     int selectedAvailablePlugin = -1;
+    char pluginSearch[128] = {0};
+    bool scrollToPipelineSelection = false;
     std::vector<bool> pipelineDialogOpen;
     std::vector<bool> pipelineHelpOpen;   // per-dialog: help panel expanded
 
@@ -149,6 +151,7 @@ private:
     FileBrowser fileBrowser;
     std::string errorMessage;
     bool showAbout = false;
+    bool showShortcuts = false;
 
     // Quit confirmation (avoid losing unsaved pipeline / ROI work)
     bool showQuitConfirm = false;
@@ -167,6 +170,8 @@ private:
     std::string testShotPath;       // pending screenshot path
     int testKey = -1;               // ImGuiKey to inject this/next frame (-1 none)
     int testKeyReleaseIn = 0;       // frames until the injected key releases
+    bool testKeyCtrl = false;
+    bool testFailed = false;
 
     // PatternTracker: index of the plugin currently in click-to-seed mode
     // (-1 = none). A left click on the video seeds a target in that plugin.
@@ -200,6 +205,7 @@ private:
     bool InitSDL();
     bool InitImGui();
     void ApplyUIScale();
+    float MaxUIScale() const;
     void Cleanup();
 
     void UpdateEngine();
@@ -211,6 +217,12 @@ private:
     // UI drawing
     void DrawMenuBar();
     void DrawToolbar();
+    void DrawVideoTools();
+    void DrawWelcome();
+    bool HasSource() const;
+    PipelinePlugin* PluginAt(int index);
+    void MovePipelinePlugin(int from, int to);
+    void RemovePipelinePlugin(int index);
     void DrawDownscaleControl();
     void DottedScaleSlider();
     void DrawRulerOverlay(float imgMinX, float imgMinY, float imgSizeX, float imgSizeY);

@@ -217,9 +217,12 @@ set(CORE_SOURCES
 # ---------------------------------------------------------------------------
 # GUI sources
 # ---------------------------------------------------------------------------
+include(cmake/EmbedFonts.cmake)
 set(GUI_SOURCES
     App.cpp
     AppGui.cpp
+    ui/Darkroom.cpp
+    "${CMAKE_CURRENT_BINARY_DIR}/DarkroomFonts.cpp"
 )
 
 # ---------------------------------------------------------------------------
@@ -347,10 +350,12 @@ if(APPLE)
     install(DIRECTORY examples/ DESTINATION "useTracker.app/Contents/Resources/examples")
     install(DIRECTORY images/   DESTINATION "useTracker.app/Contents/Resources/images")
     install(FILES README.md LICENSE DESTINATION ".")
+    install(FILES ui/fonts/OFL.txt DESTINATION "useTracker.app/Contents/Resources/licenses/Liberation")
 else()
     install(DIRECTORY examples/ DESTINATION "${USETRACKER_DATADIR}/examples")
     install(DIRECTORY images/   DESTINATION "${USETRACKER_DATADIR}/images")
     install(FILES README.md LICENSE DESTINATION "${USETRACKER_DOCDIR}")
+    install(FILES ui/fonts/OFL.txt DESTINATION "${USETRACKER_DOCDIR}/licenses/Liberation")
 endif()
 
 if(WIN32)

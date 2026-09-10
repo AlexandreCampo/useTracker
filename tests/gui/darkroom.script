@@ -1,0 +1,177 @@
+resize 1440 900
+wait 12
+expect source loaded
+expect frame 0
+expect preview visible
+expect pipeline BackgroundDiffKnn Erosion PatternTracker
+expect selected PatternTracker
+move 1140 478
+click left
+wait 3
+text clahe
+wait 4
+shot @OUT@/search.png
+move 1130 550
+click left
+wait 3
+move 1150 824
+click left
+wait 4
+expect pipeline BackgroundDiffKnn Erosion PatternTracker Clahe
+expect selected Clahe
+move 1326 419
+click left
+wait 4
+expect pipeline BackgroundDiffKnn Erosion Clahe PatternTracker
+move 1326 419
+click left
+wait 4
+expect pipeline BackgroundDiffKnn Clahe Erosion PatternTracker
+move 1140 226
+press left
+wait 3
+move 1140 178
+wait 8
+release
+wait 5
+expect pipeline Clahe BackgroundDiffKnn Erosion PatternTracker
+expect selected Clahe
+move 1404 419
+click left
+wait 4
+expect pipeline BackgroundDiffKnn Erosion PatternTracker
+expect selected BackgroundDiffKnn
+move 1140 419
+click left
+wait 6
+shot @OUT@/dialog.png
+move 170 240
+click left
+key ctrl a
+text 123
+key enter
+wait 4
+move 574 132
+click left
+wait 5
+shot @OUT@/help.png
+move 962 94
+click left
+wait 4
+move 400 720
+click left
+key ctrl s
+wait 7
+move 680 610
+click left
+wait 3
+key ctrl a
+text @OUT@/darkroom-analysis.xml
+key enter
+wait 8
+shot @OUT@/save.png
+expect error none
+# Outputs and playback share the same actions as keyboard shortcuts.
+key ctrl r
+wait 3
+expect output true
+key backspace
+wait 3
+expect output false
+expect frame 0
+key right
+wait 3
+expect frame 1
+key right
+wait 3
+expect frame 2
+key left
+wait 4
+expect frame 1
+key space
+wait 3
+expect playing true
+key space
+wait 4
+expect playing false
+key backspace
+wait 3
+expect frame 0
+expect preview visible
+# Zoom remains anchored to the centered image and Fit resets it.
+move 500 440
+scroll 2
+wait 3
+expect zoom zoomed
+move 242 120
+click left
+wait 3
+expect zoom fit
+# An empty search result and typing must not trigger playback shortcuts.
+move 1140 478
+click left
+key ctrl a
+text no-such-plugin
+key space
+wait 4
+expect playing false
+shot @OUT@/no-results.png
+# Load the saved settings after removing a stage.
+move 1404 419
+click left
+wait 3
+expect pipeline Erosion PatternTracker
+key ctrl l
+wait 6
+move 680 610
+click left
+key ctrl a
+text @OUT@/darkroom-analysis.xml
+key enter
+wait 7
+expect pipeline BackgroundDiffKnn Erosion PatternTracker
+expect selected PatternTracker
+expect error none
+# All inspector workspaces remain reachable.
+move 1150 94
+click left
+wait 4
+expect view background
+shot @OUT@/background.png
+move 1245 94
+click left
+wait 4
+expect view calibration
+shot @OUT@/calibration.png
+move 1320 94
+click left
+wait 4
+expect view timing
+shot @OUT@/timing.png
+move 1050 94
+click left
+wait 4
+expect view pipeline
+# Replace the video with an image, keeping the analysis pipeline.
+key ctrl o
+wait 6
+move 680 610
+click left
+text @IMAGE@
+key enter
+wait 7
+expect source loaded
+expect pipeline BackgroundDiffKnn Erosion PatternTracker
+expect frame 0
+expect preview visible
+expect zoom fit
+expect output false
+shot @OUT@/image.png
+resize 1280 800
+ui-scale 1.25
+wait 7
+shot @OUT@/scaled.png
+resize 960 640
+wait 7
+shot @OUT@/small.png
+quit

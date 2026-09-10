@@ -125,10 +125,25 @@ details, including which distribution to build on and how releases are cut.
 ./useTracker
 ```
 
+The Darkroom workspace keeps the image on the left and the analysis pipeline on
+the right. Open a video or image with **Open…**, `Ctrl+O`, or drag and drop. Search
+the plugin library, add stages, then double-click a stage to edit its parameters.
+Drag stages to reorder them; selecting a stage chooses its mask and overlays
+for preview. **Image / Blend / Mask** switches the display, with measurements
+and blend strength under **Tools**.
+
+Playback and timeline markers sit below the image. **Write outputs** enables the
+outputs configured in active plugins. **Save…** saves the analysis as XML. The
+bottom bar controls processing resolution and interface size; both panel dividers
+can be dragged. Interface size and divider positions are saved in `imgui.ini`.
+The **Help → Keyboard & mouse** panel lists the shortcuts.
+
+GUI regression checks are described in [tests/gui/README.md](tests/gui/README.md).
+
 ### Headless mode
 ```bash
-./useTracker --nogui -i video.mp4 -x pipeline.xml
-./useTracker --nogui --usb 0 -x pipeline.xml
+./useTracker --nogui -i video.mp4 -p pipeline.xml
+./useTracker --nogui --usb 0 -p pipeline.xml
 ```
 
 Run `./useTracker --help` for all command-line options.
@@ -136,3 +151,5 @@ Run `./useTracker --help` for all command-line options.
 ## License
 
 GNU General Public License v3.0 - see [LICENSE](LICENSE) for details.
+
+Bundled Liberation fonts use the [SIL Open Font License 1.1](ui/fonts/OFL.txt).

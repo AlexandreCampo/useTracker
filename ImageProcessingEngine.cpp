@@ -765,6 +765,30 @@ int ImageProcessingEngine::ComputeOutputLatency()
     return m;
 }
 
+void ImageProcessingEngine::RefreshCurrentFrame()
+{
+    frameBuffer.clear();
+    playIndex = -1;
+    refilling = false;
+    sourceFrame.release();
+    prefetchAhead = ComputePrefetch();
+    outputLatency = ComputeOutputLatency();
+    if (!capture || capture->frame.empty() || procFrame.empty()) return;
+
+    BufferedFrame current;
+    current.number = capture->GetFrameNumber();
+    current.time = capture->GetTime();
+    if (capture->frame.size() == procFrame.size())
+        capture->frame.copyTo(current.image);
+    else
+        cv::resize(capture->frame, current.image, procFrame.size(), 0, 0, cv::INTER_AREA);
+    frameBuffer.push_back(std::move(current));
+    playIndex = 0;
+    while ((int)frameBuffer.size()-1 < prefetchAhead)
+        if (!DecodeOne()) break;
+    PresentPlayhead();
+}
+
 bool ImageProcessingEngine::DecodeOne()
 {
     if (!capture->GetNextFrame()) return false;
