@@ -125,7 +125,7 @@ details, including which distribution to build on and how releases are cut.
 ./useTracker
 ```
 
-The Darkroom workspace keeps the image on the left and the analysis pipeline on
+The desktop workspace keeps the image on the left and the analysis pipeline on
 the right. Open a video or image with **Open…**, `Ctrl+O`, or drag and drop. Search
 the plugin library, add stages, then double-click a stage to edit its parameters.
 Drag stages to reorder them; selecting a stage chooses its mask and overlays
@@ -137,6 +137,11 @@ outputs configured in active plugins. **Save…** saves the analysis as XML. The
 bottom bar controls processing resolution and interface size; both panel dividers
 can be dragged. Interface size and divider positions are saved in `imgui.ini`.
 The **Help → Keyboard & mouse** panel lists the shortcuts.
+
+Use the **Light mode / Dark mode** button at the top right (or **View**) to switch
+themes. Dark mode pairs charcoal with amber; Light mode uses warm off-white,
+graphite text and brass accents. The choice is saved with the workspace and also
+applies to parameter dialogs, menus and plots.
 
 GUI regression checks are described in [tests/gui/README.md](tests/gui/README.md).
 

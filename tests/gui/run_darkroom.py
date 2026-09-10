@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise Darkroom through the GUI, with disposable video and output files."""
+"""Exercise the desktop workspace through the GUI with disposable fixtures."""
 import argparse
 import os
 from pathlib import Path
@@ -49,15 +49,18 @@ def main():
         names = [next(iter(stage)).tag for stage in pipeline]
         assert names == ["BackgroundDiffKnn", "Erosion", "PatternTracker"], names
         assert float(pipeline.find("./Plugin_0/BackgroundDiffKnn/Threshold").text) == 123
+        saved_ui = (output / "workspace.ini").read_text()
+        assert "[useTracker][Workspace]" in saved_ui and "Theme=light" in saved_ui
 
         empty = work / "empty.script"
         empty.write_text(f"resize 1440 900\nwait 8\nexpect source empty\n"
-                         f"shot {output / 'welcome.png'}\nresize 960 640\nwait 6\n"
+                         f"shot {output / 'welcome.png'}\nmove 1374 14\nclick left\nwait 4\n"
+                         f"expect theme light\nshot {output / 'welcome-light.png'}\nresize 960 640\nwait 6\n"
                          f"shot {output / 'welcome-small.png'}\nquit\n")
         with (output / "welcome.log").open("w") as log:
             subprocess.run([str(executable), "--test", str(empty)], cwd=work, env=env,
                            stdout=log, stderr=subprocess.STDOUT, check=True, timeout=30)
-        print(f"Passed {text.count('GUI check passed')} workflow checks and the empty-source check.")
+        print(f"Passed {text.count('GUI check passed')} workflow checks and 2 empty-workspace checks.")
         print(f"Saved XML retains the edited threshold and stage order. Artifacts: {output}")
 
 

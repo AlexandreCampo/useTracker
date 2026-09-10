@@ -1,5 +1,21 @@
 resize 1440 900
 wait 12
+expect theme dark
+shot @OUT@/dark-mode.png
+# The header button changes the entire palette without changing the analysis.
+move 1374 14
+click left
+wait 4
+expect theme light
+shot @OUT@/light-mode.png
+save-ui @OUT@/workspace.ini
+move 1374 14
+click left
+wait 4
+expect theme dark
+load-ui @OUT@/workspace.ini
+wait 4
+expect theme light
 expect source loaded
 expect frame 0
 expect preview visible
@@ -55,6 +71,16 @@ move 574 132
 click left
 wait 5
 shot @OUT@/help.png
+# Open dialogs follow the palette too.
+move 1374 14
+click left
+wait 4
+expect theme dark
+shot @OUT@/help-dark.png
+move 1374 14
+click left
+wait 4
+expect theme light
 move 962 94
 click left
 wait 4
@@ -170,8 +196,16 @@ shot @OUT@/image.png
 resize 1280 800
 ui-scale 1.25
 wait 7
+expect theme light
 shot @OUT@/scaled.png
 resize 960 640
 wait 7
 shot @OUT@/small.png
+move 894 14
+click left
+wait 4
+expect theme dark
+expect source loaded
+expect pipeline BackgroundDiffKnn Erosion PatternTracker
+shot @OUT@/small-dark.png
 quit

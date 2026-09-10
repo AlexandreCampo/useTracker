@@ -1,16 +1,17 @@
-#include "Darkroom.h"
+#include "Theme.h"
 
 extern const unsigned char DarkroomSansData[];
 extern const int DarkroomSansSize;
 extern const unsigned char DarkroomMonoData[];
 extern const int DarkroomMonoSize;
 
-namespace Darkroom
+namespace TrackerUI
 {
+Palette Colors;
 ImFont* Mono = nullptr;
 ImFont* Heading = nullptr;
 
-void Apply(float scale)
+void Apply(float scale, Mode mode)
 {
     auto& io = ImGui::GetIO();
     io.Fonts->Clear();
@@ -46,50 +47,83 @@ void Apply(float scale)
     s.ChildBorderSize = 1;
     s.FrameBorderSize = 0;
     s.TabBarBorderSize = 1;
-    auto* c = s.Colors;
-    c[ImGuiCol_Text] = Ink;
-    c[ImGuiCol_TextDisabled] = Muted;
-    c[ImGuiCol_WindowBg] = Paper;
-    c[ImGuiCol_ChildBg] = Surface;
-    c[ImGuiCol_PopupBg] = Surface;
-    c[ImGuiCol_Border] = Line;
-    c[ImGuiCol_BorderShadow] = Color(0, 0);
-    c[ImGuiCol_FrameBg] = Wash;
-    c[ImGuiCol_FrameBgHovered] = Color(0x343e49);
-    c[ImGuiCol_FrameBgActive] = Color(0x414b56);
-    c[ImGuiCol_TitleBg] = Paper;
-    c[ImGuiCol_TitleBgActive] = AmberSoft;
-    c[ImGuiCol_TitleBgCollapsed] = Paper;
-    c[ImGuiCol_MenuBarBg] = Paper;
-    c[ImGuiCol_ScrollbarBg] = Color(0, 0);
-    c[ImGuiCol_ScrollbarGrab] = Color(0x46505c);
-    c[ImGuiCol_ScrollbarGrabHovered] = Color(0x626e7c);
-    c[ImGuiCol_ScrollbarGrabActive] = Amber;
-    c[ImGuiCol_CheckMark] = Amber;
-    c[ImGuiCol_SliderGrab] = Amber;
-    c[ImGuiCol_SliderGrabActive] = Color(0xf3ce91);
-    c[ImGuiCol_Button] = Wash;
-    c[ImGuiCol_ButtonHovered] = Color(0x3b434c);
-    c[ImGuiCol_ButtonActive] = Color(0x515258);
-    c[ImGuiCol_Header] = AmberSoft;
-    c[ImGuiCol_HeaderHovered] = Color(0x3c3b35);
-    c[ImGuiCol_HeaderActive] = Color(0x514736);
-    c[ImGuiCol_Separator] = Line;
-    c[ImGuiCol_SeparatorHovered] = Amber;
-    c[ImGuiCol_SeparatorActive] = Amber;
-    c[ImGuiCol_ResizeGrip] = Color(0x626e7c, .3f);
-    c[ImGuiCol_ResizeGripHovered] = Color(0xe7b665, .6f);
-    c[ImGuiCol_ResizeGripActive] = Amber;
-    c[ImGuiCol_Tab] = Surface;
-    c[ImGuiCol_TabHovered] = AmberSoft;
-    c[ImGuiCol_TabSelected] = Wash;
-    c[ImGuiCol_TabSelectedOverline] = Amber;
-    c[ImGuiCol_TextSelectedBg] = Color(0xe7b665, .3f);
-    c[ImGuiCol_NavCursor] = Amber;
-    c[ImGuiCol_PlotLines] = Amber;
-    c[ImGuiCol_PlotHistogram] = Amber;
-    c[ImGuiCol_ModalWindowDimBg] = Color(0x080b10, .7f);
     s.ScaleAllSizes(scale);
+    ApplyColors(mode);
+}
+
+void ApplyColors(Mode mode)
+{
+    const bool light = mode == Mode::Light;
+    // Warm paper and brass in light mode; charcoal and amber in dark mode.
+    // Accent text and filled-button text have separate contrast requirements.
+    Colors = light ? Palette{
+        Color(0xf1f0ea), Color(0xfbfaf6), Color(0xe3e5e4), Color(0xe7e6df),
+        Color(0x252d32), Color(0x505b61), Color(0xb5bcbd),
+        Color(0x76521a), Color(0xeee2c5), Color(0xfffbf2),
+        Color(0xa43432), Color(0x28624c), Color(0x286575)
+    } : Palette{
+        Color(0x171b20), Color(0x1e242b), Color(0x101418), Color(0x252c34),
+        Color(0xedf0f4), Color(0xb4bdc8), Color(0x39424e),
+        Color(0xe7b665), Color(0x383127), Color(0x101418),
+        Color(0xef998b), Color(0xa5cbbf), Color(0x87c6d7)
+    };
+    auto& s = ImGui::GetStyle();
+    if (light) ImGui::StyleColorsLight(&s);
+    else ImGui::StyleColorsDark(&s);
+    auto* c = s.Colors;
+    const auto& p = Colors;
+    c[ImGuiCol_Text] = p.Ink;
+    c[ImGuiCol_TextDisabled] = p.Muted;
+    c[ImGuiCol_WindowBg] = p.Paper;
+    c[ImGuiCol_ChildBg] = p.Surface;
+    c[ImGuiCol_PopupBg] = p.Surface;
+    c[ImGuiCol_Border] = p.Line;
+    c[ImGuiCol_BorderShadow] = Color(0, 0);
+    c[ImGuiCol_FrameBg] = p.Wash;
+    c[ImGuiCol_FrameBgHovered] = Color(light ? 0xd9ddd9 : 0x343e49);
+    c[ImGuiCol_FrameBgActive] = Color(light ? 0xccd2cd : 0x414b56);
+    c[ImGuiCol_TitleBg] = p.Paper;
+    c[ImGuiCol_TitleBgActive] = p.AccentSoft;
+    c[ImGuiCol_TitleBgCollapsed] = p.Paper;
+    c[ImGuiCol_MenuBarBg] = p.Paper;
+    c[ImGuiCol_ScrollbarBg] = Color(0, 0);
+    c[ImGuiCol_ScrollbarGrab] = Color(light ? 0x959f9f : 0x46505c);
+    c[ImGuiCol_ScrollbarGrabHovered] = Color(light ? 0x727f80 : 0x626e7c);
+    c[ImGuiCol_ScrollbarGrabActive] = p.Accent;
+    c[ImGuiCol_CheckMark] = p.Accent;
+    c[ImGuiCol_SliderGrab] = p.Accent;
+    c[ImGuiCol_SliderGrabActive] = Color(light ? 0x68470f : 0xf3ce91);
+    c[ImGuiCol_Button] = p.Wash;
+    c[ImGuiCol_ButtonHovered] = Color(light ? 0xd9ddd9 : 0x3b434c);
+    c[ImGuiCol_ButtonActive] = Color(light ? 0xcbd2cc : 0x515258);
+    c[ImGuiCol_Header] = p.AccentSoft;
+    c[ImGuiCol_HeaderHovered] = Color(light ? 0xeadfc7 : 0x3c3b35);
+    c[ImGuiCol_HeaderActive] = Color(light ? 0xe3d5b5 : 0x514736);
+    c[ImGuiCol_Separator] = p.Line;
+    c[ImGuiCol_SeparatorHovered] = p.Accent;
+    c[ImGuiCol_SeparatorActive] = p.Accent;
+    c[ImGuiCol_ResizeGrip] = Color(light ? 0x727f80 : 0x626e7c, .3f);
+    c[ImGuiCol_ResizeGripHovered] = ImVec4(p.Accent.x, p.Accent.y, p.Accent.z, .6f);
+    c[ImGuiCol_ResizeGripActive] = p.Accent;
+    c[ImGuiCol_Tab] = p.Surface;
+    c[ImGuiCol_TabHovered] = p.AccentSoft;
+    c[ImGuiCol_TabSelected] = p.Wash;
+    c[ImGuiCol_TabSelectedOverline] = p.Accent;
+    c[ImGuiCol_TabDimmed] = p.Surface;
+    c[ImGuiCol_TabDimmedSelected] = p.Wash;
+    c[ImGuiCol_TabDimmedSelectedOverline] = p.Line;
+    c[ImGuiCol_TextSelectedBg] = ImVec4(p.Accent.x, p.Accent.y, p.Accent.z, .25f);
+    c[ImGuiCol_DragDropTarget] = p.Accent;
+    c[ImGuiCol_NavCursor] = p.Accent;
+    c[ImGuiCol_PlotLines] = p.Accent;
+    c[ImGuiCol_PlotLinesHovered] = p.Ink;
+    c[ImGuiCol_PlotHistogram] = p.Accent;
+    c[ImGuiCol_PlotHistogramHovered] = p.Ink;
+    c[ImGuiCol_TableHeaderBg] = p.Wash;
+    c[ImGuiCol_TableBorderStrong] = p.Line;
+    c[ImGuiCol_TableBorderLight] = p.Line;
+    c[ImGuiCol_TableRowBgAlt] = ImVec4(p.Ink.x, p.Ink.y, p.Ink.z, .035f);
+    c[ImGuiCol_ModalWindowDimBg] = Color(0x080b10, light ? .3f : .7f);
 }
 
 void Hint(const char* text)
@@ -101,14 +135,14 @@ void Hint(const char* text)
 void Label(const char* text)
 {
     ImGui::PushFont(Mono);
-    ImGui::TextColored(Muted, "%s", text);
+    ImGui::TextColored(Colors.Muted, "%s", text);
     ImGui::PopFont();
 }
 
 void Mark(ImVec2 p, float size)
 {
     auto* d = ImGui::GetWindowDrawList();
-    ImU32 color = ImGui::GetColorU32(Amber);
+    ImU32 color = ImGui::GetColorU32(Colors.Accent);
     float arm = size * .25f, weight = size * .065f;
     for (int x = 0; x < 2; ++x)
         for (int y = 0; y < 2; ++y)
@@ -122,10 +156,10 @@ void Mark(ImVec2 p, float size)
 
 bool AccentButton(const char* label, ImVec2 size)
 {
-    ImGui::PushStyleColor(ImGuiCol_Button, Amber);
-    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, Color(0xf3ce91));
-    ImGui::PushStyleColor(ImGuiCol_ButtonActive, Color(0xcfa057));
-    ImGui::PushStyleColor(ImGuiCol_Text, Canvas);
+    ImGui::PushStyleColor(ImGuiCol_Button, Colors.Accent);
+    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetStyleColorVec4(ImGuiCol_SliderGrabActive));
+    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImGui::GetStyleColorVec4(ImGuiCol_SliderGrabActive));
+    ImGui::PushStyleColor(ImGuiCol_Text, Colors.OnAccent);
     bool pressed = ImGui::Button(label, size);
     ImGui::PopStyleColor(4);
     return pressed;
@@ -139,7 +173,7 @@ bool IconButton(const char* id, Icon icon, const char* hint, float scale, bool a
     ImVec2 p((a.x + b.x) / 2, (a.y + b.y) / 2);
     float r = 5 * scale, thick = 1.6f * scale;
     auto* d = ImGui::GetWindowDrawList();
-    ImU32 ink = ImGui::GetColorU32(accent ? Canvas : Ink);
+    ImU32 ink = ImGui::GetColorU32(accent ? Colors.OnAccent : Colors.Ink);
     if (icon == Icon::Play || icon == Icon::Next)
         d->AddTriangleFilled(ImVec2(p.x-r,p.y-r),ImVec2(p.x-r,p.y+r),ImVec2(p.x+r,p.y),ink);
     if (icon == Icon::Previous)

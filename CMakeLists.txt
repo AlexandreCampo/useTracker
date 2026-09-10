@@ -221,7 +221,7 @@ include(cmake/EmbedFonts.cmake)
 set(GUI_SOURCES
     App.cpp
     AppGui.cpp
-    ui/Darkroom.cpp
+    ui/Theme.cpp
     "${CMAKE_CURRENT_BINARY_DIR}/DarkroomFonts.cpp"
 )
 

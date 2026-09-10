@@ -132,6 +132,8 @@ private:
     float videoSliderPos = 0.0f;
     bool sliderMoving = false;
     bool pendingScaleChange = false;
+    bool darkMode = true;
+    bool pendingThemeChange = false;
 
     // Zoom/pan
     float zoomStartX = 0.0f;
@@ -205,6 +207,7 @@ private:
     bool InitSDL();
     bool InitImGui();
     void ApplyUIScale();
+    void SetDarkMode(bool enabled);
     float MaxUIScale() const;
     void Cleanup();
 
